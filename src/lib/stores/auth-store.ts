@@ -93,6 +93,15 @@ export const useAuthStore = create<AuthState>()(
           }),
           isAuthenticated: true,
         });
+
+        // Fetch full user profile (phone, birthYear, displayName etc.)
+        try {
+          const me = await authApi.getMe();
+          authApi.updateRolesCookieFromUser(me);
+          set({ user: me, isAuthenticated: true });
+        } catch {
+          // Ignore - basic user info is already set from login response
+        }
       },
 
       signup: async (email: string, password: string, displayName: string, role: string) => {
@@ -111,6 +120,15 @@ export const useAuthStore = create<AuthState>()(
           }),
           isAuthenticated: true,
         });
+
+        // Fetch full user profile
+        try {
+          const me = await authApi.getMe();
+          authApi.updateRolesCookieFromUser(me);
+          set({ user: me, isAuthenticated: true });
+        } catch {
+          // Ignore - basic user info is already set from signup response
+        }
       },
 
       logout: () => {

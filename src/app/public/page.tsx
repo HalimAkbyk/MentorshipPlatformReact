@@ -1,14 +1,21 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
+import { useAuthStore } from '@/lib/stores/auth-store';
+import { UserRole } from '@/lib/types/enums';
 
 import { Search, Calendar, Video, Star } from 'lucide-react';
 
 export default function HomePage() {
+  const { user, isAuthenticated } = useAuthStore();
+  const isStudent = isAuthenticated && user?.roles.includes(UserRole.Student);
+  const isMentor = isAuthenticated && user?.roles.includes(UserRole.Mentor);
+
   return (
     <div className="min-h-screen">
-      
+
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 text-center">
@@ -22,16 +29,30 @@ export default function HomePage() {
           Program çıkarma, deneme analizi ve motivasyon desteği.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/mentors">
+          <Link href="/public/mentors">
             <Button size="lg" className="w-full sm:w-auto">
               Mentör Bul
             </Button>
           </Link>
-          <Link href="/signup?role=mentor">
-            <Button size="lg" variant="outline" className="w-full sm:w-auto">
-              Mentör Ol
-            </Button>
-          </Link>
+          {isStudent ? (
+            <Link href="/student/dashboard">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                Panelime Git
+              </Button>
+            </Link>
+          ) : isMentor ? (
+            <Link href="/mentor/dashboard">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                Mentor Panelim
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/auth/signup?role=mentor">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                Mentör Ol
+              </Button>
+            </Link>
+          )}
         </div>
       </section>
 

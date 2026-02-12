@@ -159,7 +159,7 @@ if (status === 500) {
   async postForm<T>(url: string, formData: FormData): Promise<T> {
     const response = await this.client.post<T>(url, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': undefined, // Let axios auto-set with proper boundary
       },
     });
     return response.data;
