@@ -21,8 +21,10 @@ export function IyzicoCheckoutForm({
     existingIframes.forEach(iframe => iframe.remove());
 
     // ✅ Global iyzico değişkenlerini temizle
-    if ((window as any).iyziInit) {
-      delete (window as any).iyziInit;
+    try {
+      (window as any).iyziInit = undefined;
+    } catch (e) {
+      // iyziInit non-configurable olabilir, hata yutulur
     }
 
     // ✅ Önceki iyzico script'lerini temizle
