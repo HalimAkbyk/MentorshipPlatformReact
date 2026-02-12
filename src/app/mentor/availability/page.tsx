@@ -59,8 +59,11 @@ export default function AvailabilityPage() {
       return;
     }
 
-    const startAt = `${startDate}T${startTime}:00Z`;
-    const endAt = `${startDate}T${endTime}:00Z`;
+    // Kullanıcının girdiği yerel saati, tarayıcı timezone offset'iyle ISO formatına çevir
+    const localStart = new Date(`${startDate}T${startTime}:00`);
+    const localEnd = new Date(`${startDate}T${endTime}:00`);
+    const startAt = localStart.toISOString();
+    const endAt = localEnd.toISOString();
 
     try {
       await createSlot.mutateAsync({ startAt, endAt });
