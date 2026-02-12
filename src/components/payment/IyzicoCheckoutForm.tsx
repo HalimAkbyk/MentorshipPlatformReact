@@ -7,27 +7,56 @@ interface IyzicoCheckoutFormProps {
   onClose?: () => void;
 }
 
-export function IyzicoCheckoutForm({ 
-  checkoutFormContent, 
-  onClose 
+export function IyzicoCheckoutForm({
+  checkoutFormContent,
+  onClose
 }: IyzicoCheckoutFormProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.innerHTML = checkoutFormContent;
-      
-      // Script'leri execute et
-      const scripts = containerRef.current.getElementsByTagName('script');
-      Array.from(scripts).forEach((script) => {
-        const newScript = document.createElement('script');
-        Array.from(script.attributes).forEach((attr) => {
-          newScript.setAttribute(attr.name, attr.value);
-        });
-        newScript.text = script.text;
-        script.parentNode?.replaceChild(newScript, script);
-      });
+    if (!containerRef.current || !checkoutFormContent) return;
+
+    // ✅ Önceki iyzico artıklarını temizle
+    const existingIframes = document.querySelectorAll('iframe[src*="iyzipay"]');
+    existingIframes.forEach(iframe => iframe.remove());
+
+    // ✅ Global iyzico değişkenlerini temizle
+    if ((window as any).iyziInit) {
+      delete (window as any).iyziInit;
     }
+
+    // ✅ Önceki iyzico script'lerini temizle
+    const oldScripts = document.querySelectorAll('script[src*="iyzipay"]');
+    oldScripts.forEach(s => s.remove());
+
+    // ✅ Container'ı temizle ve HTML'i ekle
+    containerRef.current.innerHTML = '';
+    containerRef.current.innerHTML = checkoutFormContent;
+
+    // ✅ Script'leri yeniden oluşturup execute et
+    const scripts = containerRef.current.getElementsByTagName('script');
+    Array.from(scripts).forEach((script) => {
+      const newScript = document.createElement('script');
+      // Attribute'ları kopyala
+      Array.from(script.attributes).forEach((attr) => {
+        newScript.setAttribute(attr.name, attr.value);
+      });
+      // Inline script içeriğini kopyala
+      if (script.text) {
+        newScript.text = script.text;
+      }
+      // Eski script'i yenisiyle değiştir (bu execute eder)
+      script.parentNode?.replaceChild(newScript, script);
+    });
+
+    // ✅ Cleanup: component unmount olunca temizle
+    return () => {
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+      }
+      const iframes = document.querySelectorAll('iframe[src*="iyzipay"]');
+      iframes.forEach(iframe => iframe.remove());
+    };
   }, [checkoutFormContent]);
 
   return (
@@ -41,7 +70,7 @@ export function IyzicoCheckoutForm({
             </button>
           )}
         </div>
-        <div ref={containerRef} className="p-4" />
+        <div ref={containerRef} className="p-4" id="iyzico-checkout-container" />
       </div>
     </div>
   );
