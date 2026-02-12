@@ -58,9 +58,10 @@ export const mentorsApi = {
 
   // ✅ Ücretlendirme: backend tarafında tek offering upsert edilecek şekilde (OneToOne)
   // Not: Backend senin tarafta farklıysa burayı ona göre değiştiririz ama şu an onboarding için standartladık.
-  upsertMyOneToOneOffering: async (data: { hourlyRate: number; currency?: string }) => {
+  upsertMyOneToOneOffering: async (data: { hourlyRate: number; durationMin?: number; currency?: string }) => {
     return apiClient.put('/mentors/me/offerings', {
       hourlyRate: data.hourlyRate,
+      durationMinDefault: data.durationMin ?? 60,
       currency: data.currency ?? 'TRY',
     });
   },
