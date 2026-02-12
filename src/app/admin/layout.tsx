@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { UserRole } from '@/lib/types/enums';
+import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -34,5 +36,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  return <div className="min-h-screen bg-gray-50">{children}</div>;
+  return (
+    <>
+      <Header />
+      <div className="min-h-screen bg-gray-50">{children}</div>
+      <Footer />
+    </>
+  );
 }

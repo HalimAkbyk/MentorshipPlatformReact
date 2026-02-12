@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Urbanist } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers/providers";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const urbanist = Urbanist({ subsets: ["latin"], variable: "--font-urbanist" });
 
 export const metadata: Metadata = {
-  title: "Mentorship Platform - Üniversite Öğrencilerinden Mentorluk",
-  description: "Derece yapmış üniversite öğrencilerinden bire bir mentorluk al",
+  title: "Degisim Mentorluk - YKS'ye Hazirlanmanin En Iyi Yolu",
+  description: "Derece yapmis universite ogrencilerinden bire bir mentorluk al. Birebir danismanlik, strateji ve motivasyon destegi.",
 };
 
 export default function RootLayout({
@@ -17,7 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr">
-      <body className={inter.variable}>
+      <body className={urbanist.variable}>
         <Providers>{children}</Providers>
       </body>
     </html>
