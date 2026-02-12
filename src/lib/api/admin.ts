@@ -27,6 +27,10 @@ export const adminApi = {
     return apiClient.post<void>(`/admin/mentors/${userId}/publish`);
   },
 
+  unpublishMentor: async (userId: string): Promise<void> => {
+    return apiClient.post<void>(`/admin/mentors/${userId}/unpublish`);
+  },
+
   // Refunds
   getPendingRefunds: async (): Promise<PendingRefundDto[]> => {
     return apiClient.get<PendingRefundDto[]>('/admin/refunds', { status: 'Pending' });

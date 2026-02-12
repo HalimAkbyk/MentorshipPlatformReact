@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Check, X, ExternalLink, Clock, User, GraduationCap, DollarSign, FileText } from 'lucide-react';
+import { Check, X, ExternalLink, Clock, User, GraduationCap, DollarSign, FileText, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -31,6 +31,16 @@ export default function AdminVerificationsPage() {
   });
 
   const [publishModal, setPublishModal] = useState<{
+    open: boolean;
+    userId: string | null;
+    isProcessing: boolean;
+  }>({
+    open: false,
+    userId: null,
+    isProcessing: false,
+  });
+
+  const [unpublishModal, setUnpublishModal] = useState<{
     open: boolean;
     userId: string | null;
     isProcessing: boolean;
@@ -94,6 +104,26 @@ export default function AdminVerificationsPage() {
     } catch (error: any) {
       toast.error(error.response?.data?.errors?.[0] || 'Yayınlama başarısız');
       setPublishModal(prev => ({ ...prev, isProcessing: false }));
+    }
+  };
+
+  const handleUnpublishMentor = (userId: string) => {
+    setUnpublishModal({ open: true, userId, isProcessing: false });
+  };
+
+  const confirmUnpublishMentor = async () => {
+    if (!unpublishModal.userId) return;
+
+    try {
+      setUnpublishModal(prev => ({ ...prev, isProcessing: true }));
+      await adminApi.unpublishMentor(unpublishModal.userId);
+      toast.success('Mentor yayından kaldırıldı');
+      await refetch();
+      setUnpublishModal({ open: false, userId: null, isProcessing: false });
+      setSelectedMentor(null);
+    } catch (error: any) {
+      toast.error(error.response?.data?.errors?.[0] || 'İşlem başarısız');
+      setUnpublishModal(prev => ({ ...prev, isProcessing: false }));
     }
   };
 
@@ -313,10 +343,20 @@ export default function AdminVerificationsPage() {
               )}
 
               {selectedMentor.isListed && (
-                <div className="bg-green-50 border border-green-200 rounded p-3 text-center">
-                  <Check className="w-6 h-6 text-green-600 mx-auto mb-1" />
-                  <div className="text-sm font-medium text-green-900">Mentor Zaten Yayında</div>
-                  <div className="text-xs text-green-700">Öğrenciler bu mentor'u görebilir</div>
+                <div className="border-t pt-4 space-y-3">
+                  <div className="bg-green-50 border border-green-200 rounded p-3 text-center">
+                    <Check className="w-6 h-6 text-green-600 mx-auto mb-1" />
+                    <div className="text-sm font-medium text-green-900">Mentor Yayında</div>
+                    <div className="text-xs text-green-700">Öğrenciler bu mentor'u görebilir</div>
+                  </div>
+                  <Button
+                    onClick={() => handleUnpublishMentor(selectedMentor.userId)}
+                    variant="outline"
+                    className="w-full text-red-600 border-red-300 hover:bg-red-50"
+                  >
+                    <EyeOff className="w-4 h-4 mr-2" />
+                    Yayından Kaldır
+                  </Button>
                 </div>
               )}
             </CardContent>
@@ -363,6 +403,19 @@ export default function AdminVerificationsPage() {
         cancelText="İptal"
         variant="success"
         isLoading={publishModal.isProcessing}
+      />
+
+      {/* Unpublish Mentor Modal */}
+      <ConfirmDialog
+        open={unpublishModal.open}
+        onClose={() => !unpublishModal.isProcessing && setUnpublishModal({ open: false, userId: null, isProcessing: false })}
+        onConfirm={confirmUnpublishMentor}
+        title="Mentor'u Yayından Kaldır"
+        description="Bu mentor'u yayından kaldırmak istediğinizden emin misiniz? Mentor öğrencilere görünmez olacak."
+        confirmText="Evet, Kaldır"
+        cancelText="İptal"
+        variant="danger"
+        isLoading={unpublishModal.isProcessing}
       />
     </div>
   );
