@@ -7,7 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, CheckCircle2 } from 'lucide-react';
+import { differenceInMinutes } from 'date-fns';
 import { Button } from '../../../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { useMentor } from '../../../../lib/hooks/use-mentors';
@@ -37,7 +38,8 @@ export default function NewBookingPage() {
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedOffering, setSelectedOffering] = useState<any>(null);
-  
+  const [selectedSlot, setSelectedSlot] = useState<{ startAt: string; endAt: string } | null>(null);
+
   // ✅ Checkout Form State
   const [showCheckoutForm, setShowCheckoutForm] = useState(false);
   const [checkoutFormHtml, setCheckoutFormHtml] = useState<string>('');
@@ -71,14 +73,31 @@ export default function NewBookingPage() {
 
   const selectedTime = watch('startAt');
 
+  // ✅ Seçilen slot'tan süre hesapla
+  const slotDurationMin = selectedSlot
+    ? differenceInMinutes(new Date(selectedSlot.endAt), new Date(selectedSlot.startAt))
+    : 0;
+
+  // Slot süresi > 0 ise onu kullan, yoksa offering'in default süresini kullan
+  const effectiveDuration = slotDurationMin > 0 ? slotDurationMin : (selectedOffering?.durationMin || 0);
+
+  // Fiyat: offering saatlik ücret ise süreye göre oranla, değilse sabit fiyat
+  const basePrice = selectedOffering
+    ? (selectedOffering.durationMin > 0
+        ? (selectedOffering.price / selectedOffering.durationMin) * effectiveDuration
+        : selectedOffering.price)
+    : 0;
+  const platformFee = basePrice * 0.07;
+  const totalPrice = basePrice + platformFee;
+
   const onSubmit = async (data: BookingForm) => {
     if (!selectedOffering) {
       toast.error('Hizmet bilgisi bulunamadı');
       return;
     }
 
-    if (!selectedOffering.durationMin || selectedOffering.durationMin === 0) {
-      toast.error('Süre bilgisi eksik');
+    if (effectiveDuration <= 0) {
+      toast.error('Süre bilgisi eksik. Lütfen bir saat dilimi seçin.');
       return;
     }
 
@@ -97,7 +116,7 @@ export default function NewBookingPage() {
         mentorUserId: mentorId,
         offeringId: selectedOffering.id,
         startAt: data.startAt,
-        durationMin: selectedOffering.durationMin,
+        durationMin: effectiveDuration,
         notes: data.notes,
       });
 
@@ -202,25 +221,45 @@ export default function NewBookingPage() {
                       
                       {mentor.availableSlots && mentor.availableSlots.length > 0 ? (
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                          {mentor.availableSlots.map((slot) => (
-                            <button
-                              key={slot.id}
-                              type="button"
-                              onClick={() => setValue('startAt', slot.startAt)}
-                              className={`p-3 text-sm border rounded-lg hover:bg-primary-50 hover:border-primary-600 transition ${
-                                selectedTime === slot.startAt
-                                  ? 'bg-primary-600 text-white border-primary-600'
-                                  : 'bg-white'
-                              }`}
-                            >
-                              <div className="font-medium">
-                                {format(new Date(slot.startAt), 'dd MMM', { locale: tr })}
-                              </div>
-                              <div className="text-xs">
-                                {format(new Date(slot.startAt), 'HH:mm', { locale: tr })}
-                              </div>
-                            </button>
-                          ))}
+                          {mentor.availableSlots.map((slot) => {
+                            const isSelected = selectedTime === slot.startAt;
+                            const slotMins = differenceInMinutes(new Date(slot.endAt), new Date(slot.startAt));
+                            return (
+                              <button
+                                key={slot.id}
+                                type="button"
+                                onClick={() => {
+                                  if (isSelected) {
+                                    // Seçimi kaldır
+                                    setValue('startAt', '');
+                                    setSelectedSlot(null);
+                                  } else {
+                                    setValue('startAt', slot.startAt);
+                                    setSelectedSlot({ startAt: slot.startAt, endAt: slot.endAt });
+                                  }
+                                }}
+                                className={`p-3 text-sm border rounded-lg transition ${
+                                  isSelected
+                                    ? 'bg-primary-600 text-white border-primary-600 ring-2 ring-primary-300'
+                                    : 'bg-white hover:bg-primary-50 hover:border-primary-600'
+                                }`}
+                              >
+                                <div className="font-medium">
+                                  {format(new Date(slot.startAt), 'dd MMM', { locale: tr })}
+                                </div>
+                                <div className="text-xs">
+                                  {format(new Date(slot.startAt), 'HH:mm', { locale: tr })}
+                                  {' - '}
+                                  {format(new Date(slot.endAt), 'HH:mm', { locale: tr })}
+                                </div>
+                                {slotMins > 0 && (
+                                  <div className={`text-xs mt-1 ${isSelected ? 'text-primary-100' : 'text-gray-400'}`}>
+                                    {slotMins} dk
+                                  </div>
+                                )}
+                              </button>
+                            );
+                          })}
                         </div>
                       ) : (
                         <div className="text-center py-8 text-gray-500">
@@ -264,11 +303,14 @@ export default function NewBookingPage() {
               </Card>
             </div>
 
-            {/* Summary */}
+            {/* Summary - Anlık güncellenen özet paneli */}
             <div className="lg:col-span-1">
-              <Card>
+              <Card className={`transition-all duration-300 ${selectedSlot ? 'ring-2 ring-primary-200 shadow-lg' : ''}`}>
                 <CardHeader>
-                  <CardTitle>Özet</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    Özet
+                    {selectedSlot && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
@@ -276,26 +318,60 @@ export default function NewBookingPage() {
                     <div className="font-medium">{selectedOffering.title}</div>
                   </div>
 
+                  {/* Seçilen Tarih/Saat */}
                   <div>
-                    <div className="text-sm text-gray-600">Süre</div>
-                    <div className="font-medium">{selectedOffering.durationMin} dakika</div>
+                    <div className="text-sm text-gray-600">Tarih & Saat</div>
+                    {selectedSlot ? (
+                      <div className="font-medium text-primary-700">
+                        {format(new Date(selectedSlot.startAt), 'dd MMMM yyyy', { locale: tr })}
+                        <span className="text-sm text-gray-500 ml-1">
+                          {format(new Date(selectedSlot.startAt), 'HH:mm', { locale: tr })}
+                          {' - '}
+                          {format(new Date(selectedSlot.endAt), 'HH:mm', { locale: tr })}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-400 italic">Saat seçilmedi</div>
+                    )}
                   </div>
 
-                  <div className="pt-4 border-t">
+                  {/* Süre */}
+                  <div>
+                    <div className="text-sm text-gray-600">Süre</div>
+                    <div className={`font-medium flex items-center gap-1 transition-all duration-300 ${
+                      selectedSlot ? 'text-primary-700' : 'text-gray-400'
+                    }`}>
+                      <Clock className="w-4 h-4" />
+                      {effectiveDuration > 0 ? (
+                        <span>{effectiveDuration} dakika</span>
+                      ) : (
+                        <span className="italic">Saat seçilmedi</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Fiyat Detayları */}
+                  <div className={`pt-4 border-t transition-all duration-300 ${
+                    !selectedSlot ? 'opacity-50' : ''
+                  }`}>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-gray-600">Hizmet bedeli</span>
-                      <span className="font-medium">{formatCurrency(selectedOffering.price)}</span>
+                      <span className="font-medium">
+                        {selectedSlot ? formatCurrency(basePrice) : '—'}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-gray-600">Platform hizmet bedeli</span>
                       <span className="font-medium">
-                        {formatCurrency(selectedOffering.price * 0.07)}
+                        {selectedSlot ? formatCurrency(platformFee) : '—'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between pt-2 border-t">
                       <span className="font-semibold">Toplam</span>
-                      <span className="text-xl font-bold text-primary-600">
-                        {formatCurrency(selectedOffering.price * 1.07)}
+                      <span className={`text-xl font-bold transition-all duration-300 ${
+                        selectedSlot ? 'text-primary-600' : 'text-gray-300'
+                      }`}>
+                        {selectedSlot ? formatCurrency(totalPrice) : '—'}
                       </span>
                     </div>
                   </div>
