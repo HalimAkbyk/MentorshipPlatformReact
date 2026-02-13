@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Check, Upload, User, GraduationCap, DollarSign, ExternalLink, FileText, Clock, Trash2 } from 'lucide-react';
+import { Check, Upload, User, GraduationCap, ExternalLink, FileText, Clock, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,26 +26,17 @@ const profileSchema = z.object({
   headline: z.string().max(300).optional(),
 });
 
-const pricingSchema = z.object({
-  hourlyRate: z.union([z.number(), z.string()])
-    .transform((v) => (typeof v === 'string' ? Number(v) : v))
-    .refine((v) => v >= 50, { message: 'Minimum 50 TL' })
-    .refine((v) => v <= 10000, { message: 'Maksimum 10000 TL' }),
-});
-
 type ProfileForm = z.infer<typeof profileSchema>;
-type PricingForm = z.infer<typeof pricingSchema>;
 
-type StepKey = 'profile' | 'pricing' | 'verification';
+type StepKey = 'profile' | 'verification';
 
 const steps = [
   { id: 1, key: 'profile' as const, name: 'Profil Bilgileri', icon: User },
-  { id: 2, key: 'pricing' as const, name: 'Ücretlendirme', icon: DollarSign },
-  { id: 3, key: 'verification' as const, name: 'Doğrulama (Opsiyonel)', icon: GraduationCap },
+  { id: 2, key: 'verification' as const, name: 'Doğrulama (Opsiyonel)', icon: GraduationCap },
 ];
 
 function normalizeStep(v: string | null): StepKey {
-  if (v === 'profile' || v === 'pricing' || v === 'verification') return v;
+  if (v === 'profile' || v === 'verification') return v;
   return 'profile';
 }
 
@@ -93,10 +84,6 @@ export default function MentorOnboardingPage() {
     resolver: zodResolver(profileSchema),
   });
 
-  const pricingForm = useForm<PricingForm>({
-    resolver: zodResolver(pricingSchema),
-  });
-
   useEffect(() => {
     setCurrentStep(stepToId(stepFromUrl));
   }, [stepFromUrl]);
@@ -123,19 +110,6 @@ export default function MentorOnboardingPage() {
         }
       } catch {
         setHasProfile(false);
-      }
-
-      try {
-        const offerings = await mentorsApi.getMyOfferings();
-        const one = offerings?.[0];
-        if (one?.priceAmount) {
-          pricingForm.reset({
-            hourlyRate: one.priceAmount,
-          });
-          completed.add(2);
-        }
-      } catch {
-        // ignore
       }
 
       setCompletedSteps(completed);
@@ -177,29 +151,7 @@ export default function MentorOnboardingPage() {
       }
 
       setCompletedSteps(prev => new Set([...prev, 1]));
-      goStep('pricing');
-    } catch (error: any) {
-      toast.error(error?.response?.data?.errors?.[0] || 'Bir hata oluştu');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const onPricingSubmit = async (data: PricingForm) => {
-    try {
-      setIsSubmitting(true);
-
-      await mentorsApi.upsertMyOneToOneOffering({
-        hourlyRate: data.hourlyRate,
-        currency: 'TRY',
-      });
-
-      toast.success('Ücretlendirme bilgileri kaydedildi');
-      setCompletedSteps(prev => new Set([...prev, 2]));
-      
-      // ✅ Step 3'e geç (verification)
-      setCurrentStep(3);
-      router.push('/auth/onboarding/mentor?step=verification');
+      goStep('verification');
     } catch (error: any) {
       toast.error(error?.response?.data?.errors?.[0] || 'Bir hata oluştu');
     } finally {
@@ -257,7 +209,7 @@ export default function MentorOnboardingPage() {
         toast.success('Tüm belgeler başarıyla yüklendi! Admin onayı bekleniyor.');
       }
 
-      setCompletedSteps(prev => new Set([...prev, 3]));
+      setCompletedSteps(prev => new Set([...prev, 2]));
       
       // ✅ Tüm işlemler bittikten sonra yönlendir
       setTimeout(() => {
@@ -365,13 +317,11 @@ export default function MentorOnboardingPage() {
           <CardHeader>
             <CardTitle>
               {currentStep === 1 && 'Profil Bilgileri'}
-              {currentStep === 2 && 'Ücretlendirme'}
-              {currentStep === 3 && 'Doğrulama Belgeleri (Opsiyonel)'}
+              {currentStep === 2 && 'Doğrulama Belgeleri (Opsiyonel)'}
             </CardTitle>
             <CardDescription>
               {currentStep === 1 && 'Kendinizi ve eğitiminizi tanıtın'}
-              {currentStep === 2 && 'Hizmet ücretlerinizi belirleyin'}
-              {currentStep === 3 && 'İsteğe bağlı - Daha hızlı onay için belgelerinizi yükleyebilirsiniz'}
+              {currentStep === 2 && 'İsteğe bağlı - Daha hızlı onay için belgelerinizi yükleyebilirsiniz'}
             </CardDescription>
           </CardHeader>
 
@@ -523,38 +473,8 @@ export default function MentorOnboardingPage() {
                   </form>
                 )}
 
-                {/* Step 2: Pricing */}
+                {/* Step 2: Verification */}
                 {currentStep === 2 && (
-                  <form onSubmit={pricingForm.handleSubmit(onPricingSubmit)} className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Saatlik Ücret (TL) *</label>
-                      <Input 
-                        type="number" 
-                        placeholder="250" 
-                        {...pricingForm.register('hourlyRate')} 
-                      />
-                      {pricingForm.formState.errors.hourlyRate && (
-                        <p className="text-sm text-red-600 mt-1">
-                          {String(pricingForm.formState.errors.hourlyRate.message)}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <p className="text-sm text-green-800">
-                        ✅ Temel bilgilerinizi tamamladıktan sonra dashboard'a erişebilirsiniz. 
-                        Doğrulama belgeleri opsiyoneldir ve istediğiniz zaman yükleyebilirsiniz.
-                      </p>
-                    </div>
-
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                      {isSubmitting ? 'Kaydediliyor...' : 'Kaydet ve Devam Et'}
-                    </Button>
-                  </form>
-                )}
-
-                {/* Step 3: Verification */}
-                {currentStep === 3 && (
                   <form onSubmit={onVerificationSubmit} className="space-y-6">
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                       <p className="text-sm text-blue-800">

@@ -40,6 +40,15 @@ export function useDeleteSlot() {
   });
 }
 
+// ---- Computed Time Slots ----
+export function useAvailableTimeSlots(mentorId: string, offeringId: string, date: string | null) {
+  return useQuery({
+    queryKey: ['available-time-slots', mentorId, offeringId, date],
+    queryFn: () => availabilityApi.getAvailableTimeSlots(mentorId, offeringId, date!),
+    enabled: !!mentorId && !!offeringId && !!date,
+  });
+}
+
 // ---- Template Hooks (NEW) ----
 export function useAvailabilityTemplate() {
   return useQuery({

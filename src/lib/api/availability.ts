@@ -59,10 +59,21 @@ export interface AddOverrideRequest {
   reason?: string;
 }
 
+export interface ComputedTimeSlot {
+  startAt: string;
+  endAt: string;
+  durationMin: number;
+}
+
 export const availabilityApi = {
   // ---- Existing Slot APIs ----
   getMentorSlots: async (mentorId: string, from?: string, to?: string): Promise<AvailabilitySlot[]> => {
     return apiClient.get<AvailabilitySlot[]>(`/mentors/${mentorId}/availability`, { from, to });
+  },
+
+  // ---- Computed Time Slots (offering duration + buffer dikkate alınır) ----
+  getAvailableTimeSlots: async (mentorId: string, offeringId: string, date: string): Promise<ComputedTimeSlot[]> => {
+    return apiClient.get<ComputedTimeSlot[]>(`/mentors/${mentorId}/available-time-slots`, { offeringId, date });
   },
 
   getMySlots: async (from?: string, to?: string): Promise<any[]> => {
