@@ -9,9 +9,9 @@ const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:507
  * Bu route token'ı backend'e forward eder, ödemeyi doğrular ve sonuca göre
  * success veya failed sayfasına yönlendirir.
  *
- * Neden frontend'de? Koyeb free tier'da dış kaynaklardan gelen doğrudan
- * istekler (Iyzico callback) Koyeb edge network tarafından düşürülüyor.
- * Frontend (Vercel) ise her zaman erişilebilir.
+ * IMPORTANT: 303 status code kullanılır çünkü Iyzico POST ile gelir,
+ * 307 redirect orijinal POST method'unu korur ve sayfa 405 döner.
+ * 303 See Other → browser'ı GET'e çevirir.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
     if (!token) {
       console.error('❌ No token in Iyzico callback');
-      return NextResponse.redirect(new URL('/api/payment/failed', request.url));
+      return NextResponse.redirect(new URL('/api/payment/failed', request.url), 303);
     }
 
     // Backend'e token'ı gönder (ödemeyi doğrula)
@@ -39,18 +39,18 @@ export async function POST(request: NextRequest) {
     console.log('📨 Backend response:', backendResponse.status, result);
 
     if (backendResponse.ok && result.isSuccess !== false) {
-      return NextResponse.redirect(new URL('/api/payment/success', request.url));
+      return NextResponse.redirect(new URL('/api/payment/success', request.url), 303);
     } else {
       console.error('❌ Payment verification failed:', result);
-      return NextResponse.redirect(new URL('/api/payment/failed', request.url));
+      return NextResponse.redirect(new URL('/api/payment/failed', request.url), 303);
     }
   } catch (error) {
     console.error('❌ Iyzico callback error:', error);
-    return NextResponse.redirect(new URL('/api/payment/failed', request.url));
+    return NextResponse.redirect(new URL('/api/payment/failed', request.url), 303);
   }
 }
 
 // GET handler - kullanıcı doğrudan URL'e girerse
 export async function GET(request: NextRequest) {
-  return NextResponse.redirect(new URL('/api/payment/failed', request.url));
+  return NextResponse.redirect(new URL('/api/payment/failed', request.url), 303);
 }
