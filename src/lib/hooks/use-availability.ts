@@ -97,6 +97,7 @@ export function useOfferingTemplate(offeringId: string | null) {
     queryKey: ['offering-availability-template', offeringId],
     queryFn: () => availabilityApi.getOfferingTemplate(offeringId!),
     enabled: !!offeringId,
+    retry: false,
   });
 }
 
