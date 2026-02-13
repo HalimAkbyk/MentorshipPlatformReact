@@ -2,6 +2,33 @@ import { apiClient } from './client';
 import type { VerificationApprovalRequest, RefundApprovalRequest } from '../../lib/types';
 import type { PendingRefundDto, PendingVerificationDto, PendingMentorDto } from '../types/admin';
 
+export interface AdminBookingDto {
+  id: string;
+  studentUserId: string;
+  studentName: string | null;
+  mentorUserId: string;
+  mentorName: string | null;
+  startAt: string;
+  endAt: string;
+  durationMin: number;
+  status: string;
+  price: number;
+  currency: string;
+  offeringTitle: string | null;
+}
+
+export interface SystemHealthDto {
+  pendingOrdersCount: number;
+  stuckBookingsCount: number;
+  activeSessionsCount: number;
+  noShowBookingsLast24h: number;
+  disputedBookingsCount: number;
+  failedPaymentsLast24h: number;
+  expiredBookingsLast24h: number;
+  cancelledBookingsLast24h: number;
+  completedBookingsLast24h: number;
+}
+
 export const adminApi = {
   // Verifications
   getPendingVerifications: async (): Promise<PendingVerificationDto[]> => {
@@ -44,6 +71,21 @@ export const adminApi = {
   rejectRefund: async (data: RefundApprovalRequest): Promise<void> => {
     const { refundId, ...rest } = data;
     return apiClient.post<void>(`/admin/refunds/${refundId}/reject`, rest);
+  },
+
+  // Admin Calendar - All Bookings
+  getAllBookings: async (params?: {
+    from?: string;
+    to?: string;
+    status?: string;
+    mentorUserId?: string;
+  }): Promise<AdminBookingDto[]> => {
+    return apiClient.get<AdminBookingDto[]>('/admin/bookings', params);
+  },
+
+  // System Health
+  getSystemHealth: async (): Promise<SystemHealthDto> => {
+    return apiClient.get<SystemHealthDto>('/admin/system-health');
   },
 
   // Users
