@@ -184,7 +184,15 @@ export default function AvailabilityPage() {
         settings,
       });
       toast.success('Müsaitlik programı kaydedildi ve slotlar oluşturuldu!');
-    } catch {}
+    } catch (err: any) {
+      console.error('Template save error:', err);
+      // Axios interceptor already shows toast for 500/403/401,
+      // but show a fallback for other cases
+      const status = err?.response?.status;
+      if (!status || (status !== 500 && status !== 401 && status !== 403)) {
+        toast.error('Program kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.');
+      }
+    }
   };
 
   const handleOverrideSave = async () => {
@@ -198,7 +206,13 @@ export default function AvailabilityPage() {
       });
       toast.success(overrideModal.isBlocked ? 'Gün kapatıldı' : 'Özel saat eklendi');
       setOverrideModal(prev => ({ ...prev, open: false }));
-    } catch {}
+    } catch (err: any) {
+      console.error('Override save error:', err);
+      const status = err?.response?.status;
+      if (!status || (status !== 500 && status !== 401 && status !== 403)) {
+        toast.error('Özel gün eklenirken bir hata oluştu.');
+      }
+    }
   };
 
   const handleDeleteSlot = async () => {
@@ -208,7 +222,10 @@ export default function AvailabilityPage() {
       await deleteSlot.mutateAsync(deleteModal.slotId);
       toast.success('Slot silindi');
       setDeleteModal({ open: false, slotId: null, isDeleting: false });
-    } catch { setDeleteModal(prev => ({ ...prev, isDeleting: false })); }
+    } catch (err: any) {
+      console.error('Delete slot error:', err);
+      setDeleteModal(prev => ({ ...prev, isDeleting: false }));
+    }
   };
 
   // Calendar events
@@ -391,7 +408,7 @@ export default function AvailabilityPage() {
                   )}
                 </div>
 
-                <Button onClick={handleSaveTemplate} className="w-full mt-4" disabled={saveTemplate.isPending}>
+                <Button type="button" onClick={handleSaveTemplate} className="w-full mt-4" disabled={saveTemplate.isPending}>
                   <Save className="w-4 h-4 mr-2" />
                   {saveTemplate.isPending ? 'Kaydediliyor...' : 'Programı Kaydet & Slotları Oluştur'}
                 </Button>
