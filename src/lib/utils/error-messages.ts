@@ -19,9 +19,15 @@ const ERROR_MAP: Record<string, string> = {
 };
 const DEFAULT_ERROR_MESSAGE =
   'Beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.';
+
+// Türkçe karakter regex'i — backend zaten Türkçe döndüyse olduğu gibi göster
+const TURKISH_REGEX = /[çğıöşüÇĞİÖŞÜ]/;
+
 export function localizeErrorMessage(message: string): string {
     if (!message) return DEFAULT_ERROR_MESSAGE;
     if (ERROR_MAP[message]) return ERROR_MAP[message];
-  // Tanımsız tüm hatalar
-  return DEFAULT_ERROR_MESSAGE;
+    // Backend'den Türkçe gelen mesajları olduğu gibi göster
+    if (TURKISH_REGEX.test(message)) return message;
+    // Tanımsız İngilizce hatalar
+    return DEFAULT_ERROR_MESSAGE;
 }
