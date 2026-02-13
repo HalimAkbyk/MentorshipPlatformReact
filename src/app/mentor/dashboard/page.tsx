@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Calendar, DollarSign, Users, Star, AlertCircle, CheckCircle, Clock, Info } from 'lucide-react';
+import { Calendar, DollarSign, Users, Star, AlertCircle, CheckCircle, Clock, Info, Package } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -215,14 +215,15 @@ export default function MentorDashboardPage() {
         {hasOfferings && (
           <Card className="mb-8">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Ücretlendirme</CardTitle>
-              <Link href="/auth/onboarding/mentor?step=pricing">
-                <Button variant="outline" size="sm">Güncelle</Button>
+              <CardTitle>Paketlerim</CardTitle>
+              <Link href="/mentor/offerings">
+                <Button variant="outline" size="sm">Paketleri Yonet</Button>
               </Link>
             </CardHeader>
             <CardContent className="text-sm text-gray-700 space-y-1">
               {offerings.map((o) => (
-                <div key={o.id}>
+                <div key={o.id} className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${o.isActive ? 'bg-green-500' : 'bg-gray-300'}`} />
                   <b>{o.title}</b>: {o.priceAmount} {o.currency} / {o.durationMinDefault} dk
                 </div>
               ))}
@@ -278,7 +279,13 @@ export default function MentorDashboardPage() {
             <CardTitle>Hızlı İşlemler</CardTitle>
             <CardDescription>Sık kullandığın işlemler</CardDescription>
           </CardHeader>
-          <CardContent className="grid md:grid-cols-4 gap-4">
+          <CardContent className="grid md:grid-cols-5 gap-4">
+            <Link href="/mentor/offerings">
+              <Button variant="outline" className="w-full h-24 flex-col">
+                <Package className="w-8 h-8 mb-2" />
+                <span>Paketlerim</span>
+              </Button>
+            </Link>
             {isApproved ? (
               <Link href="/mentor/availability">
                 <Button variant="outline" className="w-full h-24 flex-col">
@@ -287,35 +294,33 @@ export default function MentorDashboardPage() {
                 </Button>
               </Link>
             ) : (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full h-24 flex-col opacity-50 cursor-not-allowed"
                 disabled
-                title="Doğrulama belgesi onayı gerekli"
+                title="Dogrulama belgesi onayi gerekli"
               >
                 <Calendar className="w-8 h-8 mb-2" />
                 <span>Uygunluk Ekle</span>
-                <span className="text-xs text-gray-500 mt-1">(Doğrulama onayı gerekli)</span>
+                <span className="text-xs text-gray-500 mt-1">(Dogrulama onayi gerekli)</span>
               </Button>
             )}
-            
+            <Link href="/mentor/bookings">
+              <Button variant="outline" className="w-full h-24 flex-col">
+                <BookOpen className="w-8 h-8 mb-2" />
+                <span>Derslerim</span>
+              </Button>
+            </Link>
             <Link href="/mentor/classes/new">
               <Button variant="outline" className="w-full h-24 flex-col">
                 <Users className="w-8 h-8 mb-2" />
-                <span>Grup Dersi Oluştur</span>
+                <span>Grup Dersi</span>
               </Button>
             </Link>
-            <Link href="/mentor/bookings">
-  <Button variant="outline" className="w-full h-24 flex-col">
-    <BookOpen className="w-8 h-8 mb-2" />
-    <span>Derslerim</span>
-  </Button>
-</Link>
-
             <Link href="/mentor/earnings">
               <Button variant="outline" className="w-full h-24 flex-col">
                 <DollarSign className="w-8 h-8 mb-2" />
-                <span>Kazançlarım</span>
+                <span>Kazanclarim</span>
               </Button>
             </Link>
           </CardContent>

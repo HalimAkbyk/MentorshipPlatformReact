@@ -80,11 +80,18 @@ export interface Booking {
   // NOT: Backend'de studentName yok, sadece detail'de var
 }
 
+export interface BookingQuestionResponseDetail {
+  questionId: string;
+  questionText: string;
+  answerText: string;
+  isRequired: boolean;
+}
+
 export interface BookingDetail {
   id: string;
-  // ✅ Backend'den gelen alanlar (GetBookingByIdQuery)
+  // Backend'den gelen alanlar (GetBookingByIdQuery)
   studentUserId: string;
-  studentName: string;  // Detail'de var
+  studentName: string;
   mentorUserId: string;
   mentorName: string;
   mentorAvatar?: string;
@@ -98,6 +105,7 @@ export interface BookingDetail {
   cancellationReason?: string;
   hasReview?: boolean;
   createdAt: string;
+  questionResponses?: BookingQuestionResponseDetail[];
 }
 
 export interface GroupClass {

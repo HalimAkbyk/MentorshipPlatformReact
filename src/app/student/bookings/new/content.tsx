@@ -13,6 +13,7 @@ import {
   Video,
   ArrowLeft,
   CreditCard,
+  HelpCircle,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Button } from '../../../../components/ui/button';
@@ -27,6 +28,7 @@ import { useAuthStore } from '../../../../lib/stores/auth-store';
 import { formatCurrency } from '../../../../lib/utils/format';
 import { toast } from 'sonner';
 import { IyzicoCheckoutForm } from '../../../../components/payment/IyzicoCheckoutForm';
+import { offeringsApi, type OfferingDto as EnrichedOfferingDto } from '../../../../lib/api/offerings';
 
 // Dynamically import FullCalendar to avoid SSR issues
 const FullCalendar = dynamic(() => import('@fullcalendar/react'), { ssr: false });
@@ -67,6 +69,10 @@ export default function NewBookingContent() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [calendarReady, setCalendarReady] = useState(false);
 
+  // Enriched offering with questions
+  const [enrichedOffering, setEnrichedOffering] = useState<EnrichedOfferingDto | null>(null);
+  const [questionResponses, setQuestionResponses] = useState<Record<string, string>>({});
+
   // Checkout form state
   const [showCheckoutForm, setShowCheckoutForm] = useState(false);
   const [checkoutFormHtml, setCheckoutFormHtml] = useState<string>('');
@@ -99,6 +105,14 @@ export default function NewBookingContent() {
       }
     }
   }, [mentor, offeringId]);
+
+  // Fetch enriched offering with questions
+  useEffect(() => {
+    if (!offeringId) return;
+    offeringsApi.getById(offeringId)
+      .then(data => setEnrichedOffering(data))
+      .catch(() => setEnrichedOffering(null));
+  }, [offeringId]);
 
   // Calculate available dates from slots (only future slots)
   const availableDates = useMemo(() => {
@@ -207,6 +221,16 @@ export default function NewBookingContent() {
       return;
     }
 
+    // Validate required questions
+    if (enrichedOffering?.questions) {
+      const requiredUnanswered = enrichedOffering.questions
+        .filter(q => q.isRequired && !questionResponses[q.id]?.trim());
+      if (requiredUnanswered.length > 0) {
+        toast.error('Lutfen zorunlu sorulari cevaplayin');
+        return;
+      }
+    }
+
     // Final safety check: block past slot booking
     if (new Date(selectedSlot.startAt) <= new Date()) {
       toast.error('Bu slot artık geçmiş bir zamanda. Lütfen başka bir saat seçin.');
@@ -219,12 +243,21 @@ export default function NewBookingContent() {
     try {
       setIsProcessing(true);
 
+      // Build question responses
+      const qResponses = enrichedOffering?.questions
+        ?.filter(q => questionResponses[q.id]?.trim())
+        .map(q => ({
+          questionId: q.id,
+          answerText: questionResponses[q.id].trim(),
+        })) || [];
+
       const bookingResult = await createBooking.mutateAsync({
         mentorUserId: mentorId,
         offeringId: selectedOffering.id,
         startAt: selectedSlot.startAt,
         durationMin: effectiveDuration,
         notes: notes || undefined,
+        questionResponses: qResponses.length > 0 ? qResponses : undefined,
       });
 
       const orderResult = await paymentsApi.createOrder({
@@ -677,6 +710,35 @@ export default function NewBookingContent() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Booking Questions */}
+                    {enrichedOffering?.questions && enrichedOffering.questions.length > 0 && (
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                          <HelpCircle className="w-4 h-4 text-[#227070]" />
+                          Mentor Sorulari
+                        </h4>
+                        {enrichedOffering.questions.map(q => (
+                          <div key={q.id}>
+                            <label className="text-sm font-medium text-gray-700 mb-1 block">
+                              {q.questionText}
+                              {q.isRequired && <span className="text-red-500 ml-1">*</span>}
+                            </label>
+                            <textarea
+                              rows={2}
+                              value={questionResponses[q.id] || ''}
+                              onChange={(e) => setQuestionResponses(prev => ({
+                                ...prev,
+                                [q.id]: e.target.value,
+                              }))}
+                              placeholder="Cevabinizi yazin..."
+                              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#227070]/30 focus:border-[#227070] transition-all"
+                              maxLength={500}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                     {/* Notes */}
                     <div>

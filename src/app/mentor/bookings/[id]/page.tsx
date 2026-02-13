@@ -5,11 +5,10 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { 
-  ArrowLeft, Calendar, Clock, User, CreditCard, 
-  AlertCircle, CheckCircle, XCircle, Video, 
-  UserX,
-  AlertTriangle
+import {
+  ArrowLeft, Calendar, Clock, User, CreditCard,
+  AlertCircle, CheckCircle, XCircle, Video,
+  UserX, AlertTriangle, HelpCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '../../../../components/ui/button';
@@ -264,12 +263,37 @@ export default function MentorBookingDetailPage() {
             </CardContent>
           </Card>
 
+          {/* Question Responses */}
+          {booking.questionResponses && booking.questionResponses.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <HelpCircle className="w-5 h-5 mr-2" />
+                  Ogrenci Cevaplari
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {booking.questionResponses.map((qr) => (
+                  <div key={qr.questionId} className="border-b last:border-b-0 pb-3 last:pb-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-medium text-gray-700">{qr.questionText}</span>
+                      {qr.isRequired && (
+                        <Badge variant="destructive" className="text-xs">Zorunlu</Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600 bg-gray-50 rounded-md p-3">{qr.answerText}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Payment Info */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
                 <CreditCard className="w-5 h-5 mr-2" />
-                Ödeme Bilgileri
+                Odeme Bilgileri
               </CardTitle>
             </CardHeader>
             <CardContent>

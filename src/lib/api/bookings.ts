@@ -2,12 +2,18 @@ import { apiClient } from './client';
 import type { Booking, BookingDetail } from '@/lib/types/models';
 import type { BookingStatus } from '@/lib/types/enums';
 
+export interface QuestionResponseData {
+  questionId: string;
+  answerText: string;
+}
+
 export interface CreateBookingData {
   mentorUserId: string;
   offeringId: string;
   startAt: string;
   durationMin: number;
   notes?: string;
+  questionResponses?: QuestionResponseData[];
 }
 
 export const bookingsApi = {

@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Calendar, Clock, User, MapPin, AlertCircle, Video, MessageSquare, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, User, MapPin, AlertCircle, Video, MessageSquare, CheckCircle, HelpCircle } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../../components/ui/avatar';
@@ -349,10 +349,30 @@ export default function BookingDetailPage() {
               </CardContent>
             </Card>
 
+            {/* Question Responses */}
+            {booking.questionResponses && booking.questionResponses.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <HelpCircle className="w-4 h-4" />
+                    Cevaplarınız
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {booking.questionResponses.map((qr) => (
+                    <div key={qr.questionId}>
+                      <p className="text-sm font-medium text-gray-700 mb-1">{qr.questionText}</p>
+                      <p className="text-sm text-gray-600 bg-gray-50 rounded p-2">{qr.answerText}</p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
             {/* Payment Info */}
             <Card>
               <CardHeader>
-                <CardTitle>Ödeme Bilgileri</CardTitle>
+                <CardTitle>Odeme Bilgileri</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
