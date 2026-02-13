@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { format, parseISO, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns';
+import dynamic from 'next/dynamic';
 import { tr } from 'date-fns/locale';
 import {
   Calendar as CalendarIcon,
@@ -17,7 +18,7 @@ import {
   Activity,
   TrendingUp,
 } from 'lucide-react';
-import FullCalendar from '@fullcalendar/react';
+const FullCalendar = dynamic(() => import('@fullcalendar/react'), { ssr: false });
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
@@ -44,14 +45,31 @@ function getStatusInfo(status: string) {
 }
 
 export default function AdminCalendarPage() {
-  const [viewDate, setViewDate] = useState(new Date());
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [mentorFilter, setMentorFilter] = useState<string>('');
   const [selectedBooking, setSelectedBooking] = useState<AdminBookingDto | null>(null);
+  const [calendarReady, setCalendarReady] = useState(false);
+  const viewDateRef = useRef(new Date());
 
-  // Date range for fetching
-  const fromDate = useMemo(() => startOfMonth(subMonths(viewDate, 1)).toISOString(), [viewDate]);
-  const toDate = useMemo(() => endOfMonth(addMonths(viewDate, 1)).toISOString(), [viewDate]);
+  // Date range for fetching - use state to avoid infinite loop
+  const [dateRange, setDateRange] = useState(() => ({
+    from: startOfMonth(subMonths(new Date(), 1)).toISOString(),
+    to: endOfMonth(addMonths(new Date(), 1)).toISOString(),
+  }));
+
+  // Mark calendar ready on mount
+  useState(() => { setCalendarReady(true); });
+
+  const handleDatesSet = useCallback((dateInfo: any) => {
+    const newStart = dateInfo.start;
+    const newFrom = startOfMonth(subMonths(newStart, 1)).toISOString();
+    const newTo = endOfMonth(addMonths(newStart, 1)).toISOString();
+    viewDateRef.current = newStart;
+    setDateRange((prev) => {
+      if (prev.from === newFrom && prev.to === newTo) return prev;
+      return { from: newFrom, to: newTo };
+    });
+  }, []);
 
   // Fetch all bookings
   const {
@@ -59,11 +77,11 @@ export default function AdminCalendarPage() {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ['admin-bookings', fromDate, toDate, statusFilter, mentorFilter],
+    queryKey: ['admin-bookings', dateRange.from, dateRange.to, statusFilter, mentorFilter],
     queryFn: () =>
       adminApi.getAllBookings({
-        from: fromDate,
-        to: toDate,
+        from: dateRange.from,
+        to: dateRange.to,
         status: statusFilter || undefined,
         mentorUserId: mentorFilter || undefined,
       }),
@@ -352,9 +370,7 @@ export default function AdminCalendarPage() {
                   slotDuration="00:30:00"
                   nowIndicator
                   allDaySlot={false}
-                  datesSet={(dateInfo) => {
-                    setViewDate(dateInfo.start);
-                  }}
+                  datesSet={handleDatesSet}
                   eventContent={(eventInfo) => {
                     const booking = eventInfo.event.extendedProps.booking as AdminBookingDto;
                     const statusInfo = getStatusInfo(booking.status);
