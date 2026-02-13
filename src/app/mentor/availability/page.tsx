@@ -27,6 +27,29 @@ import listPlugin from '@fullcalendar/list';
 import type { EventContentArg } from '@fullcalendar/core';
 
 const DAY_SHORT = ['Pz', 'Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct'];
+const DAY_LONG = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+
+/**
+ * Get this week's date for a given day-of-week index (0=Sun, 1=Mon, ...)
+ * Returns the date and whether it's in the past or today.
+ */
+function getWeekDateForDay(dayIndex: number): { date: Date; isPast: boolean; isToday: boolean } {
+  const today = new Date();
+  const todayDow = today.getDay(); // 0=Sun
+  const diff = dayIndex - todayDow;
+  const date = new Date(today);
+  date.setDate(today.getDate() + diff);
+  date.setHours(0, 0, 0, 0);
+
+  const todayStart = new Date(today);
+  todayStart.setHours(0, 0, 0, 0);
+
+  return {
+    date,
+    isPast: date < todayStart,
+    isToday: date.getTime() === todayStart.getTime(),
+  };
+}
 
 interface WeeklyRule {
   dayOfWeek: number;
@@ -294,19 +317,27 @@ export default function AvailabilityPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle>Haftalık Program</CardTitle>
-                    <CardDescription>Her gün için müsait olduğunuz saatleri belirleyin</CardDescription>
+                    <CardDescription>Her gün için müsait olduğunuz saatleri belirleyin. Bu şablon, bugünden itibaren {settings.maxBookingDaysAhead} gün ileriye uygulanır. Geçmiş günler sadece gelecek haftalarda geçerlidir.</CardDescription>
                   </div>
                   <Button variant="outline" size="sm" onClick={applyToAll}>Tüm Günlere Uygula</Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                {weeklyRules.map(rule => (
-                  <div key={rule.dayOfWeek} className={`flex items-start gap-4 p-3 rounded-lg border transition-colors ${rule.isActive ? 'bg-white border-primary-200' : 'bg-gray-50 border-gray-200'}`}>
-                    <button onClick={() => toggleDay(rule.dayOfWeek)} className={`mt-1 w-20 text-left font-medium text-sm flex items-center gap-2 ${rule.isActive ? 'text-primary-700' : 'text-gray-400'}`}>
-                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${rule.isActive ? 'bg-primary-600 border-primary-600' : 'border-gray-300'}`}>
+                {weeklyRules.map(rule => {
+                  const weekInfo = getWeekDateForDay(rule.dayOfWeek);
+                  const dateStr = weekInfo.date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+                  return (
+                  <div key={rule.dayOfWeek} className={`flex items-start gap-4 p-3 rounded-lg border transition-colors ${rule.isActive ? 'bg-white border-primary-200' : 'bg-gray-50 border-gray-200'} ${weekInfo.isPast ? 'opacity-60' : ''}`}>
+                    <button onClick={() => toggleDay(rule.dayOfWeek)} className={`mt-1 w-28 text-left font-medium text-sm flex items-center gap-2 ${rule.isActive ? 'text-primary-700' : 'text-gray-400'}`}>
+                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${rule.isActive ? 'bg-primary-600 border-primary-600' : 'border-gray-300'}`}>
                         {rule.isActive && <span className="text-white text-[10px]">✓</span>}
                       </div>
-                      {DAY_SHORT[rule.dayOfWeek]}
+                      <div className="flex flex-col leading-tight">
+                        <span>{DAY_SHORT[rule.dayOfWeek]}</span>
+                        <span className={`text-[10px] font-normal ${weekInfo.isToday ? 'text-green-600 font-semibold' : weekInfo.isPast ? 'text-gray-400' : 'text-gray-400'}`}>
+                          {weekInfo.isToday ? 'Bugün' : dateStr}
+                        </span>
+                      </div>
                     </button>
                     <div className="flex-1">
                       {rule.isActive ? (
@@ -330,7 +361,8 @@ export default function AvailabilityPage() {
                       )}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
 
                 {/* Settings */}
                 <div className="pt-4 border-t">
