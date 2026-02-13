@@ -3,10 +3,10 @@ import { availabilityApi } from '../api/availability';
 import type { CreateAvailabilitySlotRequest } from '../types';
 import type { SaveTemplateRequest, AddOverrideRequest } from '../api/availability';
 
-export function useMentorAvailability(mentorId: string, from?: string, to?: string) {
+export function useMentorAvailability(mentorId: string, from?: string, to?: string, offeringId?: string) {
   return useQuery({
-    queryKey: ['availability', mentorId, from, to],
-    queryFn: () => availabilityApi.getMentorSlots(mentorId, from, to),
+    queryKey: ['availability', mentorId, from, to, offeringId],
+    queryFn: () => availabilityApi.getMentorSlots(mentorId, from, to, offeringId),
     enabled: !!mentorId,
   });
 }
@@ -49,7 +49,7 @@ export function useAvailableTimeSlots(mentorId: string, offeringId: string, date
   });
 }
 
-// ---- Template Hooks (NEW) ----
+// ---- Template Hooks ----
 export function useAvailabilityTemplate() {
   return useQuery({
     queryKey: ['availability-template'],
@@ -86,6 +86,42 @@ export function useDeleteOverride() {
     mutationFn: (overrideId: string) => availabilityApi.deleteOverride(overrideId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['availability-template'] });
+      queryClient.invalidateQueries({ queryKey: ['my-availability'] });
+    },
+  });
+}
+
+// ---- Offering-level Availability Template Hooks ----
+export function useOfferingTemplate(offeringId: string | null) {
+  return useQuery({
+    queryKey: ['offering-availability-template', offeringId],
+    queryFn: () => availabilityApi.getOfferingTemplate(offeringId!),
+    enabled: !!offeringId,
+  });
+}
+
+export function useSaveOfferingTemplate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ offeringId, data }: { offeringId: string; data: SaveTemplateRequest }) =>
+      availabilityApi.saveOfferingTemplate(offeringId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['offering-availability-template'] });
+      queryClient.invalidateQueries({ queryKey: ['my-offerings'] });
+      queryClient.invalidateQueries({ queryKey: ['availability'] });
+      queryClient.invalidateQueries({ queryKey: ['my-availability'] });
+    },
+  });
+}
+
+export function useDeleteOfferingTemplate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (offeringId: string) => availabilityApi.deleteOfferingTemplate(offeringId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['offering-availability-template'] });
+      queryClient.invalidateQueries({ queryKey: ['my-offerings'] });
+      queryClient.invalidateQueries({ queryKey: ['availability'] });
       queryClient.invalidateQueries({ queryKey: ['my-availability'] });
     },
   });

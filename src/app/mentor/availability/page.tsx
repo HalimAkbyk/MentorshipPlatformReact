@@ -171,11 +171,12 @@ export default function AvailabilityPage() {
   };
 
   const handleSaveTemplate = async () => {
-    const rules = weeklyRules.flatMap(r =>
-      r.isActive && r.blocks.length > 0
-        ? r.blocks.map((b, i) => ({ dayOfWeek: r.dayOfWeek, isActive: true, startTime: b.startTime, endTime: b.endTime, slotIndex: i }))
-        : [{ dayOfWeek: r.dayOfWeek, isActive: false, startTime: null, endTime: null, slotIndex: 0 }]
-    );
+    const rules: { dayOfWeek: number; isActive: boolean; startTime: string | null; endTime: string | null; slotIndex?: number }[] =
+      weeklyRules.flatMap(r =>
+        r.isActive && r.blocks.length > 0
+          ? r.blocks.map((b, i) => ({ dayOfWeek: r.dayOfWeek, isActive: true as boolean, startTime: b.startTime as string | null, endTime: b.endTime as string | null, slotIndex: i }))
+          : [{ dayOfWeek: r.dayOfWeek, isActive: false as boolean, startTime: null as string | null, endTime: null as string | null, slotIndex: 0 }]
+      );
     try {
       await saveTemplate.mutateAsync({
         name: 'Varsayılan Program',
@@ -322,6 +323,25 @@ export default function AvailabilityPage() {
           <Button variant={activeTab === 'calendar' ? 'default' : 'outline'} onClick={() => setActiveTab('calendar')} size="sm">
             <CalendarIcon className="w-4 h-4 mr-1" /> Takvim
           </Button>
+        </div>
+      </div>
+
+      {/* Info Banner */}
+      <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+        <CalendarIcon className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+        <div>
+          <p className="text-sm text-blue-800 font-medium">Varsayilan Musaitlik Programi</p>
+          <p className="text-xs text-blue-600 mt-1">
+            Bu program, ozel musaitlik programi tanimlanmamis paketlere uygulanir.
+            Paketlerinize ozel program tanimlamak icin{' '}
+            <button
+              onClick={() => router.push('/mentor/offerings')}
+              className="underline hover:text-blue-800 font-medium"
+            >
+              Paketlerim
+            </button>{' '}
+            sayfasini ziyaret edin.
+          </p>
         </div>
       </div>
 

@@ -54,10 +54,12 @@ export default function NewBookingContent() {
   }));
 
   // Availability slots (big blocks) - for calendar date highlighting
+  // offeringId ile filtreleme: sadece o offering'in template'ine ait günler yeşil görünür
   const { data: slots = [], isLoading: isSlotsLoading } = useMentorAvailability(
     mentorId,
     dateRange.from,
-    dateRange.to
+    dateRange.to,
+    offeringId || undefined
   );
 
   // State

@@ -25,6 +25,7 @@ export interface OfferingDto {
   minNoticeHours: number;
   sortOrder: number;
   coverImageUrl?: string;
+  availabilityTemplateId?: string;
   questionCount: number;
   questions: OfferingQuestion[];
 }

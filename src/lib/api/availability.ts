@@ -38,6 +38,17 @@ export interface AvailabilityTemplateDto {
   overrides: AvailabilityOverrideDto[];
 }
 
+export interface OfferingAvailabilityTemplateDto {
+  templateId: string;
+  name: string;
+  timezone: string;
+  isDefault: boolean;
+  hasCustomSchedule: boolean;
+  settings: AvailabilitySettingsDto;
+  rules: AvailabilityRuleDto[];
+  overrides: AvailabilityOverrideDto[];
+}
+
 export interface SaveTemplateRequest {
   name?: string;
   timezone?: string;
@@ -67,8 +78,8 @@ export interface ComputedTimeSlot {
 
 export const availabilityApi = {
   // ---- Existing Slot APIs ----
-  getMentorSlots: async (mentorId: string, from?: string, to?: string): Promise<AvailabilitySlot[]> => {
-    return apiClient.get<AvailabilitySlot[]>(`/mentors/${mentorId}/availability`, { from, to });
+  getMentorSlots: async (mentorId: string, from?: string, to?: string, offeringId?: string): Promise<AvailabilitySlot[]> => {
+    return apiClient.get<AvailabilitySlot[]>(`/mentors/${mentorId}/availability`, { from, to, offeringId });
   },
 
   // ---- Computed Time Slots (offering duration + buffer dikkate alınır) ----
@@ -88,7 +99,7 @@ export const availabilityApi = {
     return apiClient.delete(`/mentors/me/availability/${slotId}`);
   },
 
-  // ---- Template APIs (NEW) ----
+  // ---- Template APIs ----
   getTemplate: async (): Promise<AvailabilityTemplateDto | null> => {
     return apiClient.get<AvailabilityTemplateDto | null>('/mentors/me/availability/template');
   },
@@ -103,5 +114,18 @@ export const availabilityApi = {
 
   deleteOverride: async (overrideId: string): Promise<void> => {
     return apiClient.delete(`/mentors/me/availability/override/${overrideId}`);
+  },
+
+  // ---- Offering-level Availability Template APIs ----
+  getOfferingTemplate: async (offeringId: string): Promise<OfferingAvailabilityTemplateDto> => {
+    return apiClient.get<OfferingAvailabilityTemplateDto>(`/offerings/${offeringId}/availability-template`);
+  },
+
+  saveOfferingTemplate: async (offeringId: string, data: SaveTemplateRequest): Promise<{ templateId: string }> => {
+    return apiClient.put(`/offerings/${offeringId}/availability-template`, data);
+  },
+
+  deleteOfferingTemplate: async (offeringId: string): Promise<void> => {
+    return apiClient.delete(`/offerings/${offeringId}/availability-template`);
   },
 };
