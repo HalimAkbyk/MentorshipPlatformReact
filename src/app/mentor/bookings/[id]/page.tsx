@@ -438,47 +438,73 @@ export default function MentorBookingDetailPage() {
                 </Button>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Date Picker */}
+                {/* Date Selection - Horizontal scrollable date buttons */}
                 <div>
                   <label className="text-sm font-medium mb-2 block">Tarih Secin</label>
-                  <input
-                    type="date"
-                    value={rescheduleDate}
-                    onChange={(e) => setRescheduleDate(e.target.value)}
-                    min={format(new Date(Date.now() + 2 * 60 * 60 * 1000), 'yyyy-MM-dd')}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-                  />
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    {Array.from({ length: 30 }, (_, i) => {
+                      const d = new Date();
+                      d.setDate(d.getDate() + i + 1);
+                      const dateStr = format(d, 'yyyy-MM-dd');
+                      const isSelected = rescheduleDate === dateStr;
+                      return (
+                        <button
+                          key={dateStr}
+                          onClick={() => setRescheduleDate(dateStr)}
+                          className={`flex-shrink-0 flex flex-col items-center px-3 py-2 rounded-lg border text-xs transition-colors ${
+                            isSelected
+                              ? 'bg-primary-600 text-white border-primary-600'
+                              : 'bg-white text-gray-700 border-gray-200 hover:border-primary-400 hover:bg-primary-50'
+                          }`}
+                        >
+                          <span className="font-medium">{format(d, 'dd', { locale: tr })}</span>
+                          <span className={isSelected ? 'text-primary-100' : 'text-gray-500'}>{format(d, 'MMM', { locale: tr })}</span>
+                          <span className={`text-[10px] ${isSelected ? 'text-primary-100' : 'text-gray-400'}`}>{format(d, 'EEE', { locale: tr })}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Time Slots */}
                 {rescheduleDate && (
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Musait Saatler</label>
+                    <label className="text-sm font-medium mb-2 block">
+                      {format(new Date(rescheduleDate + 'T00:00:00'), 'dd MMMM yyyy, EEEE', { locale: tr })} - Musait Saatler
+                    </label>
                     {loadingSlots ? (
                       <div className="text-center py-4">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto" />
-                        <p className="text-sm text-gray-500 mt-2">Yukleniyor...</p>
+                        <p className="text-sm text-gray-500 mt-2">Uygun saatler hesaplaniyor...</p>
                       </div>
                     ) : rescheduleSlots.length === 0 ? (
-                      <p className="text-sm text-gray-500 text-center py-4">
-                        Bu tarihte musait slot yok. Baska bir tarih secin.
-                      </p>
+                      <div className="text-center py-6 text-gray-500">
+                        <Calendar className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                        <p className="text-sm font-medium">Bu tarihte musait saat yok</p>
+                        <p className="text-xs mt-1">Baska bir tarih secin</p>
+                      </div>
                     ) : (
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                         {rescheduleSlots.map((slot) => {
-                          const slotTime = format(new Date(slot.startAt), 'HH:mm');
+                          const startTime = format(new Date(slot.startAt), 'HH:mm');
+                          const endTime = format(new Date(slot.endAt), 'HH:mm');
                           const isSelected = selectedSlot?.startAt === slot.startAt;
                           return (
                             <button
                               key={slot.startAt}
                               onClick={() => setSelectedSlot(slot)}
-                              className={`px-3 py-2 text-sm rounded-md border transition-colors ${
+                              className={`p-2 rounded-lg border-2 transition-all text-center ${
                                 isSelected
-                                  ? 'bg-primary-600 text-white border-primary-600'
-                                  : 'bg-white text-gray-700 border-gray-300 hover:border-primary-400 hover:bg-primary-50'
+                                  ? 'border-primary-600 bg-primary-50 shadow-sm'
+                                  : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'
                               }`}
                             >
-                              {slotTime}
+                              <div className={`text-sm font-semibold ${isSelected ? 'text-primary-700' : 'text-gray-900'}`}>
+                                {startTime}
+                              </div>
+                              <div className={`text-[10px] ${isSelected ? 'text-primary-500' : 'text-gray-400'}`}>
+                                {endTime}
+                              </div>
                             </button>
                           );
                         })}
@@ -491,7 +517,7 @@ export default function MentorBookingDetailPage() {
                 {selectedSlot && (
                   <div className="bg-primary-50 border border-primary-200 rounded-lg p-3">
                     <p className="text-sm font-medium text-primary-900">
-                      Secilen: {format(new Date(selectedSlot.startAt), 'dd MMMM yyyy, HH:mm', { locale: tr })}
+                      Secilen: {format(new Date(selectedSlot.startAt), 'dd MMMM yyyy, HH:mm', { locale: tr })} - {format(new Date(selectedSlot.endAt), 'HH:mm')}
                     </p>
                     <p className="text-xs text-primary-700 mt-1">
                       Ogrenci onayladiktan sonra seans saati guncellenecektir.
