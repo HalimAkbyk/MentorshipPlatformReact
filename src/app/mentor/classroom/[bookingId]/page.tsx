@@ -169,6 +169,24 @@ export default function MentorClassroomPage() {
   // Reset unread when chat opens
   useEffect(() => { if (isChatOpen) setUnreadCount(0); }, [isChatOpen]);
 
+  // ─── Booking Status Check on Mount ───
+  useEffect(() => {
+    const checkBookingStatus = async () => {
+      try {
+        const resp = await apiClient.get(`/bookings/${bookingId}`);
+        const data = (resp as any)?.data ?? resp;
+        const status = data?.status;
+        if (status && status !== 'Confirmed') {
+          toast.error('Bu seans iptal edilmis veya tamamlanmis.');
+          router.push('/mentor/bookings');
+        }
+      } catch (e) {
+        console.error('Booking status check failed:', e);
+      }
+    };
+    checkBookingStatus();
+  }, [bookingId, router]);
+
   // Duration timer
   useEffect(() => {
     const interval = setInterval(() => setDuration(prev => prev + 1), 1000);
@@ -569,12 +587,27 @@ export default function MentorClassroomPage() {
 
   // ─── End Session ───
   const endSession = async () => {
+    // 1) Video room'u kapat
     try { await apiClient.post(`/video/room/${bookingId}/end`); } catch {}
     try { roomRef.current?.disconnect(); } catch {}
     fullDisconnect();
-    try { await apiClient.post(`/bookings/${bookingId}/complete`); } catch {}
-    toast.success('Seans sonlandırıldı');
-    router.push('/mentor/bookings');
+
+    // 2) Booking'i complete et
+    try {
+      const result = await apiClient.post(`/bookings/${bookingId}/complete`);
+      // Basarili — seans tamamlandi
+      toast.success('Seans tamamlandi');
+      router.push('/mentor/bookings');
+    } catch (e: any) {
+      // Erken sonlandirma — seans suresi dolmamis
+      const errorMsg = e?.response?.data?.errors?.[0] || e?.message || '';
+      if (errorMsg.includes('henüz dolmadı') || errorMsg.includes('dolmad')) {
+        toast.warning('Video oturumu sonlandirildi ancak seans suresi dolmadi. Odayi tekrar aktiflestirebilirsiniz.');
+      } else {
+        toast.warning('Video oturumu sonlandirildi: ' + errorMsg);
+      }
+      router.push('/mentor/bookings');
+    }
   };
 
   // ─── Mentor Host Controls ───

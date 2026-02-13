@@ -71,13 +71,16 @@ export interface Booking {
   mentorUserId: string;
   mentorName: string;
   mentorAvatar?: string;
+  studentUserId: string;
+  studentName: string;
+  studentAvatar?: string;
   startAt: string;
   endAt: string;
   durationMin: number;
   status: BookingStatus;
   price: number;
   currency: string;
-  // NOT: Backend'de studentName yok, sadece detail'de var
+  hasPendingReschedule: boolean;
 }
 
 export interface BookingQuestionResponseDetail {
@@ -95,6 +98,7 @@ export interface BookingDetail {
   mentorUserId: string;
   mentorName: string;
   mentorAvatar?: string;
+  offeringId: string;
   startAt: string;
   endAt: string;
   durationMin: number;
@@ -104,6 +108,12 @@ export interface BookingDetail {
   currency: string;
   cancellationReason?: string;
   hasReview?: boolean;
+  // Reschedule bilgileri
+  rescheduleCountStudent: number;
+  rescheduleCountMentor: number;
+  pendingRescheduleStartAt?: string;
+  pendingRescheduleEndAt?: string;
+  pendingRescheduleRequestedBy?: string;
   createdAt: string;
   questionResponses?: BookingQuestionResponseDetail[];
 }

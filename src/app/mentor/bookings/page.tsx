@@ -34,14 +34,14 @@ export default function MentorBookingsPage() {
     const now = new Date();
     const start = new Date(booking.startAt);
     const end = new Date(booking.endAt);
-    return true;//now >= start && now <= end && booking.status === BookingStatus.Confirmed;
+    return now >= start && now <= end && booking.status === BookingStatus.Confirmed;
   };
 
   const canJoinSoon = (booking: Booking): boolean => {
     const now = new Date();
     const start = new Date(booking.startAt);
     const minutesUntilStart = (start.getTime() - now.getTime()) / (1000 * 60);
-    return true;//minutesUntilStart <= 10 && minutesUntilStart > 0 && booking.status === BookingStatus.Confirmed;
+    return minutesUntilStart <= 10 && minutesUntilStart > 0 && booking.status === BookingStatus.Confirmed;
   };
 
   return (
@@ -153,7 +153,7 @@ export default function MentorBookingsPage() {
 
                   <CardContent className="pt-0 mt-auto">
                     <div className="flex gap-2">
-                      {(isLive || canJoin) && (
+                      {booking.status === BookingStatus.Confirmed && (isLive || canJoin) && (
                         <Link href={`/mentor/classroom/${booking.id}`} className="flex-1">
                           <Button className="w-full" variant={isLive ? "default" : "outline"}>
                             <Video className="w-4 h-4 mr-2" />
@@ -168,7 +168,7 @@ export default function MentorBookingsPage() {
                           </Button>
                         </Link>
                       )}
-                      {booking.status === BookingStatus.Completed && (
+                      {(booking.status === BookingStatus.Completed || booking.status === BookingStatus.Cancelled) && (
                         <Link href={`/mentor/bookings/${booking.id}`} className="flex-1">
                           <Button variant="outline" className="w-full">
                             <CheckCircle className="w-4 h-4 mr-2" />

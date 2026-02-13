@@ -32,4 +32,16 @@ export const bookingsApi = {
   cancel: async (id: string, reason: string): Promise<void> => {
     return apiClient.post(`/bookings/${id}/cancel`, { reason });
   },
+
+  reschedule: async (id: string, newStartAt: string): Promise<void> => {
+    return apiClient.post(`/bookings/${id}/reschedule`, { newStartAt });
+  },
+
+  approveReschedule: async (id: string): Promise<void> => {
+    return apiClient.post(`/bookings/${id}/reschedule/approve`);
+  },
+
+  rejectReschedule: async (id: string): Promise<void> => {
+    return apiClient.post(`/bookings/${id}/reschedule/reject`);
+  },
 };

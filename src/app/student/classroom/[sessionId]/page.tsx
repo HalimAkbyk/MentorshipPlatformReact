@@ -453,6 +453,20 @@ export default function StudentClassroomPage() {
     const join = async () => {
       setIsConnecting(true);
       try {
+        // Booking status kontrolu — iptal edilen/tamamlanan seansa girilmemeli
+        try {
+          const bookingResp = await apiClient.get(`/bookings/${sessionId}`);
+          const bookingData = (bookingResp as any)?.data ?? bookingResp;
+          const bookingStatus = bookingData?.status;
+          if (bookingStatus && bookingStatus !== 'Confirmed') {
+            toast.error('Bu seans iptal edilmis veya tamamlanmis.');
+            router.push('/student/bookings');
+            return;
+          }
+        } catch (e) {
+          console.error('Booking status check failed:', e);
+        }
+
         console.log('🎬 Student joining room:', sessionId, 'attempt:', attemptId);
 
         const resp = await apiClient.post<{ token: string; roomName: string }>('/video/token', {
