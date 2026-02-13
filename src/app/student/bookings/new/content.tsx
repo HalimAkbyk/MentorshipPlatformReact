@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { format, isSameDay, startOfMonth, endOfMonth, addMonths, parseISO } from 'date-fns';
+import { format, isSameDay, startOfMonth, endOfMonth, addMonths, parseISO, startOfDay, isBefore, isToday } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { differenceInMinutes } from 'date-fns';
 import {
@@ -76,6 +76,18 @@ export default function NewBookingContent() {
     setCalendarReady(true);
   }, []);
 
+  // Block past date selection - redirect back to calendar with warning
+  useEffect(() => {
+    if (selectedDate && step !== 'select-date') {
+      if (isBefore(startOfDay(selectedDate), startOfDay(new Date()))) {
+        toast.error('Geçmiş tarihli bir slot seçemezsiniz. Lütfen geçerli bir tarih seçin.');
+        setStep('select-date');
+        setSelectedDate(null);
+        setSelectedSlot(null);
+      }
+    }
+  }, [selectedDate, step]);
+
   // Set offering from mentor data
   useEffect(() => {
     if (mentor?.offerings) {
@@ -88,21 +100,30 @@ export default function NewBookingContent() {
     }
   }, [mentor, offeringId]);
 
-  // Calculate available dates from slots
+  // Calculate available dates from slots (only future slots)
   const availableDates = useMemo(() => {
+    const now = new Date();
+    const todayStr = format(now, 'yyyy-MM-dd');
     const dateMap = new Map<string, number>();
     slots.forEach((slot) => {
-      const dateKey = format(parseISO(slot.startAt), 'yyyy-MM-dd');
+      const slotStart = parseISO(slot.startAt);
+      // Skip slots that have already passed
+      if (slotStart <= now) return;
+      const dateKey = format(slotStart, 'yyyy-MM-dd');
       dateMap.set(dateKey, (dateMap.get(dateKey) || 0) + 1);
     });
     return dateMap;
   }, [slots]);
 
-  // Slots for the selected date
+  // Slots for the selected date (only future slots)
   const slotsForDate = useMemo(() => {
     if (!selectedDate) return [];
+    const now = new Date();
     return slots
-      .filter((slot) => isSameDay(parseISO(slot.startAt), selectedDate))
+      .filter((slot) => {
+        const slotStart = parseISO(slot.startAt);
+        return isSameDay(slotStart, selectedDate) && slotStart > now;
+      })
       .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
   }, [slots, selectedDate]);
 
@@ -136,6 +157,11 @@ export default function NewBookingContent() {
   const handleDateClick = useCallback((info: any) => {
     const clickedDate = new Date(info.dateStr);
     const dateKey = info.dateStr;
+    // Block past date clicks
+    if (isBefore(startOfDay(clickedDate), startOfDay(new Date()))) {
+      toast.error('Geçmiş tarihli bir gün seçemezsiniz');
+      return;
+    }
     if (availableDates.has(dateKey)) {
       setSelectedDate(clickedDate);
       setSelectedSlot(null);
@@ -178,6 +204,15 @@ export default function NewBookingContent() {
   const handleSubmit = async () => {
     if (!selectedOffering || !selectedSlot || !user) {
       toast.error('Eksik bilgi var');
+      return;
+    }
+
+    // Final safety check: block past slot booking
+    if (new Date(selectedSlot.startAt) <= new Date()) {
+      toast.error('Bu slot artık geçmiş bir zamanda. Lütfen başka bir saat seçin.');
+      setStep('select-date');
+      setSelectedDate(null);
+      setSelectedSlot(null);
       return;
     }
 
@@ -440,6 +475,7 @@ export default function NewBookingContent() {
                         </p>
                         <div className="flex flex-wrap gap-1.5">
                           {Array.from(availableDates.entries())
+                            .filter(([dateStr]) => !isBefore(startOfDay(new Date(dateStr)), startOfDay(new Date())))
                             .sort(([a], [b]) => a.localeCompare(b))
                             .slice(0, 10)
                             .map(([dateStr, count]) => (
