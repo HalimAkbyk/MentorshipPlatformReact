@@ -13,6 +13,7 @@ dist/
 # Environment
 .env
 .env.*
+!.env.production
 *.local
 src/env.local
 
