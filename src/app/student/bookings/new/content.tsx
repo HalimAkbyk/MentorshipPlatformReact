@@ -23,6 +23,7 @@ import { useMentor } from '../../../../lib/hooks/use-mentors';
 import { useMentorAvailability, useAvailableTimeSlots } from '../../../../lib/hooks/use-availability';
 import { useCreateBooking } from '../../../../lib/hooks/use-bookings';
 import { paymentsApi } from '../../../../lib/api/payments';
+import { bookingsApi } from '../../../../lib/api/bookings';
 import { useAuthStore } from '../../../../lib/stores/auth-store';
 import { formatCurrency } from '../../../../lib/utils/format';
 import { toast } from 'sonner';
@@ -78,6 +79,7 @@ export default function NewBookingContent() {
   // Checkout form state
   const [showCheckoutForm, setShowCheckoutForm] = useState(false);
   const [checkoutFormHtml, setCheckoutFormHtml] = useState<string>('');
+  const [pendingBookingId, setPendingBookingId] = useState<string | null>(null);
 
   // Computed time slots for selected date (fetched from backend with buffer/duration logic)
   const selectedDateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null;
@@ -247,6 +249,9 @@ export default function NewBookingContent() {
         questionResponses: qResponses.length > 0 ? qResponses : undefined,
       });
 
+      // Booking ID'yi sakla (ödeme iptal edilirse cancel için)
+      setPendingBookingId(bookingResult.bookingId);
+
       const orderResult = await paymentsApi.createOrder({
         type: 'Booking',
         resourceId: bookingResult.bookingId,
@@ -272,10 +277,22 @@ export default function NewBookingContent() {
     }
   };
 
-  const handleCloseCheckoutForm = () => {
+  const handleCloseCheckoutForm = async () => {
     setShowCheckoutForm(false);
     setCheckoutFormHtml('');
-    toast.info('Odeme iptal edildi');
+
+    // Ödeme iptal edilince PendingPayment booking'i de iptal et
+    if (pendingBookingId) {
+      try {
+        await bookingsApi.cancel(pendingBookingId, 'Ödeme kullanıcı tarafından iptal edildi');
+        setPendingBookingId(null);
+      } catch (err) {
+        console.error('Booking cancel error:', err);
+        // Hata olsa bile kullanıcıyı bilgilendir
+      }
+    }
+
+    toast.info('Ödeme iptal edildi. Tekrar deneyebilirsiniz.');
   };
 
   if (isMentorLoading) {
