@@ -63,18 +63,20 @@ export default function LoginPage() {
       setIsLoading(true);
       const result = await externalLogin({ provider, token, displayName });
 
+      // New user — needs role selection → redirect to signup
+      if (result.pendingToken) {
+        toast.info('Lutfen kayit sayfasindan rol seciniz');
+        router.push('/auth/signup');
+        return;
+      }
+
       if (result.isNewUser) {
         toast.success('Hesabiniz olusturuldu!');
       }
 
       navigateAfterAuth();
-    } catch (e: any) {
-      // ROLE_REQUIRED → yeni kullanıcı, rol seçmesi lazım → signup'a yönlendir
-      const errorMsg = e?.response?.data?.errors?.[0] || e?.message || '';
-      if (errorMsg.startsWith('ROLE_REQUIRED')) {
-        toast.info('Lutfen kayit sayfasindan rol seciniz');
-        router.push('/auth/signup');
-      }
+    } catch {
+      // Error handled by global interceptor
     } finally {
       setIsLoading(false);
     }

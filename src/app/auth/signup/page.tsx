@@ -85,18 +85,21 @@ export default function SignupPage() {
         initialRole: selectedRole,
       });
 
+      // Shouldn't normally get pendingToken on signup (we always send role),
+      // but handle gracefully
+      if (result.pendingToken) {
+        setPendingSocial({ provider, token: result.pendingToken, displayName });
+        toast.info('Lutfen rol seciniz ve tekrar deneyin');
+        return;
+      }
+
       if (result.isNewUser) {
         toast.success('Hesabiniz olusturuldu!');
       }
 
       navigateAfterAuth();
-    } catch (e: any) {
-      const errorMsg = e?.response?.data?.errors?.[0] || e?.message || '';
-      if (errorMsg.startsWith('ROLE_REQUIRED')) {
-        // Shouldn't happen on signup (we always send role), but handle gracefully
-        setPendingSocial({ provider, token, displayName });
-        toast.info('Lutfen rol seciniz ve tekrar deneyin');
-      }
+    } catch {
+      // Error handled by global interceptor
     } finally {
       setIsLoading(false);
     }

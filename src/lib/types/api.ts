@@ -51,6 +51,7 @@ export interface ExternalLoginResponse {
   refreshToken: string;
   roles: UserRole[];
   isNewUser: boolean;
+  pendingToken?: string;
 }
 
 // Mentors

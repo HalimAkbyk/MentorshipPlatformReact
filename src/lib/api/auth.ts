@@ -69,13 +69,16 @@ setRolesCookie(response.roles);
   externalLogin: async (data: ExternalLoginRequest): Promise<ExternalLoginResponse> => {
     const response = await apiClient.post<ExternalLoginResponse>('/auth/external-login', data);
 
-    localStorage.setItem('accessToken', response.accessToken);
-    localStorage.setItem('refreshToken', response.refreshToken);
+    // Only store tokens if this is a real login (not a ROLE_REQUIRED pendingToken response)
+    if (response.accessToken) {
+      localStorage.setItem('accessToken', response.accessToken);
+      localStorage.setItem('refreshToken', response.refreshToken);
 
-    setCookie('accessToken', response.accessToken);
-    setCookie('refreshToken', response.refreshToken);
+      setCookie('accessToken', response.accessToken);
+      setCookie('refreshToken', response.refreshToken);
 
-    setRolesCookie(response.roles);
+      setRolesCookie(response.roles);
+    }
 
     return response;
   },

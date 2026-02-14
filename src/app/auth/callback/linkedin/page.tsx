@@ -63,26 +63,22 @@ export default function LinkedInCallbackPage() {
         redirectUri,
       });
 
+      // New user — backend returned pendingToken, need role selection
+      if (result.pendingToken) {
+        setPendingToken(result.pendingToken);
+        setShowRoleSelect(true);
+        setIsLoading(false);
+        return;
+      }
+
       if (result.isNewUser) {
         toast.success('Hesabiniz olusturuldu!');
       }
 
       navigateAfterAuth();
-    } catch (e: any) {
-      const errorMsg = e?.response?.data?.errors?.[0] || e?.message || '';
-      if (errorMsg.startsWith('ROLE_REQUIRED')) {
-        // New user → need role selection
-        // Backend returns "ROLE_REQUIRED:providerAccessToken" so we can retry
-        // without the one-time auth code
-        const parts = errorMsg.split(':');
-        const extractedToken = parts.length > 1 ? parts.slice(1).join(':') : '';
-        setPendingToken(extractedToken);
-        setShowRoleSelect(true);
-        setIsLoading(false);
-      } else {
-        setError('LinkedIn girisi basarisiz oldu. Lutfen tekrar deneyin.');
-        setIsLoading(false);
-      }
+    } catch {
+      setError('LinkedIn girisi basarisiz oldu. Lutfen tekrar deneyin.');
+      setIsLoading(false);
     }
   };
 

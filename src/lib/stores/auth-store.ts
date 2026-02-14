@@ -14,6 +14,7 @@ interface ExternalLoginParams {
 
 interface ExternalLoginResult {
   isNewUser: boolean;
+  pendingToken?: string;
 }
 
 interface AuthState {
@@ -155,6 +156,12 @@ export const useAuthStore = create<AuthState>()(
           displayName: params.displayName,
           initialRole: params.initialRole as any,
         });
+
+        // If backend returned a pendingToken, this is a ROLE_REQUIRED response
+        // — don't set user/auth state, just pass the token back to the caller
+        if (response.pendingToken) {
+          return { isNewUser: false, pendingToken: response.pendingToken };
+        }
 
         set({
           user: mapUserFromResponse({
