@@ -4,33 +4,57 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { Menu, X, Settings, LogOut, ChevronDown, Search, BookOpen, LayoutDashboard, Eye, HelpCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { UserRole } from '@/lib/types/enums';
 import { cn } from '@/lib/utils/cn';
 
+type NavLink = { href: string; label: string; icon?: React.ReactNode };
+
 export function Header() {
   const pathname = usePathname();
   const { user, isAuthenticated, logout } = useAuthStore();
   const isAdmin = user?.roles.includes(UserRole.Admin);
   const isMentor = user?.roles.includes(UserRole.Mentor);
+  const isStudent = user?.roles.includes(UserRole.Student);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isActive = (href: string) => pathname === href || pathname?.startsWith(href + '/');
 
-  const panelHref = isAdmin ? "/admin/dashboard" : isMentor ? "/mentor/dashboard" : "/student/dashboard";
-  const settingsHref = isAdmin ? "/admin/dashboard" : isMentor ? "/mentor/settings" : "/student/settings";
+  const panelHref = isAdmin ? '/admin/dashboard' : isMentor ? '/mentor/dashboard' : '/student/dashboard';
+  const settingsHref = isAdmin ? '/admin/dashboard' : isMentor ? '/mentor/settings' : '/student/settings';
 
-  const navLinks = [
+  // --- Role-based nav links ---
+  const publicLinks: NavLink[] = [
     { href: '/public/mentors', label: 'Mentorler' },
     { href: '/public/how-it-works', label: 'Nasil Calisir' },
     { href: '/public/pricing', label: 'Fiyatlandirma' },
     { href: '/auth/signup?role=mentor', label: 'Mentor Ol' },
   ];
+
+  const studentLinks: NavLink[] = [
+    { href: '/student/dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
+    { href: '/student/bookings', label: 'Rezervasyonlarim', icon: <BookOpen className="w-4 h-4" /> },
+    { href: '/public/mentors', label: 'Mentor Bul', icon: <Search className="w-4 h-4" /> },
+  ];
+
+  const mentorLinks: NavLink[] = [
+    { href: `/public/mentors/${user?.id || ''}`, label: 'Profilimi Gor', icon: <Eye className="w-4 h-4" /> },
+    { href: '/public/mentors', label: 'Mentorler', icon: <Search className="w-4 h-4" /> },
+    { href: '/public/support', label: 'Yardim', icon: <HelpCircle className="w-4 h-4" /> },
+  ];
+
+  const navLinks = isAuthenticated
+    ? isAdmin
+      ? publicLinks // Admin keeps public nav
+      : isMentor
+        ? mentorLinks
+        : studentLinks
+    : publicLinks;
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -66,12 +90,13 @@ export function Header() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                  'px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5',
                   isActive(link.href)
                     ? 'text-primary-500 bg-primary-50'
                     : 'text-gray-700 hover:text-primary-500 hover:bg-gray-50'
                 )}
               >
+                {isAuthenticated && link.icon}
                 {link.label}
               </Link>
             ))}
@@ -181,13 +206,14 @@ export function Header() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  'px-4 py-3 rounded-lg text-sm font-medium',
+                  'px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-2',
                   isActive(link.href)
                     ? 'text-primary-500 bg-primary-50'
                     : 'text-gray-700 hover:bg-gray-50'
                 )}
                 onClick={() => setMobileMenuOpen(false)}
               >
+                {isAuthenticated && link.icon}
                 {link.label}
               </Link>
             ))}
