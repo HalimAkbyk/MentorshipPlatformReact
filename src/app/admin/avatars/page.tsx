@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Pencil, Trash2, Eye, EyeOff, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Plus, Pencil, Trash2, Eye, EyeOff, Image as ImageIcon, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,15 +11,21 @@ import { adminAvatarApi, type AdminPresetAvatar } from '@/lib/api/user';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils/cn';
 
+const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
 export default function AdminAvatarsPage() {
   const [avatars, setAvatars] = useState<AdminPresetAvatar[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formUrl, setFormUrl] = useState('');
+  const [editingExistingUrl, setEditingExistingUrl] = useState<string | null>(null);
+  const [formFile, setFormFile] = useState<File | null>(null);
+  const [formFilePreview, setFormFilePreview] = useState<string | null>(null);
   const [formLabel, setFormLabel] = useState('');
   const [formSortOrder, setFormSortOrder] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchAvatars = async () => {
     try {
@@ -35,38 +41,87 @@ export default function AdminAvatarsPage() {
 
   useEffect(() => { fetchAvatars(); }, []);
 
+  // Cleanup preview URL on unmount or change
+  useEffect(() => {
+    return () => {
+      if (formFilePreview) URL.revokeObjectURL(formFilePreview);
+    };
+  }, [formFilePreview]);
+
   const resetForm = () => {
     setShowForm(false);
     setEditingId(null);
-    setFormUrl('');
+    setEditingExistingUrl(null);
+    setFormFile(null);
+    if (formFilePreview) URL.revokeObjectURL(formFilePreview);
+    setFormFilePreview(null);
     setFormLabel('');
     setFormSortOrder(avatars.length);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      toast.error('Gecersiz dosya tipi. JPG, PNG, GIF, WebP veya SVG yukleyin.');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('Dosya boyutu 2MB dan buyuk olamaz.');
+      e.target.value = '';
+      return;
+    }
+
+    if (formFilePreview) URL.revokeObjectURL(formFilePreview);
+    setFormFile(file);
+    setFormFilePreview(URL.createObjectURL(file));
+  };
+
+  const clearFile = () => {
+    setFormFile(null);
+    if (formFilePreview) URL.revokeObjectURL(formFilePreview);
+    setFormFilePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleSubmit = async () => {
-    if (!formUrl.trim() || !formLabel.trim()) {
-      toast.error('URL ve etiket zorunludur');
+    if (!formLabel.trim()) {
+      toast.error('Etiket zorunludur');
       return;
     }
+
+    if (!editingId && !formFile) {
+      toast.error('Lütfen bir avatar dosyasi secin');
+      return;
+    }
+
     try {
       setSubmitting(true);
+
       if (editingId) {
+        // Update metadata (label, sortOrder)
         const existing = avatars.find(a => a.id === editingId);
         await adminAvatarApi.update(editingId, {
-          url: formUrl,
           label: formLabel,
           sortOrder: formSortOrder,
           isActive: existing?.isActive ?? true,
         });
+
+        // If a new file was selected, update the image separately
+        if (formFile) {
+          await adminAvatarApi.updateImage(editingId, formFile);
+        }
+
         toast.success('Avatar guncellendi');
       } else {
-        await adminAvatarApi.create({
-          url: formUrl,
-          label: formLabel,
-          sortOrder: formSortOrder,
-        });
+        // Create new avatar with file upload
+        await adminAvatarApi.create(formFile!, formLabel, formSortOrder);
         toast.success('Avatar eklendi');
       }
+
       resetForm();
       fetchAvatars();
     } catch {
@@ -79,7 +134,6 @@ export default function AdminAvatarsPage() {
   const handleToggleActive = async (avatar: AdminPresetAvatar) => {
     try {
       await adminAvatarApi.update(avatar.id, {
-        url: avatar.url,
         label: avatar.label,
         sortOrder: avatar.sortOrder,
         isActive: !avatar.isActive,
@@ -104,11 +158,18 @@ export default function AdminAvatarsPage() {
 
   const handleEdit = (avatar: AdminPresetAvatar) => {
     setEditingId(avatar.id);
-    setFormUrl(avatar.url);
+    setEditingExistingUrl(avatar.url);
+    setFormFile(null);
+    if (formFilePreview) URL.revokeObjectURL(formFilePreview);
+    setFormFilePreview(null);
     setFormLabel(avatar.label);
     setFormSortOrder(avatar.sortOrder);
     setShowForm(true);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
+
+  // The preview image to show in the form
+  const previewSrc = formFilePreview || editingExistingUrl;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -138,25 +199,71 @@ export default function AdminAvatarsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-start gap-4">
-              {formUrl && (
-                <Avatar className="w-16 h-16 border-2 border-gray-200">
-                  <AvatarImage src={formUrl} />
-                  <AvatarFallback>?</AvatarFallback>
-                </Avatar>
-              )}
+              {/* Preview */}
+              <div className="shrink-0">
+                {previewSrc ? (
+                  <Avatar className="w-20 h-20 border-2 border-gray-200">
+                    <AvatarImage src={previewSrc} />
+                    <AvatarFallback>?</AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <div className="w-20 h-20 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+                    <ImageIcon className="w-8 h-8 text-gray-300" />
+                  </div>
+                )}
+              </div>
+
               <div className="flex-1 space-y-3">
+                {/* File Upload */}
                 <div>
-                  <label className="block text-sm font-medium mb-1">Avatar URL</label>
-                  <Input
-                    value={formUrl}
-                    onChange={(e) => setFormUrl(e.target.value)}
-                    placeholder="https://api.dicebear.com/9.x/avataaars/svg?seed=Felix"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Resim URL si girin (DiceBear, Gravatar, vs.)</p>
+                  <label className="block text-sm font-medium mb-1">
+                    Avatar Dosyasi {!editingId && <span className="text-red-500">*</span>}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {formFile ? 'Dosya Degistir' : 'Dosya Sec'}
+                    </Button>
+                    {formFile && (
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <span className="truncate max-w-[200px]">{formFile.name}</span>
+                        <span className="text-xs text-gray-400">
+                          ({(formFile.size / 1024).toFixed(0)} KB)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={clearFile}
+                          className="text-gray-400 hover:text-red-500 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    JPG, PNG, GIF, WebP veya SVG. Maks 2MB.
+                    {editingId && !formFile && ' Yeni dosya secmezseniz mevcut resim korunur.'}
+                  </p>
                 </div>
+
+                {/* Label & Sort Order */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Etiket</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Etiket <span className="text-red-500">*</span>
+                    </label>
                     <Input
                       value={formLabel}
                       onChange={(e) => setFormLabel(e.target.value)}

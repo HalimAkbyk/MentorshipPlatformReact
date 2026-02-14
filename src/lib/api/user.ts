@@ -45,12 +45,22 @@ export const adminAvatarApi = {
     return apiClient.get<AdminPresetAvatar[]>('/admin/preset-avatars');
   },
 
-  create: async (data: { url: string; label: string; sortOrder: number }): Promise<AdminPresetAvatar> => {
-    return apiClient.post<AdminPresetAvatar>('/admin/preset-avatars', data);
+  create: async (file: File, label: string, sortOrder: number): Promise<AdminPresetAvatar> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('label', label);
+    formData.append('sortOrder', sortOrder.toString());
+    return apiClient.postForm<AdminPresetAvatar>('/admin/preset-avatars', formData);
   },
 
-  update: async (id: string, data: { url: string; label: string; sortOrder: number; isActive: boolean }): Promise<AdminPresetAvatar> => {
+  update: async (id: string, data: { label: string; sortOrder: number; isActive: boolean }): Promise<AdminPresetAvatar> => {
     return apiClient.put<AdminPresetAvatar>(`/admin/preset-avatars/${id}`, data);
+  },
+
+  updateImage: async (id: string, file: File): Promise<AdminPresetAvatar> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return apiClient.putForm<AdminPresetAvatar>(`/admin/preset-avatars/${id}/image`, formData);
   },
 
   delete: async (id: string): Promise<void> => {

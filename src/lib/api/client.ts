@@ -164,6 +164,15 @@ if (status === 500) {
     });
     return response.data;
   }
+
+  async putForm<T>(url: string, formData: FormData): Promise<T> {
+    const response = await this.client.put<T>(url, formData, {
+      headers: {
+        'Content-Type': undefined,
+      },
+    });
+    return response.data;
+  }
 }
 
 export const apiClient = new ApiClient();
