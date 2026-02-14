@@ -11,6 +11,7 @@ interface AuthState {
   signup: (email: string, password: string, displayName: string, role: string) => Promise<void>;
   logout: () => void;
   initialize: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 type AnyAuthResponse = any;
@@ -128,6 +129,16 @@ export const useAuthStore = create<AuthState>()(
           set({ user: me, isAuthenticated: true });
         } catch {
           // Ignore - basic user info is already set from signup response
+        }
+      },
+
+      refreshUser: async () => {
+        try {
+          const me = await authApi.getMe();
+          authApi.updateRolesCookieFromUser(me);
+          set({ user: me });
+        } catch {
+          // Ignore - user data stays as is
         }
       },
 

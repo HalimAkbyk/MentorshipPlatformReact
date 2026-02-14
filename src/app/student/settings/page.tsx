@@ -49,6 +49,7 @@ const tabs = [
 
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
+  const refreshUser = useAuthStore((state) => state.refreshUser);
   const [activeTab, setActiveTab] = useState('profile');
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -68,9 +69,10 @@ export default function SettingsPage() {
     try {
       setIsUpdating(true);
       await apiClient.patch('/me', data);
-      toast.success('Profil güncellendi');
+      toast.success('Profil guncellendi');
+      refreshUser();
     } catch (error: any) {
-      toast.error(error.response?.data?.errors?.[0] || 'Bir hata oluştu');
+      toast.error(error.response?.data?.errors?.[0] || 'Bir hata olustu');
     } finally {
       setIsUpdating(false);
     }
@@ -97,9 +99,10 @@ export default function SettingsPage() {
       const formData = new FormData();
       formData.append('avatar', file);
       await apiClient.postForm('/me/avatar', formData);
-      toast.success('Profil fotoğrafı güncellendi');
+      toast.success('Profil fotografi guncellendi');
+      refreshUser();
     } catch (error: any) {
-      toast.error('Dosya yüklenirken hata oluştu');
+      toast.error('Dosya yuklenirken hata olustu');
     }
   };
 

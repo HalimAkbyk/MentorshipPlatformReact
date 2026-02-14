@@ -1,22 +1,71 @@
 'use client';
 
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Calendar, Video, Clock, TrendingUp } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Calendar, Video, Clock, TrendingUp, Eye, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useBookings } from '@/lib/hooks/use-bookings';
 import { useAuthStore } from '@/lib/stores/auth-store';
-import { formatDate, formatRelativeTime } from '@/lib/utils/format';
+import { formatDate, formatTime } from '@/lib/utils/format';
 import { BookingStatus } from '@/lib/types/enums';
+import { apiClient } from '@/lib/api/client';
+import { toast } from 'sonner';
+
+interface RoomStatus {
+  isActive: boolean;
+  hostConnected: boolean;
+  participantCount: number;
+}
 
 export default function StudentDashboardPage() {
   const user = useAuthStore((state) => state.user);
+  const router = useRouter();
   const { data: upcomingBookings } = useBookings(BookingStatus.Confirmed);
 
   const nextBooking = upcomingBookings?.[0];
   const profileComplete = Boolean(user?.displayName && user?.birthYear && user?.phone);
+
+  const [roomStatus, setRoomStatus] = useState<RoomStatus | null>(null);
+  const [checkingRoom, setCheckingRoom] = useState(false);
+
+  // Check room status for the next booking
+  const checkRoomStatus = useCallback(async () => {
+    if (!nextBooking || nextBooking.status !== BookingStatus.Confirmed) return;
+    try {
+      setCheckingRoom(true);
+      const response = await apiClient.get<RoomStatus>(`/video/room/${nextBooking.id}/status`);
+      setRoomStatus(response);
+    } catch {
+      setRoomStatus({ isActive: false, hostConnected: false, participantCount: 0 });
+    } finally {
+      setCheckingRoom(false);
+    }
+  }, [nextBooking]);
+
+  useEffect(() => {
+    if (!nextBooking) return;
+    checkRoomStatus();
+    const interval = setInterval(checkRoomStatus, 15000);
+    return () => clearInterval(interval);
+  }, [nextBooking, checkRoomStatus]);
+
+  const canJoinNow = (): boolean => {
+    if (!nextBooking || nextBooking.status !== BookingStatus.Confirmed) return false;
+    return roomStatus?.isActive === true;
+  };
+
+  const handleJoinClass = () => {
+    if (!canJoinNow()) {
+      toast.error('Mentor henuz odayi aktiflestirmedi. Lutfen bekleyin.');
+      return;
+    }
+    router.push(`/student/classroom/${nextBooking!.id}`);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -25,7 +74,7 @@ export default function StudentDashboardPage() {
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <div className="flex items-center space-x-4">
             <Link href="/public/mentors">
-              <Button>Mentör Bul</Button>
+              <Button>Mentor Bul</Button>
             </Link>
             <Avatar>
               <AvatarImage src={user?.avatarUrl} />
@@ -39,29 +88,29 @@ export default function StudentDashboardPage() {
         {/* Welcome */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2">
-            Merhaba, {user?.displayName}! 👋
+            Merhaba, {user?.displayName}!
           </h2>
           <p className="text-gray-600">
-            Bugün harika bir gün, hedeflerine bir adım daha yaklaşmanın zamanı!
+            Bugun harika bir gun, hedeflerine bir adim daha yaklasmanin zamani!
           </p>
         </div>
-        {/* Profil kartı */}
+        {/* Profil karti */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Profil</CardTitle>
             <Link href="/auth/onboarding/student">
               <Button variant={profileComplete ? 'outline' : 'default'}>
-                {profileComplete ? 'Profili Güncelle' : 'Profili Tamamla'}
+                {profileComplete ? 'Profili Guncelle' : 'Profili Tamamla'}
               </Button>
             </Link>
           </CardHeader>
           <CardContent className="text-sm text-gray-700 space-y-1">
             <div><b>Ad:</b> {user?.displayName || '-'}</div>
             <div><b>Telefon:</b> {user?.phone || '-'}</div>
-            <div><b>Doğum yılı:</b> {user?.birthYear || '-'}</div>
+            <div><b>Dogum yili:</b> {user?.birthYear || '-'}</div>
             {!profileComplete && (
               <div className="text-xs text-amber-700 mt-2">
-                Mentor listesinin görünmesi için profil bilgilerini tamamlaman gerekebilir.
+                Mentor listesinin gorunmesi icin profil bilgilerini tamamlaman gerekebilir.
               </div>
             )}
           </CardContent>
@@ -70,7 +119,7 @@ export default function StudentDashboardPage() {
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Yaklaşan Dersler</CardTitle>
+              <CardTitle className="text-sm font-medium">Yaklasan Dersler</CardTitle>
               <Calendar className="h-4 w-4 text-gray-600" />
             </CardHeader>
             <CardContent>
@@ -91,7 +140,7 @@ export default function StudentDashboardPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Aktif Mentörler</CardTitle>
+              <CardTitle className="text-sm font-medium">Aktif Mentorler</CardTitle>
               <TrendingUp className="h-4 w-4 text-gray-600" />
             </CardHeader>
             <CardContent>
@@ -105,7 +154,7 @@ export default function StudentDashboardPage() {
               <TrendingUp className="h-4 w-4 text-gray-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">₺0</div>
+              <div className="text-2xl font-bold">0</div>
             </CardContent>
           </Card>
         </div>
@@ -115,8 +164,8 @@ export default function StudentDashboardPage() {
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle>Yaklaşan Dersler</CardTitle>
-                <CardDescription>Planlanmış mentorluk seanslarınız</CardDescription>
+                <CardTitle>Yaklasan Dersler</CardTitle>
+                <CardDescription>Planlanmis mentorluk seanslariniz</CardDescription>
               </CardHeader>
               <CardContent>
                 {upcomingBookings && upcomingBookings.length > 0 ? (
@@ -139,7 +188,7 @@ export default function StudentDashboardPage() {
                               {formatDate(booking.startAt, 'PPP')}
                             </div>
                             <div className="text-sm text-gray-500">
-                              {formatDate(booking.startAt, 'HH:mm')} • {booking.durationMin} dakika
+                              {formatDate(booking.startAt, 'HH:mm')} - {booking.durationMin} dakika
                             </div>
                           </div>
                         </div>
@@ -152,9 +201,9 @@ export default function StudentDashboardPage() {
                 ) : (
                   <div className="text-center py-12">
                     <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600 mb-4">Henüz planlanmış dersiniz yok</p>
+                    <p className="text-gray-600 mb-4">Henuz planlanmis dersiniz yok</p>
                     <Link href="/public/mentors">
-                      <Button>Mentör Bul</Button>
+                      <Button>Mentor Bul</Button>
                     </Link>
                   </div>
                 )}
@@ -173,13 +222,45 @@ export default function StudentDashboardPage() {
                 <CardContent>
                   <div className="space-y-2">
                     <div className="font-semibold">{nextBooking.mentorName}</div>
-                    <div className="text-sm">
-                      {formatRelativeTime(nextBooking.startAt)}
+                    <div className="text-sm text-gray-600">
+                      {formatDate(nextBooking.startAt, 'PPP')}
                     </div>
-                    <Button className="w-full mt-4" size="sm">
-                      <Video className="w-4 h-4 mr-2" />
-                      Derse Katıl
-                    </Button>
+                    <div className="text-sm text-gray-500">
+                      {formatTime(nextBooking.startAt)} - {nextBooking.durationMin} dk
+                    </div>
+
+                    {/* Conditional Button: Derse Katil or Incele */}
+                    {canJoinNow() ? (
+                      <div className="space-y-2 mt-4">
+                        <Button
+                          className="w-full"
+                          size="sm"
+                          onClick={handleJoinClass}
+                        >
+                          <Video className="w-4 h-4 mr-2" />
+                          Derse Katil
+                        </Button>
+                        <div className="flex items-center justify-center gap-1.5 text-xs text-green-600">
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          <span className="font-medium">Mentor Hazir</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 mt-4">
+                        <Link href={`/student/bookings/${nextBooking.id}`} className="block">
+                          <Button variant="outline" className="w-full" size="sm">
+                            <Eye className="w-4 h-4 mr-2" />
+                            Incele
+                          </Button>
+                        </Link>
+                        {roomStatus !== null && !roomStatus.isActive && (
+                          <div className="flex items-center justify-center gap-1.5 text-xs text-yellow-600">
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            <span className="font-medium">Mentor Bekleniyor</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -188,7 +269,7 @@ export default function StudentDashboardPage() {
             {/* Quick Actions */}
             <Card>
               <CardHeader>
-                <CardTitle>Hızlı İşlemler</CardTitle>
+                <CardTitle>Hizli Islemler</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <Link href="/public/mentors">
@@ -200,7 +281,7 @@ export default function StudentDashboardPage() {
                 <Link href="/student/bookings">
                   <Button variant="outline" className="w-full justify-start">
                     <Clock className="w-4 h-4 mr-2" />
-                    Tüm Rezervasyonlar
+                    Tum Rezervasyonlar
                   </Button>
                 </Link>
               </CardContent>

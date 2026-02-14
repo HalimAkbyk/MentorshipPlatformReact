@@ -16,6 +16,10 @@ export const userApi = {
     return apiClient.postForm('/me/avatar', formData);
   },
 
+  setAvatarUrl: async (avatarUrl: string): Promise<{ avatarUrl: string }> => {
+    return apiClient.put<{ avatarUrl: string }>('/me/avatar-url', { avatarUrl });
+  },
+
   changePassword: async (data: ChangePasswordRequest): Promise<void> => {
     return apiClient.post('/auth/change-password', data);
   },
