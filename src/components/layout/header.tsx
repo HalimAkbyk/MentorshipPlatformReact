@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Menu, X, Settings, LogOut, ChevronDown, Search, BookOpen, LayoutDashboard, Eye, HelpCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -15,6 +15,7 @@ type NavLink = { href: string; label: string; icon?: React.ReactNode };
 
 export function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, isAuthenticated, logout } = useAuthStore();
   const isAdmin = user?.roles.includes(UserRole.Admin);
   const isMentor = user?.roles.includes(UserRole.Mentor);
@@ -172,7 +173,7 @@ export function Header() {
 
                       <div className="border-t border-gray-100 py-1">
                         <button
-                          onClick={() => { logout(); setDropdownOpen(false); }}
+                          onClick={() => { logout(); setDropdownOpen(false); router.push('/'); }}
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors w-full text-left"
                         >
                           <LogOut className="w-4 h-4 text-gray-400" />
@@ -250,7 +251,7 @@ export function Header() {
                     <Settings className="w-4 h-4 mr-2" />Kullanici Ayarlari
                   </Button>
                 </Link>
-                <Button variant="ghost" className="w-full" onClick={() => { logout(); setMobileMenuOpen(false); }}>
+                <Button variant="ghost" className="w-full" onClick={() => { logout(); setMobileMenuOpen(false); router.push('/'); }}>
                   <LogOut className="w-4 h-4 mr-2" />Cikis
                 </Button>
               </div>
