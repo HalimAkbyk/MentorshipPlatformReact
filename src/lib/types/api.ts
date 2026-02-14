@@ -39,6 +39,8 @@ export interface SignupRequest {
 export interface ExternalLoginRequest {
   provider: string;
   token: string;
+  code?: string;
+  redirectUri?: string;
   displayName?: string;
   initialRole?: UserRole;
 }

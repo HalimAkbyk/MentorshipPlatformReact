@@ -6,6 +6,8 @@ import type { User } from '../../lib/types/models';
 interface ExternalLoginParams {
   provider: string;
   token: string;
+  code?: string;
+  redirectUri?: string;
   displayName?: string;
   initialRole?: string;
 }
@@ -148,6 +150,8 @@ export const useAuthStore = create<AuthState>()(
         const response = await authApi.externalLogin({
           provider: params.provider,
           token: params.token,
+          code: params.code,
+          redirectUri: params.redirectUri,
           displayName: params.displayName,
           initialRole: params.initialRole as any,
         });
