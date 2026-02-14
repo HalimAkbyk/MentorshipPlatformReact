@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { PublicClientApplication } from '@azure/msal-browser';
 import { usePlatform } from '@/lib/hooks/use-platform';
+import { SOCIAL_AUTH_CONFIG } from '@/lib/config/social-auth';
 import { Loader2 } from 'lucide-react';
 
 interface SocialLoginButtonsProps {
@@ -17,7 +18,7 @@ interface SocialLoginButtonsProps {
 let msalInstance: PublicClientApplication | null = null;
 function getMsalInstance() {
   if (!msalInstance) {
-    const clientId = process.env.NEXT_PUBLIC_MICROSOFT_CLIENT_ID || '';
+    const clientId = SOCIAL_AUTH_CONFIG.microsoft.clientId;
     if (!clientId) return null;
     msalInstance = new PublicClientApplication({
       auth: {
@@ -77,7 +78,7 @@ export function SocialLoginButtons({ mode, onSuccess, onError, disabled }: Socia
 
   // LinkedIn (redirect-based OAuth)
   const handleLinkedIn = () => {
-    const clientId = process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID || '';
+    const clientId = SOCIAL_AUTH_CONFIG.linkedin.clientId;
     if (!clientId) {
       onError?.('LinkedIn girişi yapılandırılmamış');
       return;
@@ -91,7 +92,7 @@ export function SocialLoginButtons({ mode, onSuccess, onError, disabled }: Socia
 
   // Apple (redirect-based OAuth)
   const handleApple = () => {
-    const clientId = process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || '';
+    const clientId = SOCIAL_AUTH_CONFIG.apple.clientId;
     if (!clientId) {
       onError?.('Apple girişi yapılandırılmamış');
       return;
