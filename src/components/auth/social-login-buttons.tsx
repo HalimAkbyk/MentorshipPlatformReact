@@ -78,11 +78,7 @@ export function SocialLoginButtons({ mode, onSuccess, onError, disabled }: Socia
 
   // LinkedIn (redirect-based OAuth)
   const handleLinkedIn = () => {
-    const clientId = SOCIAL_AUTH_CONFIG.linkedin.clientId;
-    if (!clientId) {
-      onError?.('LinkedIn girişi yapılandırılmamış');
-      return;
-    }
+    const clientId = SOCIAL_AUTH_CONFIG.linkedin.clientId || '77j3ve8vc9ir2a';
     const redirectUri = `${window.location.origin}/auth/callback/linkedin`;
     const scope = 'openid profile email';
     const state = btoa(JSON.stringify({ mode }));
