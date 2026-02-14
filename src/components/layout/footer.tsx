@@ -1,8 +1,18 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Phone, MapPin, Mail } from 'lucide-react';
+import { useAuthStore } from '@/lib/stores/auth-store';
+import { UserRole } from '@/lib/types/enums';
 
 export function Footer() {
+  const { user, isAuthenticated } = useAuthStore();
+  const isMentor = isAuthenticated && user?.roles.includes(UserRole.Mentor);
+
+  const mentorOlHref = isMentor ? '/mentor/dashboard' : '/auth/signup?role=mentor';
+  const mentorOlLabel = isMentor ? 'Mentor Panelim' : 'Mentor Ol';
+
   return (
     <footer className="bg-primary-50 border-t border-primary-100">
       {/* Main Footer */}
@@ -52,7 +62,7 @@ export function Footer() {
               <li><Link href="/public/pricing" className="hover:text-primary-500 transition-colors">Fiyatlandirma</Link></li>
               <li><Link href="/public/how-it-works" className="hover:text-primary-500 transition-colors">Nasil Calisir</Link></li>
               <li><Link href="/public/mentors" className="hover:text-primary-500 transition-colors">Mentorler</Link></li>
-              <li><Link href="/auth/signup?role=mentor" className="hover:text-primary-500 transition-colors">Mentor Ol</Link></li>
+              <li><Link href={mentorOlHref} className="hover:text-primary-500 transition-colors">{mentorOlLabel}</Link></li>
             </ul>
           </div>
 

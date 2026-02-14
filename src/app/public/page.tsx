@@ -242,11 +242,19 @@ export default function HomePage() {
           <p className="text-primary-100 mb-8 max-w-lg mx-auto">
             Derece yapmis bir ogrenciysen, tecrubeni paylasarak diger ogrencilere yardim edebilirsin.
           </p>
-          <Link href="/auth/signup?role=mentor">
-            <Button size="lg" className="bg-white text-primary-600 hover:bg-gray-100 rounded-full px-10 py-6 text-base font-semibold">
-              Basvur
-            </Button>
-          </Link>
+          {isMentor ? (
+            <Link href="/mentor/dashboard">
+              <Button size="lg" className="bg-white text-primary-600 hover:bg-gray-100 rounded-full px-10 py-6 text-base font-semibold">
+                Mentor Panelim
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/auth/signup?role=mentor">
+              <Button size="lg" className="bg-white text-primary-600 hover:bg-gray-100 rounded-full px-10 py-6 text-base font-semibold">
+                Basvur
+              </Button>
+            </Link>
+          )}
         </div>
       </section>
 
