@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Shield, BadgeCheck, RotateCcw, Users, CalendarDays } from 'lucide-react';
+import { Shield, BadgeCheck, RotateCcw, Users, CalendarDays, Image as ImageIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -71,6 +71,19 @@ export default function AdminDashboardPage() {
             <p className="text-sm text-gray-600 mb-4">Kullanıcı askıya alma / açma işlemleri.</p>
             <Link href="/admin/users">
               <Button className="w-full">Kullanıcılara Git</Button>
+            </Link>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ImageIcon className="w-5 h-5" /> Onerilen Avatarlar
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-gray-600 mb-4">Kullanicilara onerilecek avatarlari yonet.</p>
+            <Link href="/admin/avatars">
+              <Button className="w-full">Avatarlara Git</Button>
             </Link>
           </CardContent>
         </Card>

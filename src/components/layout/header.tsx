@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Settings, LogOut, ChevronDown } from 'lucide-react';
 import { Button } from '../ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { UserRole } from '@/lib/types/enums';
 import { cn } from '@/lib/utils/cn';
@@ -16,10 +17,13 @@ export function Header() {
   const isAdmin = user?.roles.includes(UserRole.Admin);
   const isMentor = user?.roles.includes(UserRole.Mentor);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isActive = (href: string) => pathname === href || pathname?.startsWith(href + '/');
 
   const panelHref = isAdmin ? "/admin/dashboard" : isMentor ? "/mentor/dashboard" : "/student/dashboard";
+  const settingsHref = isAdmin ? "/admin/dashboard" : isMentor ? "/mentor/settings" : "/student/settings";
 
   const navLinks = [
     { href: '/public/mentors', label: 'Mentorler' },
@@ -27,6 +31,17 @@ export function Header() {
     { href: '/public/pricing', label: 'Fiyatlandirma' },
     { href: '/auth/signup?role=mentor', label: 'Mentor Ol' },
   ];
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
@@ -62,7 +77,7 @@ export function Header() {
             ))}
           </nav>
 
-          {/* Auth Buttons */}
+          {/* Auth Buttons / User Dropdown */}
           <div className="hidden md:flex items-center gap-3">
             {!isAuthenticated ? (
               <>
@@ -79,17 +94,69 @@ export function Header() {
               </>
             ) : (
               <>
-                <span className="text-sm text-gray-600 font-medium">
-                  {user?.displayName ?? user?.email}
-                </span>
                 <Link href={panelHref}>
                   <Button variant="outline" size="sm" className="border-primary-500 text-primary-500 hover:bg-primary-50 rounded-full">
                     Panel
                   </Button>
                 </Link>
-                <Button variant="ghost" size="sm" onClick={logout} className="text-gray-500">
-                  Cikis
-                </Button>
+
+                {/* User Dropdown */}
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={user?.avatarUrl} />
+                      <AvatarFallback className="text-xs bg-primary-50 text-primary-700">
+                        {user?.displayName?.charAt(0)?.toUpperCase() || '?'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <ChevronDown className={cn('w-4 h-4 text-gray-500 transition-transform', dropdownOpen && 'rotate-180')} />
+                  </button>
+
+                  {dropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                      {/* User info */}
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={user?.avatarUrl} />
+                            <AvatarFallback className="text-sm bg-primary-50 text-primary-700">
+                              {user?.displayName?.charAt(0)?.toUpperCase() || '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">{user?.displayName}</p>
+                            <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Menu items */}
+                      <div className="py-1">
+                        <Link
+                          href={settingsHref}
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <Settings className="w-4 h-4 text-gray-400" />
+                          Kullanici Ayarlari
+                        </Link>
+                      </div>
+
+                      <div className="border-t border-gray-100 py-1">
+                        <button
+                          onClick={() => { logout(); setDropdownOpen(false); }}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors w-full text-left"
+                        >
+                          <LogOut className="w-4 h-4 text-gray-400" />
+                          Cikis
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </>
             )}
           </div>
@@ -136,11 +203,29 @@ export function Header() {
               </div>
             ) : (
               <div className="flex flex-col gap-2 pt-2">
+                {/* Mobile user info */}
+                <div className="flex items-center gap-3 px-4 py-2">
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={user?.avatarUrl} />
+                    <AvatarFallback className="text-xs bg-primary-50 text-primary-700">
+                      {user?.displayName?.charAt(0)?.toUpperCase() || '?'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{user?.displayName}</p>
+                    <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                  </div>
+                </div>
                 <Link href={panelHref} onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="outline" className="w-full">Panel</Button>
                 </Link>
+                <Link href={settingsHref} onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="outline" className="w-full">
+                    <Settings className="w-4 h-4 mr-2" />Kullanici Ayarlari
+                  </Button>
+                </Link>
                 <Button variant="ghost" className="w-full" onClick={() => { logout(); setMobileMenuOpen(false); }}>
-                  Cikis
+                  <LogOut className="w-4 h-4 mr-2" />Cikis
                 </Button>
               </div>
             )}
