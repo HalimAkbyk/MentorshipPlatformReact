@@ -13,10 +13,12 @@ export const ROUTES = {
   SETTINGS: '/student/settings',
   
   // Mentor
-  MENTOR_DASHBOARD: '/public/mentor/dashboard',
-  MENTOR_AVAILABILITY: '/public/mentor/availability',
-  MENTOR_EARNINGS: '/public/mentor/earnings',
-  MENTOR_SETTINGS: '/public/mentor/settings',
+  MENTOR_DASHBOARD: '/mentor/dashboard',
+  MENTOR_AVAILABILITY: '/mentor/availability',
+  MENTOR_EARNINGS: '/mentor/earnings',
+  MENTOR_BOOKINGS: '/mentor/bookings',
+  MENTOR_OFFERINGS: '/mentor/offerings',
+  MENTOR_SETTINGS: '/mentor/settings',
   
   // Classroom
   CLASSROOM: (sessionId: string) => `/student/classroom/${sessionId}`,

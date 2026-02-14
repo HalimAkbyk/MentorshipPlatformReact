@@ -55,7 +55,7 @@ export default function MentorProfilePage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-2">Mentör bulunamadı</h2>
-          <Link href="/mentors">
+          <Link href="/public/mentors">
             <Button>Mentörlere Dön</Button>
           </Link>
         </div>
@@ -65,7 +65,7 @@ export default function MentorProfilePage() {
 
   const handleBooking = (offeringId: string) => {
     if (!isAuthenticated) {
-      router.push(`/login?redirect=/mentors/${mentorId}`);
+      router.push(`/auth/login?redirect=/public/mentors/${mentorId}`);
       return;
     }
     router.push(`/student/bookings/new?mentorId=${mentorId}&offeringId=${offeringId}`);

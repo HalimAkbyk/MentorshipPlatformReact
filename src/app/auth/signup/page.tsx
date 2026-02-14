@@ -153,7 +153,7 @@ const signup = useAuthStore((s) => s.signup);
 
           <div className="mt-4 text-center text-sm">
             <span className="text-gray-600">Zaten hesabın var mı? </span>
-            <Link href="/login" className="text-primary-600 hover:underline font-medium">
+            <Link href="/auth/login" className="text-primary-600 hover:underline font-medium">
               Giriş Yap
             </Link>
           </div>

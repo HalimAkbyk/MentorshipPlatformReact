@@ -311,10 +311,10 @@ export default function MentorDashboardPage() {
                 <span>Derslerim</span>
               </Button>
             </Link>
-            <Link href="/mentor/classes/new">
+            <Link href="/mentor/offerings">
               <Button variant="outline" className="w-full h-24 flex-col">
                 <Users className="w-8 h-8 mb-2" />
-                <span>Grup Dersi</span>
+                <span>Hizmetlerim</span>
               </Button>
             </Link>
             <Link href="/mentor/earnings">

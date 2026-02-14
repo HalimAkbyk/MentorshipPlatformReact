@@ -94,9 +94,9 @@ export default function PricingPage() {
 
         <div className="text-center mt-12">
           <p className="text-gray-600 mb-6">
-            Sorularınız mı var? <Link href="/faq" className="text-primary-600 hover:underline">SSS</Link> sayfamızı ziyaret edin
+            Sorularınız mı var? <Link href="/public/faq" className="text-primary-600 hover:underline">SSS</Link> sayfamızı ziyaret edin
           </p>
-          <Link href="/signup">
+          <Link href="/auth/signup">
             <Button size="lg">Hemen Başla</Button>
           </Link>
         </div>

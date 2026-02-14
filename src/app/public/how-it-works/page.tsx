@@ -135,7 +135,7 @@ export default function HowItWorksPage() {
               ders tamamlandıktan sonra aktarılır. İptal ve iade kurallarımız
               her iki tarafı da korur.
             </p>
-            <Link href="/signup">
+            <Link href="/auth/signup">
               <Button size="lg">Hemen Başla</Button>
             </Link>
           </div>

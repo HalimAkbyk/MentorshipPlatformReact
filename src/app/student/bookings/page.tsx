@@ -35,7 +35,7 @@ export default function BookingsPage() {
             <h1 className="text-3xl font-bold mb-2">Rezervasyonlarım</h1>
             <p className="text-gray-600">Tüm rezervasyonlarınızı görüntüleyin</p>
           </div>
-          <Link href="/mentors">
+          <Link href="/public/mentors">
             <Button>
               <Calendar className="w-4 h-4 mr-2" />
               Yeni Rezervasyon
@@ -140,7 +140,7 @@ export default function BookingsPage() {
             <p className="text-gray-600 mb-6">
               İlk rezervasyonunuzu yaparak mentörlerinizle tanışın
             </p>
-            <Link href="/mentors">
+            <Link href="/public/mentors">
               <Button>Mentörleri Keşfet</Button>
             </Link>
           </div>
