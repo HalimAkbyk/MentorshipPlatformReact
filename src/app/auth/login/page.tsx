@@ -71,7 +71,7 @@ export default function LoginPage() {
     } catch (e: any) {
       // ROLE_REQUIRED → yeni kullanıcı, rol seçmesi lazım → signup'a yönlendir
       const errorMsg = e?.response?.data?.errors?.[0] || e?.message || '';
-      if (errorMsg === 'ROLE_REQUIRED') {
+      if (errorMsg.startsWith('ROLE_REQUIRED')) {
         toast.info('Lutfen kayit sayfasindan rol seciniz');
         router.push('/auth/signup');
       }

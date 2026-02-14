@@ -18,7 +18,7 @@ export default function LinkedInCallbackPage() {
 
   // Role selection modal for new users
   const [showRoleSelect, setShowRoleSelect] = useState(false);
-  const [pendingCode, setPendingCode] = useState<string | null>(null);
+  const [pendingToken, setPendingToken] = useState<string | null>(null);
 
   useEffect(() => {
     const code = searchParams.get('code');
@@ -70,9 +70,13 @@ export default function LinkedInCallbackPage() {
       navigateAfterAuth();
     } catch (e: any) {
       const errorMsg = e?.response?.data?.errors?.[0] || e?.message || '';
-      if (errorMsg === 'ROLE_REQUIRED') {
+      if (errorMsg.startsWith('ROLE_REQUIRED')) {
         // New user → need role selection
-        setPendingCode(code);
+        // Backend returns "ROLE_REQUIRED:providerAccessToken" so we can retry
+        // without the one-time auth code
+        const parts = errorMsg.split(':');
+        const extractedToken = parts.length > 1 ? parts.slice(1).join(':') : '';
+        setPendingToken(extractedToken);
         setShowRoleSelect(true);
         setIsLoading(false);
       } else {
@@ -83,17 +87,15 @@ export default function LinkedInCallbackPage() {
   };
 
   const handleRoleSelect = async (role: 'Student' | 'Mentor') => {
-    if (!pendingCode) return;
+    if (!pendingToken) return;
     try {
       setIsLoading(true);
       setShowRoleSelect(false);
-      const redirectUri = `${window.location.origin}/auth/callback/linkedin`;
 
+      // Use the provider access token (not the one-time code) for the retry
       await externalLogin({
         provider: 'linkedin',
-        token: '',
-        code: pendingCode,
-        redirectUri,
+        token: pendingToken,
         initialRole: role,
       });
 

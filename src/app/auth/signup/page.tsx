@@ -92,7 +92,7 @@ export default function SignupPage() {
       navigateAfterAuth();
     } catch (e: any) {
       const errorMsg = e?.response?.data?.errors?.[0] || e?.message || '';
-      if (errorMsg === 'ROLE_REQUIRED') {
+      if (errorMsg.startsWith('ROLE_REQUIRED')) {
         // Shouldn't happen on signup (we always send role), but handle gracefully
         setPendingSocial({ provider, token, displayName });
         toast.info('Lutfen rol seciniz ve tekrar deneyin');
