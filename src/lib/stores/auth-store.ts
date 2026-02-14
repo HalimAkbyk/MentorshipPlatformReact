@@ -3,12 +3,24 @@ import { persist } from 'zustand/middleware';
 import { authApi } from '../../lib/api/auth';
 import type { User } from '../../lib/types/models';
 
+interface ExternalLoginParams {
+  provider: string;
+  token: string;
+  displayName?: string;
+  initialRole?: string;
+}
+
+interface ExternalLoginResult {
+  isNewUser: boolean;
+}
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, displayName: string, role: string) => Promise<void>;
+  externalLogin: (params: ExternalLoginParams) => Promise<ExternalLoginResult>;
   logout: () => void;
   initialize: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -130,6 +142,35 @@ export const useAuthStore = create<AuthState>()(
         } catch {
           // Ignore - basic user info is already set from signup response
         }
+      },
+
+      externalLogin: async (params: ExternalLoginParams): Promise<ExternalLoginResult> => {
+        const response = await authApi.externalLogin({
+          provider: params.provider,
+          token: params.token,
+          displayName: params.displayName,
+          initialRole: params.initialRole as any,
+        });
+
+        set({
+          user: mapUserFromResponse({
+            response,
+            emailFallback: '',
+            displayNameFallback: params.displayName || '',
+          }),
+          isAuthenticated: true,
+        });
+
+        // Fetch full user profile
+        try {
+          const me = await authApi.getMe();
+          authApi.updateRolesCookieFromUser(me);
+          set({ user: me, isAuthenticated: true });
+        } catch {
+          // Ignore - basic user info is already set
+        }
+
+        return { isNewUser: response.isNewUser };
       },
 
       refreshUser: async () => {

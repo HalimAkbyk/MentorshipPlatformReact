@@ -36,6 +36,21 @@ export interface SignupRequest {
   initialRole: UserRole;
 }
 
+export interface ExternalLoginRequest {
+  provider: string;
+  token: string;
+  displayName?: string;
+  initialRole?: UserRole;
+}
+
+export interface ExternalLoginResponse {
+  userId: string;
+  accessToken: string;
+  refreshToken: string;
+  roles: UserRole[];
+  isNewUser: boolean;
+}
+
 // Mentors
 export interface MentorFilters {
   searchTerm?: string;

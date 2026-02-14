@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { AuthResponse, LoginRequest, SignupRequest } from '../../lib/types/api';
+import type { AuthResponse, LoginRequest, SignupRequest, ExternalLoginRequest, ExternalLoginResponse } from '../../lib/types/api';
 import type { User } from '../types/models';
 
 function setCookie(name: string, value: string, days = 7) {
@@ -63,6 +63,20 @@ setCookie('refreshToken', response.refreshToken);
 // ✅ roles cookie
 setRolesCookie(response.roles);
     
+    return response;
+  },
+
+  externalLogin: async (data: ExternalLoginRequest): Promise<ExternalLoginResponse> => {
+    const response = await apiClient.post<ExternalLoginResponse>('/auth/external-login', data);
+
+    localStorage.setItem('accessToken', response.accessToken);
+    localStorage.setItem('refreshToken', response.refreshToken);
+
+    setCookie('accessToken', response.accessToken);
+    setCookie('refreshToken', response.refreshToken);
+
+    setRolesCookie(response.roles);
+
     return response;
   },
 
