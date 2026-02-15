@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Calendar, DollarSign, Users, Star, AlertCircle, CheckCircle, Clock, Info, Package } from 'lucide-react';
+import { Calendar, DollarSign, Users, Star, AlertCircle, CheckCircle, Clock, Info, Package, PlayCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -279,7 +279,13 @@ export default function MentorDashboardPage() {
             <CardTitle>Hızlı İşlemler</CardTitle>
             <CardDescription>Sık kullandığın işlemler</CardDescription>
           </CardHeader>
-          <CardContent className="grid md:grid-cols-5 gap-4">
+          <CardContent className="grid md:grid-cols-6 gap-4">
+            <Link href="/mentor/courses">
+              <Button variant="outline" className="w-full h-24 flex-col border-primary-200 hover:border-primary-400 hover:bg-primary-50">
+                <PlayCircle className="w-8 h-8 mb-2 text-primary-600" />
+                <span>Video Kurslarım</span>
+              </Button>
+            </Link>
             <Link href="/mentor/offerings">
               <Button variant="outline" className="w-full h-24 flex-col">
                 <Package className="w-8 h-8 mb-2" />

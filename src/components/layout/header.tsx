@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, Settings, LogOut, ChevronDown, Search, BookOpen, LayoutDashboard, Eye, HelpCircle } from 'lucide-react';
+import { Menu, X, Settings, LogOut, ChevronDown, Search, BookOpen, LayoutDashboard, Eye, HelpCircle, PlayCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useAuthStore } from '@/lib/stores/auth-store';
@@ -44,6 +44,7 @@ export function Header() {
   ];
 
   const mentorLinks: NavLink[] = [
+    { href: '/mentor/courses', label: 'Video Kurslarim', icon: <PlayCircle className="w-4 h-4" /> },
     { href: `/public/mentors/${user?.id || ''}`, label: 'Profilimi Gor', icon: <Eye className="w-4 h-4" /> },
     { href: '/public/mentors', label: 'Mentorler', icon: <Search className="w-4 h-4" /> },
     { href: '/public/support', label: 'Yardim', icon: <HelpCircle className="w-4 h-4" /> },

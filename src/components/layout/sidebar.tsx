@@ -27,6 +27,7 @@ export function Sidebar() {
     ...(isMentor
       ? [
           { label: 'Dashboard', href: '/mentor/dashboard' },
+          { label: 'Video Kurslarım', href: '/mentor/courses' },
           { label: 'Uygunluk', href: '/mentor/availability' },
           { label: 'Kazançlar', href: '/mentor/earnings' },
           { label: 'Ayarlar', href: '/mentor/settings' },
