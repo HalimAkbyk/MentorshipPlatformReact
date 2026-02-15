@@ -74,6 +74,14 @@ export const useAuthStore = create<AuthState>()(
           return;
         }
 
+        // If the stored JWT has no roles, it's invalid (e.g. from a previous
+        // social login that never completed role selection). Clear it.
+        if (!decoded.roles || decoded.roles.length === 0) {
+          authApi.logout();
+          set({ user: null, isAuthenticated: false, isLoading: false });
+          return;
+        }
+
         set({
           user: {
             id: decoded.id,
@@ -158,8 +166,10 @@ export const useAuthStore = create<AuthState>()(
         });
 
         // If backend returned a pendingToken, this is a ROLE_REQUIRED response
-        // — don't set user/auth state, just pass the token back to the caller
+        // — clear any stale auth state and pass the token back to the caller
         if (response.pendingToken) {
+          authApi.logout();
+          set({ user: null, isAuthenticated: false, isLoading: false });
           return { isNewUser: false, pendingToken: response.pendingToken };
         }
 
