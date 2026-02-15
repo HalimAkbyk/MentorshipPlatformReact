@@ -94,7 +94,12 @@ if (status === 500) {
   toast.error('Sunucu hatası oluştu. Lütfen daha sonra tekrar deneyin.');
   return Promise.reject(error);
 }
-    // Diğer tüm hatalar
+    // 404 -> toast gösterme, frontend handle etsin
+    if (status === 404) {
+      return Promise.reject(error);
+    }
+
+    // Diğer tüm hatalar (400, 422 vb.)
     const msg = extractErrorMessage(error);
     toast.error(msg);
 
