@@ -981,15 +981,17 @@ function VideoUploadWidget({
     setProgress(0);
 
     try {
-      // Step 1: Get presigned upload URL
-      const { uploadUrl, videoKey } = await coursesApi.getVideoUploadUrl(
-        lectureId,
-        file.name,
-        file.type
-      );
+      // Step 1: Extract video duration first (while uploading)
+      const durationPromise = getVideoDuration(file);
 
-      // Step 2: Upload file to R2 with progress tracking
-      await new Promise<void>((resolve, reject) => {
+      // Step 2: Upload via backend proxy (avoids R2 CORS issues)
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5072/api';
+      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const videoKey = await new Promise<string>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.upload.addEventListener('progress', (event) => {
           if (event.lengthComputable) {
@@ -998,19 +1000,29 @@ function VideoUploadWidget({
           }
         });
         xhr.addEventListener('load', () => {
-          if (xhr.status >= 200 && xhr.status < 300) resolve();
-          else reject(new Error(`Upload failed: ${xhr.status}`));
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const resp = JSON.parse(xhr.responseText);
+              resolve(resp.videoKey || resp.fileKey);
+            } catch {
+              reject(new Error('Yanit islenemedi'));
+            }
+          } else {
+            reject(new Error(`Yukleme basarisiz: ${xhr.status}`));
+          }
         });
-        xhr.addEventListener('error', () => reject(new Error('Upload failed')));
-        xhr.open('PUT', uploadUrl);
-        xhr.setRequestHeader('Content-Type', file.type);
-        xhr.send(file);
+        xhr.addEventListener('error', () => reject(new Error('Yukleme basarisiz')));
+        xhr.open('POST', `${API_URL}/lectures/${lectureId}/upload-video`);
+        if (token) {
+          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        }
+        xhr.send(formData);
       });
 
-      // Step 3: Extract video duration
-      const durationSec = await getVideoDuration(file);
+      // Step 3: Get duration
+      const durationSec = await durationPromise;
 
-      // Step 4: Confirm upload
+      // Step 4: Confirm upload with video key + duration
       await coursesApi.confirmVideoUpload(lectureId, videoKey, durationSec);
 
       // Step 5: Invalidate query
