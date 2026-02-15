@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
-import { PublicClientApplication } from '@azure/msal-browser';
-import { usePlatform } from '@/lib/hooks/use-platform';
 import { SOCIAL_AUTH_CONFIG } from '@/lib/config/social-auth';
 import { Loader2 } from 'lucide-react';
 
@@ -14,25 +12,7 @@ interface SocialLoginButtonsProps {
   disabled?: boolean;
 }
 
-// MSAL config — initialized lazily
-let msalInstance: PublicClientApplication | null = null;
-function getMsalInstance() {
-  if (!msalInstance) {
-    const clientId = SOCIAL_AUTH_CONFIG.microsoft.clientId;
-    if (!clientId) return null;
-    msalInstance = new PublicClientApplication({
-      auth: {
-        clientId,
-        authority: 'https://login.microsoftonline.com/common',
-        redirectUri: typeof window !== 'undefined' ? window.location.origin : '',
-      },
-    });
-  }
-  return msalInstance;
-}
-
 export function SocialLoginButtons({ mode, onSuccess, onError, disabled }: SocialLoginButtonsProps) {
-  const platform = usePlatform();
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
 
   const actionText = mode === 'login' ? 'ile Giriş Yap' : 'ile Kayıt Ol';
@@ -49,32 +29,6 @@ export function SocialLoginButtons({ mode, onSuccess, onError, disabled }: Socia
     },
     flow: 'implicit',
   });
-
-  // Microsoft
-  const handleMicrosoft = async () => {
-    try {
-      setLoadingProvider('microsoft');
-      const msal = getMsalInstance();
-      if (!msal) {
-        onError?.('Microsoft girişi yapılandırılmamış');
-        setLoadingProvider(null);
-        return;
-      }
-      await msal.initialize();
-      const result = await msal.loginPopup({
-        scopes: ['User.Read'],
-      });
-      if (result?.accessToken) {
-        onSuccess('microsoft', result.accessToken, result.account?.name || undefined);
-      }
-    } catch (err: any) {
-      if (err?.errorCode !== 'user_cancelled') {
-        onError?.('Microsoft girişi başarısız oldu');
-      }
-    } finally {
-      setLoadingProvider(null);
-    }
-  };
 
   // LinkedIn (redirect-based OAuth)
   const handleLinkedIn = () => {
@@ -105,20 +59,6 @@ export function SocialLoginButtons({ mode, onSuccess, onError, disabled }: Socia
         googleLogin();
       },
       show: true,
-    },
-    {
-      id: 'microsoft',
-      label: `Microsoft ${actionText}`,
-      icon: (
-        <svg className="w-5 h-5" viewBox="0 0 24 24">
-          <rect x="1" y="1" width="10" height="10" fill="#F25022" />
-          <rect x="13" y="1" width="10" height="10" fill="#7FBA00" />
-          <rect x="1" y="13" width="10" height="10" fill="#00A4EF" />
-          <rect x="13" y="13" width="10" height="10" fill="#FFB900" />
-        </svg>
-      ),
-      onClick: handleMicrosoft,
-      show: platform === 'windows' || platform === 'other',
     },
     {
       id: 'linkedin',

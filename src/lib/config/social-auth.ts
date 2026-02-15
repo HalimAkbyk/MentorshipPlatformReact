@@ -4,9 +4,6 @@ export const SOCIAL_AUTH_CONFIG = {
   google: {
     clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
   },
-  microsoft: {
-    clientId: process.env.NEXT_PUBLIC_MICROSOFT_CLIENT_ID || '',
-  },
   linkedin: {
     clientId: process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID || '77j3ve8vc9ir2a',
   },
