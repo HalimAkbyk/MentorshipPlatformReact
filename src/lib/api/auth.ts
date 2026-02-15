@@ -120,6 +120,18 @@ export const authApi = {
     return response;
   },
 
+  /** Clear tokens only (used on 401 / session expiry) */
+  clearTokens: () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      clearCookie('accessToken');
+      clearCookie('refreshToken');
+      clearCookie('roles');
+    }
+  },
+
+  /** Full logout: clear tokens AND Zustand persisted state (used on explicit user logout) */
   logout: () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('accessToken');

@@ -82,7 +82,7 @@ export const useAuthStore = create<AuthState>()(
         // If the stored JWT has no roles, it's invalid (e.g. from a previous
         // social login that never completed role selection). Clear it.
         if (!decoded.roles || decoded.roles.length === 0) {
-          authApi.logout();
+          authApi.clearTokens();
           set({ user: null, isAuthenticated: false, isLoading: false });
           return;
         }
@@ -116,8 +116,9 @@ export const useAuthStore = create<AuthState>()(
 
           const status = err?.response?.status;
           if (status === 401) {
-            // Token truly expired / rejected by server
-            authApi.logout();
+            // Token truly expired / rejected by server — clear tokens but keep auth-storage
+            // so next login can rehydrate faster
+            authApi.clearTokens();
             set({ user: null, isAuthenticated: false, isLoading: false });
           } else {
             // Network error, server down, etc. — keep the JWT-decoded user
