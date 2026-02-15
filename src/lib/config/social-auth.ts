@@ -10,7 +10,4 @@ export const SOCIAL_AUTH_CONFIG = {
   linkedin: {
     clientId: process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID || '77j3ve8vc9ir2a',
   },
-  apple: {
-    clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || '',
-  },
 } as const;
