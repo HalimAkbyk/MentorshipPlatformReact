@@ -1,10 +1,11 @@
-import axios, { AxiosError, AxiosInstance,AxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
 import { localizeErrorMessage } from '../utils/error-messages';
 
-
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5072/api';
+
+/** Flag to prevent multiple concurrent 401 redirects */
+let isRedirectingToLogin = false;
 
 function extractErrorMessage(err: any): string {
   const data = err?.response?.data;
@@ -35,16 +36,27 @@ function extractErrorMessage(err: any): string {
 
   if (!rawMessage) rawMessage = 'An error occurred';
 
-  // 🔥 BURASI ÖNEMLİ → Türkçeye çeviriyoruz
   return rawMessage
     .split('\n')
     .map((m: string) => localizeErrorMessage(m.trim()))
     .join('\n');
 }
 
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+  if (!match) return null;
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return match[1];
+  }
+}
 
 class ApiClient {
   private client: AxiosInstance;
+  /** When true, 401 errors won't auto-redirect (used during initialization) */
+  public suppressAuthRedirect = false;
 
   constructor() {
     this.client = axios.create({
@@ -68,78 +80,92 @@ class ApiClient {
     );
 
     this.client.interceptors.response.use(
-  (response) => response,
-  async (error: AxiosError) => {
-    const status = error.response?.status;
+      (response) => response,
+      async (error: AxiosError) => {
+        const status = error.response?.status;
 
-    // 401 -> logout + redirect (mevcut davranış)
-    if (status === 401) {
-      this.clearTokens();
+        // 401 -> clear tokens and redirect to login
+        if (status === 401) {
+          // During initialization, don't redirect — just reject so initialize() can handle it
+          if (this.suppressAuthRedirect) {
+            return Promise.reject(error);
+          }
 
-      // Login sayfasında zaten isen spam toast basma
-      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth/login')) {
-        toast.error('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
-        window.location.href = '/auth/login';
+          this.clearTokens();
+
+          if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth/login')) {
+            if (!isRedirectingToLogin) {
+              isRedirectingToLogin = true;
+              toast.error('Oturum sureniz doldu. Lutfen tekrar giris yapin.');
+              window.location.href = '/auth/login';
+            }
+          }
+
+          return Promise.reject(error);
+        }
+
+        // 403 -> yetki yok
+        if (status === 403) {
+          toast.error('Bu islem icin yetkiniz yok.');
+          return Promise.reject(error);
+        }
+
+        if (status === 500) {
+          toast.error('Sunucu hatasi olustu. Lutfen daha sonra tekrar deneyin.');
+          return Promise.reject(error);
+        }
+
+        // 404 -> toast gosterme, frontend handle etsin
+        if (status === 404) {
+          return Promise.reject(error);
+        }
+
+        // Diger tum hatalar (400, 422 vb.)
+        const msg = extractErrorMessage(error);
+        toast.error(msg);
+
+        return Promise.reject(error);
       }
-
-      return Promise.reject(error);
-    }
-    
-    // 403 -> yetki yok
-    if (status === 403) {
-      toast.error('Bu işlem için yetkiniz yok.');
-      return Promise.reject(error);
-    }
-if (status === 500) {
-  toast.error('Sunucu hatası oluştu. Lütfen daha sonra tekrar deneyin.');
-  return Promise.reject(error);
-}
-    // 404 -> toast gösterme, frontend handle etsin
-    if (status === 404) {
-      return Promise.reject(error);
-    }
-
-    // Diğer tüm hatalar (400, 422 vb.)
-    const msg = extractErrorMessage(error);
-    toast.error(msg);
-
-    return Promise.reject(error);
-  }
-);
-
+    );
   }
 
   private getAccessToken(): string | null {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('accessToken');
+
+    // Primary: localStorage
+    let token = localStorage.getItem('accessToken');
+
+    // Fallback: cookie (survives hard reload better)
+    if (!token) {
+      token = getCookie('accessToken');
+      // Re-sync to localStorage
+      if (token) {
+        localStorage.setItem('accessToken', token);
+      }
+    }
+
+    return token;
   }
 
- private clearTokens(): void {
-  if (typeof window === 'undefined') return;
+  private clearTokens(): void {
+    if (typeof window === 'undefined') return;
 
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
 
-  const isHttps = window.location.protocol === 'https:';
-  const sameSite = isHttps ? 'None' : 'Lax';
-  const secure = isHttps ? '; Secure' : '';
+    const isHttps = window.location.protocol === 'https:';
+    const sameSite = isHttps ? 'None' : 'Lax';
+    const secure = isHttps ? '; Secure' : '';
 
-  document.cookie = `accessToken=; Path=/; Max-Age=0; SameSite=${sameSite}${secure}`;
-  document.cookie = `refreshToken=; Path=/; Max-Age=0; SameSite=${sameSite}${secure}`;
-  document.cookie = `roles=; Path=/; Max-Age=0; SameSite=${sameSite}${secure}`;
-}
-
-
+    document.cookie = `accessToken=; Path=/; Max-Age=0; SameSite=${sameSite}${secure}`;
+    document.cookie = `refreshToken=; Path=/; Max-Age=0; SameSite=${sameSite}${secure}`;
+    document.cookie = `roles=; Path=/; Max-Age=0; SameSite=${sameSite}${secure}`;
+  }
 
   async get<T>(url: string, params?: any): Promise<T> {
     const response = await this.client.get<T>(url, { params });
     return response.data;
   }
-
-// async post <T>(url: string, data?: any, config?: AxiosRequestConfig) {
-//   const response = await this.client.post<T>(url, data, config);
-//   return response.data;
-//   }
 
   async post<T>(url: string, data?: any): Promise<T> {
     const response = await this.client.post<T>(url, data);

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { authApi } from '../../lib/api/auth';
+import { apiClient } from '../../lib/api/client';
 import type { User } from '../../lib/types/models';
 
 interface ExternalLoginParams {
@@ -21,6 +22,7 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  _hasHydrated: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, displayName: string, role: string) => Promise<void>;
   externalLogin: (params: ExternalLoginParams) => Promise<ExternalLoginResult>;
@@ -55,21 +57,24 @@ function mapUserFromResponse(params: {
     updatedAt: (u?.updatedAt ?? '') as string,
     avatarUrl: u?.avatarUrl,
     birthYear: u?.birthYear,
-    phone: u?.phone, 
+    phone: u?.phone,
   };
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       isAuthenticated: false,
       isLoading: true,
+      _hasHydrated: false,
 
       initialize: async () => {
+        // 1) Try to read JWT from localStorage + cookie fallback
         const decoded = authApi.getCurrentUser();
 
         if (!decoded) {
+          // No valid token found in localStorage or cookies
           set({ user: null, isAuthenticated: false, isLoading: false });
           return;
         }
@@ -82,6 +87,7 @@ export const useAuthStore = create<AuthState>()(
           return;
         }
 
+        // 2) Immediately set user from JWT payload (no network needed — instant)
         set({
           user: {
             id: decoded.id,
@@ -96,13 +102,28 @@ export const useAuthStore = create<AuthState>()(
           isLoading: true,
         });
 
+        // 3) Fetch full profile — suppress 401 redirect during this call
+        //    so we can handle it gracefully
         try {
+          apiClient.suppressAuthRedirect = true;
           const me = await authApi.getMe();
+          apiClient.suppressAuthRedirect = false;
+
           authApi.updateRolesCookieFromUser(me);
           set({ user: me, isAuthenticated: true, isLoading: false });
-        } catch {
-          authApi.logout();
-          set({ user: null, isAuthenticated: false, isLoading: false });
+        } catch (err: any) {
+          apiClient.suppressAuthRedirect = false;
+
+          const status = err?.response?.status;
+          if (status === 401) {
+            // Token truly expired / rejected by server
+            authApi.logout();
+            set({ user: null, isAuthenticated: false, isLoading: false });
+          } else {
+            // Network error, server down, etc. — keep the JWT-decoded user
+            // so the app remains usable offline / during transient failures
+            set({ isLoading: false });
+          }
         }
       },
 
@@ -166,7 +187,6 @@ export const useAuthStore = create<AuthState>()(
         });
 
         // If backend returned a pendingToken OR empty accessToken, this is a ROLE_REQUIRED response
-        // — clear any stale auth state and pass the token back to the caller
         const isPendingRole = response.pendingToken || !response.accessToken;
         if (isPendingRole) {
           authApi.logout();
@@ -212,7 +232,17 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+      }),
+      onRehydrateStorage: () => {
+        return (state) => {
+          if (state) {
+            state._hasHydrated = true;
+          }
+        };
+      },
     }
   )
 );
