@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Calendar, Video, Clock, TrendingUp, Eye, CheckCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Video, Clock, TrendingUp, Eye, CheckCircle, AlertCircle, PlayCircle, GraduationCap, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -266,12 +266,48 @@ export default function StudentDashboardPage() {
               </Card>
             )}
 
+            {/* Video Egitimler CTA */}
+            <Card className="bg-gradient-to-br from-primary-50 to-blue-50 border-primary-200">
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
+                    <PlayCircle className="w-5 h-5 text-primary-600" />
+                  </div>
+                  <CardTitle className="text-primary-900 text-base">Video Egitimler</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 mb-3">
+                  Uzman egitmenlerden video derslerle kendinizi gelistirin.
+                </p>
+                <Link href="/student/explore-courses">
+                  <Button size="sm" className="w-full bg-primary-600 hover:bg-primary-700">
+                    <GraduationCap className="w-4 h-4 mr-2" />
+                    Kurslari Kesfet
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
             {/* Quick Actions */}
             <Card>
               <CardHeader>
                 <CardTitle>Hizli Islemler</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
+                <Link href="/student/explore-courses">
+                  <Button variant="outline" className="w-full justify-start text-primary-600 border-primary-200 hover:bg-primary-50">
+                    <PlayCircle className="w-4 h-4 mr-2" />
+                    Video Egitimler
+                  </Button>
+                </Link>
+                <Link href="/student/courses">
+                  <Button variant="outline" className="w-full justify-start">
+                    <GraduationCap className="w-4 h-4 mr-2" />
+                    Kurslarim
+                  </Button>
+                </Link>
                 <Link href="/public/mentors">
                   <Button variant="outline" className="w-full justify-start">
                     <Calendar className="w-4 h-4 mr-2" />

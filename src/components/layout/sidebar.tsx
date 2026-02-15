@@ -20,6 +20,8 @@ export function Sidebar() {
     ...(isStudent
       ? [
           { label: 'Dashboard', href: '/student/dashboard' },
+          { label: 'Video Egitimler', href: '/student/explore-courses' },
+          { label: 'Kurslarim', href: '/student/courses' },
           { label: 'Rezervasyonlarım', href: '/student/bookings' },
           { label: 'Ayarlar', href: '/student/settings' },
         ]

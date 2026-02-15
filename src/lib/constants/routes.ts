@@ -27,6 +27,7 @@ export const ROUTES = {
 
   // Student Courses
   STUDENT_COURSES: '/student/courses',
+  STUDENT_EXPLORE_COURSES: '/student/explore-courses',
   COURSE_CATALOG: '/public/courses',
   COURSE_DETAIL: (id: string) => `/public/courses/${id}`,
   COURSE_PLAYER: (courseId: string) => `/student/courses/${courseId}/learn`,

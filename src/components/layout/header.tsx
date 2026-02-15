@@ -39,6 +39,7 @@ export function Header() {
 
   const studentLinks: NavLink[] = [
     { href: '/student/dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
+    { href: '/student/explore-courses', label: 'Video Egitimler', icon: <PlayCircle className="w-4 h-4" /> },
     { href: '/student/bookings', label: 'Rezervasyonlarim', icon: <BookOpen className="w-4 h-4" /> },
     { href: '/public/mentors', label: 'Mentor Bul', icon: <Search className="w-4 h-4" /> },
   ];
