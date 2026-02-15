@@ -28,6 +28,13 @@ export default function LoginPage() {
   const login = useAuthStore((s) => s.login);
   const externalLogin = useAuthStore((s) => s.externalLogin);
 
+  // Pending social login data (waiting for role selection — user exists but has no role)
+  const [pendingSocial, setPendingSocial] = useState<{
+    provider: string;
+    token: string;
+    displayName?: string;
+  } | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -63,10 +70,10 @@ export default function LoginPage() {
       setIsLoading(true);
       const result = await externalLogin({ provider, token, displayName });
 
-      // New user — needs role selection → redirect to signup
+      // User exists but has no role — show role selection modal
       if (result.pendingToken) {
-        toast.info('Lutfen kayit sayfasindan rol seciniz');
-        router.push('/auth/signup');
+        setPendingSocial({ provider, token: result.pendingToken, displayName });
+        toast.info('Devam etmek icin bir rol secin');
         return;
       }
 
@@ -77,6 +84,24 @@ export default function LoginPage() {
       navigateAfterAuth();
     } catch {
       // Error handled by global interceptor
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRoleSelectAndRetry = async (role: 'Student' | 'Mentor') => {
+    if (!pendingSocial) return;
+    try {
+      setIsLoading(true);
+      await externalLogin({
+        ...pendingSocial,
+        initialRole: role,
+      });
+      setPendingSocial(null);
+      toast.success('Giris basarili!');
+      navigateAfterAuth();
+    } catch {
+      // Error already handled by interceptor
     } finally {
       setIsLoading(false);
     }
@@ -155,6 +180,44 @@ export default function LoginPage() {
           </div>
         </CardContent>
       </Card>
+      {/* Role Selection Modal (for users with no role) */}
+      {pendingSocial && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <Card className="w-full max-w-sm">
+            <CardHeader>
+              <CardTitle className="text-lg text-center">Rol Secin</CardTitle>
+              <CardDescription className="text-center">
+                Devam etmek icin bir rol secin
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button
+                className="w-full"
+                onClick={() => handleRoleSelectAndRetry('Student')}
+                disabled={isLoading}
+              >
+                Danisan olarak devam et
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => handleRoleSelectAndRetry('Mentor')}
+                disabled={isLoading}
+              >
+                Mentor olarak devam et
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full text-gray-500"
+                onClick={() => setPendingSocial(null)}
+                disabled={isLoading}
+              >
+                Iptal
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
