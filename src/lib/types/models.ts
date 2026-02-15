@@ -1,4 +1,4 @@
-import { UserRole,VerificationType,BookingStatus,ClassStatus,OrderType } from './enums';
+import { UserRole,VerificationType,BookingStatus,ClassStatus,OrderType,CourseStatus,CourseLevel,LectureType,CourseEnrollmentStatus } from './enums';
 
 export interface User {
   id: string;
@@ -158,4 +158,215 @@ export interface Order {
   paymentProvider?: string;
   providerPaymentId?: string;
   createdAt: string;
+}
+
+// ===== Course Models =====
+
+export interface MentorCourseDto {
+  id: string;
+  title: string;
+  shortDescription?: string;
+  coverImageUrl?: string;
+  price: number;
+  currency: string;
+  status: CourseStatus;
+  level: CourseLevel;
+  totalLectures: number;
+  totalDurationSec: number;
+  enrollmentCount: number;
+  ratingAvg: number;
+  ratingCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CourseEditDto {
+  id: string;
+  title: string;
+  shortDescription?: string;
+  description?: string;
+  coverImageUrl?: string;
+  promoVideoKey?: string;
+  price: number;
+  currency: string;
+  status: CourseStatus;
+  level: CourseLevel;
+  language: string;
+  category?: string;
+  whatYouWillLearn: string[];
+  requirements: string[];
+  targetAudience: string[];
+  totalDurationSec: number;
+  totalLectures: number;
+  sections: CourseSectionEditDto[];
+}
+
+export interface CourseSectionEditDto {
+  id: string;
+  title: string;
+  sortOrder: number;
+  lectures: CourseLectureEditDto[];
+}
+
+export interface CourseLectureEditDto {
+  id: string;
+  title: string;
+  description?: string;
+  videoKey?: string;
+  durationSec: number;
+  sortOrder: number;
+  isPreview: boolean;
+  type: LectureType;
+  textContent?: string;
+}
+
+export interface PublicCourseDto {
+  id: string;
+  title: string;
+  shortDescription?: string;
+  coverImageUrl?: string;
+  price: number;
+  currency: string;
+  level: CourseLevel;
+  category?: string;
+  mentorName: string;
+  mentorAvatar?: string;
+  totalLectures: number;
+  totalDurationSec: number;
+  ratingAvg: number;
+  ratingCount: number;
+  enrollmentCount: number;
+}
+
+export interface PublicCoursesResponse {
+  items: PublicCourseDto[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface CourseDetailDto {
+  id: string;
+  title: string;
+  shortDescription?: string;
+  description?: string;
+  coverImageUrl?: string;
+  promoVideoKey?: string;
+  price: number;
+  currency: string;
+  level: CourseLevel;
+  language: string;
+  category?: string;
+  whatYouWillLearn: string[];
+  requirements: string[];
+  targetAudience: string[];
+  totalLectures: number;
+  totalDurationSec: number;
+  ratingAvg: number;
+  ratingCount: number;
+  enrollmentCount: number;
+  mentorId: string;
+  mentorName: string;
+  mentorAvatar?: string;
+  mentorBio?: string;
+  isEnrolled: boolean;
+  sections: CourseDetailSectionDto[];
+}
+
+export interface CourseDetailSectionDto {
+  id: string;
+  title: string;
+  sortOrder: number;
+  lectures: CourseDetailLectureDto[];
+}
+
+export interface CourseDetailLectureDto {
+  id: string;
+  title: string;
+  durationSec: number;
+  isPreview: boolean;
+  type: LectureType;
+}
+
+export interface CoursePlayerDto {
+  courseId: string;
+  courseTitle: string;
+  currentLecture: CoursePlayerLectureDto;
+  sections: CoursePlayerSectionDto[];
+}
+
+export interface CoursePlayerLectureDto {
+  id: string;
+  title: string;
+  description?: string;
+  videoUrl?: string;
+  type: LectureType;
+  textContent?: string;
+  durationSec: number;
+  watchedSec: number;
+  lastPositionSec: number;
+  isCompleted: boolean;
+}
+
+export interface CoursePlayerSectionDto {
+  id: string;
+  title: string;
+  lectures: CoursePlayerSectionLectureDto[];
+}
+
+export interface CoursePlayerSectionLectureDto {
+  id: string;
+  title: string;
+  durationSec: number;
+  isCompleted: boolean;
+  type: LectureType;
+}
+
+export interface EnrolledCourseDto {
+  courseId: string;
+  courseTitle: string;
+  coverImageUrl?: string;
+  mentorName: string;
+  completionPercentage: number;
+  lastAccessedAt?: string;
+  totalLectures: number;
+  completedLectures: number;
+}
+
+export interface CourseProgressDto {
+  courseId: string;
+  courseTitle: string;
+  completionPercentage: number;
+  totalLectures: number;
+  completedLectures: number;
+  sections: CourseProgressSectionDto[];
+}
+
+export interface CourseProgressSectionDto {
+  id: string;
+  title: string;
+  lectures: CourseProgressLectureDto[];
+}
+
+export interface CourseProgressLectureDto {
+  id: string;
+  title: string;
+  isCompleted: boolean;
+  watchedSec: number;
+  durationSec: number;
+}
+
+export interface LectureNoteDto {
+  id: string;
+  lectureId: string;
+  timestampSec: number;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VideoUploadUrlResponse {
+  uploadUrl: string;
+  videoKey: string;
+  expiresInSeconds: number;
 }

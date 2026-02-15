@@ -20,9 +20,20 @@ export const ROUTES = {
   MENTOR_OFFERINGS: '/mentor/offerings',
   MENTOR_SETTINGS: '/mentor/settings',
   
+  // Mentor Courses
+  MENTOR_COURSES: '/mentor/courses',
+  MENTOR_COURSE_NEW: '/mentor/courses/new',
+  MENTOR_COURSE_EDIT: (id: string) => `/mentor/courses/${id}/edit`,
+
+  // Student Courses
+  STUDENT_COURSES: '/student/courses',
+  COURSE_CATALOG: '/public/courses',
+  COURSE_DETAIL: (id: string) => `/public/courses/${id}`,
+  COURSE_PLAYER: (courseId: string) => `/student/courses/${courseId}/learn`,
+
   // Classroom
   CLASSROOM: (sessionId: string) => `/student/classroom/${sessionId}`,
-  
+
   // Onboarding
   MENTOR_ONBOARDING: '/auth/onboarding/mentor',
   STUDENT_ONBOARDING: '/auth/onboarding/student',

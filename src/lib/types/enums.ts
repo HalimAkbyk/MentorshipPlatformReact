@@ -23,6 +23,31 @@ export enum VerificationType {
 export enum OrderType {
   Booking = 'Booking',
   ClassSeat = 'ClassSeat',
+  Course = 'Course',
+}
+
+export enum CourseStatus {
+  Draft = 'Draft',
+  Published = 'Published',
+  Archived = 'Archived',
+}
+
+export enum CourseLevel {
+  Beginner = 'Beginner',
+  Intermediate = 'Intermediate',
+  Advanced = 'Advanced',
+  AllLevels = 'AllLevels',
+}
+
+export enum LectureType {
+  Video = 'Video',
+  Text = 'Text',
+}
+
+export enum CourseEnrollmentStatus {
+  PendingPayment = 'PendingPayment',
+  Active = 'Active',
+  Refunded = 'Refunded',
 }
 
 export enum ClassStatus {
