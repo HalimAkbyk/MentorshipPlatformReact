@@ -165,12 +165,13 @@ export const useAuthStore = create<AuthState>()(
           initialRole: params.initialRole as any,
         });
 
-        // If backend returned a pendingToken, this is a ROLE_REQUIRED response
+        // If backend returned a pendingToken OR empty accessToken, this is a ROLE_REQUIRED response
         // — clear any stale auth state and pass the token back to the caller
-        if (response.pendingToken) {
+        const isPendingRole = response.pendingToken || !response.accessToken;
+        if (isPendingRole) {
           authApi.logout();
           set({ user: null, isAuthenticated: false, isLoading: false });
-          return { isNewUser: false, pendingToken: response.pendingToken };
+          return { isNewUser: false, pendingToken: response.pendingToken || 'ROLE_REQUIRED' };
         }
 
         set({
