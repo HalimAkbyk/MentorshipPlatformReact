@@ -86,11 +86,13 @@ class ApiClient {
 
         // 401 -> clear tokens and redirect to login
         if (status === 401) {
+          console.log('[CLIENT] 401 received, suppressAuthRedirect:', this.suppressAuthRedirect, 'url:', (error.config as any)?.url);
           // During initialization, don't redirect — just reject so initialize() can handle it
           if (this.suppressAuthRedirect) {
             return Promise.reject(error);
           }
 
+          console.log('[CLIENT] 401 → clearing tokens and redirecting');
           this.clearTokens();
 
           if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth/login')) {

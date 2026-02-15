@@ -70,11 +70,17 @@ export const useAuthStore = create<AuthState>()(
       _hasHydrated: false,
 
       initialize: async () => {
+        console.log('[AUTH-STORE] initialize() called');
+        console.log('[AUTH-STORE] localStorage accessToken:', localStorage.getItem('accessToken') ? 'exists (len=' + localStorage.getItem('accessToken')!.length + ')' : 'null');
+        console.log('[AUTH-STORE] document.cookie:', document.cookie ? document.cookie.substring(0, 100) : '(empty)');
+
         // 1) Try to read JWT from localStorage + cookie fallback
         const decoded = authApi.getCurrentUser();
+        console.log('[AUTH-STORE] getCurrentUser result:', decoded ? JSON.stringify({id: decoded.id, roles: decoded.roles}) : 'null');
 
         if (!decoded) {
           // No valid token found in localStorage or cookies
+          console.log('[AUTH-STORE] No token found → setting isAuthenticated=false');
           set({ user: null, isAuthenticated: false, isLoading: false });
           return;
         }
@@ -110,14 +116,17 @@ export const useAuthStore = create<AuthState>()(
           apiClient.suppressAuthRedirect = false;
 
           authApi.updateRolesCookieFromUser(me);
+          console.log('[AUTH-STORE] getMe() SUCCESS → user:', me?.email, 'roles:', me?.roles);
           set({ user: me, isAuthenticated: true, isLoading: false });
         } catch (err: any) {
           apiClient.suppressAuthRedirect = false;
 
           const status = err?.response?.status;
+          console.log('[AUTH-STORE] getMe() FAILED → status:', status, 'message:', err?.message);
           if (status === 401) {
             // Token truly expired / rejected by server — clear tokens but keep auth-storage
             // so next login can rehydrate faster
+            console.log('[AUTH-STORE] 401 → clearing tokens');
             authApi.clearTokens();
             set({ user: null, isAuthenticated: false, isLoading: false });
           } else {

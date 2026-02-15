@@ -45,10 +45,16 @@ function setRolesCookie(roles: unknown) {
 
 /** Store tokens in both localStorage and cookies for redundancy */
 function persistTokens(accessToken: string, refreshToken: string) {
+  console.log('[AUTH] persistTokens called, token length:', accessToken?.length);
   localStorage.setItem('accessToken', accessToken);
   localStorage.setItem('refreshToken', refreshToken);
   setCookie('accessToken', accessToken);
   setCookie('refreshToken', refreshToken);
+  // Verify write succeeded
+  const verify = localStorage.getItem('accessToken');
+  console.log('[AUTH] persistTokens verify localStorage:', verify ? 'OK (len=' + verify.length + ')' : 'FAILED');
+  const verifyCookie = getCookie('accessToken');
+  console.log('[AUTH] persistTokens verify cookie:', verifyCookie ? 'OK (len=' + verifyCookie.length + ')' : 'FAILED');
 }
 
 /** Read access token from localStorage, fallback to cookie, and re-sync */
@@ -57,10 +63,12 @@ function getAccessTokenWithFallback(): string | null {
 
   // Primary source: localStorage
   let token = localStorage.getItem('accessToken');
+  console.log('[AUTH] getAccessTokenWithFallback - localStorage:', token ? 'found (len=' + token.length + ')' : 'null');
 
   // Fallback: cookie (survives hard reload more reliably)
   if (!token) {
     token = getCookie('accessToken');
+    console.log('[AUTH] getAccessTokenWithFallback - cookie fallback:', token ? 'found (len=' + token.length + ')' : 'null');
     // Re-sync to localStorage so subsequent reads are fast
     if (token) {
       localStorage.setItem('accessToken', token);
@@ -122,6 +130,7 @@ export const authApi = {
 
   /** Clear tokens only (used on 401 / session expiry) */
   clearTokens: () => {
+    console.log('[AUTH] clearTokens called', new Error().stack?.split('\n').slice(1,4).join(' <- '));
     if (typeof window !== 'undefined') {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
@@ -133,6 +142,7 @@ export const authApi = {
 
   /** Full logout: clear tokens AND Zustand persisted state (used on explicit user logout) */
   logout: () => {
+    console.log('[AUTH] FULL logout called', new Error().stack?.split('\n').slice(1,4).join(' <- '));
     if (typeof window !== 'undefined') {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
