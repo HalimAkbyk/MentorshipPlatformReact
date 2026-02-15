@@ -172,10 +172,27 @@ export const authApi = {
     const payload = decodeJwt(token);
     if (!payload) return null;
 
+    // .NET ClaimTypes.Role can appear as different claim names depending on
+    // JWT serialization settings:
+    //   - "role"                         (short name, when MapInboundClaims=false)
+    //   - "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"  (full URI, default .NET)
+    //   - "roles"                        (some custom setups)
+    const roleValue =
+      payload.role ||
+      payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+      payload.roles;
+
+    console.log('[AUTH] JWT payload keys:', Object.keys(payload));
+    console.log('[AUTH] JWT role claim value:', roleValue);
+
+    const roles = roleValue
+      ? (Array.isArray(roleValue) ? roleValue : [roleValue])
+      : [];
+
     return {
-      id: payload.nameid || payload.sub,
-      email: payload.email,
-      roles: payload.role ? (Array.isArray(payload.role) ? payload.role : [payload.role]) : [],
+      id: payload.nameid || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || payload.sub,
+      email: payload.email || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
+      roles,
     };
   },
 
