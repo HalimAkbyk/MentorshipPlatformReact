@@ -28,6 +28,9 @@ import { cn } from '@/lib/utils/cn';
 import { CourseLevel, LectureType } from '@/lib/types/enums';
 import { toast } from 'sonner';
 import type { PreviewLectureDto } from '@/lib/types/models';
+import { paymentsApi } from '@/lib/api/payments';
+import { IyzicoCheckoutForm } from '@/components/payment/IyzicoCheckoutForm';
+import { useAuthStore } from '@/lib/stores/auth-store';
 
 type Tab = 'overview' | 'curriculum' | 'instructor';
 
@@ -64,11 +67,17 @@ export default function CourseDetailPage() {
   const { data: course, isLoading } = useCourseDetail(courseId);
   const enrollMutation = useEnrollInCourse();
   const previewMutation = usePreviewLecture();
+  const user = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [previewData, setPreviewData] = useState<PreviewLectureDto | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [checkoutFormHtml, setCheckoutFormHtml] = useState('');
+  const [showCheckoutForm, setShowCheckoutForm] = useState(false);
+  const [pendingEnrollmentId, setPendingEnrollmentId] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handlePreviewClick = useCallback(async (lectureId: string) => {
@@ -114,19 +123,58 @@ export default function CourseDetailPage() {
   const handleEnroll = async () => {
     if (!course) return;
 
-    try {
-      const result = await enrollMutation.mutateAsync(course.id);
-      toast.success('Kursa basariyla kayit oldunuz!');
+    // Login check
+    if (!isAuthenticated) {
+      toast.error('Kursa kayit olmak icin giris yapmaniz gerekiyor');
+      router.push(`/auth/login?redirect=/public/courses/${courseId}`);
+      return;
+    }
 
+    try {
+      setIsProcessing(true);
+
+      // 1) Create enrollment (status: PendingPayment)
+      const result = await enrollMutation.mutateAsync(course.id);
+      setPendingEnrollmentId(result.enrollmentId);
+
+      // 2) Free course → direct access
       if (course.price === 0) {
+        toast.success('Kursa basariyla kayit oldunuz!');
         router.push(ROUTES.COURSE_PLAYER(course.id));
+        setIsProcessing(false);
+        return;
+      }
+
+      // 3) Paid course → create order & show Iyzico checkout
+      const orderResult = await paymentsApi.createOrder({
+        type: 'Course',
+        resourceId: result.enrollmentId,
+        buyerName: user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || 'User',
+        buyerSurname: user?.displayName?.split(' ').slice(1).join(' ') || 'User',
+        buyerPhone: user?.phone || '5555555555',
+      });
+
+      if (orderResult.checkoutFormContent) {
+        setCheckoutFormHtml(orderResult.checkoutFormContent);
+        setShowCheckoutForm(true);
+        setIsProcessing(false);
+      } else if (orderResult.paymentPageUrl) {
+        window.location.href = orderResult.paymentPageUrl;
       } else {
-        // Navigate to payment flow with enrollment id
-        router.push(`/student/payments/course?enrollmentId=${result.enrollmentId}&courseId=${course.id}`);
+        // Fallback — shouldn't happen for paid courses
+        toast.error('Odeme baslatilamadi. Lutfen tekrar deneyin.');
+        setIsProcessing(false);
       }
     } catch (error: any) {
-      toast.error(error?.message || 'Kayit sirasinda bir hata olustu');
+      setIsProcessing(false);
     }
+  };
+
+  const handleCloseCheckoutForm = () => {
+    setShowCheckoutForm(false);
+    setCheckoutFormHtml('');
+    setPendingEnrollmentId(null);
+    toast.info('Odeme iptal edildi. Tekrar deneyebilirsiniz.');
   };
 
   if (isLoading) {
@@ -486,15 +534,17 @@ export default function CourseDetailPage() {
                     className="w-full"
                     size="lg"
                     onClick={handleEnroll}
-                    disabled={enrollMutation.isPending}
+                    disabled={isProcessing}
                   >
-                    {enrollMutation.isPending ? (
+                    {isProcessing ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Kayit Yapiliyor...
+                        Islem Yapiliyor...
                       </>
+                    ) : course.price === 0 ? (
+                      'Ucretsiz Kayit Ol'
                     ) : (
-                      'Kayit Ol'
+                      'Satin Al'
                     )}
                   </Button>
                 )}
@@ -542,6 +592,14 @@ export default function CourseDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Iyzico Checkout Form Modal */}
+      {showCheckoutForm && checkoutFormHtml && (
+        <IyzicoCheckoutForm
+          checkoutFormContent={checkoutFormHtml}
+          onClose={handleCloseCheckoutForm}
+        />
+      )}
 
       {/* Preview Video Modal */}
       {previewOpen && (
@@ -613,9 +671,9 @@ export default function CourseDetailPage() {
                     closePreview();
                     handleEnroll();
                   }}
-                  disabled={enrollMutation.isPending}
+                  disabled={isProcessing}
                 >
-                  {course.price === 0 ? 'Ucretsiz Kayit Ol' : 'Kayit Ol'}
+                  {course.price === 0 ? 'Ucretsiz Kayit Ol' : 'Satin Al'}
                 </Button>
               </div>
             )}

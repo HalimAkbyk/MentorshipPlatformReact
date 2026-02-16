@@ -39,7 +39,15 @@ export async function POST(request: NextRequest) {
     console.log('📨 Backend response:', backendResponse.status, result);
 
     if (backendResponse.ok && result.isSuccess !== false) {
-      return NextResponse.redirect(new URL('/api/payment/success', request.url), 303);
+      // Build success URL with order type info for proper redirect
+      const successUrl = new URL('/api/payment/success', request.url);
+      if (result.orderType === 'Course') {
+        successUrl.searchParams.set('type', 'course');
+        if (result.courseId) {
+          successUrl.searchParams.set('courseId', result.courseId);
+        }
+      }
+      return NextResponse.redirect(successUrl, 303);
     } else {
       console.error('❌ Payment verification failed:', result);
       return NextResponse.redirect(new URL('/api/payment/failed', request.url), 303);
