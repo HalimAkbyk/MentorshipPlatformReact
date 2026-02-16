@@ -40,6 +40,7 @@ export interface MentorDetail {
   ratingCount: number;
   isListed: boolean;
   isOwnProfile: boolean;
+  verificationStatus?: 'NoDocuments' | 'PendingApproval' | 'Approved' | 'Rejected' | null;
   offerings: Offering[];
   badges: VerificationBadge[];
   availableSlots: AvailabilitySlot[];

@@ -125,30 +125,65 @@ export default function MentorProfilePage() {
         </div>
       </header>
 
-      {/* Kendi profili ama henüz yayında değil uyarısı */}
-      {mentor.isOwnProfile && !mentor.isListed && (
-        <div className="bg-amber-50 border-b border-amber-200">
-          <div className="container mx-auto px-4 py-3 flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm text-amber-800 font-medium">
-                Profiliniz henüz herkese açık değil.
-              </p>
-              <p className="text-xs text-amber-600">
-                Bu sayfa yalnızca size gösteriliyor. Belgeleriniz onaylandıktan sonra profiliniz diğer kullanıcılara da görünür olacaktır.
-              </p>
+      {/* Kendi profili ama henüz yayında değil uyarısı — duruma göre mesaj */}
+      {mentor.isOwnProfile && !mentor.isListed && (() => {
+        const vs = mentor.verificationStatus;
+        const bannerConfig = vs === 'PendingApproval'
+          ? {
+              title: 'Belgeleriniz inceleniyor.',
+              desc: 'Bu sayfa yalnızca size gösteriliyor. Admin onayından sonra profiliniz herkese açık olacaktır.',
+              btnText: 'Belge Durumunu Gör',
+              btnHref: '/auth/onboarding/mentor',
+              color: 'blue' as const,
+            }
+          : vs === 'Rejected'
+          ? {
+              title: 'Belgeleriniz reddedildi.',
+              desc: 'Lütfen belgelerinizi kontrol edip tekrar yükleyin. Red sebebini belge detaylarında görebilirsiniz.',
+              btnText: 'Belgeleri Düzenle',
+              btnHref: '/auth/onboarding/mentor',
+              color: 'red' as const,
+            }
+          : {
+              // NoDocuments veya fallback
+              title: 'Profiliniz henüz herkese açık değil.',
+              desc: 'Bu sayfa yalnızca size gösteriliyor. Doğrulama belgelerinizi yükleyip admin onayı aldıktan sonra profiliniz yayına alınacaktır.',
+              btnText: 'Belgeleri Yükle',
+              btnHref: '/auth/onboarding/mentor',
+              color: 'amber' as const,
+            };
+
+        const colorMap = {
+          amber: { bg: 'bg-amber-50', border: 'border-amber-200', icon: 'text-amber-600', title: 'text-amber-800', desc: 'text-amber-600', btn: 'border-amber-300 text-amber-700 hover:bg-amber-100' },
+          blue:  { bg: 'bg-blue-50',  border: 'border-blue-200',  icon: 'text-blue-600',  title: 'text-blue-800',  desc: 'text-blue-600',  btn: 'border-blue-300 text-blue-700 hover:bg-blue-100' },
+          red:   { bg: 'bg-red-50',   border: 'border-red-200',   icon: 'text-red-600',   title: 'text-red-800',   desc: 'text-red-600',   btn: 'border-red-300 text-red-700 hover:bg-red-100' },
+        };
+        const c = colorMap[bannerConfig.color];
+
+        return (
+          <div className={`${c.bg} border-b ${c.border}`}>
+            <div className="container mx-auto px-4 py-3 flex items-center gap-3">
+              <AlertTriangle className={`w-5 h-5 ${c.icon} shrink-0`} />
+              <div className="flex-1">
+                <p className={`text-sm ${c.title} font-medium`}>
+                  {bannerConfig.title}
+                </p>
+                <p className={`text-xs ${c.desc}`}>
+                  {bannerConfig.desc}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className={`${c.btn} shrink-0`}
+                onClick={() => router.push(bannerConfig.btnHref)}
+              >
+                {bannerConfig.btnText}
+              </Button>
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-amber-300 text-amber-700 hover:bg-amber-100 shrink-0"
-              onClick={() => router.push('/auth/onboarding/mentor')}
-            >
-              Belgeleri Tamamla
-            </Button>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       <div className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
