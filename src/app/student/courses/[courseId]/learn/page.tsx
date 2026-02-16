@@ -20,13 +20,22 @@ import { ROUTES } from '@/lib/constants/routes';
 import { LectureType } from '@/lib/types/enums';
 import { toast } from 'sonner';
 
+// ─── Progress Saving Strategy ───
+// All events (pause, seek, timeUpdate, interval) feed into a single debounced save.
+// This coalesces rapid events into ONE backend request.
+//
+// Event flow:
+//   pause/seek/interval → scheduleProgressSave() → 3s debounce → single API call
+//   lecture switch / unmount / beforeunload → flushProgressSave() → immediate API call
+//
+// Result: ~1 request per user interaction burst instead of N requests.
+
 function CoursePlayerContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
   const courseId = params.courseId as string;
 
-  // Selected lecture: from query param or managed by state
   const lectureIdFromQuery = searchParams.get('lectureId');
   const [selectedLectureId, setSelectedLectureId] = useState<string | undefined>(
     lectureIdFromQuery || undefined
@@ -36,17 +45,16 @@ function CoursePlayerContent() {
   const updateProgress = useUpdateProgress();
   const completeLecture = useCompleteLecture();
 
-  // Track current video time for notes
   const [currentTimeSec, setCurrentTimeSec] = useState(0);
-
-  // Mobile sidebar toggle
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [seekTarget, setSeekTarget] = useState<number | null>(null);
 
-  // Progress saving refs
-  const lastSavedTimeRef = useRef(0);
-  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // ─── Refs ───
   const currentTimeRef = useRef(0);
   const currentLectureIdRef = useRef<string | null>(null);
+  const lastSavedTimeRef = useRef(0);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingSaveRef = useRef<{ lectureId: string; time: number } | null>(null);
 
   // Keep refs in sync
   useEffect(() => {
@@ -57,66 +65,86 @@ function CoursePlayerContent() {
     currentLectureIdRef.current = playerData?.currentLecture?.id ?? null;
   }, [playerData?.currentLecture?.id]);
 
-  // Helper: save progress to backend
-  const saveProgress = useCallback((lectureId: string, timeSec: number) => {
-    if (timeSec <= 0) return;
+  // ─── Core: Debounced progress save ───
+  const doSave = useCallback((lectureId: string, timeSec: number) => {
     const flooredTime = Math.floor(timeSec);
-    // Skip if same as last saved
+    if (flooredTime <= 0) return;
     if (flooredTime === Math.floor(lastSavedTimeRef.current)) return;
+
     updateProgress.mutate({
       lectureId,
       watchedSec: flooredTime,
       lastPositionSec: flooredTime,
     });
     lastSavedTimeRef.current = timeSec;
+    pendingSaveRef.current = null;
   }, [updateProgress]);
 
-  // Auto-save progress every 15 seconds (while playing)
+  const scheduleProgressSave = useCallback((lectureId: string, timeSec: number) => {
+    pendingSaveRef.current = { lectureId, time: timeSec };
+
+    // Clear previous timer — restart 3s debounce
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      const pending = pendingSaveRef.current;
+      if (pending) doSave(pending.lectureId, pending.time);
+    }, 3000);
+  }, [doSave]);
+
+  // Flush: immediately send any pending save (for critical moments)
+  const flushProgressSave = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+    const pending = pendingSaveRef.current;
+    if (pending) doSave(pending.lectureId, pending.time);
+  }, [doSave]);
+
+  // ─── Fallback interval: save every 60s while playing ───
   useEffect(() => {
     if (!playerData?.currentLecture) return;
     const lectureId = playerData.currentLecture.id;
 
-    progressIntervalRef.current = setInterval(() => {
-      const currentTime = currentTimeRef.current;
-      if (currentTime > 0 && Math.abs(currentTime - lastSavedTimeRef.current) > 2) {
-        saveProgress(lectureId, currentTime);
+    const interval = setInterval(() => {
+      const time = currentTimeRef.current;
+      if (time > 0 && Math.abs(time - lastSavedTimeRef.current) > 3) {
+        scheduleProgressSave(lectureId, time);
       }
-    }, 15000);
+    }, 60000);
 
-    return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-      }
-    };
-  }, [playerData?.currentLecture?.id, saveProgress]);
+    return () => clearInterval(interval);
+  }, [playerData?.currentLecture?.id, scheduleProgressSave]);
 
-  // Save progress on page unload (browser close, refresh, navigate away)
+  // ─── Save on page unload (refresh, close tab, navigate away) ───
   useEffect(() => {
     const handleBeforeUnload = () => {
+      // Flush debounced save
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+
       const lectureId = currentLectureIdRef.current;
       const time = currentTimeRef.current;
-      if (lectureId && time > 0) {
-        // Use fetch with keepalive for reliable save during page unload (supports auth headers)
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://mentorship-api-mentorship-90dbd57b.koyeb.app/api';
-        const url = `${baseUrl}/course-enrollments/progress/${lectureId}`;
-        const token = document.cookie.match(/accessToken=([^;]+)/)?.[1]
-          || localStorage.getItem('accessToken');
-        try {
-          fetch(url, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-            body: JSON.stringify({
-              watchedSec: Math.floor(time),
-              lastPositionSec: Math.floor(time),
-            }),
-            keepalive: true,
-          });
-        } catch {
-          // Swallow — best effort
-        }
+      if (!lectureId || time <= 0) return;
+
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://mentorship-api-mentorship-90dbd57b.koyeb.app/api';
+      const url = `${baseUrl}/course-enrollments/progress/${lectureId}`;
+      const token = document.cookie.match(/accessToken=([^;]+)/)?.[1]
+        || localStorage.getItem('accessToken');
+      try {
+        fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            watchedSec: Math.floor(time),
+            lastPositionSec: Math.floor(time),
+          }),
+          keepalive: true,
+        });
+      } catch {
+        // Best effort
       }
     };
 
@@ -124,39 +152,47 @@ function CoursePlayerContent() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
-  // Save on component unmount (lecture switch)
+  // ─── Flush on unmount ───
   useEffect(() => {
     return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
       const lectureId = currentLectureIdRef.current;
       const time = currentTimeRef.current;
       if (lectureId && time > 0) {
-        saveProgress(lectureId, time);
+        const flooredTime = Math.floor(time);
+        if (flooredTime !== Math.floor(lastSavedTimeRef.current)) {
+          updateProgress.mutate({
+            lectureId,
+            watchedSec: flooredTime,
+            lastPositionSec: flooredTime,
+          });
+        }
       }
     };
   }, []);
 
+  // ─── Video event handlers ───
   const handleTimeUpdate = useCallback((time: number) => {
     setCurrentTimeSec(time);
   }, []);
 
-  // Save immediately when user pauses or seeks
   const handleVideoPause = useCallback((time: number) => {
     const lectureId = currentLectureIdRef.current;
     if (lectureId && time > 0) {
-      saveProgress(lectureId, time);
+      // Pause is important — schedule with shorter debounce won't help, just save
+      scheduleProgressSave(lectureId, time);
     }
-  }, [saveProgress]);
+  }, [scheduleProgressSave]);
 
   const handleVideoSeeked = useCallback((time: number) => {
     const lectureId = currentLectureIdRef.current;
     if (lectureId && time > 0) {
-      saveProgress(lectureId, time);
+      scheduleProgressSave(lectureId, time);
     }
-  }, [saveProgress]);
+  }, [scheduleProgressSave]);
 
   const handleVideoEnded = useCallback(() => {
     if (!playerData?.currentLecture) return;
-    // Auto-complete if not already completed
     if (!playerData.currentLecture.isCompleted) {
       handleCompleteLecture();
     }
@@ -164,7 +200,6 @@ function CoursePlayerContent() {
 
   const handleCompleteLecture = async () => {
     if (!playerData?.currentLecture) return;
-
     try {
       await completeLecture.mutateAsync(playerData.currentLecture.id);
       toast.success('Ders tamamlandi olarak isaretlendi!');
@@ -173,49 +208,31 @@ function CoursePlayerContent() {
     }
   };
 
+  // ─── Lecture switch ───
   const handleSelectLecture = (lectureId: string) => {
-    // Clear interval FIRST to prevent concurrent progress saves
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-      progressIntervalRef.current = null;
-    }
-
-    // Save current progress before switching
-    if (playerData?.currentLecture && currentTimeRef.current > 0) {
-      updateProgress.mutate({
-        lectureId: playerData.currentLecture.id,
-        watchedSec: Math.floor(currentTimeRef.current),
-        lastPositionSec: Math.floor(currentTimeRef.current),
-      });
-    }
+    // Flush any pending progress for the CURRENT lecture
+    flushProgressSave();
 
     setSelectedLectureId(lectureId);
     setCurrentTimeSec(0);
     setSeekTarget(null);
     lastSavedTimeRef.current = 0;
     currentTimeRef.current = 0;
+    pendingSaveRef.current = null;
     setSidebarOpen(false);
 
-    // Update URL without full navigation
     const url = new URL(window.location.href);
     url.searchParams.set('lectureId', lectureId);
     window.history.replaceState({}, '', url.toString());
   };
 
-  const handleSeekToTime = useCallback((timestampSec: number) => {
-    setSeekTarget(timestampSec);
-  }, []);
-
-  const [seekTarget, setSeekTarget] = useState<number | null>(null);
-
-  // Determine if completion button should show
   const canComplete =
     playerData?.currentLecture &&
     !playerData.currentLecture.isCompleted &&
     playerData.currentLecture.durationSec > 0 &&
     currentTimeSec >= playerData.currentLecture.durationSec * 0.9;
 
-  // Loading state
+  // ─── Loading / Error states ───
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -244,7 +261,6 @@ function CoursePlayerContent() {
 
   const { currentLecture, sections, courseTitle } = playerData;
 
-  // Normalize lecture type comparison (backend may return string "Video" or "Text")
   const lectureType = (currentLecture.type ?? '').toString();
   const isVideo = lectureType === LectureType.Video || lectureType === 'Video';
   const isText = lectureType === LectureType.Text || lectureType === 'Text';
@@ -265,7 +281,6 @@ function CoursePlayerContent() {
           <h1 className="text-sm font-medium truncate max-w-lg">{courseTitle}</h1>
         </div>
 
-        {/* Mobile sidebar toggle */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="lg:hidden text-gray-400 hover:text-white transition-colors p-1.5 rounded-md hover:bg-gray-800"
@@ -276,10 +291,9 @@ function CoursePlayerContent() {
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left: Video + Notes (~70%) */}
+        {/* Left: Video + Notes */}
         <div className="flex-1 min-w-0 overflow-y-auto">
           <div className="max-w-5xl mx-auto">
-            {/* Video Player or Text Content */}
             <div className="bg-black">
               {isVideo && currentLecture.videoUrl ? (
                 <VideoPlayer
@@ -317,7 +331,6 @@ function CoursePlayerContent() {
                   )}
                 </div>
 
-                {/* Complete Button */}
                 {currentLecture.isCompleted ? (
                   <div className="flex items-center gap-1.5 text-green-600 shrink-0">
                     <CheckCircle className="w-5 h-5" />
@@ -354,13 +367,11 @@ function CoursePlayerContent() {
                 )}
               </div>
 
-              {/* Notes Panel (below video) */}
               {isVideo && (
                 <NotesPanel
                   lectureId={currentLecture.id}
                   onSeek={(timestampSec) => {
                     setSeekTarget(timestampSec);
-                    // Reset seek target after a short delay so the same timestamp can be clicked again
                     setTimeout(() => setSeekTarget(null), 500);
                   }}
                   currentTimeSec={currentTimeSec}
@@ -370,8 +381,7 @@ function CoursePlayerContent() {
           </div>
         </div>
 
-        {/* Right: Curriculum Sidebar (~30%) */}
-        {/* Desktop */}
+        {/* Right: Curriculum Sidebar */}
         <div className="hidden lg:block w-80 xl:w-96 border-l bg-white overflow-y-auto shrink-0">
           <CurriculumSidebar
             sections={sections}
