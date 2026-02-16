@@ -34,6 +34,17 @@ export const mentorsApi = {
     return apiClient.get<MyMentorOffering[]>('/mentors/me/offerings');
   },
 
+  // ✅ Student → Mentor role upgrade
+  becomeMentor: async (data: {
+    university: string;
+    department: string;
+    bio: string;
+    graduationYear?: number;
+    headline?: string;
+  }): Promise<{ accessToken: string; refreshToken: string; roles: string[] }> => {
+    return apiClient.post('/mentors/become-mentor', data);
+  },
+
   // ✅ Profil oluştur (ilk kez)
   createProfile: async (data: {
     university: string;

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Check, Upload, User, GraduationCap, ExternalLink, FileText, Clock, Trash2 } from 'lucide-react';
+import { Check, Upload, User, GraduationCap, ExternalLink, FileText, Clock, Trash2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,8 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils/cn';
 import { mentorsApi } from '@/lib/api/mentors';
+import { updateTokensAfterRoleChange } from '@/lib/api/auth';
+import { useAuthStore } from '@/lib/stores/auth-store';
 import type { MentorVerification } from '@/lib/types/mentor';
 
 const profileSchema = z.object({
@@ -55,6 +57,7 @@ export default function MentorOnboardingPage() {
   const searchParams = useSearchParams();
 
   const stepFromUrl = useMemo(() => normalizeStep(searchParams.get('step')), [searchParams]);
+  const isStudentUpgrade = searchParams.get('source') === 'student';
   const [currentStep, setCurrentStep] = useState<number>(stepToId(stepFromUrl));
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -91,7 +94,15 @@ export default function MentorOnboardingPage() {
   useEffect(() => {
     (async () => {
       const completed = new Set<number>();
-      
+
+      // Student upgrade flow: skip profile fetch (user doesn't have Mentor role yet)
+      if (isStudentUpgrade) {
+        setHasProfile(false);
+        setCompletedSteps(completed);
+        setIsPrefillLoading(false);
+        return;
+      }
+
       try {
         const p = await mentorsApi.getMyProfile();
         setHasProfile(true);
@@ -103,7 +114,7 @@ export default function MentorOnboardingPage() {
           bio: p.bio ?? '',
         });
         completed.add(1);
-        
+
         // ✅ Mevcut verifications'ı set et
         if (p.verifications && p.verifications.length > 0) {
           setExistingVerifications(p.verifications);
@@ -119,7 +130,8 @@ export default function MentorOnboardingPage() {
   }, []);
 
   const goStep = (step: StepKey) => {
-    router.replace(`/auth/onboarding/mentor?step=${step}`);
+    const sourceParam = isStudentUpgrade ? '&source=student' : '';
+    router.replace(`/auth/onboarding/mentor?step=${step}${sourceParam}`);
   };
 
   const handleStepClick = (stepId: number) => {
@@ -140,6 +152,19 @@ export default function MentorOnboardingPage() {
         graduationYear: data.graduationYear,
         headline: data.headline,
       };
+
+      // Student → Mentor upgrade flow
+      if (isStudentUpgrade && !hasProfile) {
+        const response = await mentorsApi.becomeMentor(payload);
+        // Update tokens & auth state with new Mentor role
+        updateTokensAfterRoleChange(response.accessToken, response.refreshToken, response.roles);
+        await useAuthStore.getState().applyRoleUpgrade();
+        toast.success('Tebrikler! Artık bir mentorsunuz!');
+        setTimeout(() => {
+          router.push('/mentor/dashboard');
+        }, 1000);
+        return;
+      }
 
       if (hasProfile) {
         await mentorsApi.updateProfile(payload);
@@ -273,6 +298,24 @@ export default function MentorOnboardingPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
+        {/* Student Upgrade Banner */}
+        {isStudentUpgrade && (
+          <div className="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-amber-900 text-lg">Mentor Ol!</h3>
+                <p className="text-sm text-amber-800 mt-1">
+                  Bilgini paylaş, gelir kazan! Profilini oluştur ve hemen mentorluğa başla.
+                  Doğrulama belgelerini daha sonra da yükleyebilirsin.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Progress Steps */}
         <div className="mb-8">
           <div className="flex items-center justify-between">

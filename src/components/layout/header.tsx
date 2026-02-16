@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, Settings, LogOut, ChevronDown, Search, BookOpen, LayoutDashboard, Eye, HelpCircle, PlayCircle } from 'lucide-react';
+import { Menu, X, Settings, LogOut, ChevronDown, Search, BookOpen, LayoutDashboard, Eye, HelpCircle, PlayCircle, Sparkles } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useAuthStore } from '@/lib/stores/auth-store';
@@ -186,6 +186,16 @@ export function Header() {
                           <Settings className="w-4 h-4 text-navy-300" />
                           Kullanıcı Ayarları
                         </Link>
+                        {isStudent && !isMentor && (
+                          <Link
+                            href="/auth/onboarding/mentor?source=student"
+                            onClick={() => setDropdownOpen(false)}
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-amber-600 hover:bg-amber-50 transition-colors"
+                          >
+                            <Sparkles className="w-4 h-4 text-amber-500" />
+                            Mentor Ol
+                          </Link>
+                        )}
                       </div>
 
                       <div className="border-t border-navy-100 py-1">
@@ -268,6 +278,13 @@ export function Header() {
                     <Settings className="w-4 h-4 mr-2" />Kullanıcı Ayarları
                   </Button>
                 </Link>
+                {isStudent && !isMentor && (
+                  <Link href="/auth/onboarding/mentor?source=student" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full border-amber-300 text-amber-600 hover:bg-amber-50">
+                      <Sparkles className="w-4 h-4 mr-2" />Mentor Ol
+                    </Button>
+                  </Link>
+                )}
                 <Button variant="ghost" className="w-full text-navy-500" onClick={() => { logout(); setMobileMenuOpen(false); router.push('/'); }}>
                   <LogOut className="w-4 h-4 mr-2" />Çıkış
                 </Button>

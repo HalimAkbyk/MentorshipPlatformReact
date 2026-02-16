@@ -93,6 +93,12 @@ function isTokenExpired(token: string): boolean {
   return payload.exp < nowSec + 30; // 30s buffer
 }
 
+/** Update tokens after role change (e.g. student → mentor upgrade) */
+export function updateTokensAfterRoleChange(accessToken: string, refreshToken: string, roles: string[]) {
+  persistTokens(accessToken, refreshToken);
+  setRolesCookie(roles);
+}
+
 export const authApi = {
   login: async (data: LoginRequest): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>('/auth/login', data);

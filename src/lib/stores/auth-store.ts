@@ -29,6 +29,7 @@ interface AuthState {
   logout: () => void;
   initialize: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  applyRoleUpgrade: () => Promise<void>;
 }
 
 type AnyAuthResponse = any;
@@ -226,6 +227,26 @@ export const useAuthStore = create<AuthState>()(
           set({ user: me });
         } catch {
           // Ignore - user data stays as is
+        }
+      },
+
+      applyRoleUpgrade: async () => {
+        // Re-decode JWT to get updated roles immediately
+        const decoded = authApi.getCurrentUser();
+        if (decoded) {
+          const currentUser = get().user;
+          set({
+            user: { ...currentUser!, roles: decoded.roles } as User,
+            isAuthenticated: true,
+          });
+        }
+        // Fetch full profile from server for complete data
+        try {
+          const me = await authApi.getMe();
+          authApi.updateRolesCookieFromUser(me);
+          set({ user: me, isAuthenticated: true });
+        } catch {
+          // Ignore - JWT-decoded roles are already set
         }
       },
 

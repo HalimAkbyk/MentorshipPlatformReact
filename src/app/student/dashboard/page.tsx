@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Calendar, Video, Clock, TrendingUp, Eye, CheckCircle, AlertCircle, PlayCircle, GraduationCap, ArrowRight } from 'lucide-react';
+import { Calendar, Video, Clock, TrendingUp, Eye, CheckCircle, AlertCircle, PlayCircle, GraduationCap, ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { useBookings } from '@/lib/hooks/use-bookings';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { formatDate, formatTime } from '@/lib/utils/format';
-import { BookingStatus } from '@/lib/types/enums';
+import { BookingStatus, UserRole } from '@/lib/types/enums';
 import { apiClient } from '@/lib/api/client';
 import { toast } from 'sonner';
 
@@ -28,6 +28,8 @@ export default function StudentDashboardPage() {
 
   const nextBooking = upcomingBookings?.[0];
   const profileComplete = Boolean(user?.displayName && user?.birthYear && user?.phone);
+  const isMentor = user?.roles?.includes(UserRole.Mentor);
+  const isStudent = user?.roles?.includes(UserRole.Student);
 
   const [roomStatus, setRoomStatus] = useState<RoomStatus | null>(null);
   const [checkingRoom, setCheckingRoom] = useState(false);
@@ -289,6 +291,31 @@ export default function StudentDashboardPage() {
                 </Link>
               </CardContent>
             </Card>
+
+            {/* Mentor Ol CTA - only for Student-only users */}
+            {isStudent && !isMentor && (
+              <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                      <Sparkles className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <CardTitle className="text-amber-900 text-base">Mentor Ol</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Bilgini paylaş, gelir kazan ve diğer öğrencilere yardım et.
+                  </p>
+                  <Link href="/auth/onboarding/mentor?source=student">
+                    <Button size="sm" className="w-full bg-amber-600 hover:bg-amber-700 text-white">
+                      Mentor Olmak İstiyorum
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Quick Actions */}
             <Card>
