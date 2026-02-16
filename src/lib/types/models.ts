@@ -274,6 +274,7 @@ export interface CourseDetailDto {
   mentorAvatar?: string;
   mentorBio?: string;
   isEnrolled: boolean;
+  isOwnCourse: boolean;
   sections: CourseDetailSectionDto[];
 }
 

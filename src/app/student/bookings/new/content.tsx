@@ -44,6 +44,7 @@ export default function NewBookingContent() {
   const offeringId = searchParams.get('offeringId') || '';
 
   const user = useAuthStore((state) => state.user);
+  const isOwnCalendar = user?.id === mentorId;
   const { data: mentor, isLoading: isMentorLoading } = useMentor(mentorId);
   const createBooking = useCreateBooking();
 
@@ -309,6 +310,18 @@ export default function NewBookingContent() {
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">Mentor bulunamadı</h2>
           <Button onClick={() => router.back()}>Geri Dön</Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isOwnCalendar) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Kendi takviminize randevu alamazsınız</h2>
+          <p className="text-gray-600 mb-4">Başka bir mentorun profilinden randevu alabilirsiniz.</p>
+          <Button onClick={() => router.push('/public/mentors')}>Mentörlere Git</Button>
         </div>
       </div>
     );

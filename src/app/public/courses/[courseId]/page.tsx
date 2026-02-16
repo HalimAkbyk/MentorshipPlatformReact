@@ -522,7 +522,11 @@ export default function CourseDetailPage() {
                 </div>
 
                 {/* Enroll / Continue Button */}
-                {course.isEnrolled ? (
+                {course.isOwnCourse ? (
+                  <div className="text-center py-3 px-4 rounded-lg bg-gray-100 text-gray-500 text-sm font-medium">
+                    Bu sizin kursunuz
+                  </div>
+                ) : course.isEnrolled ? (
                   <Button
                     className="w-full"
                     size="lg"
@@ -661,7 +665,7 @@ export default function CourseDetailPage() {
             )}
 
             {/* Modal Footer */}
-            {!course.isEnrolled && (
+            {!course.isEnrolled && !course.isOwnCourse && (
               <div className="flex items-center justify-between px-5 py-3 bg-gray-900 border-t border-gray-800">
                 <p className="text-gray-400 text-sm">
                   Tüm derslere erişim için kursa kayıt olun

@@ -16,26 +16,36 @@ export function Sidebar() {
   const isMentor = roles.includes(UserRole.Mentor as any);
   const isStudent = roles.includes(UserRole.Student as any);
 
-  const items: Item[] = [
-    ...(isStudent
+  // Mentor+Student dual role: Mentor bölümü önce, sonra öğrenci bölümü (ayrı gruplar)
+  const mentorItems: Item[] = isMentor
+    ? [
+        { label: 'Mentor Dashboard', href: '/mentor/dashboard' },
+        { label: 'Video Kurslarım', href: '/mentor/courses' },
+        { label: 'Uygunluk', href: '/mentor/availability' },
+        { label: 'Kazançlar', href: '/mentor/earnings' },
+        { label: 'Mentor Ayarlar', href: '/mentor/settings' },
+      ]
+    : [];
+
+  const studentItems: Item[] = isStudent
+    ? isMentor
       ? [
+          // Mentor+Student: sadece öğrenci-spesifik sayfalar (duplicate olmasın)
+          { label: 'Eğitim Keşfet', href: '/student/explore-courses' },
+          { label: 'Aldığım Kurslar', href: '/student/courses' },
+          { label: 'Aldığım Seanslar', href: '/student/bookings' },
+        ]
+      : [
+          // Sadece Student
           { label: 'Dashboard', href: '/student/dashboard' },
           { label: 'Video Eğitimler', href: '/student/explore-courses' },
           { label: 'Kurslarım', href: '/student/courses' },
           { label: 'Rezervasyonlarım', href: '/student/bookings' },
           { label: 'Ayarlar', href: '/student/settings' },
         ]
-      : []),
-    ...(isMentor
-      ? [
-          { label: 'Dashboard', href: '/mentor/dashboard' },
-          { label: 'Video Kurslarım', href: '/mentor/courses' },
-          { label: 'Uygunluk', href: '/mentor/availability' },
-          { label: 'Kazançlar', href: '/mentor/earnings' },
-          { label: 'Ayarlar', href: '/mentor/settings' },
-        ]
-      : []),
-  ];
+    : [];
+
+  const items: Item[] = [...mentorItems, ...studentItems];
 
   return (
     <aside className="w-full md:w-64 border-r bg-white">

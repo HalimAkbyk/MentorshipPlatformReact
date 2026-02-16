@@ -4,10 +4,12 @@ export function pickDefaultDashboard(roles: unknown): string {
   const list = Array.isArray(roles) ? roles.map(String) : typeof roles === 'string' ? [roles] : [];
 
   const isMentor = list.includes(UserRole.Mentor as any) || list.includes('Mentor');
-  const isStudent = list.includes(UserRole.Student as any) || list.includes('Student');
+  const isAdmin = list.includes(UserRole.Admin as any) || list.includes('Admin');
 
-  if (isMentor && !isStudent) return '/mentor/dashboard';
-  // hem mentor hem student ise default student bırakıyoruz (istersen mentor yaparız)
+  if (isAdmin) return '/admin/dashboard';
+  // Mentor rolü olan kullanıcılar artık Student rolüne de sahip olduğundan
+  // Mentor varsa mentor dashboard'a yönlendir
+  if (isMentor) return '/mentor/dashboard';
   return '/student/dashboard';
 }
 

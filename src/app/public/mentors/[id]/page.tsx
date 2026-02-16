@@ -28,6 +28,8 @@ export default function MentorProfilePage() {
   const mentorId = params.id as string;
   const { data: mentor, isLoading } = useMentor(mentorId);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
+  const isOwnProfile = isAuthenticated && user?.id === mentorId;
   const [selectedTab, setSelectedTab] = useState<'about' | 'offerings' | 'reviews'>('about');
   const [enrichedOfferings, setEnrichedOfferings] = useState<OfferingDto[]>([]);
   const [offeringsLoading, setOfferingsLoading] = useState(false);
@@ -285,9 +287,13 @@ export default function MentorProfilePage() {
                               <div className="text-2xl font-bold text-primary-600">
                                 {formatCurrency(offering.price)}
                               </div>
-                              <Button onClick={() => handleBooking(offering.id)}>
-                                Randevu Al
-                              </Button>
+                              {isOwnProfile ? (
+                                <span className="text-sm text-gray-400 font-medium">Kendi profiliniz</span>
+                              ) : (
+                                <Button onClick={() => handleBooking(offering.id)}>
+                                  Randevu Al
+                                </Button>
+                              )}
                             </div>
                           </CardContent>
                         </Card>
@@ -322,9 +328,13 @@ export default function MentorProfilePage() {
                                   {formatCurrency(offering.price)}
                                 </div>
                               </div>
-                              <Button onClick={() => handleBooking(offering.id)}>
-                                Randevu Al
-                              </Button>
+                              {isOwnProfile ? (
+                                <span className="text-sm text-gray-400 font-medium">Kendi profiliniz</span>
+                              ) : (
+                                <Button onClick={() => handleBooking(offering.id)}>
+                                  Randevu Al
+                                </Button>
+                              )}
                             </div>
                           </CardContent>
                         </Card>

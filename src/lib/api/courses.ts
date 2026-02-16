@@ -201,6 +201,7 @@ export const coursesApi = {
       mentorAvatar: raw.mentor?.avatarUrl ?? raw.mentorAvatar,
       mentorBio: raw.mentor?.bio ?? raw.mentorBio,
       isEnrolled: raw.isEnrolled ?? false,
+      isOwnCourse: raw.isOwnCourse ?? false,
       sections: (raw.curriculum ?? raw.sections ?? []).map((s: any) => ({
         id: s.id,
         title: s.title,

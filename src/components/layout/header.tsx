@@ -47,9 +47,9 @@ export function Header() {
 
   const mentorLinks: NavLink[] = [
     { href: '/mentor/courses', label: 'Video Kurslarım', icon: <PlayCircle className="w-4 h-4" /> },
+    { href: '/student/explore-courses', label: 'Eğitim Keşfet', icon: <Search className="w-4 h-4" /> },
+    { href: '/student/bookings', label: 'Aldığım Seanslar', icon: <BookOpen className="w-4 h-4" /> },
     { href: `/public/mentors/${user?.id || ''}`, label: 'Profilimi Gör', icon: <Eye className="w-4 h-4" /> },
-    { href: '/public/mentors', label: 'Mentörler', icon: <Search className="w-4 h-4" /> },
-    { href: '/public/support', label: 'Yardım', icon: <HelpCircle className="w-4 h-4" /> },
   ];
 
   const navLinks = isAuthenticated
