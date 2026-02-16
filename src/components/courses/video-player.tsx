@@ -61,12 +61,14 @@ export default function VideoPlayer({
       switch (e.key) {
         case 'ArrowLeft': {
           e.preventDefault();
+          e.stopPropagation();
           video.currentTime = Math.max(0, video.currentTime - SKIP_SECONDS);
           showOverlay('left', SKIP_SECONDS);
           break;
         }
         case 'ArrowRight': {
           e.preventDefault();
+          e.stopPropagation();
           video.currentTime = Math.min(video.duration || 0, video.currentTime + SKIP_SECONDS);
           showOverlay('right', SKIP_SECONDS);
           break;
@@ -74,6 +76,7 @@ export default function VideoPlayer({
         case ' ':
         case 'k': {
           e.preventDefault();
+          e.stopPropagation();
           if (video.paused) {
             video.play();
           } else {
@@ -83,6 +86,7 @@ export default function VideoPlayer({
         }
         case 'f': {
           e.preventDefault();
+          e.stopPropagation();
           if (document.fullscreenElement) {
             document.exitFullscreen();
           } else {
@@ -92,15 +96,16 @@ export default function VideoPlayer({
         }
         case 'm': {
           e.preventDefault();
+          e.stopPropagation();
           video.muted = !video.muted;
           break;
         }
       }
     };
 
-    // Listen on document level so arrow keys work even without clicking video first
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    // Capture phase so we handle the event BEFORE the native <video> controls do
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => document.removeEventListener('keydown', handleKeyDown, true);
   }, []);
 
   const showOverlay = useCallback((direction: 'left' | 'right', seconds: number) => {
