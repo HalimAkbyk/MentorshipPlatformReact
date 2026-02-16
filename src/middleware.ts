@@ -9,6 +9,21 @@ function parseRolesCookie(value?: string) {
   return value.split(',').map(s => s.trim()).filter(Boolean);
 }
 
+/** Decode JWT and check if it is expired (edge-runtime compatible) */
+function isTokenValid(token: string): boolean {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+    // Edge runtime has atob
+    const payload = JSON.parse(atob(parts[1]));
+    if (!payload.exp) return true; // no exp claim → assume valid
+    const nowSec = Math.floor(Date.now() / 1000);
+    return payload.exp > nowSec + 30; // 30s buffer
+  } catch {
+    return false;
+  }
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -21,26 +36,25 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/auth/signup');
 
   // ─── ONLY redirect logged-in users AWAY from auth pages ───
-  // If user has a valid cookie and visits /auth/login or /auth/signup,
+  // If user has a VALID (non-expired) cookie and visits /auth/login or /auth/signup,
   // redirect to their dashboard. This is a convenience redirect.
-  if (isAuthRoute && token) {
+  if (isAuthRoute && token && isTokenValid(token)) {
     if (roles.includes('Admin')) return NextResponse.redirect(new URL('/admin/dashboard', request.url));
     if (roles.includes('Mentor')) return NextResponse.redirect(new URL('/mentor/dashboard', request.url));
     if (roles.includes('Student')) return NextResponse.redirect(new URL('/student/dashboard', request.url));
-    // Cookie exists but no role → let client-side handle
+  }
+
+  // If token is expired on auth routes, clear the stale cookies so the user
+  // can log in fresh without a redirect loop.
+  if (isAuthRoute && token && !isTokenValid(token)) {
+    const response = NextResponse.next();
+    response.cookies.delete('accessToken');
+    response.cookies.delete('refreshToken');
+    response.cookies.delete('roles');
+    return response;
   }
 
   // ─── ALL other routes: pass through ───
-  // Protected routes (/student/*, /mentor/*, /admin/*) are guarded by
-  // client-side layout components (student/layout.tsx, mentor/layout.tsx)
-  // which check auth state from localStorage (the reliable source).
-  //
-  // We do NOT redirect here because:
-  // 1) Middleware can only read cookies, but cookies can vanish
-  //    (SameSite restrictions, hard reload, browser quirks)
-  // 2) localStorage (where tokens are stored) persists reliably
-  //    but is not accessible in middleware (server-side)
-  // 3) Client-side guards already handle unauthenticated users
   return NextResponse.next();
 }
 

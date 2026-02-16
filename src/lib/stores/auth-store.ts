@@ -70,69 +70,63 @@ export const useAuthStore = create<AuthState>()(
       _hasHydrated: false,
 
       initialize: async () => {
-        console.log('[AUTH-STORE] initialize() called');
-        console.log('[AUTH-STORE] localStorage accessToken:', localStorage.getItem('accessToken') ? 'exists (len=' + localStorage.getItem('accessToken')!.length + ')' : 'null');
-        console.log('[AUTH-STORE] document.cookie:', document.cookie ? document.cookie.substring(0, 100) : '(empty)');
+        // 1) Check if any token exists at all (localStorage + cookie fallback)
+        const rawToken = authApi.getAccessToken();
 
-        // 1) Try to read JWT from localStorage + cookie fallback
+        if (!rawToken) {
+          // No token anywhere → not authenticated
+          set({ user: null, isAuthenticated: false, isLoading: false });
+          return;
+        }
+
+        // 2) Try to decode JWT for instant UI (before network call)
         const decoded = authApi.getCurrentUser();
-        console.log('[AUTH-STORE] getCurrentUser result:', decoded ? JSON.stringify({id: decoded.id, roles: decoded.roles}) : 'null');
 
-        if (!decoded) {
-          // No valid token found in localStorage or cookies
-          console.log('[AUTH-STORE] No token found → setting isAuthenticated=false');
-          set({ user: null, isAuthenticated: false, isLoading: false });
-          return;
+        if (decoded && decoded.roles && decoded.roles.length > 0) {
+          // Valid, non-expired token with roles → set user immediately
+          set({
+            user: {
+              id: decoded.id,
+              email: decoded.email,
+              displayName: decoded.email,
+              roles: decoded.roles,
+              status: 'Active',
+              createdAt: '',
+              updatedAt: '',
+            } as any,
+            isAuthenticated: true,
+            isLoading: true,
+          });
         }
+        // If decoded is null (expired) or has no roles, we still try getMe()
+        // because the server might still accept the token (clock skew, etc.)
 
-        // If the stored JWT has no roles, it's invalid (e.g. from a previous
-        // social login that never completed role selection). Clear it.
-        if (!decoded.roles || decoded.roles.length === 0) {
-          authApi.clearTokens();
-          set({ user: null, isAuthenticated: false, isLoading: false });
-          return;
-        }
-
-        // 2) Immediately set user from JWT payload (no network needed — instant)
-        set({
-          user: {
-            id: decoded.id,
-            email: decoded.email,
-            displayName: decoded.email,
-            roles: decoded.roles,
-            status: 'Active',
-            createdAt: '',
-            updatedAt: '',
-          } as any,
-          isAuthenticated: true,
-          isLoading: true,
-        });
-
-        // 3) Fetch full profile — suppress 401 redirect during this call
-        //    so we can handle it gracefully
+        // 3) Validate with server — this is the authoritative check
         try {
           apiClient.suppressAuthRedirect = true;
           const me = await authApi.getMe();
           apiClient.suppressAuthRedirect = false;
 
           authApi.updateRolesCookieFromUser(me);
-          console.log('[AUTH-STORE] getMe() SUCCESS → user:', me?.email, 'roles:', me?.roles);
           set({ user: me, isAuthenticated: true, isLoading: false });
         } catch (err: any) {
           apiClient.suppressAuthRedirect = false;
 
           const status = err?.response?.status;
-          console.log('[AUTH-STORE] getMe() FAILED → status:', status, 'message:', err?.message);
           if (status === 401) {
-            // Token truly expired / rejected by server — clear tokens but keep auth-storage
-            // so next login can rehydrate faster
-            console.log('[AUTH-STORE] 401 → clearing tokens');
+            // Token truly expired / rejected by server — clear everything
             authApi.clearTokens();
             set({ user: null, isAuthenticated: false, isLoading: false });
           } else {
-            // Network error, server down, etc. — keep the JWT-decoded user
-            // so the app remains usable offline / during transient failures
-            set({ isLoading: false });
+            // Network error, server down, etc.
+            if (decoded && decoded.roles && decoded.roles.length > 0) {
+              // Keep JWT-decoded user for offline resilience
+              set({ isLoading: false });
+            } else {
+              // No valid decoded user and can't reach server → not authenticated
+              authApi.clearTokens();
+              set({ user: null, isAuthenticated: false, isLoading: false });
+            }
           }
         }
       },

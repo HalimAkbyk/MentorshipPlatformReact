@@ -143,7 +143,7 @@ export default function CourseDetailPage() {
     );
   }
 
-  const sections = sections ?? [];
+  const sections = course.sections ?? [];
   const totalLectures = sections.reduce(
     (sum, sec) => sum + (sec.lectures?.length ?? 0),
     0
