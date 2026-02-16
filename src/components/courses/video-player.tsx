@@ -7,6 +7,8 @@ interface VideoPlayerProps {
   poster?: string;
   startTime?: number;
   onTimeUpdate?: (currentTime: number) => void;
+  onPause?: (currentTime: number) => void;
+  onSeeked?: (currentTime: number) => void;
   onEnded?: () => void;
 }
 
@@ -17,12 +19,16 @@ export default function VideoPlayer({
   poster,
   startTime = 0,
   onTimeUpdate,
+  onPause,
+  onSeeked,
   onEnded,
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const hasSeekedRef = useRef(false);
   const onTimeUpdateRef = useRef(onTimeUpdate);
+  const onPauseRef = useRef(onPause);
+  const onSeekedRef = useRef(onSeeked);
   const onEndedRef = useRef(onEnded);
 
   // Overlay feedback state
@@ -33,6 +39,14 @@ export default function VideoPlayer({
   useEffect(() => {
     onTimeUpdateRef.current = onTimeUpdate;
   }, [onTimeUpdate]);
+
+  useEffect(() => {
+    onPauseRef.current = onPause;
+  }, [onPause]);
+
+  useEffect(() => {
+    onSeekedRef.current = onSeeked;
+  }, [onSeeked]);
 
   useEffect(() => {
     onEndedRef.current = onEnded;
@@ -129,6 +143,18 @@ export default function VideoPlayer({
     }
   }, []);
 
+  const handlePause = useCallback(() => {
+    if (videoRef.current) {
+      onPauseRef.current?.(videoRef.current.currentTime);
+    }
+  }, []);
+
+  const handleSeeked = useCallback(() => {
+    if (videoRef.current) {
+      onSeekedRef.current?.(videoRef.current.currentTime);
+    }
+  }, []);
+
   const handleEnded = useCallback(() => {
     onEndedRef.current?.();
   }, []);
@@ -177,6 +203,8 @@ export default function VideoPlayer({
         className="absolute inset-0 w-full h-full object-contain bg-black"
         onCanPlay={handleCanPlay}
         onTimeUpdate={handleTimeUpdate}
+        onPause={handlePause}
+        onSeeked={handleSeeked}
         onEnded={handleEnded}
         onContextMenu={handleContextMenu}
       />

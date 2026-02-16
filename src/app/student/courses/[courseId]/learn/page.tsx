@@ -38,63 +38,121 @@ function CoursePlayerContent() {
 
   // Track current video time for notes
   const [currentTimeSec, setCurrentTimeSec] = useState(0);
-  const videoPlayerRef = useRef<{ seekTo: (time: number) => void } | null>(null);
 
   // Mobile sidebar toggle
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Debounced progress saving
+  // Progress saving refs
   const lastSavedTimeRef = useRef(0);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const currentTimeRef = useRef(0);
+  const currentLectureIdRef = useRef<string | null>(null);
 
-  // Update currentTimeRef whenever currentTimeSec changes
+  // Keep refs in sync
   useEffect(() => {
     currentTimeRef.current = currentTimeSec;
   }, [currentTimeSec]);
 
-  // Auto-save progress every 30 seconds
+  useEffect(() => {
+    currentLectureIdRef.current = playerData?.currentLecture?.id ?? null;
+  }, [playerData?.currentLecture?.id]);
+
+  // Helper: save progress to backend
+  const saveProgress = useCallback((lectureId: string, timeSec: number) => {
+    if (timeSec <= 0) return;
+    const flooredTime = Math.floor(timeSec);
+    // Skip if same as last saved
+    if (flooredTime === Math.floor(lastSavedTimeRef.current)) return;
+    updateProgress.mutate({
+      lectureId,
+      watchedSec: flooredTime,
+      lastPositionSec: flooredTime,
+    });
+    lastSavedTimeRef.current = timeSec;
+  }, [updateProgress]);
+
+  // Auto-save progress every 15 seconds (while playing)
   useEffect(() => {
     if (!playerData?.currentLecture) return;
-
     const lectureId = playerData.currentLecture.id;
 
     progressIntervalRef.current = setInterval(() => {
       const currentTime = currentTimeRef.current;
-      // Only save if time has meaningfully changed (> 5 sec difference)
-      if (Math.abs(currentTime - lastSavedTimeRef.current) > 5) {
-        updateProgress.mutate({
-          lectureId,
-          watchedSec: Math.floor(currentTime),
-          lastPositionSec: Math.floor(currentTime),
-        });
-        lastSavedTimeRef.current = currentTime;
+      if (currentTime > 0 && Math.abs(currentTime - lastSavedTimeRef.current) > 2) {
+        saveProgress(lectureId, currentTime);
       }
-    }, 30000);
+    }, 15000);
 
     return () => {
       if (progressIntervalRef.current) {
         clearInterval(progressIntervalRef.current);
       }
     };
-  }, [playerData?.currentLecture?.id]);
+  }, [playerData?.currentLecture?.id, saveProgress]);
 
-  // Save progress on unmount
+  // Save progress on page unload (browser close, refresh, navigate away)
   useEffect(() => {
-    return () => {
-      if (playerData?.currentLecture && currentTimeRef.current > 0) {
-        updateProgress.mutate({
-          lectureId: playerData.currentLecture.id,
-          watchedSec: Math.floor(currentTimeRef.current),
-          lastPositionSec: Math.floor(currentTimeRef.current),
-        });
+    const handleBeforeUnload = () => {
+      const lectureId = currentLectureIdRef.current;
+      const time = currentTimeRef.current;
+      if (lectureId && time > 0) {
+        // Use fetch with keepalive for reliable save during page unload (supports auth headers)
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://mentorship-api-mentorship-90dbd57b.koyeb.app/api';
+        const url = `${baseUrl}/course-enrollments/progress/${lectureId}`;
+        const token = document.cookie.match(/accessToken=([^;]+)/)?.[1]
+          || localStorage.getItem('accessToken');
+        try {
+          fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({
+              watchedSec: Math.floor(time),
+              lastPositionSec: Math.floor(time),
+            }),
+            keepalive: true,
+          });
+        } catch {
+          // Swallow — best effort
+        }
       }
     };
-  }, [playerData?.currentLecture?.id]);
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
+  // Save on component unmount (lecture switch)
+  useEffect(() => {
+    return () => {
+      const lectureId = currentLectureIdRef.current;
+      const time = currentTimeRef.current;
+      if (lectureId && time > 0) {
+        saveProgress(lectureId, time);
+      }
+    };
+  }, []);
 
   const handleTimeUpdate = useCallback((time: number) => {
     setCurrentTimeSec(time);
   }, []);
+
+  // Save immediately when user pauses or seeks
+  const handleVideoPause = useCallback((time: number) => {
+    const lectureId = currentLectureIdRef.current;
+    if (lectureId && time > 0) {
+      saveProgress(lectureId, time);
+    }
+  }, [saveProgress]);
+
+  const handleVideoSeeked = useCallback((time: number) => {
+    const lectureId = currentLectureIdRef.current;
+    if (lectureId && time > 0) {
+      saveProgress(lectureId, time);
+    }
+  }, [saveProgress]);
 
   const handleVideoEnded = useCallback(() => {
     if (!playerData?.currentLecture) return;
@@ -229,6 +287,8 @@ function CoursePlayerContent() {
                   src={currentLecture.videoUrl}
                   startTime={seekTarget ?? currentLecture.lastPositionSec ?? 0}
                   onTimeUpdate={handleTimeUpdate}
+                  onPause={handleVideoPause}
+                  onSeeked={handleVideoSeeked}
                   onEnded={handleVideoEnded}
                 />
               ) : isText ? (
