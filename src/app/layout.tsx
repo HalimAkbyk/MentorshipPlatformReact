@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Inter } from "next/font/google";
+import "@fontsource/plus-jakarta-sans/500.css";
+import "@fontsource/plus-jakarta-sans/600.css";
+import "@fontsource/plus-jakarta-sans/700.css";
+import "@fontsource/plus-jakarta-sans/800.css";
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
 import "./globals.css";
 import { Providers } from "@/components/providers/providers";
 
@@ -17,8 +24,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Degisim Mentorluk - YKS'ye Hazirlanmanin En Iyi Yolu",
-  description: "Derece yapmis universite ogrencilerinden bire bir mentorluk al. Birebir danismanlik, strateji ve motivasyon destegi.",
+  title: "Değişim Mentorluk - YKS'ye Hazırlanmanın En İyi Yolu",
+  description: "Derece yapmış üniversite öğrencilerinden bire bir mentorluk al. Birebir danışmanlık, strateji ve motivasyon desteği.",
 };
 
 export default function RootLayout({
@@ -28,7 +35,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr">
-      <body className={`${jakarta.variable} ${inter.variable}`}>
+      <body className={`${jakarta.variable} ${inter.variable} font-body`}>
         <Providers>{children}</Providers>
       </body>
     </html>

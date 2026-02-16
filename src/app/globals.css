@@ -5,25 +5,60 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 215 25% 20%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 215 25% 20%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 180 53% 28.6%;
+    --popover-foreground: 215 25% 20%;
+    --primary: 73 55% 46%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 215 25% 20%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 210 12% 46%;
+    --accent: 180 30% 42%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 180 53% 28.6%;
+    --border: 214.3 25% 91%;
+    --input: 214.3 25% 91%;
+    --ring: 73 55% 46%;
     --radius: 0.5rem;
+
+    /* ═══════════════════════════════════════
+       LOGO-BASED DESIGN TOKENS
+    ═══════════════════════════════════════ */
+    --color-lime: #94B835;
+    --color-navy: #2B3544;
+    --color-teal: #4A8C8C;
+    --color-sage: #6B9F82;
+
+    --color-success: #10B981;
+    --color-warning: #F59E0B;
+    --color-error: #EF4444;
+    --color-star: #FBBF24;
+
+    --bg-primary: #FAFBFC;
+    --bg-secondary: #F1F5F2;
+    --bg-dark: #1A2230;
+    --bg-hero: #F0F5F1;
+
+    --text-primary: #2B3544;
+    --text-secondary: #516678;
+    --text-muted: #7A8FA0;
+    --text-on-lime: #FFFFFF;
+    --text-on-dark: #F0F3F5;
+
+    --gradient-hero: linear-gradient(135deg, #2B3544 0%, #4A8C8C 60%, #94B835 100%);
+    --gradient-hero-soft: linear-gradient(135deg, #F0F5F1 0%, #EFFCF8 50%, #F7FBE8 100%);
+    --gradient-cta: linear-gradient(135deg, #94B835 0%, #7A9A22 100%);
+    --gradient-cta-hover: linear-gradient(135deg, #AECC42 0%, #94B835 100%);
+    --gradient-stats: linear-gradient(135deg, #1A2230 0%, #2B3544 50%, #222B38 100%);
+    --gradient-promo: linear-gradient(135deg, #4A8C8C 0%, #94B835 100%);
+    --gradient-card-hover: linear-gradient(180deg, rgba(148,184,53,0.04) 0%, rgba(74,140,140,0.04) 100%);
+    --gradient-mesh: radial-gradient(ellipse at 20% 80%, rgba(74,140,140,0.15) 0%, transparent 50%),
+                     radial-gradient(ellipse at 80% 20%, rgba(148,184,53,0.12) 0%, transparent 50%),
+                     radial-gradient(ellipse at 50% 50%, rgba(107,159,130,0.08) 0%, transparent 60%);
   }
 
   .dark {
@@ -33,19 +68,19 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 180 53% 35%;
+    --primary: 73 55% 50%;
     --primary-foreground: 222.2 47.4% 11.2%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 180 30% 46%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 180 53% 35%;
+    --ring: 73 55% 50%;
   }
 
   * {
@@ -55,6 +90,7 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    color: var(--text-primary);
   }
 }
 
@@ -107,9 +143,9 @@ video::-webkit-media-controls-panel {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(34, 112, 112, 0.15);
+  background: rgba(43, 53, 68, 0.15);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(34, 112, 112, 0.3);
+  background: rgba(43, 53, 68, 0.3);
 }
