@@ -133,7 +133,9 @@ function CoursePlayerContent() {
 
     setSelectedLectureId(lectureId);
     setCurrentTimeSec(0);
+    setSeekTarget(null);
     lastSavedTimeRef.current = 0;
+    currentTimeRef.current = 0;
     setSidebarOpen(false);
 
     // Update URL without full navigation
@@ -223,8 +225,9 @@ function CoursePlayerContent() {
             <div className="bg-black">
               {isVideo && currentLecture.videoUrl ? (
                 <VideoPlayer
+                  key={currentLecture.id}
                   src={currentLecture.videoUrl}
-                  startTime={seekTarget ?? currentLecture.lastPositionSec}
+                  startTime={seekTarget ?? currentLecture.lastPositionSec ?? 0}
                   onTimeUpdate={handleTimeUpdate}
                   onEnded={handleVideoEnded}
                 />
