@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft,
@@ -20,7 +20,7 @@ import { ROUTES } from '@/lib/constants/routes';
 import { LectureType } from '@/lib/types/enums';
 import { toast } from 'sonner';
 
-export default function CoursePlayerPage() {
+function CoursePlayerContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -137,9 +137,6 @@ export default function CoursePlayerPage() {
   };
 
   const handleSeekToTime = useCallback((timestampSec: number) => {
-    // Seek the video player to the given timestamp
-    // Using the MediaPlayer ref pattern - we dispatch through the videoPlayer's startTime change
-    // Instead, we use a simpler approach: update a seek target state
     setSeekTarget(timestampSec);
   }, []);
 
@@ -164,12 +161,13 @@ export default function CoursePlayerPage() {
     );
   }
 
-  if (!playerData) {
+  if (!playerData || !playerData.currentLecture) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-700 mb-2">Kurs bulunamadi</h2>
+          <p className="text-gray-500 mb-4">Kurs icerigi yuklenemedi veya erisim izniniz yok.</p>
           <Button variant="outline" onClick={() => router.push(ROUTES.STUDENT_COURSES)}>
             Kurslarima Don
           </Button>
@@ -179,6 +177,11 @@ export default function CoursePlayerPage() {
   }
 
   const { currentLecture, sections, courseTitle } = playerData;
+
+  // Normalize lecture type comparison (backend may return string "Video" or "Text")
+  const lectureType = (currentLecture.type ?? '').toString();
+  const isVideo = lectureType === LectureType.Video || lectureType === 'Video';
+  const isText = lectureType === LectureType.Text || lectureType === 'Text';
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -210,14 +213,14 @@ export default function CoursePlayerPage() {
           <div className="max-w-5xl mx-auto">
             {/* Video Player or Text Content */}
             <div className="bg-black">
-              {currentLecture.type === LectureType.Video && currentLecture.videoUrl ? (
+              {isVideo && currentLecture.videoUrl ? (
                 <VideoPlayer
                   src={currentLecture.videoUrl}
                   startTime={seekTarget ?? currentLecture.lastPositionSec}
                   onTimeUpdate={handleTimeUpdate}
                   onEnded={handleVideoEnded}
                 />
-              ) : currentLecture.type === LectureType.Text ? (
+              ) : isText ? (
                 <div className="bg-white p-8 min-h-[400px]">
                   <div className="prose prose-gray max-w-none whitespace-pre-line">
                     {currentLecture.textContent || 'Icerik bulunamadi'}
@@ -263,8 +266,7 @@ export default function CoursePlayerPage() {
                     Tamamla
                   </Button>
                 ) : (
-                  !currentLecture.isCompleted &&
-                  currentLecture.type === LectureType.Text && (
+                  !currentLecture.isCompleted && isText && (
                     <Button
                       onClick={handleCompleteLecture}
                       disabled={completeLecture.isPending}
@@ -282,7 +284,7 @@ export default function CoursePlayerPage() {
               </div>
 
               {/* Notes Panel (below video) */}
-              {currentLecture.type === LectureType.Video && (
+              {isVideo && (
                 <NotesPanel
                   lectureId={currentLecture.id}
                   onSeek={(timestampSec) => {
@@ -334,5 +336,22 @@ export default function CoursePlayerPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CoursePlayerPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-10 h-10 text-primary-400 animate-spin mx-auto mb-4" />
+            <p className="text-gray-400">Kurs yukleniyor...</p>
+          </div>
+        </div>
+      }
+    >
+      <CoursePlayerContent />
+    </Suspense>
   );
 }

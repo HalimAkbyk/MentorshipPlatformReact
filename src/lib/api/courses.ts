@@ -213,7 +213,38 @@ export const coursesApi = {
 
   getCoursePlayer: async (courseId: string, lectureId?: string): Promise<CoursePlayerDto> => {
     const params = lectureId ? { lectureId } : undefined;
-    return apiClient.get<CoursePlayerDto>(`/course-enrollments/${courseId}/player`, params);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const raw: any = await apiClient.get(`/course-enrollments/${courseId}/player`, params);
+
+    // Backend returns flat fields: currentLectureId, currentLectureTitle, currentLectureType, videoUrl, textContent, lastPositionSec
+    // Frontend expects nested: currentLecture { id, title, type, videoUrl, ... }
+    return {
+      courseId: raw.courseId ?? courseId,
+      courseTitle: raw.courseTitle,
+      currentLecture: raw.currentLecture ?? {
+        id: raw.currentLectureId,
+        title: raw.currentLectureTitle,
+        description: raw.currentLectureDescription,
+        videoUrl: raw.videoUrl,
+        type: raw.currentLectureType,
+        textContent: raw.textContent,
+        durationSec: raw.durationSec ?? 0,
+        watchedSec: raw.watchedSec ?? 0,
+        lastPositionSec: raw.lastPositionSec ?? 0,
+        isCompleted: raw.isCompleted ?? false,
+      },
+      sections: (raw.sections ?? []).map((s: any) => ({
+        id: s.id,
+        title: s.title,
+        lectures: (s.lectures ?? []).map((l: any) => ({
+          id: l.id,
+          title: l.title,
+          durationSec: l.durationSec ?? 0,
+          isCompleted: l.isCompleted ?? false,
+          type: l.type,
+        })),
+      })),
+    } as CoursePlayerDto;
   },
 
   updateProgress: async (lectureId: string, watchedSec: number, lastPositionSec: number): Promise<void> => {
