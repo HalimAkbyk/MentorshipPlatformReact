@@ -25,6 +25,8 @@ export interface OfferingDto {
   minNoticeHours: number;
   sortOrder: number;
   coverImageUrl?: string;
+  coverImagePosition?: string;
+  coverImageTransform?: string;
   availabilityTemplateId?: string;
   questionCount: number;
   questions: OfferingQuestion[];
@@ -56,6 +58,8 @@ export interface UpdateOfferingData {
   maxBookingDaysAhead: number;
   minNoticeHours: number;
   coverImageUrl?: string;
+  coverImagePosition?: string;
+  coverImageTransform?: string;
 }
 
 export interface QuestionData {

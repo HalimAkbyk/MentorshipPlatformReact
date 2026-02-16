@@ -55,6 +55,9 @@ export interface Offering {
   price: number;
   currency: string;
   isActive: boolean;
+  coverImageUrl?: string;
+  coverImagePosition?: string;
+  coverImageTransform?: string;
 }
 
 export interface VerificationBadge {
@@ -171,6 +174,7 @@ export interface MentorCourseDto {
   shortDescription?: string;
   coverImageUrl?: string;
   coverImagePosition?: string;
+  coverImageTransform?: string;
   price: number;
   currency: string;
   status: CourseStatus;
@@ -191,6 +195,7 @@ export interface CourseEditDto {
   description?: string;
   coverImageUrl?: string;
   coverImagePosition?: string;
+  coverImageTransform?: string;
   promoVideoKey?: string;
   price: number;
   currency: string;
@@ -231,6 +236,7 @@ export interface PublicCourseDto {
   shortDescription?: string;
   coverImageUrl?: string;
   coverImagePosition?: string;
+  coverImageTransform?: string;
   price: number;
   currency: string;
   level: CourseLevel;
@@ -258,6 +264,7 @@ export interface CourseDetailDto {
   description?: string;
   coverImageUrl?: string;
   coverImagePosition?: string;
+  coverImageTransform?: string;
   promoVideoKey?: string;
   price: number;
   currency: string;
@@ -345,6 +352,7 @@ export interface EnrolledCourseDto {
   courseTitle: string;
   coverImageUrl?: string;
   coverImagePosition?: string;
+  coverImageTransform?: string;
   mentorName: string;
   completionPercentage: number;
   lastAccessedAt?: string;

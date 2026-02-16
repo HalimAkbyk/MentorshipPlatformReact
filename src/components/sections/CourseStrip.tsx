@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { getCoverImageStyle } from '@/components/ui/cover-image-editor';
 import { Star, BookOpen, Clock, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useFeaturedCourses } from '@/lib/hooks/use-homepage';
@@ -99,7 +100,7 @@ function CourseCard({ course }: { course: PublicCourseDto }) {
                 src={course.coverImageUrl}
                 alt={course.title}
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                style={course.coverImagePosition ? { objectPosition: course.coverImagePosition } : undefined}
+                style={getCoverImageStyle(course.coverImagePosition, course.coverImageTransform)}
               />
             ) : (
               <div className="h-full w-full bg-gradient-to-br from-teal-400/30 via-lime-500/20 to-sage-400/30 flex items-center justify-center">

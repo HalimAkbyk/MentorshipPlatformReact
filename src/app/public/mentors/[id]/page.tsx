@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getCoverImageStyle } from '@/components/ui/cover-image-editor';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Star, CheckCircle, Video, Clock, HelpCircle, Tag, AlertTriangle } from 'lucide-react';
@@ -301,6 +302,7 @@ export default function MentorProfilePage() {
                                 src={offering.coverImageUrl}
                                 alt={offering.title}
                                 className="w-full h-full object-cover"
+                                style={getCoverImageStyle(offering.coverImagePosition, offering.coverImageTransform)}
                               />
                             </div>
                           )}

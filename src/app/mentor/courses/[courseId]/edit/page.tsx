@@ -48,6 +48,7 @@ const courseSettingsSchema = z.object({
   language: z.string().default('tr'),
   coverImageUrl: z.string().optional().or(z.literal('')),
   coverImagePosition: z.string().optional().or(z.literal('')),
+  coverImageTransform: z.string().optional().or(z.literal('')),
   whatYouWillLearn: z.array(z.object({ value: z.string() })).max(10),
   requirements: z.array(z.object({ value: z.string() })).max(10),
   targetAudience: z.array(z.object({ value: z.string() })).max(5),
@@ -212,6 +213,7 @@ function CourseSettingsForm({
       language: course.language || 'tr',
       coverImageUrl: course.coverImageUrl || '',
       coverImagePosition: course.coverImagePosition || 'center center',
+      coverImageTransform: course.coverImageTransform || '',
       whatYouWillLearn: (course.whatYouWillLearn || []).map((v) => ({ value: v })),
       requirements: (course.requirements || []).map((v) => ({ value: v })),
       targetAudience: (course.targetAudience || []).map((v) => ({ value: v })),
@@ -252,6 +254,7 @@ function CourseSettingsForm({
           language: data.language || 'tr',
           coverImageUrl: data.coverImageUrl || undefined,
           coverImagePosition: data.coverImagePosition || undefined,
+          coverImageTransform: data.coverImageTransform || undefined,
           whatYouWillLearn: data.whatYouWillLearn.map((i) => i.value).filter(Boolean),
           requirements: data.requirements.map((i) => i.value).filter(Boolean),
           targetAudience: data.targetAudience.map((i) => i.value).filter(Boolean),
@@ -343,8 +346,10 @@ function CourseSettingsForm({
             currentUrl={watchCoverImage || ''}
             uploadEndpoint={`/courses/${courseId}/upload-cover`}
             currentPosition={form.watch('coverImagePosition') || 'center center'}
+            currentTransform={form.watch('coverImageTransform') || ''}
             onUploaded={(url) => form.setValue('coverImageUrl', url)}
             onPositionChange={(pos) => form.setValue('coverImagePosition', pos)}
+            onTransformChange={(t) => form.setValue('coverImageTransform', t)}
             previewHeight="h-44"
             onAfterUpload={() => queryClient.invalidateQueries({ queryKey: ['course', 'edit', courseId] })}
           />

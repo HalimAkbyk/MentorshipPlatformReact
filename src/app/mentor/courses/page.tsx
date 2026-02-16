@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { getCoverImageStyle } from '@/components/ui/cover-image-editor';
 import { useRouter } from 'next/navigation';
 import {
   Plus, Pencil, Trash2, Archive, Send, Loader2,
@@ -235,7 +236,7 @@ function CourseCard({
             src={course.coverImageUrl}
             alt={course.title}
             className="w-full h-full object-cover"
-            style={course.coverImagePosition ? { objectPosition: course.coverImagePosition } : undefined}
+            style={getCoverImageStyle(course.coverImagePosition, course.coverImageTransform)}
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center">

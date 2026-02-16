@@ -8,6 +8,34 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+/** Helper to generate CSS style for cover image display from persisted position/transform */
+export function getCoverImageStyle(
+  position?: string,
+  transformJson?: string
+): React.CSSProperties {
+  const style: React.CSSProperties = {};
+  if (position) {
+    style.objectPosition = position;
+  }
+  if (transformJson) {
+    try {
+      const t = JSON.parse(transformJson);
+      const parts: string[] = [];
+      if (t.scale && t.scale !== 1) parts.push(`scale(${t.scale})`);
+      if (t.rotate && t.rotate !== 0) parts.push(`rotate(${t.rotate}deg)`);
+      if ((t.translateX && t.translateX !== 0) || (t.translateY && t.translateY !== 0)) {
+        parts.push(`translate(${t.translateX || 0}px, ${t.translateY || 0}px)`);
+      }
+      if (parts.length > 0) {
+        style.transform = parts.join(' ');
+      }
+    } catch {
+      // invalid JSON, ignore
+    }
+  }
+  return style;
+}
+
 export interface CoverImageEditorProps {
   /** Current image URL */
   currentUrl: string;
@@ -19,6 +47,10 @@ export interface CoverImageEditorProps {
   currentPosition?: string;
   /** Callback when position changes */
   onPositionChange?: (position: string) => void;
+  /** Current transform JSON string */
+  currentTransform?: string;
+  /** Callback when transform changes */
+  onTransformChange?: (transform: string) => void;
   /** Height class for the preview area */
   previewHeight?: string;
   /** Optional: additional query cache invalidation callback */
@@ -39,12 +71,29 @@ const DEFAULT_TRANSFORM: TransformState = {
   translateY: 0,
 };
 
+function parseTransform(json?: string): TransformState {
+  if (!json) return DEFAULT_TRANSFORM;
+  try {
+    const parsed = JSON.parse(json);
+    return {
+      scale: parsed.scale ?? 1,
+      rotate: parsed.rotate ?? 0,
+      translateX: parsed.translateX ?? 0,
+      translateY: parsed.translateY ?? 0,
+    };
+  } catch {
+    return DEFAULT_TRANSFORM;
+  }
+}
+
 export function CoverImageEditor({
   currentUrl,
   uploadEndpoint,
   onUploaded,
   currentPosition = 'center center',
   onPositionChange,
+  currentTransform,
+  onTransformChange,
   previewHeight = 'h-48',
   onAfterUpload,
 }: CoverImageEditorProps) {
@@ -56,7 +105,7 @@ export function CoverImageEditor({
   const [objectPosition, setObjectPosition] = useState(currentPosition || 'center center');
   const [isDragging, setIsDragging] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [transform, setTransform] = useState<TransformState>(DEFAULT_TRANSFORM);
+  const [transform, setTransform] = useState<TransformState>(() => parseTransform(currentTransform));
 
   // Sync with external URL
   useEffect(() => {
@@ -71,6 +120,20 @@ export function CoverImageEditor({
       setObjectPosition(currentPosition);
     }
   }, [currentPosition]);
+
+  // Sync transform from props
+  useEffect(() => {
+    if (currentTransform) {
+      const parsed = parseTransform(currentTransform);
+      setTransform(parsed);
+    }
+  }, [currentTransform]);
+
+  // Emit transform changes
+  const emitTransform = useCallback((t: TransformState) => {
+    const isDefault = t.scale === 1 && t.rotate === 0 && t.translateX === 0 && t.translateY === 0;
+    onTransformChange?.(isDefault ? '' : JSON.stringify(t));
+  }, [onTransformChange]);
 
   const handleUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -164,52 +227,61 @@ export function CoverImageEditor({
     onPositionChange?.(newPos);
   };
 
-  // Transform controls
+  // Transform controls - each emits the new transform for persistence
+  const updateTransform = useCallback((updater: (t: TransformState) => TransformState) => {
+    setTransform(prev => {
+      const next = updater(prev);
+      emitTransform(next);
+      return next;
+    });
+  }, [emitTransform]);
+
   const zoomIn = useCallback(() => {
-    setTransform(t => ({ ...t, scale: Math.min(t.scale + 0.1, 3) }));
-  }, []);
+    updateTransform(t => ({ ...t, scale: Math.min(t.scale + 0.1, 3) }));
+  }, [updateTransform]);
 
   const zoomOut = useCallback(() => {
-    setTransform(t => ({ ...t, scale: Math.max(t.scale - 0.1, 0.5) }));
-  }, []);
+    updateTransform(t => ({ ...t, scale: Math.max(t.scale - 0.1, 0.5) }));
+  }, [updateTransform]);
 
   const rotateRight = useCallback(() => {
-    setTransform(t => ({ ...t, rotate: t.rotate + 15 }));
-  }, []);
+    updateTransform(t => ({ ...t, rotate: t.rotate + 15 }));
+  }, [updateTransform]);
 
   const rotateLeft = useCallback(() => {
-    setTransform(t => ({ ...t, rotate: t.rotate - 15 }));
-  }, []);
+    updateTransform(t => ({ ...t, rotate: t.rotate - 15 }));
+  }, [updateTransform]);
 
   const panUp = useCallback(() => {
-    setTransform(t => ({ ...t, translateY: t.translateY - 5 }));
-  }, []);
+    updateTransform(t => ({ ...t, translateY: t.translateY - 5 }));
+  }, [updateTransform]);
 
   const panDown = useCallback(() => {
-    setTransform(t => ({ ...t, translateY: t.translateY + 5 }));
-  }, []);
+    updateTransform(t => ({ ...t, translateY: t.translateY + 5 }));
+  }, [updateTransform]);
 
   const panLeft = useCallback(() => {
-    setTransform(t => ({ ...t, translateX: t.translateX - 5 }));
-  }, []);
+    updateTransform(t => ({ ...t, translateX: t.translateX - 5 }));
+  }, [updateTransform]);
 
   const panRight = useCallback(() => {
-    setTransform(t => ({ ...t, translateX: t.translateX + 5 }));
-  }, []);
+    updateTransform(t => ({ ...t, translateX: t.translateX + 5 }));
+  }, [updateTransform]);
 
   const resetTransform = useCallback(() => {
     setTransform(DEFAULT_TRANSFORM);
+    emitTransform(DEFAULT_TRANSFORM);
     setObjectPosition('center center');
     onPositionChange?.('center center');
-  }, [onPositionChange]);
+  }, [onPositionChange, emitTransform]);
 
   // Wheel zoom
   const handleWheel = useCallback((e: React.WheelEvent) => {
     if (!isEditing) return;
     e.preventDefault();
     const delta = e.deltaY > 0 ? -0.05 : 0.05;
-    setTransform(t => ({ ...t, scale: Math.min(Math.max(t.scale + delta, 0.5), 3) }));
-  }, [isEditing]);
+    updateTransform(t => ({ ...t, scale: Math.min(Math.max(t.scale + delta, 0.5), 3) }));
+  }, [isEditing, updateTransform]);
 
   const getTransformStyle = (): React.CSSProperties => ({
     objectPosition,

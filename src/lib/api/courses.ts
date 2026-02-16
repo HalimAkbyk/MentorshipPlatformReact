@@ -34,6 +34,7 @@ export interface UpdateCourseData {
   level?: string;
   coverImageUrl?: string;
   coverImagePosition?: string;
+  coverImageTransform?: string;
   promoVideoKey?: string;
   whatYouWillLearn?: string[];
   requirements?: string[];
@@ -182,6 +183,8 @@ export const coursesApi = {
       shortDescription: raw.shortDescription,
       description: raw.description,
       coverImageUrl: raw.coverImageUrl,
+      coverImagePosition: raw.coverImagePosition,
+      coverImageTransform: raw.coverImageTransform,
       promoVideoKey: raw.promoVideoKey,
       price: raw.price ?? 0,
       currency: raw.currency ?? 'TRY',

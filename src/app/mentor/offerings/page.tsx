@@ -42,6 +42,8 @@ const offeringSchema = z.object({
   maxBookingDaysAhead: z.coerce.number().min(1).max(365).default(60),
   minNoticeHours: z.coerce.number().min(0).max(72).default(2),
   coverImageUrl: z.string().optional().or(z.literal('')),
+  coverImagePosition: z.string().optional().or(z.literal('')),
+  coverImageTransform: z.string().optional().or(z.literal('')),
 });
 
 type OfferingFormData = z.infer<typeof offeringSchema>;
@@ -461,6 +463,8 @@ function OfferingFormModal({
           maxBookingDaysAhead: offering.maxBookingDaysAhead,
           minNoticeHours: offering.minNoticeHours,
           coverImageUrl: offering.coverImageUrl || '',
+          coverImagePosition: offering.coverImagePosition || 'center center',
+          coverImageTransform: offering.coverImageTransform || '',
         }
       : {
           title: '',
@@ -474,6 +478,8 @@ function OfferingFormModal({
           maxBookingDaysAhead: 60,
           minNoticeHours: 2,
           coverImageUrl: '',
+          coverImagePosition: 'center center',
+          coverImageTransform: '',
         },
   });
 
@@ -493,6 +499,8 @@ function OfferingFormModal({
           maxBookingDaysAhead: data.maxBookingDaysAhead,
           minNoticeHours: data.minNoticeHours,
           coverImageUrl: data.coverImageUrl || undefined,
+          coverImagePosition: data.coverImagePosition || undefined,
+          coverImageTransform: data.coverImageTransform || undefined,
         });
         toast.success('Paket güncellendi');
       } else {
@@ -617,7 +625,11 @@ function OfferingFormModal({
             <CoverImageEditor
               currentUrl={form.watch('coverImageUrl') || ''}
               uploadEndpoint={`/offerings/${offering!.id}/upload-cover`}
+              currentPosition={form.watch('coverImagePosition') || 'center center'}
+              currentTransform={form.watch('coverImageTransform') || ''}
               onUploaded={(url) => form.setValue('coverImageUrl', url)}
+              onPositionChange={(pos) => form.setValue('coverImagePosition', pos)}
+              onTransformChange={(t) => form.setValue('coverImageTransform', t)}
               previewHeight="h-40"
             />
           </div>

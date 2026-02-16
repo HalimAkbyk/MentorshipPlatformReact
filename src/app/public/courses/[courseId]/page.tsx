@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { getCoverImageStyle } from '@/components/ui/cover-image-editor';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Star,
@@ -241,7 +242,7 @@ export default function CourseDetailPage() {
             ? {
                 backgroundImage: `linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.85)), url(${course.coverImageUrl})`,
                 backgroundSize: 'cover',
-                backgroundPosition: 'center',
+                backgroundPosition: course.coverImagePosition || 'center',
               }
             : undefined
         }
@@ -507,7 +508,7 @@ export default function CourseDetailPage() {
                   src={course.coverImageUrl}
                   alt={course.title}
                   className="w-full h-48 object-cover"
-                  style={course.coverImagePosition ? { objectPosition: course.coverImagePosition } : undefined}
+                  style={getCoverImageStyle(course.coverImagePosition, course.coverImageTransform)}
                 />
               )}
 

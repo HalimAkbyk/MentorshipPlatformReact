@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { getCoverImageStyle } from '@/components/ui/cover-image-editor';
 import { BookOpen, Clock, ArrowRight, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -56,7 +57,7 @@ export default function StudentCoursesPage() {
                       src={course.coverImageUrl}
                       alt={course.courseTitle}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      style={course.coverImagePosition ? { objectPosition: course.coverImagePosition } : undefined}
+                      style={getCoverImageStyle(course.coverImagePosition, course.coverImageTransform)}
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-primary-400 to-primary-700 flex items-center justify-center">
