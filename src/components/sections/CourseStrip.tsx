@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import { Star, BookOpen, Clock, ChevronRight } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useFeaturedCourses } from '@/lib/hooks/use-homepage';
 import type { PublicCourseDto } from '@/lib/types/models';
@@ -96,12 +95,10 @@ function CourseCard({ course }: { course: PublicCourseDto }) {
           {/* Cover image */}
           <div className="relative h-[158px] overflow-hidden">
             {course.coverImageUrl ? (
-              <Image
+              <img
                 src={course.coverImageUrl}
                 alt={course.title}
-                fill
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                sizes="280px"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 style={course.coverImagePosition ? { objectPosition: course.coverImagePosition } : undefined}
               />
             ) : (
