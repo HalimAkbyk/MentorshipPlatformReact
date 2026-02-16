@@ -70,22 +70,6 @@ export default function StudentDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold font-heading">Dashboard</h1>
-          <div className="flex items-center space-x-4">
-            <Link href="/public/mentors">
-              <Button>Mentor Bul</Button>
-            </Link>
-            <Avatar>
-              <AvatarImage src={user?.avatarUrl} />
-              <AvatarFallback>{user?.displayName.charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
-          </div>
-        </div>
-      </header>
-
       <div className="container mx-auto px-4 py-8">
         {/* Welcome */}
         <div className="mb-8">
