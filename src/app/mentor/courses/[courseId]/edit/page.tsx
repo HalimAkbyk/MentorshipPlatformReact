@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft, Loader2, Save, Send, Plus, Trash2, Pencil,
   ChevronDown, ChevronRight, Video, FileText, Eye, X,
-  Upload, CheckCircle, Image, BookOpen, GripVertical, Move,
+  Upload, CheckCircle, BookOpen, GripVertical,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -18,6 +18,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
+import { CoverImageEditor } from '@/components/ui/cover-image-editor';
 import { useConfirm } from '@/lib/hooks/useConfirm';
 import {
   useCourseForEdit,
@@ -338,12 +339,14 @@ function CourseSettingsForm({
           </div>
 
           {/* Cover Image Upload */}
-          <CoverImageUploader
-            courseId={courseId}
+          <CoverImageEditor
             currentUrl={watchCoverImage || ''}
+            uploadEndpoint={`/courses/${courseId}/upload-cover`}
             currentPosition={form.watch('coverImagePosition') || 'center center'}
             onUploaded={(url) => form.setValue('coverImageUrl', url)}
             onPositionChange={(pos) => form.setValue('coverImagePosition', pos)}
+            previewHeight="h-44"
+            onAfterUpload={() => queryClient.invalidateQueries({ queryKey: ['course', 'edit', courseId] })}
           />
 
           {/* WhatYouWillLearn */}
@@ -443,303 +446,6 @@ function DynamicStringList({
       <p className="text-xs text-gray-400 mt-1">
         {fields.length}/{maxItems}
       </p>
-    </div>
-  );
-}
-
-// ==================== COVER IMAGE UPLOADER ====================
-
-function CoverImageUploader({
-  courseId,
-  currentUrl,
-  currentPosition,
-  onUploaded,
-  onPositionChange,
-}: {
-  courseId: string;
-  currentUrl: string;
-  currentPosition: string;
-  onUploaded: (url: string) => void;
-  onPositionChange: (position: string) => void;
-}) {
-  const queryClient = useQueryClient();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [previewUrl, setPreviewUrl] = useState(currentUrl || '');
-  const [objectPosition, setObjectPosition] = useState(currentPosition || 'center center');
-  const [isDragging, setIsDragging] = useState(false);
-  const [isPositioning, setIsPositioning] = useState(false);
-
-  // Sync with form value
-  useEffect(() => {
-    if (currentUrl && currentUrl !== previewUrl && !uploading) {
-      setPreviewUrl(currentUrl);
-    }
-  }, [currentUrl]);
-
-  // Sync position with form
-  useEffect(() => {
-    if (currentPosition && currentPosition !== objectPosition) {
-      setObjectPosition(currentPosition);
-    }
-  }, [currentPosition]);
-
-  const handleUpload = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      toast.error('Lütfen bir görsel dosyası seçin');
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('Dosya boyutu en fazla 10 MB olabilir');
-      return;
-    }
-
-    // Show local preview immediately
-    const localPreview = URL.createObjectURL(file);
-    setPreviewUrl(localPreview);
-    setUploading(true);
-    setProgress(0);
-
-    try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5072/api';
-      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const result = await new Promise<{ coverImageUrl: string }>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.upload.addEventListener('progress', (event) => {
-          if (event.lengthComputable) {
-            setProgress(Math.round((event.loaded / event.total) * 100));
-          }
-        });
-        xhr.addEventListener('load', () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              resolve(JSON.parse(xhr.responseText));
-            } catch {
-              reject(new Error('Yanıt işlenemedi'));
-            }
-          } else {
-            reject(new Error(`Yükleme başarısız: ${xhr.status}`));
-          }
-        });
-        xhr.addEventListener('error', () => reject(new Error('Yükleme başarısız')));
-        xhr.open('POST', `${API_URL}/courses/${courseId}/upload-cover`);
-        if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-        xhr.send(formData);
-      });
-
-      setPreviewUrl(result.coverImageUrl);
-      onUploaded(result.coverImageUrl);
-      queryClient.invalidateQueries({ queryKey: ['course', 'edit', courseId] });
-      toast.success('Kapak görseli yüklendi!');
-    } catch (error) {
-      console.error('Cover upload error:', error);
-      toast.error('Kapak görseli yüklenirken hata oluştu');
-      // Revert to original
-      setPreviewUrl(currentUrl || '');
-    } finally {
-      setUploading(false);
-      setProgress(0);
-      URL.revokeObjectURL(localPreview);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleUpload(file);
-  };
-
-  // Drag & drop handlers
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-  const handleDragLeave = () => setIsDragging(false);
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) handleUpload(file);
-  };
-
-  // Position control: Click on image to set object-position
-  const handlePositionClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isPositioning || !containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
-    const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
-    const newPos = `${x}% ${y}%`;
-    setObjectPosition(newPos);
-    onPositionChange(newPos);
-  };
-
-  return (
-    <div>
-      <label className="block text-sm font-medium mb-1.5">Kapak Görseli</label>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileSelect}
-        className="hidden"
-      />
-
-      {/* Preview / Upload area */}
-      {previewUrl && !uploading ? (
-        <div className="space-y-2">
-          {/* Image preview with object-position */}
-          <div
-            ref={containerRef}
-            onClick={handlePositionClick}
-            className={`relative rounded-lg overflow-hidden border-2 h-44 group ${
-              isPositioning
-                ? 'cursor-crosshair border-blue-400 ring-2 ring-blue-200'
-                : 'border-gray-200'
-            }`}
-          >
-            <img
-              src={previewUrl}
-              alt="Kapak önizleme"
-              className="w-full h-full object-cover transition-all duration-200"
-              style={{ objectPosition }}
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '';
-                setPreviewUrl('');
-              }}
-            />
-
-            {/* Overlay actions */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
-              {!isPositioning && (
-                <>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      fileInputRef.current?.click();
-                    }}
-                    className="px-3 py-1.5 bg-white rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm flex items-center gap-1.5"
-                  >
-                    <Upload className="w-3.5 h-3.5" />
-                    Değiştir
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsPositioning(true);
-                    }}
-                    className="px-3 py-1.5 bg-white rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm flex items-center gap-1.5"
-                  >
-                    <Move className="w-3.5 h-3.5" />
-                    Konumla
-                  </button>
-                </>
-              )}
-            </div>
-
-            {/* Positioning mode indicator */}
-            {isPositioning && (
-              <div className="absolute top-2 left-2 right-2 flex items-center justify-between">
-                <span className="px-2 py-1 bg-blue-500 text-white text-xs rounded-md font-medium">
-                  Odak noktasını seçmek için tıklayın
-                </span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsPositioning(false);
-                  }}
-                  className="px-2 py-1 bg-white text-gray-700 text-xs rounded-md font-medium hover:bg-gray-100 shadow-sm"
-                >
-                  Tamam
-                </button>
-              </div>
-            )}
-
-            {/* Position indicator dot */}
-            {isPositioning && (
-              <div
-                className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-blue-500 shadow-lg pointer-events-none"
-                style={{
-                  left: objectPosition.split(' ')[0],
-                  top: objectPosition.split(' ')[1],
-                }}
-              />
-            )}
-          </div>
-
-          {/* Position presets */}
-          {isPositioning && (
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-xs text-gray-500 mr-1">Hızlı:</span>
-              {[
-                { label: 'Üst', pos: 'center top' },
-                { label: 'Orta', pos: 'center center' },
-                { label: 'Alt', pos: 'center bottom' },
-                { label: 'Sol', pos: 'left center' },
-                { label: 'Sağ', pos: 'right center' },
-              ].map((preset) => (
-                <button
-                  key={preset.pos}
-                  type="button"
-                  onClick={() => { setObjectPosition(preset.pos); onPositionChange(preset.pos); }}
-                  className={`px-2 py-0.5 text-xs rounded border transition-colors ${
-                    objectPosition === preset.pos
-                      ? 'bg-blue-50 border-blue-300 text-blue-700'
-                      : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
-                  }`}
-                >
-                  {preset.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      ) : uploading ? (
-        /* Upload progress */
-        <div className="rounded-lg border-2 border-gray-200 p-4 space-y-2">
-          <div className="flex items-center gap-2 text-sm">
-            <Loader2 className="w-4 h-4 animate-spin text-primary-600" />
-            <span className="text-gray-700">Yükleniyor...</span>
-            <span className="text-gray-400 ml-auto">{progress}%</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-primary-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
-      ) : (
-        /* Empty state - upload trigger */
-        <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          className={`rounded-lg border-2 border-dashed p-6 text-center cursor-pointer transition-colors ${
-            isDragging
-              ? 'border-primary-400 bg-primary-50'
-              : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
-          }`}
-        >
-          <Image className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-          <p className="text-sm text-gray-600 font-medium">
-            Kapak görseli yükleyin
-          </p>
-          <p className="text-xs text-gray-400 mt-1">
-            Sürükle-bırak veya tıklayarak seçin · Max 10 MB · JPG, PNG, WebP
-          </p>
-        </div>
-      )}
     </div>
   );
 }

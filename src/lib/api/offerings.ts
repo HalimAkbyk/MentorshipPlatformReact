@@ -41,6 +41,7 @@ export interface CreateOfferingData {
   sessionType?: string;
   maxBookingDaysAhead?: number;
   minNoticeHours?: number;
+  coverImageUrl?: string;
 }
 
 export interface UpdateOfferingData {

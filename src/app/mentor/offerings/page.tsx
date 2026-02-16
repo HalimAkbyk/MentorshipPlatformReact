@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Modal } from '@/components/ui/modal';
+import { CoverImageEditor } from '@/components/ui/cover-image-editor';
 import { useConfirm } from '@/lib/hooks/useConfirm';
 import { offeringsApi, type OfferingDto, type OfferingQuestion } from '@/lib/api/offerings';
 import {
@@ -40,7 +41,7 @@ const offeringSchema = z.object({
   price: z.coerce.number().min(0, 'Fiyat 0 veya daha fazla olmalı'),
   maxBookingDaysAhead: z.coerce.number().min(1).max(365).default(60),
   minNoticeHours: z.coerce.number().min(0).max(72).default(2),
-  coverImageUrl: z.string().url().optional().or(z.literal('')),
+  coverImageUrl: z.string().optional().or(z.literal('')),
 });
 
 type OfferingFormData = z.infer<typeof offeringSchema>;
@@ -610,11 +611,22 @@ function OfferingFormModal({
           </div>
         </div>
 
-        {/* Cover Image URL */}
-        {isEdit && (
-          <div>
-            <label className="block text-sm font-medium mb-1">Kapak Görseli URL</label>
-            <Input placeholder="https://..." {...form.register('coverImageUrl')} />
+        {/* Cover Image */}
+        {isEdit ? (
+          <div className="border-t pt-4">
+            <CoverImageEditor
+              currentUrl={form.watch('coverImageUrl') || ''}
+              uploadEndpoint={`/offerings/${offering!.id}/upload-cover`}
+              onUploaded={(url) => form.setValue('coverImageUrl', url)}
+              previewHeight="h-40"
+            />
+          </div>
+        ) : (
+          <div className="border-t pt-4">
+            <p className="text-xs text-gray-500 flex items-center gap-1">
+              <Package className="w-3.5 h-3.5" />
+              Kapak gorseli paketi olusturduktan sonra duzenle ekranindan eklenebilir.
+            </p>
           </div>
         )}
 
