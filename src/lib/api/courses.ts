@@ -57,7 +57,25 @@ export const coursesApi = {
   },
 
   getCourseForEdit: async (id: string): Promise<CourseEditDto> => {
-    return apiClient.get<CourseEditDto>(`/courses/${id}/edit`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const raw: any = await apiClient.get(`/courses/${id}/edit`);
+
+    // Backend returns whatYouWillLearnJson, requirementsJson, targetAudienceJson as JSON strings
+    // Frontend expects them as string arrays
+    const parseJsonArray = (val: unknown): string[] => {
+      if (Array.isArray(val)) return val;
+      if (typeof val === 'string') {
+        try { const parsed = JSON.parse(val); return Array.isArray(parsed) ? parsed : []; } catch { return []; }
+      }
+      return [];
+    };
+
+    return {
+      ...raw,
+      whatYouWillLearn: parseJsonArray(raw.whatYouWillLearn ?? raw.whatYouWillLearnJson),
+      requirements: parseJsonArray(raw.requirements ?? raw.requirementsJson),
+      targetAudience: parseJsonArray(raw.targetAudience ?? raw.targetAudienceJson),
+    } as CourseEditDto;
   },
 
   create: async (data: CreateCourseData): Promise<{ id: string }> => {
