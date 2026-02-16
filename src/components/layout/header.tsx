@@ -71,7 +71,7 @@ export function Header() {
   }, []);
 
   return (
-    <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
+    <header className="glass sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
@@ -202,7 +202,7 @@ export function Header() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t bg-white absolute top-full left-0 right-0 z-50 shadow-lg">
+        <div className="md:hidden border-t glass absolute top-full left-0 right-0 z-50 shadow-lg">
           <nav className="container mx-auto px-4 py-4 flex flex-col space-y-1">
             {navLinks.map((link) => (
               <Link

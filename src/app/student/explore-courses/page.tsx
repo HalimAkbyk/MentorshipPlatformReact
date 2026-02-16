@@ -161,7 +161,7 @@ export default function StudentExploreCoursesPage() {
       <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 text-white">
         <div className="container mx-auto px-4 py-10 md:py-14">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-3xl md:text-4xl font-bold mb-3">
+            <h1 className="text-3xl md:text-4xl font-bold font-heading mb-3">
               Video Egitimler
             </h1>
             <p className="text-primary-100 text-base md:text-lg mb-8 max-w-2xl mx-auto">
@@ -495,7 +495,7 @@ export default function StudentExploreCoursesPage() {
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <GraduationCap className="w-10 h-10 text-gray-300" />
             </div>
-            <h3 className="text-xl font-semibold mb-2 text-gray-700">Kurs bulunamadi</h3>
+            <h3 className="text-xl font-semibold font-heading mb-2 text-gray-700">Kurs bulunamadi</h3>
             <p className="text-gray-500 mb-6 max-w-md mx-auto">
               Arama veya filtre kriterlerinize uygun kurs bulunamadi. Farkli bir arama yapmayi ya da filtreleri temizlemeyi deneyin.
             </p>
@@ -570,7 +570,7 @@ export default function StudentExploreCoursesPage() {
         {/* Bottom CTA */}
         <div className="mt-12 bg-gradient-to-r from-primary-50 to-blue-50 rounded-2xl p-6 md:p-8 text-center border border-primary-100">
           <GraduationCap className="w-10 h-10 text-primary-600 mx-auto mb-3" />
-          <h3 className="text-lg font-bold text-gray-900 mb-2">Kayitli Kurslarini Gormek Ister misin?</h3>
+          <h3 className="text-lg font-bold font-heading text-gray-900 mb-2">Kayitli Kurslarini Gormek Ister misin?</h3>
           <p className="text-sm text-gray-600 mb-4 max-w-md mx-auto">
             Daha once satin aldigin kurslara kaldigi yerden devam edebilirsin.
           </p>

@@ -46,7 +46,7 @@ export default function FaqPage() {
     <div className="min-h-screen py-16">
       <div className="container mx-auto px-4 max-w-3xl">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Sikca Sorulan Sorular</h1>
+          <h1 className="text-4xl font-bold font-heading mb-4">Sikca Sorulan Sorular</h1>
           <p className="text-xl text-gray-600">
             Merak ettiginiz her sey burada
           </p>

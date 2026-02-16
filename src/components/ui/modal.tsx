@@ -30,10 +30,10 @@ export function Modal({ open, onClose, title, description, children, className }
     <div className="fixed inset-0 z-50">
       <button
         aria-label="Close modal"
-        className="absolute inset-0 bg-black/40"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative mx-auto mt-24 w-[92vw] max-w-lg rounded-xl bg-white shadow-lg">
+      <div className="relative mx-auto mt-24 w-[92vw] max-w-lg rounded-2xl bg-white shadow-2xl">
         <div className="p-5 border-b">
           {title && <div className="text-base font-semibold">{title}</div>}
           {description && <div className="text-sm text-gray-600 mt-1">{description}</div>}

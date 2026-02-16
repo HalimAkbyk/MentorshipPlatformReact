@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils/cn";
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "gradient";
   size?: "default" | "sm" | "lg" | "icon";
   asChild?: boolean;
 }
@@ -13,14 +13,15 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         className={cn(
-          "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+          "inline-flex items-center justify-center rounded-lg text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
           {
-            "bg-primary-600 text-white hover:bg-primary-700": variant === "default",
+            "bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md": variant === "default",
             "bg-red-600 text-white hover:bg-red-700": variant === "destructive",
-            "border border-gray-300 bg-white hover:bg-gray-50": variant === "outline",
+            "border border-gray-300 bg-white hover:bg-gray-50 hover:border-gray-400": variant === "outline",
             "bg-gray-100 text-gray-900 hover:bg-gray-200": variant === "secondary",
             "hover:bg-gray-100": variant === "ghost",
             "text-primary-600 underline-offset-4 hover:underline": variant === "link",
+            "bg-gradient-to-r from-primary-600 to-primary-500 text-white hover:from-primary-700 hover:to-primary-600 shadow-lg shadow-primary-500/25 hover:shadow-xl hover:shadow-primary-500/30": variant === "gradient",
           },
           {
             "h-10 px-4 py-2": size === "default",

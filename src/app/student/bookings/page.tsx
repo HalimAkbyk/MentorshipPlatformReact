@@ -32,7 +32,7 @@ export default function BookingsPage() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Rezervasyonlarım</h1>
+            <h1 className="text-3xl font-bold font-heading mb-2">Rezervasyonlarım</h1>
             <p className="text-gray-600">Tüm rezervasyonlarınızı görüntüleyin</p>
           </div>
           <Link href="/public/mentors">
@@ -136,7 +136,7 @@ export default function BookingsPage() {
         ) : (
           <div className="text-center py-12">
             <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Henüz rezervasyon yok</h3>
+            <h3 className="text-xl font-semibold font-heading mb-2">Henüz rezervasyon yok</h3>
             <p className="text-gray-600 mb-6">
               İlk rezervasyonunuzu yaparak mentörlerinizle tanışın
             </p>

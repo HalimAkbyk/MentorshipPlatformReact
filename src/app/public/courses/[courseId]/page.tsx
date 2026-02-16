@@ -253,7 +253,7 @@ export default function CourseDetailPage() {
                 {course.category}
               </Badge>
             )}
-            <h1 className="text-3xl md:text-4xl font-bold mb-3">{course.title}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold font-heading mb-3">{course.title}</h1>
             {course.shortDescription && (
               <p className="text-lg text-gray-300 mb-4">{course.shortDescription}</p>
             )}
@@ -326,7 +326,7 @@ export default function CourseDetailPage() {
                 {/* Description */}
                 {course.description && (
                   <div>
-                    <h2 className="text-xl font-semibold mb-3">Kurs Hakkinda</h2>
+                    <h2 className="text-xl font-semibold font-heading mb-3">Kurs Hakkinda</h2>
                     <div className="prose prose-gray max-w-none text-gray-700 whitespace-pre-line">
                       {course.description}
                     </div>
@@ -336,7 +336,7 @@ export default function CourseDetailPage() {
                 {/* What you will learn */}
                 {course.whatYouWillLearn && course.whatYouWillLearn.length > 0 && (
                   <div className="bg-white border rounded-lg p-6">
-                    <h2 className="text-xl font-semibold mb-4">Neler Ogreneceksiniz</h2>
+                    <h2 className="text-xl font-semibold font-heading mb-4">Neler Ogreneceksiniz</h2>
                     <div className="grid sm:grid-cols-2 gap-3">
                       {course.whatYouWillLearn.map((item, i) => (
                         <div key={i} className="flex items-start gap-2">
@@ -351,7 +351,7 @@ export default function CourseDetailPage() {
                 {/* Requirements */}
                 {course.requirements && course.requirements.length > 0 && (
                   <div>
-                    <h2 className="text-xl font-semibold mb-3">Gereksinimler</h2>
+                    <h2 className="text-xl font-semibold font-heading mb-3">Gereksinimler</h2>
                     <ul className="space-y-2">
                       {course.requirements.map((item, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
@@ -366,7 +366,7 @@ export default function CourseDetailPage() {
                 {/* Target Audience */}
                 {course.targetAudience && course.targetAudience.length > 0 && (
                   <div>
-                    <h2 className="text-xl font-semibold mb-3">Hedef Kitle</h2>
+                    <h2 className="text-xl font-semibold font-heading mb-3">Hedef Kitle</h2>
                     <ul className="space-y-2">
                       {course.targetAudience.map((item, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
@@ -486,7 +486,7 @@ export default function CourseDetailPage() {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h2 className="text-xl font-semibold mb-1">{course.mentorName}</h2>
+                    <h2 className="text-xl font-semibold font-heading mb-1">{course.mentorName}</h2>
                     {course.mentorBio && (
                       <p className="text-gray-600 mt-3 whitespace-pre-line">
                         {course.mentorBio}

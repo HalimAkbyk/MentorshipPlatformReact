@@ -26,7 +26,7 @@ const DropdownMenuContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "absolute z-50 min-w-[8rem] overflow-hidden rounded-md border bg-white p-1 shadow-md",
+      "absolute z-50 min-w-[8rem] overflow-hidden rounded-xl border bg-white p-1.5 shadow-lg",
       align === "end" ? "right-0" : "left-0",
       "mt-2",
       className
@@ -47,7 +47,7 @@ const DropdownMenuItem = React.forwardRef<
     <Comp
       ref={ref}
       className={cn(
-        "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-gray-100 focus:bg-gray-100",
+        "relative flex cursor-pointer select-none items-center rounded-lg px-2.5 py-2 text-sm outline-none transition-colors hover:bg-gray-100 focus:bg-gray-100",
         className
       )}
       {...props}

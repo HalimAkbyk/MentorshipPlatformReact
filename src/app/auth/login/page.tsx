@@ -108,10 +108,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Giris Yap</CardTitle>
+          <CardTitle className="text-2xl font-bold font-heading text-center">Giris Yap</CardTitle>
           <CardDescription className="text-center">
             Hesabina giris yapmak icin email ve sifreni gir
           </CardDescription>

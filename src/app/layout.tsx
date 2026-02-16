@@ -1,9 +1,20 @@
 import type { Metadata } from "next";
-import { Urbanist } from "next/font/google";
+import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers/providers";
 
-const urbanist = Urbanist({ subsets: ["latin"], variable: "--font-urbanist" });
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+  weight: ["500", "600", "700", "800"],
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Degisim Mentorluk - YKS'ye Hazirlanmanin En Iyi Yolu",
@@ -17,7 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr">
-      <body className={urbanist.variable}>
+      <body className={`${jakarta.variable} ${inter.variable}`}>
         <Providers>{children}</Providers>
       </body>
     </html>

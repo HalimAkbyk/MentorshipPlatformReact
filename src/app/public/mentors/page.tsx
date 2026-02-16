@@ -30,7 +30,7 @@ export default function MentorsPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Search Bar */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <h1 className="text-3xl font-bold mb-6">Mentör Bul</h1>
+          <h1 className="text-3xl font-bold font-heading mb-6">Mentör Bul</h1>
           
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">

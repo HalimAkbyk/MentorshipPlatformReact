@@ -71,7 +71,7 @@ export default function StudentDashboardPage() {
       {/* Header */}
       <header className="bg-white border-b">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <h1 className="text-2xl font-bold font-heading">Dashboard</h1>
           <div className="flex items-center space-x-4">
             <Link href="/public/mentors">
               <Button>Mentor Bul</Button>
@@ -87,7 +87,7 @@ export default function StudentDashboardPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Welcome */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">
+          <h2 className="text-3xl font-bold font-heading mb-2">
             Merhaba, {user?.displayName}!
           </h2>
           <p className="text-gray-600">
@@ -267,7 +267,7 @@ export default function StudentDashboardPage() {
             )}
 
             {/* Video Egitimler CTA */}
-            <Card className="bg-gradient-to-br from-primary-50 to-blue-50 border-primary-200">
+            <Card className="bg-gradient-to-br from-primary-50 to-cyan-50 border-primary-200">
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">

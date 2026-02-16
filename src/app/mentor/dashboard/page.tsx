@@ -57,13 +57,13 @@ export default function MentorDashboardPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Mentör Dashboard</h1>
+          <h1 className="text-2xl font-bold font-heading">Mentör Dashboard</h1>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">
+          <h2 className="text-3xl font-bold font-heading mb-2">
             Hoş geldin, {user?.displayName}! 🎓
           </h2>
           <p className="text-gray-600">

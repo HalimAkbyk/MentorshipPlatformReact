@@ -80,7 +80,7 @@ export default function CourseCatalogPage() {
       {/* Hero / Search */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-12">
         <div className="container mx-auto px-4">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4 text-center">
+          <h1 className="text-3xl md:text-4xl font-bold font-heading mb-4 text-center">
             Kurs Katalogu
           </h1>
           <p className="text-primary-100 text-center mb-8 max-w-2xl mx-auto">

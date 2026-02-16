@@ -18,7 +18,7 @@ export default function StudentCoursesPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Kurslarim</h1>
+            <h1 className="text-3xl font-bold font-heading mb-2">Kurslarim</h1>
             <p className="text-gray-600">Kayitli oldugunuz kurslari goruntuleyip devam edin</p>
           </div>
           <Button onClick={() => router.push(ROUTES.COURSE_CATALOG)}>
@@ -118,7 +118,7 @@ export default function StudentCoursesPage() {
         ) : (
           <div className="text-center py-16">
             <GraduationCap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2 text-gray-700">
+            <h3 className="text-xl font-semibold font-heading mb-2 text-gray-700">
               Henuz bir kursa kayit olmadiniz
             </h3>
             <p className="text-gray-500 mb-6">

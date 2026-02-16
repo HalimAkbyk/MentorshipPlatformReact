@@ -162,7 +162,7 @@ export default function MentorOfferingsPage() {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold">Paketlerim</h1>
+              <h1 className="text-2xl font-bold font-heading">Paketlerim</h1>
               <p className="text-sm text-gray-500">Mentorluk paketlerinizi yonetin</p>
             </div>
           </div>
@@ -178,7 +178,7 @@ export default function MentorOfferingsPage() {
           <Card className="text-center py-16">
             <CardContent>
               <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">Henuz paket olusturmadiniz</h3>
+              <h3 className="text-lg font-semibold font-heading text-gray-700 mb-2">Henuz paket olusturmadiniz</h3>
               <p className="text-gray-500 mb-6">
                 Ogrencilerinize sunacaginiz mentorluk paketlerini olusturun.
               </p>
