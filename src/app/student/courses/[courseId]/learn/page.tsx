@@ -116,6 +116,12 @@ function CoursePlayerContent() {
   };
 
   const handleSelectLecture = (lectureId: string) => {
+    // Clear interval FIRST to prevent concurrent progress saves
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+
     // Save current progress before switching
     if (playerData?.currentLecture && currentTimeRef.current > 0) {
       updateProgress.mutate({
