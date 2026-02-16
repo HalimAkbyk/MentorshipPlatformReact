@@ -53,7 +53,7 @@ export default function MentorProfilePage() {
   }
 
   if (!mentor) {
-    // Kendi profiline bakan ama henüz profili oluşturulmamış/onaylanmamış mentor
+    // Kendi profiline bakan ama henüz profili oluşturulmamış/onaylanmamış mentor (login'li)
     if (isOwnProfile) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -80,12 +80,27 @@ export default function MentorProfilePage() {
     }
 
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">Mentör bulunamadı</h2>
-          <Link href="/public/mentors">
-            <Button>Mentörlere Dön</Button>
-          </Link>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <HelpCircle className="w-8 h-8 text-gray-400" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2 text-gray-800">Mentor Profili Bulunamadı</h2>
+          <p className="text-gray-600 mb-6">
+            {!isAuthenticated
+              ? 'Bu mentor profili henüz herkese açık olmayabilir. Eğer bu sizin profilinizse lütfen giriş yapın.'
+              : 'Bu mentor profili mevcut değil veya henüz yayına alınmamış.'}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            {!isAuthenticated && (
+              <Button onClick={() => router.push(`/auth/login?redirect=/public/mentors/${mentorId}`)}>
+                Giriş Yap
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => router.push('/public/mentors')}>
+              Mentörlere Dön
+            </Button>
+          </div>
         </div>
       </div>
     );
