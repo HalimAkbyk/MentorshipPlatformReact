@@ -116,30 +116,6 @@ export default function MentorProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-primary-600">
-            MentorHub
-          </Link>
-          <div className="flex items-center space-x-4">
-            <Link href={ROUTES.MENTORS}>
-              <Button variant="ghost">← Mentörlere Dön</Button>
-            </Link>
-            {!isAuthenticated && (
-              <>
-                <Link href={ROUTES.LOGIN}>
-                  <Button variant="ghost">Giriş Yap</Button>
-                </Link>
-                <Link href={ROUTES.SIGNUP}>
-                  <Button>Kayıt Ol</Button>
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
-
       {/* Kendi profili ama henüz yayında değil uyarısı — duruma göre mesaj */}
       {mentor.isOwnProfile && !mentor.isListed && (() => {
         const vs = mentor.verificationStatus;
@@ -201,6 +177,16 @@ export default function MentorProfilePage() {
       })()}
 
       <div className="container mx-auto px-4 py-8">
+        {/* Breadcrumb */}
+        <div className="mb-6">
+          <Link
+            href={ROUTES.MENTORS}
+            className="inline-flex items-center text-sm text-gray-500 hover:text-primary-600 transition-colors"
+          >
+            ← Mentörlere Dön
+          </Link>
+        </div>
+
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left Column - Profile Info */}
           <div className="lg:col-span-1">

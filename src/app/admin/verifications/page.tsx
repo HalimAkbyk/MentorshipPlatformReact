@@ -65,21 +65,26 @@ export default function AdminVerificationsPage() {
       setVerificationModal(prev => ({ ...prev, isProcessing: true }));
 
       if (verificationModal.action === 'approve') {
-        await adminApi.approveVerification({ 
+        await adminApi.approveVerification({
           verificationId: verificationModal.verificationId,
           isApproved: true  // ✅ isApproved eklendi
         });
         toast.success('Doğrulama onaylandı');
       } else {
-        await adminApi.rejectVerification({ 
+        await adminApi.rejectVerification({
           verificationId: verificationModal.verificationId,
           isApproved: false,  // ✅ isApproved eklendi
-          notes: 'Reddedildi' 
+          notes: 'Reddedildi'
         });
         toast.success('Doğrulama reddedildi');
       }
 
-      await refetch();
+      const { data: refreshed } = await refetch();
+      // Seçili mentorü güncel veriyle eşitle
+      if (refreshed && selectedMentor) {
+        const updated = refreshed.find((m: PendingMentorDto) => m.userId === selectedMentor.userId);
+        setSelectedMentor(updated ?? null);
+      }
       setVerificationModal({ open: false, verificationId: null, action: null, isProcessing: false });
     } catch (error: any) {
       toast.error('İşlem başarısız');
