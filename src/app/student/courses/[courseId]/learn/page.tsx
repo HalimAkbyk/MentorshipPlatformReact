@@ -297,18 +297,18 @@ function CoursePlayerContent() {
           <div className="h-5 w-px bg-white/[0.08]" />
 
           <div className="min-w-0 flex items-center gap-3">
-            <h1 className="text-[13px] font-medium text-gray-300 truncate max-w-md">
+            <h1 className="text-sm font-semibold text-gray-200 truncate max-w-md">
               {courseTitle}
             </h1>
             {/* Mini progress badge */}
-            <div className="hidden sm:flex items-center gap-2 shrink-0">
-              <div className="w-20 h-1 rounded-full bg-white/[0.06] overflow-hidden">
+            <div className="hidden sm:flex items-center gap-2.5 shrink-0">
+              <div className="w-24 h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-400 transition-all duration-700"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
-              <span className="text-[11px] text-gray-500 font-medium tabular-nums">
+              <span className="text-xs text-gray-400 font-semibold tabular-nums">
                 %{progressPercent}
               </span>
             </div>
@@ -366,11 +366,11 @@ function CoursePlayerContent() {
             <div className="px-6 lg:px-8 py-5 border-b border-white/[0.06]">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <h2 className="text-base lg:text-lg font-semibold text-white leading-snug">
+                  <h2 className="text-lg lg:text-xl font-bold text-white leading-snug">
                     {currentLecture.title}
                   </h2>
                   {currentLecture.description && (
-                    <p className="text-sm text-gray-500 mt-1.5 line-clamp-2">
+                    <p className="text-sm text-gray-400 mt-1.5 line-clamp-2">
                       {currentLecture.description}
                     </p>
                   )}

@@ -66,21 +66,21 @@ export default function CurriculumSidebar({
       {/* Header */}
       <div className="px-5 py-4 border-b border-white/[0.06]">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-[13px] text-gray-200 tracking-wide uppercase">
+          <h3 className="font-bold text-sm text-gray-100">
             Mufredat
           </h3>
-          <span className="text-[11px] text-gray-500 font-medium tabular-nums">
+          <span className="text-xs text-gray-400 font-semibold tabular-nums">
             {completedLectures}/{totalLectures}
           </span>
         </div>
         {/* Progress bar */}
-        <div className="w-full h-1 rounded-full bg-white/[0.06] overflow-hidden">
+        <div className="w-full h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
           <div
             className="h-full rounded-full bg-gradient-to-r from-primary-600 to-primary-400 transition-all duration-700 ease-out"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
-        <p className="text-[10px] text-gray-600 mt-1.5 font-medium">
+        <p className="text-xs text-gray-500 mt-2 font-medium">
           %{progressPercent} tamamlandi
         </p>
       </div>
@@ -104,22 +104,22 @@ export default function CurriculumSidebar({
                     "transition-transform duration-200",
                     isExpanded && "rotate-90"
                   )}>
-                    <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
+                    <ChevronRight className="w-4 h-4 text-gray-500" />
                   </div>
                   <div className="min-w-0">
-                    <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider block">
+                    <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block">
                       Bolum {sectionIndex + 1}
                     </span>
-                    <span className="text-[13px] font-medium text-gray-300 truncate block mt-0.5 group-hover:text-white transition-colors">
+                    <span className="text-sm font-semibold text-gray-200 truncate block mt-0.5 group-hover:text-white transition-colors">
                       {section.title}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
                   {allCompleted && (
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                    <CheckCircle className="w-4 h-4 text-emerald-500" />
                   )}
-                  <span className="text-[10px] text-gray-600 font-medium tabular-nums">
+                  <span className="text-xs text-gray-500 font-semibold tabular-nums">
                     {sectionCompletedCount}/{section.lectures.length}
                   </span>
                 </div>
@@ -165,21 +165,21 @@ export default function CurriculumSidebar({
                         <div className="min-w-0 flex-1">
                           <p
                             className={cn(
-                              'text-[12.5px] truncate leading-snug transition-colors',
+                              'text-[13px] truncate leading-snug transition-colors',
                               isCurrent
-                                ? 'text-primary-300 font-medium'
-                                : 'text-gray-400 group-hover/lecture:text-gray-300'
+                                ? 'text-primary-300 font-semibold'
+                                : 'text-gray-300 group-hover/lecture:text-gray-200'
                             )}
                           >
                             {lecture.title}
                           </p>
                           <div className="flex items-center gap-1.5 mt-1">
                             {isVideoType ? (
-                              <Play className="w-2.5 h-2.5 text-gray-600" />
+                              <Play className="w-3 h-3 text-gray-500" />
                             ) : (
-                              <FileText className="w-2.5 h-2.5 text-gray-600" />
+                              <FileText className="w-3 h-3 text-gray-500" />
                             )}
-                            <span className="text-[10px] text-gray-600 font-medium">
+                            <span className="text-[11px] text-gray-500 font-medium">
                               {lecture.durationSec > 0
                                 ? formatLectureDuration(lecture.durationSec)
                                 : lecture.type === LectureType.Text || lecture.type === 'Text'
