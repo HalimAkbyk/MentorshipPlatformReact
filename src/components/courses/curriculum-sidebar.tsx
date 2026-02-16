@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, CheckCircle, Circle, Play, FileText } from 'lucide-react';
+import { ChevronDown, ChevronRight, CheckCircle, Circle, Play, FileText, Lock } from 'lucide-react';
 import type { CoursePlayerSectionDto } from '@/lib/types/models';
 import { LectureType } from '@/lib/types/enums';
 import { cn } from '@/lib/utils/cn';
@@ -23,7 +23,6 @@ export default function CurriculumSidebar({
   currentLectureId,
   onSelectLecture,
 }: CurriculumSidebarProps) {
-  // Track which sections are expanded
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   // Auto-expand the section containing the current lecture
@@ -55,89 +54,110 @@ export default function CurriculumSidebar({
     });
   };
 
-  // Count total and completed lectures
   const totalLectures = sections.reduce((sum, s) => sum + s.lectures.length, 0);
   const completedLectures = sections.reduce(
     (sum, s) => sum + s.lectures.filter((l) => l.isCompleted).length,
     0
   );
+  const progressPercent = totalLectures > 0 ? Math.round((completedLectures / totalLectures) * 100) : 0;
 
   return (
-    <div className="bg-white rounded-lg border h-full flex flex-col">
+    <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b">
-        <h3 className="font-semibold text-gray-900 text-sm">Mufredat</h3>
-        <p className="text-xs text-gray-500 mt-1">
-          {completedLectures}/{totalLectures} ders tamamlandi
-        </p>
-        {/* Mini progress bar */}
-        <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+      <div className="px-5 py-4 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-[13px] text-gray-200 tracking-wide uppercase">
+            Mufredat
+          </h3>
+          <span className="text-[11px] text-gray-500 font-medium tabular-nums">
+            {completedLectures}/{totalLectures}
+          </span>
+        </div>
+        {/* Progress bar */}
+        <div className="w-full h-1 rounded-full bg-white/[0.06] overflow-hidden">
           <div
-            className="bg-green-500 h-1.5 rounded-full transition-all duration-500"
-            style={{
-              width: totalLectures > 0 ? `${(completedLectures / totalLectures) * 100}%` : '0%',
-            }}
+            className="h-full rounded-full bg-gradient-to-r from-primary-600 to-primary-400 transition-all duration-700 ease-out"
+            style={{ width: `${progressPercent}%` }}
           />
         </div>
+        <p className="text-[10px] text-gray-600 mt-1.5 font-medium">
+          %{progressPercent} tamamlandi
+        </p>
       </div>
 
       {/* Sections */}
       <div className="flex-1 overflow-y-auto">
-        {sections.map((section) => {
+        {sections.map((section, sectionIndex) => {
           const isExpanded = expandedSections.has(section.id);
-          const sectionCompleted = section.lectures.every((l) => l.isCompleted);
           const sectionCompletedCount = section.lectures.filter((l) => l.isCompleted).length;
+          const allCompleted = sectionCompletedCount === section.lectures.length && section.lectures.length > 0;
 
           return (
-            <div key={section.id} className="border-b last:border-b-0">
+            <div key={section.id} className="border-b border-white/[0.04] last:border-b-0">
               {/* Section Header */}
               <button
                 onClick={() => toggleSection(section.id)}
-                className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors text-left"
+                className="w-full flex items-center justify-between px-5 py-3 hover:bg-white/[0.03] transition-colors text-left group"
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  {isExpanded ? (
-                    <ChevronUp className="w-4 h-4 text-gray-400 shrink-0" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className={cn(
+                    "transition-transform duration-200",
+                    isExpanded && "rotate-90"
+                  )}>
+                    <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider block">
+                      Bolum {sectionIndex + 1}
+                    </span>
+                    <span className="text-[13px] font-medium text-gray-300 truncate block mt-0.5 group-hover:text-white transition-colors">
+                      {section.title}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 ml-3">
+                  {allCompleted && (
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
                   )}
-                  <span className="text-sm font-medium text-gray-800 truncate">
-                    {section.title}
+                  <span className="text-[10px] text-gray-600 font-medium tabular-nums">
+                    {sectionCompletedCount}/{section.lectures.length}
                   </span>
                 </div>
-                <span className="text-xs text-gray-400 shrink-0 ml-2">
-                  {sectionCompletedCount}/{section.lectures.length}
-                </span>
               </button>
 
               {/* Lectures */}
               {isExpanded && (
-                <div className="bg-gray-50/50">
-                  {section.lectures.map((lecture) => {
+                <div className="pb-1">
+                  {section.lectures.map((lecture, lectureIndex) => {
                     const isCurrent = lecture.id === currentLectureId;
+                    const isVideoType = lecture.type === LectureType.Video || lecture.type === 'Video';
 
                     return (
                       <button
                         key={lecture.id}
                         onClick={() => onSelectLecture(lecture.id)}
                         className={cn(
-                          'w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors',
+                          'w-full flex items-center gap-3 pl-10 pr-5 py-2.5 text-left transition-all duration-150 group/lecture relative',
                           isCurrent
-                            ? 'bg-primary-50 border-l-2 border-primary-600'
-                            : 'hover:bg-gray-100 border-l-2 border-transparent'
+                            ? 'bg-primary-600/10'
+                            : 'hover:bg-white/[0.03]'
                         )}
                       >
+                        {/* Active indicator */}
+                        {isCurrent && (
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-7 rounded-r-full bg-primary-500" />
+                        )}
+
                         {/* Status Icon */}
-                        <div className="shrink-0">
+                        <div className="shrink-0 w-5 h-5 flex items-center justify-center">
                           {lecture.isCompleted ? (
-                            <CheckCircle className="w-4 h-4 text-green-500" />
+                            <CheckCircle className="w-[18px] h-[18px] text-emerald-500" />
+                          ) : isCurrent ? (
+                            <div className="w-[18px] h-[18px] rounded-full border-2 border-primary-500 flex items-center justify-center">
+                              <div className="w-1.5 h-1.5 rounded-full bg-primary-500" />
+                            </div>
                           ) : (
-                            <Circle
-                              className={cn(
-                                'w-4 h-4',
-                                isCurrent ? 'text-primary-600' : 'text-gray-300'
-                              )}
-                            />
+                            <Circle className="w-[18px] h-[18px] text-gray-700" />
                           )}
                         </div>
 
@@ -145,22 +165,24 @@ export default function CurriculumSidebar({
                         <div className="min-w-0 flex-1">
                           <p
                             className={cn(
-                              'text-xs truncate',
-                              isCurrent ? 'text-primary-700 font-medium' : 'text-gray-700'
+                              'text-[12.5px] truncate leading-snug transition-colors',
+                              isCurrent
+                                ? 'text-primary-300 font-medium'
+                                : 'text-gray-400 group-hover/lecture:text-gray-300'
                             )}
                           >
                             {lecture.title}
                           </p>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            {lecture.type === LectureType.Video ? (
-                              <Play className="w-3 h-3 text-gray-400" />
+                          <div className="flex items-center gap-1.5 mt-1">
+                            {isVideoType ? (
+                              <Play className="w-2.5 h-2.5 text-gray-600" />
                             ) : (
-                              <FileText className="w-3 h-3 text-gray-400" />
+                              <FileText className="w-2.5 h-2.5 text-gray-600" />
                             )}
-                            <span className="text-[10px] text-gray-400">
+                            <span className="text-[10px] text-gray-600 font-medium">
                               {lecture.durationSec > 0
                                 ? formatLectureDuration(lecture.durationSec)
-                                : lecture.type === LectureType.Text
+                                : lecture.type === LectureType.Text || lecture.type === 'Text'
                                 ? 'Metin'
                                 : '--:--'}
                             </span>

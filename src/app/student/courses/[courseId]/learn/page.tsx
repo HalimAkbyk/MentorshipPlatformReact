@@ -10,6 +10,8 @@ import {
   FileText,
   Menu,
   X,
+  GraduationCap,
+  LayoutList,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCoursePlayer, useUpdateProgress, useCompleteLecture } from '@/lib/hooks/use-courses';
@@ -83,7 +85,6 @@ function CoursePlayerContent() {
   const scheduleProgressSave = useCallback((lectureId: string, timeSec: number) => {
     pendingSaveRef.current = { lectureId, time: timeSec };
 
-    // Clear previous timer — restart 3s debounce
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     debounceTimerRef.current = setTimeout(() => {
       const pending = pendingSaveRef.current;
@@ -91,7 +92,6 @@ function CoursePlayerContent() {
     }, 3000);
   }, [doSave]);
 
-  // Flush: immediately send any pending save (for critical moments)
   const flushProgressSave = useCallback(() => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
@@ -116,10 +116,9 @@ function CoursePlayerContent() {
     return () => clearInterval(interval);
   }, [playerData?.currentLecture?.id, scheduleProgressSave]);
 
-  // ─── Save on page unload (refresh, close tab, navigate away) ───
+  // ─── Save on page unload ───
   useEffect(() => {
     const handleBeforeUnload = () => {
-      // Flush debounced save
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
 
       const lectureId = currentLectureIdRef.current;
@@ -179,7 +178,6 @@ function CoursePlayerContent() {
   const handleVideoPause = useCallback((time: number) => {
     const lectureId = currentLectureIdRef.current;
     if (lectureId && time > 0) {
-      // Pause is important — schedule with shorter debounce won't help, just save
       scheduleProgressSave(lectureId, time);
     }
   }, [scheduleProgressSave]);
@@ -210,7 +208,6 @@ function CoursePlayerContent() {
 
   // ─── Lecture switch ───
   const handleSelectLecture = (lectureId: string) => {
-    // Flush any pending progress for the CURRENT lecture
     flushProgressSave();
 
     setSelectedLectureId(lectureId);
@@ -232,26 +229,37 @@ function CoursePlayerContent() {
     playerData.currentLecture.durationSec > 0 &&
     currentTimeSec >= playerData.currentLecture.durationSec * 0.9;
 
-  // ─── Loading / Error states ───
+  // ─── Loading state ───
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-10 h-10 text-primary-400 animate-spin mx-auto mb-4" />
-          <p className="text-gray-400">Kurs yukleniyor...</p>
+          <div className="relative w-12 h-12 mx-auto mb-5">
+            <div className="absolute inset-0 rounded-full border-2 border-primary-800/30" />
+            <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary-400 animate-spin" />
+          </div>
+          <p className="text-gray-500 text-sm font-medium tracking-wide">Ders yukleniyor...</p>
         </div>
       </div>
     );
   }
 
+  // ─── Error state ───
   if (!playerData || !playerData.currentLecture) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-700 mb-2">Kurs bulunamadi</h2>
-          <p className="text-gray-500 mb-4">Kurs icerigi yuklenemedi veya erisim izniniz yok.</p>
-          <Button variant="outline" onClick={() => router.push(ROUTES.STUDENT_COURSES)}>
+      <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center">
+        <div className="text-center max-w-sm mx-auto px-6">
+          <div className="w-16 h-16 rounded-2xl bg-gray-800/50 flex items-center justify-center mx-auto mb-5">
+            <BookOpen className="w-8 h-8 text-gray-600" />
+          </div>
+          <h2 className="text-lg font-semibold text-gray-300 mb-2">Kurs bulunamadi</h2>
+          <p className="text-gray-500 text-sm mb-6">Kurs icerigi yuklenemedi veya erisim izniniz yok.</p>
+          <Button
+            variant="outline"
+            onClick={() => router.push(ROUTES.STUDENT_COURSES)}
+            className="bg-gray-800/50 border-gray-700 text-gray-300 hover:bg-gray-700/50 hover:text-white"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
             Kurslarima Don
           </Button>
         </div>
@@ -265,109 +273,153 @@ function CoursePlayerContent() {
   const isVideo = lectureType === LectureType.Video || lectureType === 'Video';
   const isText = lectureType === LectureType.Text || lectureType === 'Text';
 
+  // Progress calculation
+  const totalLectures = sections.reduce((sum, s) => sum + s.lectures.length, 0);
+  const completedLectures = sections.reduce(
+    (sum, s) => sum + s.lectures.filter((l) => l.isCompleted).length,
+    0
+  );
+  const progressPercent = totalLectures > 0 ? Math.round((completedLectures / totalLectures) * 100) : 0;
+
   return (
-    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
-      {/* Top Bar */}
-      <header className="bg-gray-900 text-white px-6 py-3.5 flex items-center justify-between shrink-0 z-20 border-b border-gray-800">
-        <div className="flex items-center gap-4">
+    <div className="h-screen bg-[#0f0f0f] flex flex-col overflow-hidden">
+      {/* ─── Top Bar ─── */}
+      <header className="bg-[#141414] text-white px-4 lg:px-6 h-14 flex items-center justify-between shrink-0 z-20 border-b border-white/[0.06]">
+        <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={() => router.push(ROUTES.STUDENT_COURSES)}
-            className="text-gray-400 hover:text-white transition-colors p-1 rounded-md hover:bg-gray-800"
+            className="text-gray-500 hover:text-white transition-all duration-200 p-2 -ml-2 rounded-lg hover:bg-white/[0.06]"
             title="Kurslarima Don"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-[18px] h-[18px]" />
           </button>
-          <div className="h-5 w-px bg-gray-700" />
-          <h1 className="text-sm font-medium truncate max-w-lg">{courseTitle}</h1>
+
+          <div className="h-5 w-px bg-white/[0.08]" />
+
+          <div className="min-w-0 flex items-center gap-3">
+            <h1 className="text-[13px] font-medium text-gray-300 truncate max-w-md">
+              {courseTitle}
+            </h1>
+            {/* Mini progress badge */}
+            <div className="hidden sm:flex items-center gap-2 shrink-0">
+              <div className="w-20 h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-400 transition-all duration-700"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+              <span className="text-[11px] text-gray-500 font-medium tabular-nums">
+                %{progressPercent}
+              </span>
+            </div>
+          </div>
         </div>
 
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="lg:hidden text-gray-400 hover:text-white transition-colors p-1.5 rounded-md hover:bg-gray-800"
-        >
-          {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Desktop sidebar toggle hint */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="lg:hidden text-gray-500 hover:text-white transition-all duration-200 p-2 rounded-lg hover:bg-white/[0.06]"
+          >
+            {sidebarOpen ? <X className="w-[18px] h-[18px]" /> : <LayoutList className="w-[18px] h-[18px]" />}
+          </button>
+        </div>
       </header>
 
-      {/* Main Content */}
+      {/* ─── Main Content ─── */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left: Video + Notes */}
-        <div className="flex-1 min-w-0 overflow-y-auto">
-          <div className="max-w-5xl mx-auto">
-            <div className="bg-black">
-              {isVideo && currentLecture.videoUrl ? (
-                <VideoPlayer
-                  key={currentLecture.id}
-                  src={currentLecture.videoUrl}
-                  startTime={seekTarget ?? currentLecture.lastPositionSec ?? 0}
-                  onTimeUpdate={handleTimeUpdate}
-                  onPause={handleVideoPause}
-                  onSeeked={handleVideoSeeked}
-                  onEnded={handleVideoEnded}
-                />
-              ) : isText ? (
-                <div className="bg-white p-8 min-h-[400px]">
-                  <div className="prose prose-gray max-w-none whitespace-pre-line">
+        {/* Left: Video + Info + Notes */}
+        <div className="flex-1 min-w-0 overflow-y-auto scrollbar-thin">
+          {/* Video Area */}
+          <div className="bg-black">
+            {isVideo && currentLecture.videoUrl ? (
+              <VideoPlayer
+                key={currentLecture.id}
+                src={currentLecture.videoUrl}
+                startTime={seekTarget ?? currentLecture.lastPositionSec ?? 0}
+                onTimeUpdate={handleTimeUpdate}
+                onPause={handleVideoPause}
+                onSeeked={handleVideoSeeked}
+                onEnded={handleVideoEnded}
+              />
+            ) : isText ? (
+              <div className="bg-[#1a1a1a] p-8 lg:p-12 min-h-[400px]">
+                <div className="max-w-3xl mx-auto">
+                  <div className="prose prose-invert prose-gray max-w-none whitespace-pre-line text-gray-300 leading-relaxed">
                     {currentLecture.textContent || 'Icerik bulunamadi'}
                   </div>
                 </div>
-              ) : (
-                <div className="aspect-video bg-gray-800 flex items-center justify-center">
-                  <div className="text-center text-gray-400">
-                    <FileText className="w-12 h-12 mx-auto mb-2" />
-                    <p>Video bulunamadi</p>
-                  </div>
+              </div>
+            ) : (
+              <div className="aspect-video bg-[#1a1a1a] flex items-center justify-center">
+                <div className="text-center text-gray-600">
+                  <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p className="text-sm">Video bulunamadi</p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+          </div>
 
-            {/* Lecture Info */}
-            <div className="p-6">
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-900">{currentLecture.title}</h2>
+          {/* Lecture Info + Notes */}
+          <div className="max-w-4xl mx-auto">
+            {/* Lecture Title Bar */}
+            <div className="px-6 lg:px-8 py-5 border-b border-white/[0.06]">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <h2 className="text-base lg:text-lg font-semibold text-white leading-snug">
+                    {currentLecture.title}
+                  </h2>
                   {currentLecture.description && (
-                    <p className="text-sm text-gray-600 mt-1">{currentLecture.description}</p>
+                    <p className="text-sm text-gray-500 mt-1.5 line-clamp-2">
+                      {currentLecture.description}
+                    </p>
                   )}
                 </div>
 
-                {currentLecture.isCompleted ? (
-                  <div className="flex items-center gap-1.5 text-green-600 shrink-0">
-                    <CheckCircle className="w-5 h-5" />
-                    <span className="text-sm font-medium">Tamamlandi</span>
-                  </div>
-                ) : canComplete ? (
-                  <Button
-                    onClick={handleCompleteLecture}
-                    disabled={completeLecture.isPending}
-                    className="shrink-0"
-                  >
-                    {completeLecture.isPending ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                    )}
-                    Tamamla
-                  </Button>
-                ) : (
-                  !currentLecture.isCompleted && isText && (
+                <div className="shrink-0">
+                  {currentLecture.isCompleted ? (
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                      <CheckCircle className="w-4 h-4 text-emerald-400" />
+                      <span className="text-xs font-medium text-emerald-400">Tamamlandi</span>
+                    </div>
+                  ) : canComplete ? (
                     <Button
                       onClick={handleCompleteLecture}
                       disabled={completeLecture.isPending}
-                      className="shrink-0"
+                      size="sm"
+                      className="bg-primary-600 hover:bg-primary-500 text-white rounded-full px-4 h-9 text-xs font-medium shadow-lg shadow-primary-900/20 transition-all duration-200"
                     >
                       {completeLecture.isPending ? (
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
                       ) : (
-                        <CheckCircle className="w-4 h-4 mr-2" />
+                        <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
                       )}
                       Tamamla
                     </Button>
-                  )
-                )}
+                  ) : (
+                    !currentLecture.isCompleted && isText && (
+                      <Button
+                        onClick={handleCompleteLecture}
+                        disabled={completeLecture.isPending}
+                        size="sm"
+                        className="bg-primary-600 hover:bg-primary-500 text-white rounded-full px-4 h-9 text-xs font-medium shadow-lg shadow-primary-900/20 transition-all duration-200"
+                      >
+                        {completeLecture.isPending ? (
+                          <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                        ) : (
+                          <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
+                        )}
+                        Tamamla
+                      </Button>
+                    )
+                  )}
+                </div>
               </div>
+            </div>
 
-              {isVideo && (
+            {/* Notes Panel */}
+            {isVideo && (
+              <div className="px-6 lg:px-8 py-6">
                 <NotesPanel
                   lectureId={currentLecture.id}
                   onSeek={(timestampSec) => {
@@ -376,13 +428,13 @@ function CoursePlayerContent() {
                   }}
                   currentTimeSec={currentTimeSec}
                 />
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Right: Curriculum Sidebar */}
-        <div className="hidden lg:block w-80 xl:w-96 border-l bg-white overflow-y-auto shrink-0">
+        {/* ─── Right: Curriculum Sidebar (Desktop) ─── */}
+        <div className="hidden lg:block w-80 xl:w-[340px] border-l border-white/[0.06] bg-[#141414] overflow-y-auto shrink-0">
           <CurriculumSidebar
             sections={sections}
             currentLectureId={currentLecture.id}
@@ -390,21 +442,21 @@ function CoursePlayerContent() {
           />
         </div>
 
-        {/* Mobile Sidebar Overlay */}
+        {/* ─── Mobile Sidebar Overlay ─── */}
         {sidebarOpen && (
           <>
             <div
-              className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 lg:hidden"
               onClick={() => setSidebarOpen(false)}
             />
-            <div className="fixed right-0 top-0 bottom-0 w-80 bg-white z-40 lg:hidden overflow-y-auto shadow-xl">
-              <div className="flex items-center justify-between p-4 border-b">
-                <h3 className="font-semibold text-sm">Mufredat</h3>
+            <div className="fixed right-0 top-0 bottom-0 w-[320px] bg-[#141414] z-40 lg:hidden overflow-y-auto shadow-2xl shadow-black/50 animate-slide-in-right">
+              <div className="flex items-center justify-between px-5 h-14 border-b border-white/[0.06]">
+                <h3 className="font-semibold text-sm text-gray-300">Mufredat</h3>
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-500 hover:text-white p-1.5 rounded-lg hover:bg-white/[0.06] transition-colors"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
               <CurriculumSidebar
@@ -424,10 +476,13 @@ export default function CoursePlayerPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center">
           <div className="text-center">
-            <Loader2 className="w-10 h-10 text-primary-400 animate-spin mx-auto mb-4" />
-            <p className="text-gray-400">Kurs yukleniyor...</p>
+            <div className="relative w-12 h-12 mx-auto mb-5">
+              <div className="absolute inset-0 rounded-full border-2 border-primary-800/30" />
+              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary-400 animate-spin" />
+            </div>
+            <p className="text-gray-500 text-sm font-medium tracking-wide">Ders yukleniyor...</p>
           </div>
         </div>
       }

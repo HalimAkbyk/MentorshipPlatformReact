@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Pencil, Trash2, Plus, Clock, X, Check, Loader2 } from 'lucide-react';
+import { Pencil, Trash2, Plus, Clock, X, Check, Loader2, StickyNote, MessageSquarePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLectureNotes, useCreateNote, useUpdateNote, useDeleteNote } from '@/lib/hooks/use-courses';
 import { toast } from 'sonner';
@@ -87,59 +87,69 @@ export default function NotesPanel({ lectureId, onSeek, currentTimeSec = 0 }: No
     : [];
 
   return (
-    <div className="bg-white rounded-lg border">
+    <div className="rounded-xl bg-[#1a1a1a] border border-white/[0.06] overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
-        <h3 className="font-semibold text-gray-900">Notlarim</h3>
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]">
+        <div className="flex items-center gap-2.5">
+          <StickyNote className="w-4 h-4 text-primary-400" />
+          <h3 className="font-semibold text-[13px] text-gray-200">Notlarim</h3>
+          {sortedNotes.length > 0 && (
+            <span className="text-[10px] font-medium text-gray-600 bg-white/[0.04] px-2 py-0.5 rounded-full">
+              {sortedNotes.length}
+            </span>
+          )}
+        </div>
         {!isAdding && (
-          <Button
-            size="sm"
-            variant="outline"
+          <button
             onClick={() => setIsAdding(true)}
+            className="flex items-center gap-1.5 text-[12px] font-medium text-primary-400 hover:text-primary-300 transition-colors px-2.5 py-1.5 rounded-lg hover:bg-white/[0.04]"
           >
-            <Plus className="w-4 h-4 mr-1" />
+            <Plus className="w-3.5 h-3.5" />
             Not Ekle
-          </Button>
+          </button>
         )}
       </div>
 
       {/* Add Note Form */}
       {isAdding && (
-        <div className="p-4 border-b bg-gray-50">
-          <div className="flex items-center gap-2 mb-2 text-xs text-gray-500">
-            <Clock className="w-3.5 h-3.5" />
-            <span>{formatTimestamp(currentTimeSec)}</span>
+        <div className="px-5 py-4 border-b border-white/[0.06] bg-white/[0.02]">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary-600/10 border border-primary-500/20">
+              <Clock className="w-3 h-3 text-primary-400" />
+              <span className="text-[11px] font-medium text-primary-300 tabular-nums">
+                {formatTimestamp(currentTimeSec)}
+              </span>
+            </div>
           </div>
           <textarea
             value={newNoteContent}
             onChange={(e) => setNewNoteContent(e.target.value)}
             placeholder="Notunuzu yazin..."
-            className="w-full p-2 border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-300"
+            className="w-full px-3.5 py-2.5 bg-[#141414] border border-white/[0.08] rounded-lg text-[13px] text-gray-300 placeholder-gray-600 resize-none focus:outline-none focus:border-primary-500/40 focus:ring-1 focus:ring-primary-500/20 transition-all"
             rows={3}
             autoFocus
           />
-          <div className="flex items-center gap-2 mt-2">
-            <Button
-              size="sm"
+          <div className="flex items-center gap-2 mt-3">
+            <button
               onClick={handleCreateNote}
               disabled={!newNoteContent.trim() || createNote.isPending}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-[12px] font-medium rounded-lg transition-all duration-200"
             >
               {createNote.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
                 'Kaydet'
               )}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
+            </button>
+            <button
               onClick={() => {
                 setIsAdding(false);
                 setNewNoteContent('');
               }}
+              className="px-3.5 py-1.5 text-gray-500 hover:text-gray-300 text-[12px] font-medium rounded-lg hover:bg-white/[0.04] transition-colors"
             >
               Iptal
-            </Button>
+            </button>
           </div>
         </div>
       )}
@@ -147,47 +157,49 @@ export default function NotesPanel({ lectureId, onSeek, currentTimeSec = 0 }: No
       {/* Notes List */}
       <div className="max-h-80 overflow-y-auto">
         {isLoading ? (
-          <div className="p-4 space-y-3">
+          <div className="px-5 py-6 space-y-4">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="animate-pulse space-y-2">
-                <div className="h-3 bg-gray-200 rounded w-16" />
-                <div className="h-4 bg-gray-200 rounded w-full" />
+                <div className="h-3 bg-white/[0.04] rounded w-16" />
+                <div className="h-4 bg-white/[0.04] rounded w-full" />
               </div>
             ))}
           </div>
         ) : sortedNotes.length > 0 ? (
-          <div className="divide-y">
+          <div className="divide-y divide-white/[0.04]">
             {sortedNotes.map((note) => (
-              <div key={note.id} className="p-4 hover:bg-gray-50 transition-colors">
+              <div key={note.id} className="px-5 py-3.5 hover:bg-white/[0.02] transition-colors group">
                 {editingNoteId === note.id ? (
                   /* Editing Mode */
                   <div>
                     <textarea
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
-                      className="w-full p-2 border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-300"
+                      className="w-full px-3.5 py-2.5 bg-[#141414] border border-white/[0.08] rounded-lg text-[13px] text-gray-300 resize-none focus:outline-none focus:border-primary-500/40 focus:ring-1 focus:ring-primary-500/20 transition-all"
                       rows={3}
                       autoFocus
                     />
-                    <div className="flex items-center gap-2 mt-2">
-                      <Button
-                        size="sm"
+                    <div className="flex items-center gap-2 mt-2.5">
+                      <button
                         onClick={() => handleUpdateNote(note.id)}
                         disabled={!editContent.trim() || updateNote.isPending}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 hover:bg-primary-500 disabled:opacity-40 text-white text-[11px] font-medium rounded-lg transition-all"
                       >
                         {updateNote.isPending ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <Loader2 className="w-3 h-3 animate-spin" />
                         ) : (
                           <>
-                            <Check className="w-3.5 h-3.5 mr-1" />
+                            <Check className="w-3 h-3" />
                             Kaydet
                           </>
                         )}
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={cancelEditing}>
-                        <X className="w-3.5 h-3.5 mr-1" />
+                      </button>
+                      <button
+                        onClick={cancelEditing}
+                        className="px-3 py-1.5 text-gray-500 hover:text-gray-300 text-[11px] font-medium rounded-lg hover:bg-white/[0.04] transition-colors"
+                      >
                         Iptal
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 ) : (
@@ -195,23 +207,25 @@ export default function NotesPanel({ lectureId, onSeek, currentTimeSec = 0 }: No
                   <div>
                     <button
                       onClick={() => onSeek?.(note.timestampSec)}
-                      className="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-800 font-medium mb-1 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium text-primary-400 hover:text-primary-300 bg-primary-500/10 hover:bg-primary-500/15 transition-all duration-200 mb-2"
                     >
                       <Clock className="w-3 h-3" />
-                      {formatTimestamp(note.timestampSec)}
+                      <span className="tabular-nums">{formatTimestamp(note.timestampSec)}</span>
                     </button>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{note.content}</p>
-                    <div className="flex items-center gap-2 mt-2">
+                    <p className="text-[13px] text-gray-400 whitespace-pre-wrap leading-relaxed">
+                      {note.content}
+                    </p>
+                    <div className="flex items-center gap-3 mt-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <button
                         onClick={() => startEditing(note.id, note.content)}
-                        className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 transition-colors"
+                        className="text-[11px] text-gray-600 hover:text-gray-400 flex items-center gap-1 transition-colors"
                       >
                         <Pencil className="w-3 h-3" />
                         Duzenle
                       </button>
                       <button
                         onClick={() => handleDeleteNote(note.id)}
-                        className="text-xs text-gray-400 hover:text-red-500 flex items-center gap-1 transition-colors"
+                        className="text-[11px] text-gray-600 hover:text-red-400 flex items-center gap-1 transition-colors"
                         disabled={deleteNote.isPending}
                       >
                         <Trash2 className="w-3 h-3" />
@@ -224,9 +238,12 @@ export default function NotesPanel({ lectureId, onSeek, currentTimeSec = 0 }: No
             ))}
           </div>
         ) : (
-          <div className="p-8 text-center">
-            <p className="text-sm text-gray-400">Henuz not eklemediniz</p>
-            <p className="text-xs text-gray-300 mt-1">
+          <div className="py-10 px-5 text-center">
+            <div className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center mx-auto mb-3">
+              <MessageSquarePlus className="w-5 h-5 text-gray-700" />
+            </div>
+            <p className="text-[13px] text-gray-500 font-medium">Henuz not eklemediniz</p>
+            <p className="text-[11px] text-gray-600 mt-1">
               Video izlerken onemli anlari not alin
             </p>
           </div>
