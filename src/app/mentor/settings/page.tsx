@@ -14,6 +14,8 @@ import {
   Check,
   Camera,
   Image as ImageIcon,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
@@ -56,6 +58,9 @@ export default function MentorSettingsPage() {
   const [activeTab, setActiveTab] = useState('profile');
   const [isUpdating, setIsUpdating] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
   const [presetAvatars, setPresetAvatars] = useState<PresetAvatar[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -227,12 +232,42 @@ export default function MentorSettingsPage() {
             )}
             {activeTab === 'security' && (
               <Card>
-                <CardHeader><CardTitle>Şifre Değiştir</CardTitle><CardDescription>Güçlü bir şifre kullanın (en az 8 karakter)</CardDescription></CardHeader>
+                <CardHeader>
+                  <CardTitle>Şifre Değiştir</CardTitle>
+                  <CardDescription>Güçlü bir şifre kullanın (en az 8 karakter)</CardDescription>
+                </CardHeader>
                 <CardContent>
                   <form onSubmit={passwordForm.handleSubmit(updatePassword)} className="space-y-4">
-                    <div><label className="block text-sm font-medium mb-2">Mevcut Şifre</label><Input type="password" {...passwordForm.register('currentPassword')} />{passwordForm.formState.errors.currentPassword && <p className="text-sm text-red-600 mt-1">{passwordForm.formState.errors.currentPassword.message}</p>}</div>
-                    <div><label className="block text-sm font-medium mb-2">Yeni Şifre</label><Input type="password" {...passwordForm.register('newPassword')} />{passwordForm.formState.errors.newPassword && <p className="text-sm text-red-600 mt-1">{passwordForm.formState.errors.newPassword.message}</p>}</div>
-                    <div><label className="block text-sm font-medium mb-2">Yeni Şifre (Tekrar)</label><Input type="password" {...passwordForm.register('confirmPassword')} />{passwordForm.formState.errors.confirmPassword && <p className="text-sm text-red-600 mt-1">{passwordForm.formState.errors.confirmPassword.message}</p>}</div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Mevcut Şifre</label>
+                      <div className="relative">
+                        <Input type={showCurrentPw ? 'text' : 'password'} {...passwordForm.register('currentPassword')} className="pr-10" />
+                        <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                          {showCurrentPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                      {passwordForm.formState.errors.currentPassword && <p className="text-sm text-red-600 mt-1">{passwordForm.formState.errors.currentPassword.message}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Yeni Şifre</label>
+                      <div className="relative">
+                        <Input type={showNewPw ? 'text' : 'password'} {...passwordForm.register('newPassword')} className="pr-10" />
+                        <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                          {showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                      {passwordForm.formState.errors.newPassword && <p className="text-sm text-red-600 mt-1">{passwordForm.formState.errors.newPassword.message}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Yeni Şifre (Tekrar)</label>
+                      <div className="relative">
+                        <Input type={showConfirmPw ? 'text' : 'password'} {...passwordForm.register('confirmPassword')} className="pr-10" />
+                        <button type="button" onClick={() => setShowConfirmPw(!showConfirmPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                          {showConfirmPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                      {passwordForm.formState.errors.confirmPassword && <p className="text-sm text-red-600 mt-1">{passwordForm.formState.errors.confirmPassword.message}</p>}
+                    </div>
                     <Button type="submit" disabled={isUpdating}>{isUpdating ? 'Güncelleniyor...' : 'Şifreyi Güncelle'}</Button>
                   </form>
                 </CardContent>
