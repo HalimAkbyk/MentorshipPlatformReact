@@ -56,7 +56,7 @@ const fadeInUp = {
 
 function SkeletonCard() {
   return (
-    <div className="w-[280px] flex-shrink-0 rounded-xl border border-navy-100 bg-white overflow-hidden">
+    <div className="w-[280px] lg:w-full flex-shrink-0 rounded-xl border border-navy-100 bg-white overflow-hidden">
       {/* Image placeholder */}
       <div className="h-[158px] bg-gradient-to-br from-navy-50 to-navy-100 animate-shimmer bg-[length:200%_100%] bg-[linear-gradient(90deg,transparent_25%,rgba(255,255,255,0.5)_50%,transparent_75%)]" />
       <div className="p-4 space-y-3">
@@ -85,7 +85,7 @@ function CourseCard({ course }: { course: PublicCourseDto }) {
       <Link href={`/public/courses/${course.id}`} className="block group">
         <div
           className="
-            w-[280px] flex-shrink-0 rounded-xl
+            w-[280px] lg:w-full flex-shrink-0 rounded-xl
             border border-navy-100 bg-white
             shadow-sm overflow-hidden
             transition-all duration-300

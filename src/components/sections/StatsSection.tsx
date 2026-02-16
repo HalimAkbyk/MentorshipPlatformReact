@@ -117,7 +117,7 @@ export default function StatsSection() {
 
   return (
     <section
-      className="py-16 relative overflow-hidden"
+      className="py-16 md:py-20 relative overflow-hidden"
       style={{ background: 'var(--gradient-stats)' }}
     >
       {/* Subtle decorative glow */}
@@ -129,7 +129,7 @@ export default function StatsSection() {
         <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-64 h-64 bg-teal-400/[0.04] rounded-full blur-3xl" />
       </div>
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
           className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-6"
           variants={containerVariants}

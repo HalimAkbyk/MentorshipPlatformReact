@@ -32,7 +32,7 @@ const fadeInRight: Variants = {
 
 export default function PromoBanner() {
   return (
-    <section className="py-16">
+    <section className="py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
