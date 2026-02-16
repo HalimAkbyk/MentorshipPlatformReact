@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Shield, BadgeCheck, RotateCcw, Users, CalendarDays, Image as ImageIcon } from 'lucide-react';
+import { Shield, BadgeCheck, RotateCcw, Users, CalendarDays, Image as ImageIcon, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -77,7 +77,20 @@ export default function AdminDashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ImageIcon className="w-5 h-5" /> Önerilen Avatarlar
+              <BarChart3 className="w-5 h-5 text-green-600" /> Gelir Raporu
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-gray-600 mb-4">Platform gelir, gider ve finansal ozet.</p>
+            <Link href="/admin/revenue">
+              <Button className="w-full bg-green-600 hover:bg-green-700">Gelir Raporuna Git</Button>
+            </Link>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ImageIcon className="w-5 h-5" /> Onerilen Avatarlar
             </CardTitle>
           </CardHeader>
           <CardContent>

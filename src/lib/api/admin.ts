@@ -29,6 +29,62 @@ export interface SystemHealthDto {
   completedBookingsLast24h: number;
 }
 
+// --- Revenue ---
+export interface PlatformRevenueSummaryDto {
+  totalRevenue: number;
+  totalRefundsIssued: number;
+  netRevenue: number;
+  totalMentorEarnings: number;
+  totalGrossVolume: number;
+  totalOrders: number;
+  totalRefunds: number;
+  thisMonthRevenue: number;
+  lastMonthRevenue: number;
+}
+
+export interface PlatformTransactionDto {
+  id: string;
+  accountType: string;
+  direction: string;
+  amount: number;
+  currency: string;
+  referenceType: string;
+  referenceId: string;
+  createdAt: string;
+  accountOwnerUserId: string | null;
+  accountOwnerName: string | null;
+}
+
+export interface PaginatedList<T> {
+  items: T[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+// --- Refund Requests ---
+export interface AdminRefundRequestDto {
+  id: string;
+  orderId: string;
+  orderType: string;
+  requestedByUserId: string;
+  requesterName: string | null;
+  reason: string;
+  requestedAmount: number;
+  orderTotal: number;
+  alreadyRefunded: number;
+  status: string;
+  refundType: string;
+  createdAt: string;
+  processedAt: string | null;
+  mentorName: string | null;
+  resourceTitle: string | null;
+  adminNotes: string | null;
+}
+
 export const adminApi = {
   // Verifications
   getPendingVerifications: async (): Promise<PendingVerificationDto[]> => {
@@ -58,7 +114,7 @@ export const adminApi = {
     return apiClient.post<void>(`/admin/mentors/${userId}/unpublish`);
   },
 
-  // Refunds
+  // Legacy Refunds (old system — kept for backward compat)
   getPendingRefunds: async (): Promise<PendingRefundDto[]> => {
     return apiClient.get<PendingRefundDto[]>('/admin/refunds', { status: 'Pending' });
   },
@@ -71,6 +127,48 @@ export const adminApi = {
   rejectRefund: async (data: RefundApprovalRequest): Promise<void> => {
     const { refundId, ...rest } = data;
     return apiClient.post<void>(`/admin/refunds/${refundId}/reject`, rest);
+  },
+
+  // New Refund System
+  getRefundRequests: async (params?: {
+    status?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<PaginatedList<AdminRefundRequestDto>> => {
+    return apiClient.get('/refunds/admin/list', params);
+  },
+
+  processRefund: async (id: string, data: {
+    isApproved: boolean;
+    overrideAmount?: number;
+    adminNotes?: string;
+  }): Promise<void> => {
+    return apiClient.post(`/refunds/admin/${id}/process`, data);
+  },
+
+  initiateRefund: async (data: {
+    orderId: string;
+    amount: number;
+    reason: string;
+    isGoodwill: boolean;
+  }): Promise<void> => {
+    return apiClient.post('/refunds/admin/initiate', data);
+  },
+
+  // Revenue
+  getRevenueSummary: async (params?: {
+    from?: string;
+    to?: string;
+  }): Promise<PlatformRevenueSummaryDto> => {
+    return apiClient.get('/admin/revenue/summary', params);
+  },
+
+  getRevenueTransactions: async (params?: {
+    accountType?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<PaginatedList<PlatformTransactionDto>> => {
+    return apiClient.get('/admin/revenue/transactions', params);
   },
 
   // Admin Calendar - All Bookings

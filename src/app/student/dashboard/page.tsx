@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Calendar, Video, Clock, TrendingUp, Eye, CheckCircle, AlertCircle, PlayCircle, GraduationCap, ArrowRight, Sparkles } from 'lucide-react';
+import { Calendar, Video, Clock, TrendingUp, Eye, CheckCircle, AlertCircle, PlayCircle, GraduationCap, ArrowRight, Sparkles, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -325,10 +325,16 @@ export default function StudentDashboardPage() {
                     Yeni Randevu Al
                   </Button>
                 </Link>
+                <Link href="/student/payments">
+                  <Button variant="outline" className="w-full justify-start">
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Odeme Gecmisim
+                  </Button>
+                </Link>
                 <Link href="/student/bookings">
                   <Button variant="outline" className="w-full justify-start">
                     <Clock className="w-4 h-4 mr-2" />
-                    Tüm Rezervasyonlar
+                    Tum Rezervasyonlar
                   </Button>
                 </Link>
               </CardContent>

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, Settings, LogOut, ChevronDown, Search, BookOpen, LayoutDashboard, Eye, HelpCircle, PlayCircle, Sparkles } from 'lucide-react';
+import { Menu, X, Settings, LogOut, ChevronDown, Search, BookOpen, LayoutDashboard, Eye, HelpCircle, PlayCircle, Sparkles, CreditCard } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useAuthStore } from '@/lib/stores/auth-store';
@@ -40,9 +40,10 @@ export function Header() {
 
   const studentLinks: NavLink[] = [
     { href: '/student/dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
-    { href: '/student/explore-courses', label: 'Video Eğitimler', icon: <PlayCircle className="w-4 h-4" /> },
-    { href: '/student/bookings', label: 'Rezervasyonlarım', icon: <BookOpen className="w-4 h-4" /> },
-    { href: '/public/mentors', label: 'Mentör Bul', icon: <Search className="w-4 h-4" /> },
+    { href: '/student/explore-courses', label: 'Video Egitimler', icon: <PlayCircle className="w-4 h-4" /> },
+    { href: '/student/bookings', label: 'Rezervasyonlarim', icon: <BookOpen className="w-4 h-4" /> },
+    { href: '/student/payments', label: 'Odemelerim', icon: <CreditCard className="w-4 h-4" /> },
+    { href: '/public/mentors', label: 'Mentor Bul', icon: <Search className="w-4 h-4" /> },
   ];
 
   const mentorLinks: NavLink[] = [
