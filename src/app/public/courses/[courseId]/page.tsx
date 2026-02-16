@@ -507,6 +507,7 @@ export default function CourseDetailPage() {
                   src={course.coverImageUrl}
                   alt={course.title}
                   className="w-full h-48 object-cover"
+                  style={course.coverImagePosition ? { objectPosition: course.coverImagePosition } : undefined}
                 />
               )}
 

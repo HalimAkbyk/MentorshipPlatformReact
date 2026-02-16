@@ -102,6 +102,7 @@ function CourseCard({ course }: { course: PublicCourseDto }) {
                 fill
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
                 sizes="280px"
+                style={course.coverImagePosition ? { objectPosition: course.coverImagePosition } : undefined}
               />
             ) : (
               <div className="h-full w-full bg-gradient-to-br from-teal-400/30 via-lime-500/20 to-sage-400/30 flex items-center justify-center">

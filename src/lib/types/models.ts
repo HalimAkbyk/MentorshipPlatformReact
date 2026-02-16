@@ -167,6 +167,7 @@ export interface MentorCourseDto {
   title: string;
   shortDescription?: string;
   coverImageUrl?: string;
+  coverImagePosition?: string;
   price: number;
   currency: string;
   status: CourseStatus;
@@ -186,6 +187,7 @@ export interface CourseEditDto {
   shortDescription?: string;
   description?: string;
   coverImageUrl?: string;
+  coverImagePosition?: string;
   promoVideoKey?: string;
   price: number;
   currency: string;
@@ -225,6 +227,7 @@ export interface PublicCourseDto {
   title: string;
   shortDescription?: string;
   coverImageUrl?: string;
+  coverImagePosition?: string;
   price: number;
   currency: string;
   level: CourseLevel;
@@ -251,6 +254,7 @@ export interface CourseDetailDto {
   shortDescription?: string;
   description?: string;
   coverImageUrl?: string;
+  coverImagePosition?: string;
   promoVideoKey?: string;
   price: number;
   currency: string;
@@ -336,6 +340,7 @@ export interface EnrolledCourseDto {
   courseId: string;
   courseTitle: string;
   coverImageUrl?: string;
+  coverImagePosition?: string;
   mentorName: string;
   completionPercentage: number;
   lastAccessedAt?: string;

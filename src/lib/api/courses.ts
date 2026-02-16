@@ -33,6 +33,7 @@ export interface UpdateCourseData {
   language?: string;
   level?: string;
   coverImageUrl?: string;
+  coverImagePosition?: string;
   promoVideoKey?: string;
   whatYouWillLearn?: string[];
   requirements?: string[];

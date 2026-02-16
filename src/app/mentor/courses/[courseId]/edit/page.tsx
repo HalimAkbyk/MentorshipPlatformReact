@@ -46,6 +46,7 @@ const courseSettingsSchema = z.object({
   category: z.string().optional().or(z.literal('')),
   language: z.string().default('tr'),
   coverImageUrl: z.string().optional().or(z.literal('')),
+  coverImagePosition: z.string().optional().or(z.literal('')),
   whatYouWillLearn: z.array(z.object({ value: z.string() })).max(10),
   requirements: z.array(z.object({ value: z.string() })).max(10),
   targetAudience: z.array(z.object({ value: z.string() })).max(5),
@@ -209,6 +210,7 @@ function CourseSettingsForm({
       category: course.category || '',
       language: course.language || 'tr',
       coverImageUrl: course.coverImageUrl || '',
+      coverImagePosition: course.coverImagePosition || 'center center',
       whatYouWillLearn: (course.whatYouWillLearn || []).map((v) => ({ value: v })),
       requirements: (course.requirements || []).map((v) => ({ value: v })),
       targetAudience: (course.targetAudience || []).map((v) => ({ value: v })),
@@ -248,6 +250,7 @@ function CourseSettingsForm({
           category: data.category || undefined,
           language: data.language || 'tr',
           coverImageUrl: data.coverImageUrl || undefined,
+          coverImagePosition: data.coverImagePosition || undefined,
           whatYouWillLearn: data.whatYouWillLearn.map((i) => i.value).filter(Boolean),
           requirements: data.requirements.map((i) => i.value).filter(Boolean),
           targetAudience: data.targetAudience.map((i) => i.value).filter(Boolean),
@@ -338,7 +341,9 @@ function CourseSettingsForm({
           <CoverImageUploader
             courseId={courseId}
             currentUrl={watchCoverImage || ''}
+            currentPosition={form.watch('coverImagePosition') || 'center center'}
             onUploaded={(url) => form.setValue('coverImageUrl', url)}
+            onPositionChange={(pos) => form.setValue('coverImagePosition', pos)}
           />
 
           {/* WhatYouWillLearn */}
@@ -447,11 +452,15 @@ function DynamicStringList({
 function CoverImageUploader({
   courseId,
   currentUrl,
+  currentPosition,
   onUploaded,
+  onPositionChange,
 }: {
   courseId: string;
   currentUrl: string;
+  currentPosition: string;
   onUploaded: (url: string) => void;
+  onPositionChange: (position: string) => void;
 }) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -459,7 +468,7 @@ function CoverImageUploader({
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [previewUrl, setPreviewUrl] = useState(currentUrl || '');
-  const [objectPosition, setObjectPosition] = useState('center center');
+  const [objectPosition, setObjectPosition] = useState(currentPosition || 'center center');
   const [isDragging, setIsDragging] = useState(false);
   const [isPositioning, setIsPositioning] = useState(false);
 
@@ -469,6 +478,13 @@ function CoverImageUploader({
       setPreviewUrl(currentUrl);
     }
   }, [currentUrl]);
+
+  // Sync position with form
+  useEffect(() => {
+    if (currentPosition && currentPosition !== objectPosition) {
+      setObjectPosition(currentPosition);
+    }
+  }, [currentPosition]);
 
   const handleUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -558,7 +574,9 @@ function CoverImageUploader({
     const rect = containerRef.current.getBoundingClientRect();
     const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
     const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
-    setObjectPosition(`${x}% ${y}%`);
+    const newPos = `${x}% ${y}%`;
+    setObjectPosition(newPos);
+    onPositionChange(newPos);
   };
 
   return (
@@ -672,7 +690,7 @@ function CoverImageUploader({
                 <button
                   key={preset.pos}
                   type="button"
-                  onClick={() => setObjectPosition(preset.pos)}
+                  onClick={() => { setObjectPosition(preset.pos); onPositionChange(preset.pos); }}
                   className={`px-2 py-0.5 text-xs rounded border transition-colors ${
                     objectPosition === preset.pos
                       ? 'bg-blue-50 border-blue-300 text-blue-700'

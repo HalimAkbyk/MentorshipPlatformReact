@@ -235,6 +235,7 @@ function CourseCard({
             src={course.coverImageUrl}
             alt={course.title}
             className="w-full h-full object-cover"
+            style={course.coverImagePosition ? { objectPosition: course.coverImagePosition } : undefined}
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center">

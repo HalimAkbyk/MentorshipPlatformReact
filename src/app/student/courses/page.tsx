@@ -56,6 +56,7 @@ export default function StudentCoursesPage() {
                       src={course.coverImageUrl}
                       alt={course.courseTitle}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      style={course.coverImagePosition ? { objectPosition: course.coverImagePosition } : undefined}
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-primary-400 to-primary-700 flex items-center justify-center">

@@ -173,6 +173,7 @@ export default function CourseCatalogPage() {
                       src={course.coverImageUrl}
                       alt={course.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      style={course.coverImagePosition ? { objectPosition: course.coverImagePosition } : undefined}
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-primary-400 to-primary-700 flex items-center justify-center">
