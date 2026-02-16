@@ -6,8 +6,6 @@ import {
   MediaOutlet,
   MediaCommunitySkin,
   MediaPoster,
-  useMediaPlayer,
-  useMediaStore,
 } from '@vidstack/react';
 
 interface VideoPlayerProps {
@@ -43,34 +41,36 @@ export default function VideoPlayer({
   }, [src]);
 
   return (
-    <MediaPlayer
-      src={src}
-      crossorigin=""
-      playsinline
-      className="w-full aspect-video bg-black rounded-lg overflow-hidden"
-      onCanPlay={(event: any) => {
-        if (!hasSeekedRef.current && startTime > 0) {
+    <div className="relative w-full" style={{ aspectRatio: '16 / 9', maxHeight: '75vh' }}>
+      <MediaPlayer
+        src={src}
+        crossorigin=""
+        playsinline
+        className="absolute inset-0 w-full h-full bg-black"
+        onCanPlay={(event: any) => {
+          if (!hasSeekedRef.current && startTime > 0) {
+            const player = event.target;
+            if (player && typeof player.currentTime === 'number') {
+              player.currentTime = startTime;
+            }
+            hasSeekedRef.current = true;
+          }
+        }}
+        onTimeUpdate={(event: any) => {
           const player = event.target;
           if (player && typeof player.currentTime === 'number') {
-            player.currentTime = startTime;
+            timeUpdateRef.current?.(player.currentTime);
           }
-          hasSeekedRef.current = true;
-        }
-      }}
-      onTimeUpdate={(event: any) => {
-        const player = event.target;
-        if (player && typeof player.currentTime === 'number') {
-          timeUpdateRef.current?.(player.currentTime);
-        }
-      }}
-      onEnded={() => {
-        endedRef.current?.();
-      }}
-    >
-      <MediaOutlet>
-        {poster && <MediaPoster src={poster} alt="" />}
-      </MediaOutlet>
-      <MediaCommunitySkin />
-    </MediaPlayer>
+        }}
+        onEnded={() => {
+          endedRef.current?.();
+        }}
+      >
+        <MediaOutlet>
+          {poster && <MediaPoster src={poster} alt="" />}
+        </MediaOutlet>
+        <MediaCommunitySkin />
+      </MediaPlayer>
+    </div>
   );
 }

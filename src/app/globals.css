@@ -57,3 +57,21 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
+/* Vidstack video player sizing fix */
+media-player,
+media-player video,
+media-player .vds-video-layout,
+media-player .media-outlet,
+media-outlet {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain;
+}
+
+media-player {
+  --media-height: 100%;
+  display: block !important;
+  overflow: hidden;
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { useAuthStore } from '@/lib/stores/auth-store';
@@ -13,7 +13,11 @@ export default function StudentLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated, user, isLoading } = useAuthStore();
+
+  // Kurs player sayfasında Header/Footer gösterme (tam ekran deneyim)
+  const isPlayerPage = pathname.includes('/courses/') && pathname.endsWith('/learn');
 
   useEffect(() => {
     if (!isLoading) {
@@ -31,6 +35,11 @@ export default function StudentLayout({
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
       </div>
     );
+  }
+
+  // Player page: no Header/Footer, full viewport
+  if (isPlayerPage) {
+    return <>{children}</>;
   }
 
   return (

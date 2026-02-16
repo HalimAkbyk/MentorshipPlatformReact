@@ -184,7 +184,7 @@ function CoursePlayerContent() {
   const isText = lectureType === LectureType.Text || lectureType === 'Text';
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
       {/* Top Bar */}
       <header className="bg-gray-900 text-white px-4 py-3 flex items-center justify-between shrink-0 z-20">
         <div className="flex items-center gap-3">
