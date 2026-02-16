@@ -15,7 +15,7 @@ export default function HowItWorksPage() {
   const ctaHref = isAuthenticated
     ? pickDefaultDashboard(user?.roles)
     : '/auth/signup';
-  const ctaLabel = isAuthenticated ? 'Panelime Git' : 'Hemen Basla';
+  const ctaLabel = isAuthenticated ? 'Panelime Git' : 'Hemen Başla';
 
   return (
     <div className="min-h-screen">
@@ -23,10 +23,10 @@ export default function HowItWorksPage() {
       <FadeInSection className="bg-gradient-to-b from-primary-50 to-white py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold font-heading mb-6">
-            Nasil Calisir?
+            Nasıl Çalışır?
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Degisim Mentorluk ile hedef universiteni kazanmis ogrencilerden mentorluk almak cok kolay
+            Değişim Mentorluk ile hedef üniversiteni kazanmış öğrencilerden mentorluk almak çok kolay
           </p>
         </div>
       </FadeInSection>
@@ -35,12 +35,12 @@ export default function HowItWorksPage() {
       <FadeInSection className="py-16">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold font-heading text-center mb-12">
-            Danisanlar Icin
+            Danışanlar İçin
           </h2>
           <StaggerGrid className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: Search, title: '1. Mentor Bul', desc: 'Universite ve bolume gore filtrele, sana uygun mentoru kesfet', color: 'primary' },
-              { icon: Calendar, title: '2. Randevu Al', desc: 'Uygun saati sec, guvenli odeme yap, onay bekle', color: 'primary' },
+              { icon: Search, title: '1. Mentor Bul', desc: 'Üniversite ve bölüme göre filtrele, sana uygun mentoru keşfet', color: 'primary' },
+              { icon: Calendar, title: '2. Randevu Al', desc: 'Uygun saati seç, güvenli ödeme yap, onay bekle', color: 'primary' },
               { icon: Video, title: '3. Ders Yap', desc: 'Online video konferans ile bire bir mentorluk al', color: 'primary' },
             ].map((step, i) => (
               <StaggerItem key={i}>
@@ -65,13 +65,13 @@ export default function HowItWorksPage() {
       <FadeInSection className="bg-gray-50 py-16">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold font-heading text-center mb-12">
-            Mentorler Icin
+            Mentorler İçin
           </h2>
           <StaggerGrid className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: UserPlus, title: '1. Kayit Ol', desc: 'Profil olustur, universite bilgilerini dogrula' },
-              { icon: Calendar, title: '2. Uygunluk Ekle', desc: 'Takvimini ayarla, ucretini belirle, hizmete basla' },
-              { icon: Star, title: '3. Kazan', desc: 'Mentorluk yap, degerlendirme al, kazanc elde et' },
+              { icon: UserPlus, title: '1. Kayıt Ol', desc: 'Profil oluştur, üniversite bilgilerini doğrula' },
+              { icon: Calendar, title: '2. Uygunluk Ekle', desc: 'Takvimini ayarla, ücretini belirle, hizmete başla' },
+              { icon: Star, title: '3. Kazan', desc: 'Mentorluk yap, değerlendirme al, kazanç elde et' },
             ].map((step, i) => (
               <StaggerItem key={i}>
                 <Card>
@@ -97,12 +97,12 @@ export default function HowItWorksPage() {
           <div className="max-w-3xl mx-auto text-center">
             <Shield className="w-16 h-16 text-primary-600 mx-auto mb-6" />
             <h2 className="text-3xl font-bold font-heading mb-6">
-              Guvenli ve Kolay
+              Güvenli ve Kolay
             </h2>
             <p className="text-lg text-gray-600 mb-8">
-              Tum mentorler dogrulanir, odemeler guvenli bir sekilde saklanir ve
-              ders tamamlandiktan sonra aktarilir. Iptal ve iade kurallarimiz
-              her iki tarafi da korur.
+              Tüm mentorler doğrulanır, ödemeler güvenli bir şekilde saklanır ve
+              ders tamamlandıktan sonra aktarılır. İptal ve iade kurallarımız
+              her iki tarafı da korur.
             </p>
             <Link href={ctaHref}>
               <Button size="lg">{ctaLabel}</Button>

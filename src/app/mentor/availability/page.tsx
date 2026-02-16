@@ -330,17 +330,17 @@ export default function AvailabilityPage() {
       <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
         <CalendarIcon className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
         <div>
-          <p className="text-sm text-blue-800 font-medium">Varsayilan Musaitlik Programi</p>
+          <p className="text-sm text-blue-800 font-medium">Varsayılan Müsaitlik Programı</p>
           <p className="text-xs text-blue-600 mt-1">
-            Bu program, ozel musaitlik programi tanimlanmamis paketlere uygulanir.
-            Paketlerinize ozel program tanimlamak icin{' '}
+            Bu program, özel müsaitlik programı tanımlanmamış paketlere uygulanır.
+            Paketlerinize özel program tanımlamak için{' '}
             <button
               onClick={() => router.push('/mentor/offerings')}
               className="underline hover:text-blue-800 font-medium"
             >
               Paketlerim
             </button>{' '}
-            sayfasini ziyaret edin.
+            sayfasını ziyaret edin.
           </p>
         </div>
       </div>

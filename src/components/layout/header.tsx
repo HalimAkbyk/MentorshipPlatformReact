@@ -31,24 +31,24 @@ export function Header() {
 
   // --- Role-based nav links ---
   const publicLinks: NavLink[] = [
-    { href: '/public/mentors', label: 'Mentorler' },
-    { href: '/public/how-it-works', label: 'Nasil Calisir' },
-    { href: '/public/pricing', label: 'Fiyatlandirma' },
+    { href: '/public/mentors', label: 'Mentörler' },
+    { href: '/public/how-it-works', label: 'Nasıl Çalışır' },
+    { href: '/public/pricing', label: 'Fiyatlandırma' },
     { href: '/auth/signup?role=mentor', label: 'Mentor Ol' },
   ];
 
   const studentLinks: NavLink[] = [
     { href: '/student/dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
-    { href: '/student/explore-courses', label: 'Video Egitimler', icon: <PlayCircle className="w-4 h-4" /> },
-    { href: '/student/bookings', label: 'Rezervasyonlarim', icon: <BookOpen className="w-4 h-4" /> },
+    { href: '/student/explore-courses', label: 'Video Eğitimler', icon: <PlayCircle className="w-4 h-4" /> },
+    { href: '/student/bookings', label: 'Rezervasyonlarım', icon: <BookOpen className="w-4 h-4" /> },
     { href: '/public/mentors', label: 'Mentor Bul', icon: <Search className="w-4 h-4" /> },
   ];
 
   const mentorLinks: NavLink[] = [
-    { href: '/mentor/courses', label: 'Video Kurslarim', icon: <PlayCircle className="w-4 h-4" /> },
-    { href: `/public/mentors/${user?.id || ''}`, label: 'Profilimi Gor', icon: <Eye className="w-4 h-4" /> },
-    { href: '/public/mentors', label: 'Mentorler', icon: <Search className="w-4 h-4" /> },
-    { href: '/public/support', label: 'Yardim', icon: <HelpCircle className="w-4 h-4" /> },
+    { href: '/mentor/courses', label: 'Video Kurslarım', icon: <PlayCircle className="w-4 h-4" /> },
+    { href: `/public/mentors/${user?.id || ''}`, label: 'Profilimi Gör', icon: <Eye className="w-4 h-4" /> },
+    { href: '/public/mentors', label: 'Mentörler', icon: <Search className="w-4 h-4" /> },
+    { href: '/public/support', label: 'Yardım', icon: <HelpCircle className="w-4 h-4" /> },
   ];
 
   const navLinks = isAuthenticated
@@ -78,7 +78,7 @@ export function Header() {
           <Link href="/" className="flex items-center shrink-0">
             <Image
               src="/images/logo.svg"
-              alt="Degisim Mentorluk"
+              alt="Değişim Mentorluk"
               width={200}
               height={50}
               className="h-10 md:h-12 w-auto"
@@ -111,12 +111,12 @@ export function Header() {
               <>
                 <Link href="/auth/login">
                   <Button variant="ghost" className="text-gray-700 hover:text-primary-500">
-                    Giris Yap
+                    Giriş Yap
                   </Button>
                 </Link>
                 <Link href="/auth/signup">
                   <Button className="bg-primary-500 hover:bg-primary-600 text-white rounded-full px-6">
-                    Uye Ol
+                    Üye Ol
                   </Button>
                 </Link>
               </>
@@ -169,7 +169,7 @@ export function Header() {
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                         >
                           <Settings className="w-4 h-4 text-gray-400" />
-                          Kullanici Ayarlari
+                          Kullanıcı Ayarları
                         </Link>
                       </div>
 
@@ -179,7 +179,7 @@ export function Header() {
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors w-full text-left"
                         >
                           <LogOut className="w-4 h-4 text-gray-400" />
-                          Cikis
+                          Çıkış
                         </button>
                       </div>
                     </div>
@@ -224,10 +224,10 @@ export function Header() {
             {!isAuthenticated ? (
               <div className="flex flex-col gap-2 pt-2">
                 <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="outline" className="w-full">Giris Yap</Button>
+                  <Button variant="outline" className="w-full">Giriş Yap</Button>
                 </Link>
                 <Link href="/auth/signup" onClick={() => setMobileMenuOpen(false)}>
-                  <Button className="w-full bg-primary-500 hover:bg-primary-600 text-white">Uye Ol</Button>
+                  <Button className="w-full bg-primary-500 hover:bg-primary-600 text-white">Üye Ol</Button>
                 </Link>
               </div>
             ) : (
@@ -250,11 +250,11 @@ export function Header() {
                 </Link>
                 <Link href={settingsHref} onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="outline" className="w-full">
-                    <Settings className="w-4 h-4 mr-2" />Kullanici Ayarlari
+                    <Settings className="w-4 h-4 mr-2" />Kullanıcı Ayarları
                   </Button>
                 </Link>
                 <Button variant="ghost" className="w-full" onClick={() => { logout(); setMobileMenuOpen(false); router.push('/'); }}>
-                  <LogOut className="w-4 h-4 mr-2" />Cikis
+                  <LogOut className="w-4 h-4 mr-2" />Çıkış
                 </Button>
               </div>
             )}

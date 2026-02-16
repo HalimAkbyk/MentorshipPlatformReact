@@ -13,32 +13,32 @@ import { formatCurrency } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/cn';
 
 const levelOptions = [
-  { value: '', label: 'Tum Seviyeler' },
-  { value: CourseLevel.Beginner, label: 'Baslangic' },
+  { value: '', label: 'Tüm Seviyeler' },
+  { value: CourseLevel.Beginner, label: 'Başlangıç' },
   { value: CourseLevel.Intermediate, label: 'Orta' },
-  { value: CourseLevel.Advanced, label: 'Ileri' },
-  { value: CourseLevel.AllLevels, label: 'Tum Seviyeler' },
+  { value: CourseLevel.Advanced, label: 'İleri' },
+  { value: CourseLevel.AllLevels, label: 'Tüm Seviyeler' },
 ];
 
 const sortOptions = [
   { value: 'newest', label: 'En Yeni' },
-  { value: 'popular', label: 'En Populer' },
-  { value: 'rating', label: 'En Yuksek Puan' },
-  { value: 'price-asc', label: 'Fiyat (Dusukten Yuksege)' },
-  { value: 'price-desc', label: 'Fiyat (Yuksekten Dusuge)' },
+  { value: 'popular', label: 'En Popüler' },
+  { value: 'rating', label: 'En Yüksek Puan' },
+  { value: 'price-asc', label: 'Fiyat (Düşükten Yükseğe)' },
+  { value: 'price-desc', label: 'Fiyat (Yüksekten Düşüğe)' },
 ];
 
 const categoryOptions = [
-  { value: '', label: 'Tum Kategoriler' },
+  { value: '', label: 'Tüm Kategoriler' },
   { value: 'programming', label: 'Programlama' },
-  { value: 'design', label: 'Tasarim' },
-  { value: 'business', label: 'Is Dunyasi' },
+  { value: 'design', label: 'Tasarım' },
+  { value: 'business', label: 'İş Dünyası' },
   { value: 'marketing', label: 'Pazarlama' },
-  { value: 'music', label: 'Muzik' },
+  { value: 'music', label: 'Müzik' },
   { value: 'language', label: 'Dil' },
   { value: 'math', label: 'Matematik' },
   { value: 'science', label: 'Fen Bilimleri' },
-  { value: 'other', label: 'Diger' },
+  { value: 'other', label: 'Diğer' },
 ];
 
 function formatDuration(totalSeconds: number): string {
@@ -81,10 +81,10 @@ export default function CourseCatalogPage() {
       <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-12">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl md:text-4xl font-bold font-heading mb-4 text-center">
-            Kurs Katalogu
+            Kurs Kataloğu
           </h1>
           <p className="text-primary-100 text-center mb-8 max-w-2xl mx-auto">
-            Uzman egitmenlerden ogrenerek kendinizi gelistirin
+            Uzman eğitmenlerden öğrenerek kendinizi geliştirin
           </p>
           <div className="max-w-xl mx-auto relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -180,10 +180,10 @@ export default function CourseCatalogPage() {
                     </div>
                   )}
                   <Badge className="absolute top-2 right-2 bg-white/90 text-gray-800 text-xs">
-                    {course.level === CourseLevel.Beginner && 'Baslangic'}
+                    {course.level === CourseLevel.Beginner && 'Başlangıç'}
                     {course.level === CourseLevel.Intermediate && 'Orta'}
-                    {course.level === CourseLevel.Advanced && 'Ileri'}
-                    {course.level === CourseLevel.AllLevels && 'Tum Seviyeler'}
+                    {course.level === CourseLevel.Advanced && 'İleri'}
+                    {course.level === CourseLevel.AllLevels && 'Tüm Seviyeler'}
                   </Badge>
                 </div>
 
@@ -224,7 +224,7 @@ export default function CourseCatalogPage() {
                   {/* Price */}
                   <div className="pt-3 border-t">
                     <span className="text-lg font-bold text-primary-600">
-                      {course.price === 0 ? 'Ucretsiz' : formatCurrency(course.price, course.currency)}
+                      {course.price === 0 ? 'Ücretsiz' : formatCurrency(course.price, course.currency)}
                     </span>
                   </div>
                 </CardContent>
@@ -234,9 +234,9 @@ export default function CourseCatalogPage() {
         ) : (
           <div className="text-center py-16">
             <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2 text-gray-700">Kurs bulunamadi</h3>
+            <h3 className="text-xl font-semibold mb-2 text-gray-700">Kurs bulunamadı</h3>
             <p className="text-gray-500 mb-6">
-              Arama kriterlerinize uygun kurs bulunamadi. Filtreleri degistirmeyi deneyin.
+              Arama kriterlerinize uygun kurs bulunamadı. Filtreleri değiştirmeyi deneyin.
             </p>
             <Button
               variant="outline"

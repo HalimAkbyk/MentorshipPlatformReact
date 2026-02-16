@@ -7,35 +7,35 @@ import { cn } from '@/lib/utils/cn';
 const faqs = [
   {
     q: 'Mentorluk nedir?',
-    a: 'Mentorluk, hedef universitesini kazanmis ya da derece yapmis ogrencilerin, sinava hazirlanan ogrencilere birebir online gorusmeler araciligiyla rehberlik etmesidir. Ders anlatimi degil, strateji, motivasyon ve yol haritasi olusturma odaklidir.',
+    a: 'Mentorluk, hedef üniversitesini kazanmış ya da derece yapmış öğrencilerin, sınava hazırlanan öğrencilere birebir online görüşmeler aracılığıyla rehberlik etmesidir. Ders anlatımı değil, strateji, motivasyon ve yol haritası oluşturma odaklıdır.',
   },
   {
-    q: 'Nasil kayit olurum?',
-    a: 'Ana sayfadaki "Uye Ol" butonuna tiklayarak danisan (ogrenci) veya mentor olarak kayit olabilirsiniz. Kayit islemi ucretsizdir.',
+    q: 'Nasıl kayıt olurum?',
+    a: 'Ana sayfadaki "Üye Ol" butonuna tıklayarak danışan (öğrenci) veya mentor olarak kayıt olabilirsiniz. Kayıt işlemi ücretsizdir.',
   },
   {
-    q: 'Mentor ile nasil gorusme yaparim?',
-    a: 'Mentorler sayfasindan size uygun mentoru secin, uygun saat dilimini belirleyin ve odemenizi yapin. Onaylanan randevunuzda online video gorusme ile mentorunuzle bulusursunuz.',
+    q: 'Mentor ile nasıl görüşme yaparım?',
+    a: 'Mentorler sayfasından size uygun mentoru seçin, uygun saat dilimini belirleyin ve ödemenizi yapın. Onaylanan randevunuzda online video görüşme ile mentorunuzla buluşursunuz.',
   },
   {
-    q: 'Ucretlendirme nasil calisiyor?',
-    a: 'Her mentor kendi ucretini belirler. Danisanlardan mentor ucretine ek olarak %7 platform bedeli alinir. Mentorlerden tamamlanan dersler uzerinden %15 komisyon kesilir.',
+    q: 'Ücretlendirme nasıl çalışıyor?',
+    a: 'Her mentor kendi ücretini belirler. Danışanlardan mentor ücretine ek olarak %7 platform bedeli alınır. Mentorlerden tamamlanan dersler üzerinden %15 komisyon kesilir.',
   },
   {
-    q: 'Odeme guvenligi nasil saglaniyor?',
-    a: 'Tum odemeler Iyzico altyapisi uzerinden guvenlice islenir. Odemeniz ders tamamlanana kadar platformda saklanir ve ders sonrasinda mentore aktarilir.',
+    q: 'Ödeme güvenliği nasıl sağlanıyor?',
+    a: 'Tüm ödemeler Iyzico altyapısı üzerinden güvenlice işlenir. Ödemeniz ders tamamlanana kadar platformda saklanır ve ders sonrasında mentore aktarılır.',
   },
   {
     q: 'Randevumu iptal edebilir miyim?',
-    a: 'Evet, ders baslama saatinden 24 saat oncesine kadar ucretsiz iptal yapabilirsiniz. 24 saatten az kalan iptallerde ucret iadesi yapilmaz.',
+    a: 'Evet, ders başlama saatinden 24 saat öncesine kadar ücretsiz iptal yapabilirsiniz. 24 saatten az kalan iptallerde ücret iadesi yapılmaz.',
   },
   {
-    q: 'Mentor olmak icin ne gerekiyor?',
-    a: 'Mentor olmak icin kayit olduktan sonra universite ve kimlik dogrulamasi yapmaniz gerekir. Basvurunuz admin tarafindan incelendikten sonra onaylanir ve ders vermeye baslayabilirsiniz.',
+    q: 'Mentor olmak için ne gerekiyor?',
+    a: 'Mentor olmak için kayıt olduktan sonra üniversite ve kimlik doğrulaması yapmanız gerekir. Başvurunuz admin tarafından incelendikten sonra onaylanır ve ders vermeye başlayabilirsiniz.',
   },
   {
-    q: 'Teknik bir sorun yasarsam ne yapmaliyim?',
-    a: 'Destek sayfamizdan bize ulasabilir veya destek@degisimmentorluk.com adresine e-posta gonderebilirsiniz. En kisa surede size donecegiz.',
+    q: 'Teknik bir sorun yaşarsam ne yapmalıyım?',
+    a: 'Destek sayfamızdan bize ulaşabilir veya destek@degisimmentorluk.com adresine e-posta gönderebilirsiniz. En kısa sürede size döneceğiz.',
   },
 ];
 
@@ -46,9 +46,9 @@ export default function FaqPage() {
     <div className="min-h-screen py-16">
       <div className="container mx-auto px-4 max-w-3xl">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold font-heading mb-4">Sikca Sorulan Sorular</h1>
+          <h1 className="text-4xl font-bold font-heading mb-4">Sıkça Sorulan Sorular</h1>
           <p className="text-xl text-gray-600">
-            Merak ettiginiz her sey burada
+            Merak ettiğiniz her şey burada
           </p>
         </div>
 

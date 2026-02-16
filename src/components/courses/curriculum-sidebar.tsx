@@ -67,7 +67,7 @@ export default function CurriculumSidebar({
       <div className="px-5 py-4 border-b border-white/[0.06]">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-bold text-sm text-gray-100">
-            Mufredat
+            Müfredat
           </h3>
           <span className="text-xs text-gray-400 font-semibold tabular-nums">
             {completedLectures}/{totalLectures}
@@ -81,7 +81,7 @@ export default function CurriculumSidebar({
           />
         </div>
         <p className="text-xs text-gray-500 mt-2 font-medium">
-          %{progressPercent} tamamlandi
+          %{progressPercent} tamamlandı
         </p>
       </div>
 
@@ -108,7 +108,7 @@ export default function CurriculumSidebar({
                   </div>
                   <div className="min-w-0">
                     <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block">
-                      Bolum {sectionIndex + 1}
+                      Bölüm {sectionIndex + 1}
                     </span>
                     <span className="text-sm font-semibold text-gray-200 truncate block mt-0.5 group-hover:text-white transition-colors">
                       {section.title}

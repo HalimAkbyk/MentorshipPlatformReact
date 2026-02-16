@@ -60,7 +60,7 @@ export default function StudentDashboardPage() {
 
   const handleJoinClass = () => {
     if (!canJoinNow()) {
-      toast.error('Mentor henuz odayi aktiflestirmedi. Lutfen bekleyin.');
+      toast.error('Mentor henüz odayı aktifleştirmedi. Lütfen bekleyin.');
       return;
     }
     router.push(`/student/classroom/${nextBooking!.id}`);
@@ -91,7 +91,7 @@ export default function StudentDashboardPage() {
             Merhaba, {user?.displayName}!
           </h2>
           <p className="text-gray-600">
-            Bugun harika bir gun, hedeflerine bir adim daha yaklasmanin zamani!
+            Bugün harika bir gün, hedeflerine bir adım daha yaklaşmanın zamanı!
           </p>
         </div>
         {/* Profil karti */}
@@ -100,17 +100,17 @@ export default function StudentDashboardPage() {
             <CardTitle>Profil</CardTitle>
             <Link href="/auth/onboarding/student">
               <Button variant={profileComplete ? 'outline' : 'default'}>
-                {profileComplete ? 'Profili Guncelle' : 'Profili Tamamla'}
+                {profileComplete ? 'Profili Güncelle' : 'Profili Tamamla'}
               </Button>
             </Link>
           </CardHeader>
           <CardContent className="text-sm text-gray-700 space-y-1">
             <div><b>Ad:</b> {user?.displayName || '-'}</div>
             <div><b>Telefon:</b> {user?.phone || '-'}</div>
-            <div><b>Dogum yili:</b> {user?.birthYear || '-'}</div>
+            <div><b>Doğum yılı:</b> {user?.birthYear || '-'}</div>
             {!profileComplete && (
               <div className="text-xs text-amber-700 mt-2">
-                Mentor listesinin gorunmesi icin profil bilgilerini tamamlaman gerekebilir.
+                Mentor listesinin görünmesi için profil bilgilerini tamamlaman gerekebilir.
               </div>
             )}
           </CardContent>
@@ -119,7 +119,7 @@ export default function StudentDashboardPage() {
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Yaklasan Dersler</CardTitle>
+              <CardTitle className="text-sm font-medium">Yaklaşan Dersler</CardTitle>
               <Calendar className="h-4 w-4 text-gray-600" />
             </CardHeader>
             <CardContent>
@@ -164,8 +164,8 @@ export default function StudentDashboardPage() {
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle>Yaklasan Dersler</CardTitle>
-                <CardDescription>Planlanmis mentorluk seanslariniz</CardDescription>
+                <CardTitle>Yaklaşan Dersler</CardTitle>
+                <CardDescription>Planlanmış mentorluk seanslarınız</CardDescription>
               </CardHeader>
               <CardContent>
                 {upcomingBookings && upcomingBookings.length > 0 ? (
@@ -201,7 +201,7 @@ export default function StudentDashboardPage() {
                 ) : (
                   <div className="text-center py-12">
                     <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600 mb-4">Henuz planlanmis dersiniz yok</p>
+                    <p className="text-gray-600 mb-4">Henüz planlanmış dersiniz yok</p>
                     <Link href="/public/mentors">
                       <Button>Mentor Bul</Button>
                     </Link>
@@ -238,11 +238,11 @@ export default function StudentDashboardPage() {
                           onClick={handleJoinClass}
                         >
                           <Video className="w-4 h-4 mr-2" />
-                          Derse Katil
+                          Derse Katıl
                         </Button>
                         <div className="flex items-center justify-center gap-1.5 text-xs text-green-600">
                           <CheckCircle className="w-3.5 h-3.5" />
-                          <span className="font-medium">Mentor Hazir</span>
+                          <span className="font-medium">Mentor Hazır</span>
                         </div>
                       </div>
                     ) : (
@@ -250,7 +250,7 @@ export default function StudentDashboardPage() {
                         <Link href={`/student/bookings/${nextBooking.id}`} className="block">
                           <Button variant="outline" className="w-full" size="sm">
                             <Eye className="w-4 h-4 mr-2" />
-                            Incele
+                            İncele
                           </Button>
                         </Link>
                         {roomStatus !== null && !roomStatus.isActive && (
@@ -266,24 +266,24 @@ export default function StudentDashboardPage() {
               </Card>
             )}
 
-            {/* Video Egitimler CTA */}
+            {/* Video Eğitimler CTA */}
             <Card className="bg-gradient-to-br from-primary-50 to-cyan-50 border-primary-200">
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
                     <PlayCircle className="w-5 h-5 text-primary-600" />
                   </div>
-                  <CardTitle className="text-primary-900 text-base">Video Egitimler</CardTitle>
+                  <CardTitle className="text-primary-900 text-base">Video Eğitimler</CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600 mb-3">
-                  Uzman egitmenlerden video derslerle kendinizi gelistirin.
+                  Uzman eğitmenlerden video derslerle kendinizi geliştirin.
                 </p>
                 <Link href="/student/explore-courses">
                   <Button size="sm" className="w-full bg-primary-600 hover:bg-primary-700">
                     <GraduationCap className="w-4 h-4 mr-2" />
-                    Kurslari Kesfet
+                    Kursları Keşfet
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
@@ -293,19 +293,19 @@ export default function StudentDashboardPage() {
             {/* Quick Actions */}
             <Card>
               <CardHeader>
-                <CardTitle>Hizli Islemler</CardTitle>
+                <CardTitle>Hızlı İşlemler</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <Link href="/student/explore-courses">
                   <Button variant="outline" className="w-full justify-start text-primary-600 border-primary-200 hover:bg-primary-50">
                     <PlayCircle className="w-4 h-4 mr-2" />
-                    Video Egitimler
+                    Video Eğitimler
                   </Button>
                 </Link>
                 <Link href="/student/courses">
                   <Button variant="outline" className="w-full justify-start">
                     <GraduationCap className="w-4 h-4 mr-2" />
-                    Kurslarim
+                    Kurslarım
                   </Button>
                 </Link>
                 <Link href="/public/mentors">
@@ -317,7 +317,7 @@ export default function StudentDashboardPage() {
                 <Link href="/student/bookings">
                   <Button variant="outline" className="w-full justify-start">
                     <Clock className="w-4 h-4 mr-2" />
-                    Tum Rezervasyonlar
+                    Tüm Rezervasyonlar
                   </Button>
                 </Link>
               </CardContent>

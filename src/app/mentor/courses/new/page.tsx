@@ -19,21 +19,21 @@ import { ROUTES } from '@/lib/constants/routes';
 const createCourseSchema = z.object({
   title: z
     .string()
-    .min(3, 'Kurs adi en az 3 karakter olmali')
-    .max(150, 'Kurs adi en fazla 150 karakter olmali'),
+    .min(3, 'Kurs adı en az 3 karakter olmalı')
+    .max(150, 'Kurs adı en fazla 150 karakter olmalı'),
   shortDescription: z
     .string()
-    .max(300, 'Kisa aciklama en fazla 300 karakter')
+    .max(300, 'Kısa açıklama en fazla 300 karakter')
     .optional()
     .or(z.literal('')),
   description: z
     .string()
-    .max(5000, 'Aciklama en fazla 5000 karakter')
+    .max(5000, 'Açıklama en fazla 5000 karakter')
     .optional()
     .or(z.literal('')),
   price: z.coerce
     .number()
-    .min(0, 'Fiyat 0 veya daha fazla olmali'),
+    .min(0, 'Fiyat 0 veya daha fazla olmalı'),
   category: z.string().optional().or(z.literal('')),
   language: z.string().default('tr'),
   level: z.string().default(CourseLevel.AllLevels),
@@ -44,21 +44,21 @@ type CreateCourseFormData = z.infer<typeof createCourseSchema>;
 // ==================== CONSTANTS ====================
 
 const CATEGORIES = [
-  { value: '', label: 'Kategori secin...' },
-  { value: 'Yazilim', label: 'Yazilim' },
-  { value: 'Tasarim', label: 'Tasarim' },
+  { value: '', label: 'Kategori seçin...' },
+  { value: 'Yazılım', label: 'Yazılım' },
+  { value: 'Tasarım', label: 'Tasarım' },
   { value: 'Pazarlama', label: 'Pazarlama' },
-  { value: 'Kisisel Gelisim', label: 'Kisisel Gelisim' },
+  { value: 'Kişisel Gelişim', label: 'Kişisel Gelişim' },
   { value: 'Dil', label: 'Dil' },
-  { value: 'Muzik', label: 'Muzik' },
-  { value: 'Diger', label: 'Diger' },
+  { value: 'Müzik', label: 'Müzik' },
+  { value: 'Diğer', label: 'Diğer' },
 ];
 
 const LEVELS = [
-  { value: CourseLevel.AllLevels, label: 'Tum Seviyeler' },
-  { value: CourseLevel.Beginner, label: 'Baslangic' },
+  { value: CourseLevel.AllLevels, label: 'Tüm Seviyeler' },
+  { value: CourseLevel.Beginner, label: 'Başlangıç' },
   { value: CourseLevel.Intermediate, label: 'Orta' },
-  { value: CourseLevel.Advanced, label: 'Ileri' },
+  { value: CourseLevel.Advanced, label: 'İleri' },
 ];
 
 // ==================== MAIN PAGE ====================
@@ -91,10 +91,10 @@ export default function NewCoursePage() {
         language: data.language || 'tr',
         level: data.level || undefined,
       });
-      toast.success('Kurs basariyla olusturuldu!');
+      toast.success('Kurs başarıyla oluşturuldu!');
       router.push(ROUTES.MENTOR_COURSE_EDIT(result.id));
     } catch {
-      toast.error('Kurs olusturulurken hata olustu');
+      toast.error('Kurs oluşturulurken hata oluştu');
     }
   };
 
@@ -110,7 +110,7 @@ export default function NewCoursePage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold">Yeni Kurs Olustur</h1>
+            <h1 className="text-2xl font-bold">Yeni Kurs Oluştur</h1>
             <p className="text-sm text-gray-500">Kursunuzun temel bilgilerini girin</p>
           </div>
         </div>
@@ -123,10 +123,10 @@ export default function NewCoursePage() {
               {/* Title */}
               <div>
                 <label className="block text-sm font-medium mb-1.5">
-                  Kurs Adi <span className="text-red-500">*</span>
+                  Kurs Adı <span className="text-red-500">*</span>
                 </label>
                 <Input
-                  placeholder="orn: React ile Modern Web Gelistirme"
+                  placeholder="örn: React ile Modern Web Geliştirme"
                   {...form.register('title')}
                 />
                 {form.formState.errors.title && (
@@ -138,9 +138,9 @@ export default function NewCoursePage() {
 
               {/* Short Description */}
               <div>
-                <label className="block text-sm font-medium mb-1.5">Kisa Aciklama</label>
+                <label className="block text-sm font-medium mb-1.5">Kısa Açıklama</label>
                 <Input
-                  placeholder="Kursunuzu kisa bir cumleyle tanitin"
+                  placeholder="Kursunuzu kısa bir cümleyle tanıtın"
                   {...form.register('shortDescription')}
                 />
                 {form.formState.errors.shortDescription && (
@@ -152,10 +152,10 @@ export default function NewCoursePage() {
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium mb-1.5">Detayli Aciklama</label>
+                <label className="block text-sm font-medium mb-1.5">Detaylı Açıklama</label>
                 <textarea
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[120px]"
-                  placeholder="Kursunuzun icerigini, hedeflerini ve kazanimlarini detayli anlatin"
+                  placeholder="Kursunuzun içeriğini, hedeflerini ve kazanımlarını detaylı anlatın"
                   {...form.register('description')}
                 />
                 {form.formState.errors.description && (
@@ -220,8 +220,8 @@ export default function NewCoursePage() {
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 h-10 bg-white"
                     {...form.register('language')}
                   >
-                    <option value="tr">Turkce</option>
-                    <option value="en">Ingilizce</option>
+                    <option value="tr">Türkçe</option>
+                    <option value="en">İngilizce</option>
                   </select>
                 </div>
               </div>
@@ -239,7 +239,7 @@ export default function NewCoursePage() {
                   {createMutation.isPending && (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   )}
-                  Olustur
+                  Oluştur
                 </Button>
               </div>
             </form>

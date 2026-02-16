@@ -30,37 +30,37 @@ import { cn } from '@/lib/utils/cn';
 // ---------- Filter Options ----------
 
 const levelOptions = [
-  { value: '', label: 'Tum Seviyeler', icon: '📚' },
-  { value: CourseLevel.Beginner, label: 'Baslangic', icon: '🌱' },
+  { value: '', label: 'Tüm Seviyeler', icon: '📚' },
+  { value: CourseLevel.Beginner, label: 'Başlangıç', icon: '🌱' },
   { value: CourseLevel.Intermediate, label: 'Orta', icon: '📈' },
-  { value: CourseLevel.Advanced, label: 'Ileri', icon: '🚀' },
-  { value: CourseLevel.AllLevels, label: 'Tum Seviyeler', icon: '🎯' },
+  { value: CourseLevel.Advanced, label: 'İleri', icon: '🚀' },
+  { value: CourseLevel.AllLevels, label: 'Tüm Seviyeler', icon: '🎯' },
 ];
 
 const sortOptions = [
   { value: 'newest', label: 'En Yeni', icon: <Sparkles className="w-3.5 h-3.5" /> },
-  { value: 'popular', label: 'En Populer', icon: <TrendingUp className="w-3.5 h-3.5" /> },
-  { value: 'rating', label: 'En Yuksek Puan', icon: <Star className="w-3.5 h-3.5" /> },
-  { value: 'price-asc', label: 'Fiyat: Dusukten Yuksege', icon: null },
-  { value: 'price-desc', label: 'Fiyat: Yuksekten Dusuge', icon: null },
+  { value: 'popular', label: 'En Popüler', icon: <TrendingUp className="w-3.5 h-3.5" /> },
+  { value: 'rating', label: 'En Yüksek Puan', icon: <Star className="w-3.5 h-3.5" /> },
+  { value: 'price-asc', label: 'Fiyat: Düşükten Yükseğe', icon: null },
+  { value: 'price-desc', label: 'Fiyat: Yüksekten Düşüğe', icon: null },
 ];
 
 const categoryOptions = [
-  { value: '', label: 'Tum Kategoriler', color: 'bg-gray-100 text-gray-700 hover:bg-gray-200' },
+  { value: '', label: 'Tüm Kategoriler', color: 'bg-gray-100 text-gray-700 hover:bg-gray-200' },
   { value: 'programming', label: 'Programlama', color: 'bg-blue-50 text-blue-700 hover:bg-blue-100' },
-  { value: 'design', label: 'Tasarim', color: 'bg-pink-50 text-pink-700 hover:bg-pink-100' },
-  { value: 'business', label: 'Is Dunyasi', color: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' },
+  { value: 'design', label: 'Tasarım', color: 'bg-pink-50 text-pink-700 hover:bg-pink-100' },
+  { value: 'business', label: 'İş Dünyası', color: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' },
   { value: 'marketing', label: 'Pazarlama', color: 'bg-orange-50 text-orange-700 hover:bg-orange-100' },
-  { value: 'music', label: 'Muzik', color: 'bg-purple-50 text-purple-700 hover:bg-purple-100' },
+  { value: 'music', label: 'Müzik', color: 'bg-purple-50 text-purple-700 hover:bg-purple-100' },
   { value: 'language', label: 'Dil', color: 'bg-cyan-50 text-cyan-700 hover:bg-cyan-100' },
   { value: 'math', label: 'Matematik', color: 'bg-amber-50 text-amber-700 hover:bg-amber-100' },
   { value: 'science', label: 'Fen Bilimleri', color: 'bg-teal-50 text-teal-700 hover:bg-teal-100' },
-  { value: 'other', label: 'Diger', color: 'bg-slate-50 text-slate-700 hover:bg-slate-100' },
+  { value: 'other', label: 'Diğer', color: 'bg-slate-50 text-slate-700 hover:bg-slate-100' },
 ];
 
 const priceRangeOptions = [
-  { value: '', label: 'Tum Fiyatlar' },
-  { value: 'free', label: 'Ucretsiz' },
+  { value: '', label: 'Tüm Fiyatlar' },
+  { value: 'free', label: 'Ücretsiz' },
   { value: '0-100', label: '0 - 100 TL' },
   { value: '100-500', label: '100 - 500 TL' },
   { value: '500+', label: '500 TL +' },
@@ -77,10 +77,10 @@ function formatDuration(totalSeconds: number): string {
 
 function getLevelLabel(level: CourseLevel): string {
   switch (level) {
-    case CourseLevel.Beginner: return 'Baslangic';
+    case CourseLevel.Beginner: return 'Başlangıç';
     case CourseLevel.Intermediate: return 'Orta';
-    case CourseLevel.Advanced: return 'Ileri';
-    case CourseLevel.AllLevels: return 'Tum Seviyeler';
+    case CourseLevel.Advanced: return 'İleri';
+    case CourseLevel.AllLevels: return 'Tüm Seviyeler';
     default: return '';
   }
 }
@@ -162,10 +162,10 @@ export default function StudentExploreCoursesPage() {
         <div className="container mx-auto px-4 py-10 md:py-14">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-3xl md:text-4xl font-bold font-heading mb-3">
-              Video Egitimler
+              Video Eğitimler
             </h1>
             <p className="text-primary-100 text-base md:text-lg mb-8 max-w-2xl mx-auto">
-              Uzman egitmenlerden video derslerle kendinizi gelistirin. Istediginiz zaman, istediginiz yerden ogrenin.
+              Uzman eğitmenlerden video derslerle kendinizi geliştirin. İstediğiniz zaman, istediğiniz yerden öğrenin.
             </p>
 
             {/* Search Bar */}
@@ -174,7 +174,7 @@ export default function StudentExploreCoursesPage() {
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="Kurs adi, konu veya egitmen ara..."
+                placeholder="Kurs adı, konu veya eğitmen ara..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-12 pr-12 py-3.5 rounded-xl text-gray-900 bg-white shadow-xl focus:outline-none focus:ring-2 focus:ring-primary-300 text-sm md:text-base"
@@ -301,7 +301,7 @@ export default function StudentExploreCoursesPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Fiyat Araligi</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Fiyat Aralığı</label>
               <select
                 value={priceRange}
                 onChange={(e) => { setPriceRange(e.target.value); setPage(1); }}
@@ -313,7 +313,7 @@ export default function StudentExploreCoursesPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Siralama</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Sıralama</label>
               <select
                 value={sortBy}
                 onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
@@ -420,7 +420,7 @@ export default function StudentExploreCoursesPage() {
                   {/* Price Badge */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 pt-8">
                     <span className="text-white font-bold text-sm">
-                      {course.price === 0 ? 'Ucretsiz' : formatCurrency(course.price, course.currency)}
+                      {course.price === 0 ? 'Ücretsiz' : formatCurrency(course.price, course.currency)}
                     </span>
                   </div>
                 </div>
@@ -466,7 +466,7 @@ export default function StudentExploreCoursesPage() {
                       <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                     </div>
                     <span className="text-[11px] text-gray-400">
-                      ({course.ratingCount} degerlendirme)
+                      ({course.ratingCount} değerlendirme)
                     </span>
                   </div>
 
@@ -495,13 +495,13 @@ export default function StudentExploreCoursesPage() {
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <GraduationCap className="w-10 h-10 text-gray-300" />
             </div>
-            <h3 className="text-xl font-semibold font-heading mb-2 text-gray-700">Kurs bulunamadi</h3>
+            <h3 className="text-xl font-semibold font-heading mb-2 text-gray-700">Kurs bulunamadı</h3>
             <p className="text-gray-500 mb-6 max-w-md mx-auto">
-              Arama veya filtre kriterlerinize uygun kurs bulunamadi. Farkli bir arama yapmayi ya da filtreleri temizlemeyi deneyin.
+              Arama veya filtre kriterlerinize uygun kurs bulunamadı. Farklı bir arama yapmayı ya da filtreleri temizlemeyi deneyin.
             </p>
             <Button variant="outline" onClick={clearAllFilters}>
               <X className="w-4 h-4 mr-2" />
-              Tum Filtreleri Temizle
+              Tüm Filtreleri Temizle
             </Button>
           </div>
         )}
@@ -570,12 +570,12 @@ export default function StudentExploreCoursesPage() {
         {/* Bottom CTA */}
         <div className="mt-12 bg-gradient-to-r from-primary-50 to-blue-50 rounded-2xl p-6 md:p-8 text-center border border-primary-100">
           <GraduationCap className="w-10 h-10 text-primary-600 mx-auto mb-3" />
-          <h3 className="text-lg font-bold font-heading text-gray-900 mb-2">Kayitli Kurslarini Gormek Ister misin?</h3>
+          <h3 className="text-lg font-bold font-heading text-gray-900 mb-2">Kayıtlı Kurslarını Görmek İster misin?</h3>
           <p className="text-sm text-gray-600 mb-4 max-w-md mx-auto">
-            Daha once satin aldigin kurslara kaldigi yerden devam edebilirsin.
+            Daha önce satın aldığın kurslara kaldığı yerden devam edebilirsin.
           </p>
           <Button onClick={() => router.push(ROUTES.STUDENT_COURSES)} variant="outline" className="border-primary-300">
-            Kurslarim
+            Kurslarım
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>

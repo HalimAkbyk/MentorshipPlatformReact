@@ -459,7 +459,7 @@ export default function StudentClassroomPage() {
           const bookingData = (bookingResp as any)?.data ?? bookingResp;
           const bookingStatus = bookingData?.status;
           if (bookingStatus && bookingStatus !== 'Confirmed') {
-            toast.error('Bu seans iptal edilmis veya tamamlanmis.');
+            toast.error('Bu seans iptal edilmiş veya tamamlanmış.');
             router.push('/student/bookings');
             return;
           }

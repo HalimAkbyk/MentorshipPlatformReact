@@ -217,7 +217,7 @@ export default function MentorDashboardPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Paketlerim</CardTitle>
               <Link href="/mentor/offerings">
-                <Button variant="outline" size="sm">Paketleri Yonet</Button>
+                <Button variant="outline" size="sm">Paketleri Yönet</Button>
               </Link>
             </CardHeader>
             <CardContent className="text-sm text-gray-700 space-y-1">
@@ -304,11 +304,11 @@ export default function MentorDashboardPage() {
                 variant="outline"
                 className="w-full h-24 flex-col opacity-50 cursor-not-allowed"
                 disabled
-                title="Dogrulama belgesi onayi gerekli"
+                title="Doğrulama belgesi onayı gerekli"
               >
                 <Calendar className="w-8 h-8 mb-2" />
                 <span>Uygunluk Ekle</span>
-                <span className="text-xs text-gray-500 mt-1">(Dogrulama onayi gerekli)</span>
+                <span className="text-xs text-gray-500 mt-1">(Doğrulama onayı gerekli)</span>
               </Button>
             )}
             <Link href="/mentor/bookings">
@@ -326,7 +326,7 @@ export default function MentorDashboardPage() {
             <Link href="/mentor/earnings">
               <Button variant="outline" className="w-full h-24 flex-col">
                 <DollarSign className="w-8 h-8 mb-2" />
-                <span>Kazanclarim</span>
+                <span>Kazançlarım</span>
               </Button>
             </Link>
           </CardContent>

@@ -51,10 +51,10 @@ function formatLectureDuration(seconds: number): string {
 
 function getLevelLabel(level: CourseLevel): string {
   switch (level) {
-    case CourseLevel.Beginner: return 'Baslangic';
+    case CourseLevel.Beginner: return 'Başlangıç';
     case CourseLevel.Intermediate: return 'Orta';
-    case CourseLevel.Advanced: return 'Ileri';
-    case CourseLevel.AllLevels: return 'Tum Seviyeler';
+    case CourseLevel.Advanced: return 'İleri';
+    case CourseLevel.AllLevels: return 'Tüm Seviyeler';
     default: return level;
   }
 }
@@ -86,7 +86,7 @@ export default function CourseDetailPage() {
       setPreviewData(data);
       setPreviewOpen(true);
     } catch {
-      toast.error('Onizleme yuklenirken bir hata olustu');
+      toast.error('Önizleme yüklenirken bir hata oluştu');
     }
   }, [courseId, previewMutation]);
 
@@ -125,7 +125,7 @@ export default function CourseDetailPage() {
 
     // Login check
     if (!isAuthenticated) {
-      toast.error('Kursa kayit olmak icin giris yapmaniz gerekiyor');
+      toast.error('Kursa kayıt olmak için giriş yapmanız gerekiyor');
       router.push(`/auth/login?redirect=/public/courses/${courseId}`);
       return;
     }
@@ -139,7 +139,7 @@ export default function CourseDetailPage() {
 
       // 2) Free course → direct access
       if (course.price === 0) {
-        toast.success('Kursa basariyla kayit oldunuz!');
+        toast.success('Kursa başarıyla kayıt oldunuz!');
         router.push(ROUTES.COURSE_PLAYER(course.id));
         setIsProcessing(false);
         return;
@@ -162,7 +162,7 @@ export default function CourseDetailPage() {
         window.location.href = orderResult.paymentPageUrl;
       } else {
         // Fallback — shouldn't happen for paid courses
-        toast.error('Odeme baslatilamadi. Lutfen tekrar deneyin.');
+        toast.error('Ödeme başlatılamadı. Lütfen tekrar deneyin.');
         setIsProcessing(false);
       }
     } catch (error: any) {
@@ -174,7 +174,7 @@ export default function CourseDetailPage() {
     setShowCheckoutForm(false);
     setCheckoutFormHtml('');
     setPendingEnrollmentId(null);
-    toast.info('Odeme iptal edildi. Tekrar deneyebilirsiniz.');
+    toast.info('Ödeme iptal edildi. Tekrar deneyebilirsiniz.');
   };
 
   if (isLoading) {
@@ -216,9 +216,9 @@ export default function CourseDetailPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-700 mb-2">Kurs bulunamadi</h2>
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">Kurs bulunamadı</h2>
           <Button variant="outline" onClick={() => router.push(ROUTES.COURSE_CATALOG)}>
-            Kataloga Don
+            Kataloğa Dön
           </Button>
         </div>
       </div>
@@ -266,13 +266,13 @@ export default function CourseDetailPage() {
                 </span>
                 <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
                 <span className="text-gray-400">
-                  ({course.ratingCount} degerlendirme)
+                  ({course.ratingCount} değerlendirme)
                 </span>
               </div>
               {/* Enrollment count */}
               <div className="flex items-center gap-1 text-gray-400">
                 <Users className="w-4 h-4" />
-                {course.enrollmentCount} ogrenci
+                {course.enrollmentCount} öğrenci
               </div>
               {/* Level */}
               <Badge variant="outline" className="text-white border-gray-500">
@@ -286,7 +286,7 @@ export default function CourseDetailPage() {
                 <AvatarFallback>{(course.mentorName ?? '').charAt(0)}</AvatarFallback>
               </Avatar>
               <span className="text-sm text-gray-300">
-                Egitmen: <span className="text-white font-medium">{course.mentorName}</span>
+                Eğitmen: <span className="text-white font-medium">{course.mentorName}</span>
               </span>
             </div>
           </div>
@@ -301,9 +301,9 @@ export default function CourseDetailPage() {
             {/* Tabs */}
             <div className="flex border-b mb-6">
               {[
-                { key: 'overview' as Tab, label: 'Genel Bakis' },
-                { key: 'curriculum' as Tab, label: 'Mufredat' },
-                { key: 'instructor' as Tab, label: 'Egitmen' },
+                { key: 'overview' as Tab, label: 'Genel Bakış' },
+                { key: 'curriculum' as Tab, label: 'Müfredat' },
+                { key: 'instructor' as Tab, label: 'Eğitmen' },
               ].map((tab) => (
                 <button
                   key={tab.key}
@@ -326,7 +326,7 @@ export default function CourseDetailPage() {
                 {/* Description */}
                 {course.description && (
                   <div>
-                    <h2 className="text-xl font-semibold font-heading mb-3">Kurs Hakkinda</h2>
+                    <h2 className="text-xl font-semibold font-heading mb-3">Kurs Hakkında</h2>
                     <div className="prose prose-gray max-w-none text-gray-700 whitespace-pre-line">
                       {course.description}
                     </div>
@@ -336,7 +336,7 @@ export default function CourseDetailPage() {
                 {/* What you will learn */}
                 {course.whatYouWillLearn && course.whatYouWillLearn.length > 0 && (
                   <div className="bg-white border rounded-lg p-6">
-                    <h2 className="text-xl font-semibold font-heading mb-4">Neler Ogreneceksiniz</h2>
+                    <h2 className="text-xl font-semibold font-heading mb-4">Neler Öğreneceksiniz</h2>
                     <div className="grid sm:grid-cols-2 gap-3">
                       {course.whatYouWillLearn.map((item, i) => (
                         <div key={i} className="flex items-start gap-2">
@@ -385,8 +385,8 @@ export default function CourseDetailPage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-sm text-gray-500">
-                    {sections.length} bolum - {totalLectures} ders -{' '}
-                    {formatDuration(course.totalDurationSec)} toplam sure
+                    {sections.length} bölüm - {totalLectures} ders -{' '}
+                    {formatDuration(course.totalDurationSec)} toplam süre
                   </p>
                   <button
                     onClick={() => {
@@ -399,8 +399,8 @@ export default function CourseDetailPage() {
                     className="text-sm text-primary-600 hover:underline"
                   >
                     {expandedSections.size === sections.length
-                      ? 'Tumu Kapat'
-                      : 'Tumu Ac'}
+                      ? 'Tümü Kapat'
+                      : 'Tümü Aç'}
                   </button>
                 </div>
 
@@ -454,7 +454,7 @@ export default function CourseDetailPage() {
                               </span>
                               {lecture.isPreview && (
                                 <Badge className="text-xs bg-primary-100 text-primary-700 hover:bg-primary-200 border-0">
-                                  Ucretsiz Onizleme
+                                  Ücretsiz Önizleme
                                 </Badge>
                               )}
                             </div>
@@ -514,7 +514,7 @@ export default function CourseDetailPage() {
                 {/* Price */}
                 <div className="text-3xl font-bold text-gray-900">
                   {course.price === 0 ? (
-                    <span className="text-green-600">Ucretsiz</span>
+                    <span className="text-green-600">Ücretsiz</span>
                   ) : (
                     formatCurrency(course.price, course.currency)
                   )}
@@ -539,12 +539,12 @@ export default function CourseDetailPage() {
                     {isProcessing ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Islem Yapiliyor...
+                        İşlem Yapılıyor...
                       </>
                     ) : course.price === 0 ? (
-                      'Ucretsiz Kayit Ol'
+                      'Ücretsiz Kayıt Ol'
                     ) : (
-                      'Satin Al'
+                      'Satın Al'
                     )}
                   </Button>
                 )}
@@ -561,7 +561,7 @@ export default function CourseDetailPage() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-500 flex items-center gap-2">
                       <Clock className="w-4 h-4" />
-                      Toplam Sure
+                      Toplam Süre
                     </span>
                     <span className="font-medium">{formatDuration(course.totalDurationSec)}</span>
                   </div>
@@ -582,7 +582,7 @@ export default function CourseDetailPage() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-500 flex items-center gap-2">
                       <Users className="w-4 h-4" />
-                      Ogrenci Sayisi
+                      Öğrenci Sayısı
                     </span>
                     <span className="font-medium">{course.enrollmentCount}</span>
                   </div>
@@ -616,10 +616,10 @@ export default function CourseDetailPage() {
               <div className="flex items-center gap-2 min-w-0">
                 <Play className="w-4 h-4 text-primary-400 shrink-0" />
                 <span className="text-white text-sm font-medium truncate">
-                  {previewData?.title || 'Onizleme'}
+                  {previewData?.title || 'Önizleme'}
                 </span>
                 <Badge className="bg-primary-600/20 text-primary-300 border-0 text-xs shrink-0">
-                  Ucretsiz Onizleme
+                  Ücretsiz Önizleme
                 </Badge>
               </div>
               <button
@@ -635,7 +635,7 @@ export default function CourseDetailPage() {
               <div className="aspect-video flex items-center justify-center">
                 <div className="text-center">
                   <Loader2 className="w-10 h-10 text-white animate-spin mx-auto mb-3" />
-                  <p className="text-gray-400 text-sm">Ders yukleniyor...</p>
+                  <p className="text-gray-400 text-sm">Ders yükleniyor...</p>
                 </div>
               </div>
             ) : previewData?.videoUrl ? (
@@ -655,7 +655,7 @@ export default function CourseDetailPage() {
               </div>
             ) : (
               <div className="aspect-video flex items-center justify-center">
-                <p className="text-gray-400 text-sm">Bu ders icin icerik bulunamadi</p>
+                <p className="text-gray-400 text-sm">Bu ders için içerik bulunamadı</p>
               </div>
             )}
 
@@ -663,7 +663,7 @@ export default function CourseDetailPage() {
             {!course.isEnrolled && (
               <div className="flex items-center justify-between px-5 py-3 bg-gray-900 border-t border-gray-800">
                 <p className="text-gray-400 text-sm">
-                  Tum derslere erisim icin kursa kayit olun
+                  Tüm derslere erişim için kursa kayıt olun
                 </p>
                 <Button
                   size="sm"
@@ -673,7 +673,7 @@ export default function CourseDetailPage() {
                   }}
                   disabled={isProcessing}
                 >
-                  {course.price === 0 ? 'Ucretsiz Kayit Ol' : 'Satin Al'}
+                  {course.price === 0 ? 'Ücretsiz Kayıt Ol' : 'Satın Al'}
                 </Button>
               </div>
             )}

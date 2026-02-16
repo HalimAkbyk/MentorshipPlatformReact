@@ -21,16 +21,16 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <FadeInDiv>
               <p className="text-primary-500 font-semibold mb-4 tracking-wide">
-                350+ ogrenciye ilham vermenin heyecanini yasiyoruz.
+                350+ öğrenciye ilham vermenin heyecanını yaşıyoruz.
               </p>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-heading text-gray-900 mb-6 leading-tight">
-                &ldquo;<span className="text-primary-500">Ogrencinin</span> halinden{' '}
-                <span className="text-primary-500">Ogrenci</span> anlar.&rdquo;
+                &ldquo;<span className="text-primary-500">Öğrencinin</span> halinden{' '}
+                <span className="text-primary-500">Öğrenci</span> anlar.&rdquo;
               </h1>
               <p className="text-lg text-gray-600 mb-8 max-w-lg">
-                YKS&apos;ye hazirlanan ogrencilere birebir rehberlik ve akademik destek sunan mentorluk platformu.
-                Derece yapmis ogrenciler ve mentorluk egitimi almis uzmanlar tarafindan sunulan bu hizmet,
-                her ogrencinin kendi temposuna uygun bir calisma sureci olusturmasini saglar.
+                YKS&apos;ye hazırlanan öğrencilere birebir rehberlik ve akademik destek sunan mentorluk platformu.
+                Derece yapmış öğrenciler ve mentorluk eğitimi almış uzmanlar tarafından sunulan bu hizmet,
+                her öğrencinin kendi temposuna uygun bir çalışma süreci oluşturmasını sağlar.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/public/mentors">
@@ -54,7 +54,7 @@ export default function HomePage() {
                 ) : (
                   <Link href="/public/pricing">
                     <Button size="lg" variant="outline" className="border-primary-500 text-primary-500 hover:bg-primary-50 rounded-lg px-8 py-6 text-base w-full sm:w-auto">
-                      Paketleri Incele
+                      Paketleri İncele
                     </Button>
                   </Link>
                 )}
@@ -73,7 +73,7 @@ export default function HomePage() {
                       </div>
                       <div>
                         <div className="font-bold text-gray-900">100+ Derece Mentor</div>
-                        <div className="text-sm text-gray-500">Turkiye geneli</div>
+                        <div className="text-sm text-gray-500">Türkiye geneli</div>
                       </div>
                     </div>
                     <div className="space-y-3">
@@ -110,7 +110,7 @@ export default function HomePage() {
           <StaggerGrid className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center text-white">
             {[
               { value: '100+', label: 'Derece Mentor' },
-              { value: '350+', label: 'Mutlu Ogrenci' },
+              { value: '350+', label: 'Mutlu Öğrenci' },
               { value: '1000+', label: 'Tamamlanan Ders' },
               { value: '4.8', label: 'Ortalama Puan' },
             ].map((stat, i) => (
@@ -128,17 +128,17 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold font-heading text-gray-900 mb-4">
-              Neden <span className="text-primary-500">Degisim Mentorluk?</span>
+              Neden <span className="text-primary-500">Değişim Mentorluk?</span>
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Basarili ogrencilerin tecrubelerinden yararlanarak sinav surecini daha verimli yonet
+              Başarılı öğrencilerin tecrübelerinden yararlanarak sınav sürecini daha verimli yönet
             </p>
           </div>
           <StaggerGrid className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: BarChart3, title: 'Birebir Danismanlik', desc: 'Derece ogrencileriyle birebir goruserek sinav surecini daha verimli yonet.' },
-              { icon: Target, title: 'Strateji ve Taktikler', desc: 'Basarili ogrencilerin uyguladigi sinav tekniklerini ogren ve yol haritani olustur.' },
-              { icon: Heart, title: 'Motivasyon ve Rehberlik', desc: 'Sinav stresini yonet, dogru calisma aliskanliklari edin ve hedeflerine emin adimlarla ilerle.' },
+              { icon: BarChart3, title: 'Birebir Danışmanlık', desc: 'Derece öğrencileriyle birebir görüşerek sınav sürecini daha verimli yönet.' },
+              { icon: Target, title: 'Strateji ve Taktikler', desc: 'Başarılı öğrencilerin uyguladığı sınav tekniklerini öğren ve yol haritanı oluştur.' },
+              { icon: Heart, title: 'Motivasyon ve Rehberlik', desc: 'Sınav stresini yönet, doğru çalışma alışkanlıkları edin ve hedeflerine emin adımlarla ilerle.' },
             ].map((feature, i) => (
               <StaggerItem key={i}>
                 <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
@@ -160,15 +160,15 @@ export default function HomePage() {
           <div className="text-center mb-12">
             <p className="text-primary-500 font-semibold mb-2 uppercase tracking-wider text-sm">SIKCA SORULAN SORULAR</p>
             <h2 className="text-3xl md:text-4xl font-bold font-heading text-gray-900">
-              Mentorluk Sistemimiz <span className="text-gray-400">Nasil Isliyor?</span>
+              Mentorluk Sistemimiz <span className="text-gray-400">Nasıl İşliyor?</span>
             </h2>
           </div>
           <StaggerGrid className="grid md:grid-cols-4 gap-8">
             {[
-              { icon: Search, title: '1. Mentor Bul', desc: 'Universite ve bolume gore filtrele, sana uygun mentoru bul' },
-              { icon: Calendar, title: '2. Randevu Al', desc: 'Uygun saati sec, guvenli odeme yap' },
+              { icon: Search, title: '1. Mentor Bul', desc: 'Üniversite ve bölüme göre filtrele, sana uygun mentoru keşfet' },
+              { icon: Calendar, title: '2. Randevu Al', desc: 'Uygun saati seç, güvenli ödeme yap' },
               { icon: Video, title: '3. Ders Yap', desc: 'Online video konferans ile bire bir ders al' },
-              { icon: Star, title: '4. Degerlendir', desc: 'Deneyimini paylas, mentor hakkinda yorum yap' },
+              { icon: Star, title: '4. Değerlendir', desc: 'Deneyimini paylaş, mentor hakkında yorum yap' },
             ].map((step, i) => (
               <StaggerItem key={i}>
                 <div className="text-center group">
@@ -189,14 +189,14 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold font-heading text-gray-900 mb-4">
-              Ogrencilerimiz Ne Diyor?
+              Öğrencilerimiz Ne Diyor?
             </h2>
           </div>
           <StaggerGrid className="grid md:grid-cols-3 gap-8">
             {[
-              { name: 'Ahmet Akif', role: 'Mezun Uye', text: 'Mentorluk surecinde yalniz olmadigimi hissettim. Motivasyonum dustugunde bile yanindaydi.' },
-              { name: 'Berkan Simsek', role: '12. Sinif', text: 'Calisma tempomun bana gore belirlenmesi oldu. Hangi konularda eksik oldugumu tespit etti.' },
-              { name: 'Seyda Ahlat', role: '11. Sinif', text: 'Mentorluk hizmeti aldim ve tyt kismini tamamladik. Kofamin rahat oldugu bir yil oldu.' },
+              { name: 'Ahmet Akif', role: 'Mezun Üye', text: 'Mentorluk sürecinde yalnız olmadığımı hissettim. Motivasyonum düştüğünde bile yanındaydı.' },
+              { name: 'Berkan Simsek', role: '12. Sınıf', text: 'Çalışma tempomun bana göre belirlenmesi oldu. Hangi konularda eksik olduğumu tespit etti.' },
+              { name: 'Seyda Ahlat', role: '11. Sınıf', text: 'Mentorluk hizmeti aldım ve tyt kısmını tamamladık. Kafamın rahat olduğu bir yıl oldu.' },
             ].map((t, i) => (
               <StaggerItem key={i}>
                 <div className="bg-white rounded-2xl p-8 shadow-sm border border-primary-100">
@@ -228,7 +228,7 @@ export default function HomePage() {
           <p className="text-primary-100 font-semibold mb-2 uppercase tracking-wider text-sm">BIZE KATILIN</p>
           <h2 className="text-3xl md:text-4xl font-bold font-heading text-white mb-6">Mentor Ol</h2>
           <p className="text-primary-100 mb-8 max-w-lg mx-auto">
-            Derece yapmis bir ogrenciysen, tecrubeni paylasarak diger ogrencilere yardim edebilirsin.
+            Derece yapmış bir öğrenciysen, tecrübeni paylaşarak diğer öğrencilere yardım edebilirsin.
           </p>
           {isMentor ? (
             <Link href="/mentor/dashboard">
@@ -239,7 +239,7 @@ export default function HomePage() {
           ) : (
             <Link href="/auth/signup?role=mentor">
               <Button size="lg" className="bg-white text-primary-600 hover:bg-gray-100 rounded-full px-10 py-6 text-base font-semibold">
-                Basvur
+                Başvur
               </Button>
             </Link>
           )}
@@ -251,9 +251,9 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <StaggerGrid className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { icon: Shield, label: 'Guvenli Odeme' },
-              { icon: Users, label: 'Onaylanmis Mentorler' },
-              { icon: Video, label: 'HD Video Gorusme' },
+              { icon: Shield, label: 'Güvenli Ödeme' },
+              { icon: Users, label: 'Onaylanmış Mentorler' },
+              { icon: Video, label: 'HD Video Görüşme' },
               { icon: Clock, label: '7/24 Destek' },
             ].map((item, i) => (
               <StaggerItem key={i}>

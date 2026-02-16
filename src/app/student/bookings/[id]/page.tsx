@@ -88,7 +88,7 @@ export default function BookingDetailPage() {
         );
         setRescheduleSlots(slots);
       } catch (e) {
-        toast.error('Musait slotlar yuklenemedi');
+        toast.error('Müsait slotlar yüklenemedi');
         setRescheduleSlots([]);
       } finally {
         setLoadingSlots(false);
@@ -99,7 +99,7 @@ export default function BookingDetailPage() {
 
   const handleCancel = async () => {
     if (!cancelReason.trim()) {
-      toast.error('Lutfen iptal sebebini belirtin');
+      toast.error('Lütfen iptal sebebini belirtin');
       return;
     }
     try {
@@ -107,13 +107,13 @@ export default function BookingDetailPage() {
       toast.success('Rezervasyon iptal edildi');
       setShowCancelDialog(false);
     } catch (error: any) {
-      toast.error(error.response?.data?.errors?.[0] || 'Iptal edilemedi');
+      toast.error(error.response?.data?.errors?.[0] || 'İptal edilemedi');
     }
   };
 
   const handleJoinClass = () => {
     if (!canJoinNow()) {
-      toast.error('Mentor henuz odayi aktiflesltirmedi. Lutfen bekleyin.');
+      toast.error('Mentor henüz odayı aktifleştirmedi. Lütfen bekleyin.');
       return;
     }
     router.push(ROUTES.CLASSROOM(bookingId));
@@ -121,38 +121,38 @@ export default function BookingDetailPage() {
 
   const handleReschedule = async () => {
     if (!selectedSlot) {
-      toast.error('Lutfen bir saat secin');
+      toast.error('Lütfen bir saat seçin');
       return;
     }
     try {
       await rescheduleBooking.mutateAsync({ id: bookingId, newStartAt: selectedSlot.startAt });
-      toast.success('Seans saati guncellendi');
+      toast.success('Seans saati güncellendi');
       setShowRescheduleModal(false);
       setRescheduleDate('');
       setSelectedSlot(null);
       refetch();
     } catch (error: any) {
-      toast.error(error.response?.data?.errors?.[0] || 'Seans saati guncellenemedi');
+      toast.error(error.response?.data?.errors?.[0] || 'Seans saati güncellenemedi');
     }
   };
 
   const handleApproveReschedule = async () => {
     try {
       await approveReschedule.mutateAsync(bookingId);
-      toast.success('Saat degisikligi onaylandi');
+      toast.success('Saat değişikliği onaylandı');
       refetch();
     } catch (error: any) {
-      toast.error(error.response?.data?.errors?.[0] || 'Onay basarisiz');
+      toast.error(error.response?.data?.errors?.[0] || 'Onay başarısız');
     }
   };
 
   const handleRejectReschedule = async () => {
     try {
       await rejectReschedule.mutateAsync(bookingId);
-      toast.success('Saat degisikligi reddedildi');
+      toast.success('Saat değişikliği reddedildi');
       refetch();
     } catch (error: any) {
-      toast.error(error.response?.data?.errors?.[0] || 'Red basarisiz');
+      toast.error(error.response?.data?.errors?.[0] || 'Red başarısız');
     }
   };
 
@@ -193,9 +193,9 @@ export default function BookingDetailPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Rezervasyon Bulunamadi</h2>
+          <h2 className="text-2xl font-bold mb-2">Rezervasyon Bulunamadı</h2>
           <Button onClick={() => router.push('/student/bookings')}>
-            Rezervasyonlara Don
+            Rezervasyonlara Dön
           </Button>
         </div>
       </div>
@@ -213,12 +213,12 @@ export default function BookingDetailPage() {
     };
 
     const labels: Record<BookingStatus, string> = {
-      [BookingStatus.PendingPayment]: 'Odeme Bekleniyor',
-      [BookingStatus.Confirmed]: 'Onaylandi',
-      [BookingStatus.Completed]: 'Tamamlandi',
-      [BookingStatus.Cancelled]: 'Iptal Edildi',
-      [BookingStatus.NoShow]: 'Katilim Yok',
-      [BookingStatus.Disputed]: 'Itirazli',
+      [BookingStatus.PendingPayment]: 'Ödeme Bekleniyor',
+      [BookingStatus.Confirmed]: 'Onaylandı',
+      [BookingStatus.Completed]: 'Tamamlandı',
+      [BookingStatus.Cancelled]: 'İptal Edildi',
+      [BookingStatus.NoShow]: 'Katılım Yok',
+      [BookingStatus.Disputed]: 'İtirazlı',
     };
 
     return (
@@ -238,7 +238,7 @@ export default function BookingDetailPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Rezervasyon Detaylari</h1>
+            <h1 className="text-3xl font-bold mb-2">Rezervasyon Detayları</h1>
             <p className="text-gray-600">Rezervasyon #{booking.id.slice(0, 8)}</p>
           </div>
           {getStatusBadge(booking.status)}
@@ -252,10 +252,10 @@ export default function BookingDetailPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-1 text-orange-900">
                     <RefreshCw className="w-5 h-5 inline mr-2" />
-                    Saat Degisikligi Talebi
+                    Saat Değişikliği Talebi
                   </h3>
                   <p className="text-sm text-orange-800 mb-2">
-                    Mentor seans saatini degistirmek istiyor:
+                    Mentor seans saatini değiştirmek istiyor:
                   </p>
                   <p className="font-medium text-orange-900">
                     Yeni tarih: {booking.pendingRescheduleStartAt
@@ -269,7 +269,7 @@ export default function BookingDetailPage() {
                     onClick={handleApproveReschedule}
                     disabled={approveReschedule.isPending}
                   >
-                    {approveReschedule.isPending ? 'Onaylaniyor...' : 'Onayla'}
+                    {approveReschedule.isPending ? 'Onaylanıyor...' : 'Onayla'}
                   </Button>
                   <Button
                     size="sm"
@@ -308,7 +308,7 @@ export default function BookingDetailPage() {
                   </div>
                   <Button variant="outline" size="sm">
                     <MessageSquare className="w-4 h-4 mr-2" />
-                    Mesaj Gonder
+                    Mesaj Gönder
                   </Button>
                 </div>
               </CardContent>
@@ -317,7 +317,7 @@ export default function BookingDetailPage() {
             {/* Session Details */}
             <Card>
               <CardHeader>
-                <CardTitle>Seans Detaylari</CardTitle>
+                <CardTitle>Seans Detayları</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-3">
@@ -341,7 +341,7 @@ export default function BookingDetailPage() {
                 <div className="flex items-center space-x-3">
                   <Clock className="w-5 h-5 text-gray-400" />
                   <div>
-                    <p className="text-sm text-gray-600">Sure</p>
+                    <p className="text-sm text-gray-600">Süre</p>
                     <p className="font-medium">{booking.durationMin} dakika</p>
                   </div>
                 </div>
@@ -357,7 +357,7 @@ export default function BookingDetailPage() {
                 {/* Reschedule count info */}
                 {booking.status === BookingStatus.Confirmed && (
                   <div className="text-xs text-gray-500 pt-2 border-t">
-                    Kalan saat degisikligi hakki: {2 - (booking.rescheduleCountStudent ?? 0)}/2
+                    Kalan saat değişikliği hakkı: {2 - (booking.rescheduleCountStudent ?? 0)}/2
                   </div>
                 )}
               </CardContent>
@@ -367,7 +367,7 @@ export default function BookingDetailPage() {
             {booking.status === BookingStatus.Cancelled && booking.cancellationReason && (
               <Card className="border-red-200 bg-red-50">
                 <CardHeader>
-                  <CardTitle className="text-red-900">Iptal Bilgisi</CardTitle>
+                  <CardTitle className="text-red-900">İptal Bilgisi</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-red-800">{booking.cancellationReason}</p>
@@ -381,7 +381,7 @@ export default function BookingDetailPage() {
             {/* Actions */}
             <Card>
               <CardHeader>
-                <CardTitle>Islemler</CardTitle>
+                <CardTitle>İşlemler</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {/* Join Class Button */}
@@ -394,7 +394,7 @@ export default function BookingDetailPage() {
                       disabled={!canJoinNow() || checkingRoom}
                     >
                       <Video className="w-4 h-4 mr-2" />
-                      {checkingRoom ? 'Kontrol ediliyor...' : 'Derse Katil'}
+                      {checkingRoom ? 'Kontrol ediliyor...' : 'Derse Katıl'}
                     </Button>
 
                     {/* Mentor Status Indicator */}
@@ -403,7 +403,7 @@ export default function BookingDetailPage() {
                         {roomStatus.isActive ? (
                           <>
                             <CheckCircle className="w-4 h-4 text-green-600" />
-                            <span className="text-green-600 font-medium">Mentor Hazir</span>
+                            <span className="text-green-600 font-medium">Mentor Hazır</span>
                           </>
                         ) : (
                           <>
@@ -416,7 +416,7 @@ export default function BookingDetailPage() {
 
                     {!canJoinNow() && roomStatus && !roomStatus.isActive && (
                       <p className="text-xs text-center text-gray-600">
-                        Mentor odayi aktiflestirdiginde katilabileceksiniz
+                        Mentor odayı aktifleştirdiğinde katılabileceksiniz
                       </p>
                     )}
                   </div>
@@ -430,7 +430,7 @@ export default function BookingDetailPage() {
                     className="w-full"
                   >
                     <RefreshCw className="w-4 h-4 mr-2" />
-                    Saati Guncelle
+                    Saati Güncelle
                   </Button>
                 )}
 
@@ -440,7 +440,7 @@ export default function BookingDetailPage() {
                     variant="outline"
                     className="w-full"
                   >
-                    Dersi Degerlendir
+                    Dersi Değerlendir
                   </Button>
                 )}
 
@@ -450,7 +450,7 @@ export default function BookingDetailPage() {
                     variant="destructive"
                     className="w-full"
                   >
-                    Rezervasyonu Iptal Et
+                    Rezervasyonu İptal Et
                   </Button>
                 )}
               </CardContent>
@@ -462,7 +462,7 @@ export default function BookingDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
                     <HelpCircle className="w-4 h-4" />
-                    Cevaplariniz
+                    Cevaplarınız
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -479,12 +479,12 @@ export default function BookingDetailPage() {
             {/* Payment Info */}
             <Card>
               <CardHeader>
-                <CardTitle>Odeme Bilgileri</CardTitle>
+                <CardTitle>Ödeme Bilgileri</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Ders Ucreti</span>
+                    <span className="text-gray-600">Ders Ücreti</span>
                     <span className="font-medium">{formatCurrency(booking.price)}</span>
                   </div>
                   <div className="flex justify-between pt-2 border-t">
@@ -507,7 +507,7 @@ export default function BookingDetailPage() {
                   <strong>Rezervasyon ID:</strong> {booking.id.slice(0, 8)}
                 </p>
                 <p>
-                  <strong>Olusturulma:</strong> {formatDate(booking.createdAt, 'PPP p')}
+                  <strong>Oluşturulma:</strong> {formatDate(booking.createdAt, 'PPP p')}
                 </p>
               </CardContent>
             </Card>
@@ -519,16 +519,16 @@ export default function BookingDetailPage() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <Card className="max-w-md w-full">
               <CardHeader>
-                <CardTitle>Rezervasyonu Iptal Et</CardTitle>
+                <CardTitle>Rezervasyonu İptal Et</CardTitle>
                 <CardDescription>
-                  Iptal sebebinizi belirtiniz. Iade kurallarina gore islem yapilacaktir.
+                  İptal sebebinizi belirtiniz. İade kurallarına göre işlem yapılacaktır.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <textarea
                   value={cancelReason}
                   onChange={(e) => setCancelReason(e.target.value)}
-                  placeholder="Iptal sebebi..."
+                  placeholder="İptal sebebi..."
                   rows={4}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                 />
@@ -538,7 +538,7 @@ export default function BookingDetailPage() {
                     onClick={() => setShowCancelDialog(false)}
                     className="flex-1"
                   >
-                    Vazgec
+                    Vazgeç
                   </Button>
                   <Button
                     variant="destructive"
@@ -546,7 +546,7 @@ export default function BookingDetailPage() {
                     className="flex-1"
                     disabled={cancelBooking.isPending}
                   >
-                    {cancelBooking.isPending ? 'Iptal Ediliyor...' : 'Iptal Et'}
+                    {cancelBooking.isPending ? 'İptal Ediliyor...' : 'İptal Et'}
                   </Button>
                 </div>
               </CardContent>
@@ -560,9 +560,9 @@ export default function BookingDetailPage() {
             <Card className="max-w-lg w-full max-h-[80vh] overflow-y-auto">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Seans Saatini Guncelle</CardTitle>
+                  <CardTitle>Seans Saatini Güncelle</CardTitle>
                   <CardDescription>
-                    Yeni bir tarih ve saat secin. (Kalan hak: {2 - (booking.rescheduleCountStudent ?? 0)}/2)
+                    Yeni bir tarih ve saat seçin. (Kalan hak: {2 - (booking.rescheduleCountStudent ?? 0)}/2)
                   </CardDescription>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => setShowRescheduleModal(false)}>
@@ -572,7 +572,7 @@ export default function BookingDetailPage() {
               <CardContent className="space-y-4">
                 {/* Date Selection - Horizontal scrollable date buttons */}
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Tarih Secin</label>
+                  <label className="text-sm font-medium mb-2 block">Tarih Seçin</label>
                   <div className="flex gap-2 overflow-x-auto pb-2">
                     {Array.from({ length: 30 }, (_, i) => {
                       const d = new Date();
@@ -602,18 +602,18 @@ export default function BookingDetailPage() {
                 {rescheduleDate && (
                   <div>
                     <label className="text-sm font-medium mb-2 block">
-                      {format(new Date(rescheduleDate + 'T00:00:00'), 'dd MMMM yyyy, EEEE', { locale: tr })} - Musait Saatler
+                      {format(new Date(rescheduleDate + 'T00:00:00'), 'dd MMMM yyyy, EEEE', { locale: tr })} - Müsait Saatler
                     </label>
                     {loadingSlots ? (
                       <div className="text-center py-4">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto" />
-                        <p className="text-sm text-gray-500 mt-2">Uygun saatler hesaplaniyor...</p>
+                        <p className="text-sm text-gray-500 mt-2">Uygun saatler hesaplanıyor...</p>
                       </div>
                     ) : rescheduleSlots.length === 0 ? (
                       <div className="text-center py-6 text-gray-500">
                         <Calendar className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                        <p className="text-sm font-medium">Bu tarihte musait saat yok</p>
-                        <p className="text-xs mt-1">Baska bir tarih secin</p>
+                        <p className="text-sm font-medium">Bu tarihte müsait saat yok</p>
+                        <p className="text-xs mt-1">Başka bir tarih seçin</p>
                       </div>
                     ) : (
                       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -649,7 +649,7 @@ export default function BookingDetailPage() {
                 {selectedSlot && (
                   <div className="bg-primary-50 border border-primary-200 rounded-lg p-3">
                     <p className="text-sm font-medium text-primary-900">
-                      Secilen: {format(new Date(selectedSlot.startAt), 'dd MMMM yyyy, HH:mm', { locale: tr })} - {format(new Date(selectedSlot.endAt), 'HH:mm')}
+                      Seçilen: {format(new Date(selectedSlot.startAt), 'dd MMMM yyyy, HH:mm', { locale: tr })} - {format(new Date(selectedSlot.endAt), 'HH:mm')}
                     </p>
                   </div>
                 )}
@@ -665,14 +665,14 @@ export default function BookingDetailPage() {
                     }}
                     className="flex-1"
                   >
-                    Vazgec
+                    Vazgeç
                   </Button>
                   <Button
                     onClick={handleReschedule}
                     className="flex-1"
                     disabled={!selectedSlot || rescheduleBooking.isPending}
                   >
-                    {rescheduleBooking.isPending ? 'Guncelleniyor...' : 'Saati Guncelle'}
+                    {rescheduleBooking.isPending ? 'Güncelleniyor...' : 'Saati Güncelle'}
                   </Button>
                 </div>
               </CardContent>

@@ -30,14 +30,14 @@ function PaymentSuccessContent() {
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <Check className="w-10 h-10 text-green-600" />
         </div>
-        <h1 className="text-2xl font-bold mb-2">Odeme Basarili!</h1>
+        <h1 className="text-2xl font-bold mb-2">Ödeme Başarılı!</h1>
         <p className="text-gray-600 mb-4">
           {isCourse
-            ? 'Kurs satin aliminiz tamamlandi. Yonlendiriliyorsunuz...'
-            : 'Rezervasyonunuz onaylandi. Yonlendiriliyorsunuz...'}
+            ? 'Kurs satın alımınız tamamlandı. Yönlendiriliyorsunuz...'
+            : 'Rezervasyonunuz onaylandı. Yönlendiriliyorsunuz...'}
         </p>
         <Button onClick={() => router.push(redirectUrl)}>
-          {isCourse ? 'Kursa Git' : 'Rezervasyonlarim'}
+          {isCourse ? 'Kursa Git' : 'Rezervasyonlarım'}
         </Button>
       </div>
     </div>
@@ -52,8 +52,8 @@ export default function PaymentSuccessPage() {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Check className="w-10 h-10 text-green-600" />
           </div>
-          <h1 className="text-2xl font-bold mb-2">Odeme Basarili!</h1>
-          <p className="text-gray-600 mb-4">Yonlendiriliyorsunuz...</p>
+          <h1 className="text-2xl font-bold mb-2">Ödeme Başarılı!</h1>
+          <p className="text-gray-600 mb-4">Yönlendiriliyorsunuz...</p>
         </div>
       </div>
     }>

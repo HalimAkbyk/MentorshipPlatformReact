@@ -18,12 +18,12 @@ export default function StudentCoursesPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold font-heading mb-2">Kurslarim</h1>
-            <p className="text-gray-600">Kayitli oldugunuz kurslari goruntuleyip devam edin</p>
+            <h1 className="text-3xl font-bold font-heading mb-2">Kurslarım</h1>
+            <p className="text-gray-600">Kayıtlı olduğunuz kursları görüntüleyip devam edin</p>
           </div>
           <Button onClick={() => router.push(ROUTES.COURSE_CATALOG)}>
             <BookOpen className="w-4 h-4 mr-2" />
-            Kurs Kesfet
+            Kurs Keşfet
           </Button>
         </div>
 
@@ -65,7 +65,7 @@ export default function StudentCoursesPage() {
                   {/* Progress Overlay */}
                   {course.completionPercentage === 100 && (
                     <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded">
-                      Tamamlandi
+                      Tamamlandı
                     </div>
                   )}
                 </div>
@@ -80,7 +80,7 @@ export default function StudentCoursesPage() {
                   <div className="mb-2">
                     <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
                       <span>
-                        {course.completedLectures}/{course.totalLectures} ders tamamlandi
+                        {course.completedLectures}/{course.totalLectures} ders tamamlandı
                       </span>
                       <span className="font-medium">
                         %{Math.round(course.completionPercentage)}
@@ -98,7 +98,7 @@ export default function StudentCoursesPage() {
                   {course.lastAccessedAt && (
                     <p className="text-xs text-gray-400 flex items-center gap-1 mb-3">
                       <Clock className="w-3 h-3" />
-                      Son erisim: {formatRelativeTime(course.lastAccessedAt)}
+                      Son erişim: {formatRelativeTime(course.lastAccessedAt)}
                     </p>
                   )}
 
@@ -119,13 +119,13 @@ export default function StudentCoursesPage() {
           <div className="text-center py-16">
             <GraduationCap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold font-heading mb-2 text-gray-700">
-              Henuz bir kursa kayit olmadiniz
+              Henüz bir kursa kayıt olmadınız
             </h3>
             <p className="text-gray-500 mb-6">
-              Kurs katalogundan ilginizi ceken kurslari kesfedin ve ogrenmeye baslayin
+              Kurs kataloğundan ilginizi çeken kursları keşfedin ve öğrenmeye başlayın
             </p>
             <Button onClick={() => router.push(ROUTES.COURSE_CATALOG)}>
-              Kurslari Kesfet
+              Kursları Keşfet
             </Button>
           </div>
         )}

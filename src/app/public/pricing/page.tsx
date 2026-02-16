@@ -14,15 +14,15 @@ export default function PricingPage() {
   const ctaHref = isAuthenticated
     ? pickDefaultDashboard(user?.roles)
     : '/auth/signup';
-  const ctaLabel = isAuthenticated ? 'Panelime Git' : 'Hemen Basla';
+  const ctaLabel = isAuthenticated ? 'Panelime Git' : 'Hemen Başla';
 
   return (
     <div className="min-h-screen py-16">
       <div className="container mx-auto px-4">
         <FadeInDiv className="text-center mb-12">
-          <h1 className="text-4xl font-bold font-heading mb-4">Ucretlendirme</h1>
+          <h1 className="text-4xl font-bold font-heading mb-4">Ücretlendirme</h1>
           <p className="text-xl text-gray-600">
-            Seffaf ve adil fiyatlandirma
+            Şeffaf ve adil fiyatlandırma
           </p>
         </FadeInDiv>
 
@@ -31,9 +31,9 @@ export default function PricingPage() {
           <StaggerItem>
             <Card>
               <CardHeader>
-                <CardTitle>Danisanlar Icin</CardTitle>
+                <CardTitle>Danışanlar İçin</CardTitle>
                 <CardDescription>
-                  Sadece aldigin dersler icin ode
+                  Sadece aldığın dersler için öde
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -42,21 +42,21 @@ export default function PricingPage() {
                     +%7 <span className="text-lg font-normal text-gray-600">platform bedeli</span>
                   </div>
                   <p className="text-sm text-gray-600">
-                    Mentorun belirledigi fiyata ek olarak
+                    Mentorun belirlediği fiyata ek olarak
                   </p>
                 </div>
                 <ul className="space-y-3">
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-green-600 mr-2" />
-                    <span>Ucretsiz kayit</span>
+                    <span>Ücretsiz kayıt</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-green-600 mr-2" />
-                    <span>Guvenli odeme</span>
+                    <span>Güvenli ödeme</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-green-600 mr-2" />
-                    <span>24 saat oncesine kadar iptal</span>
+                    <span>24 saat öncesine kadar iptal</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-green-600 mr-2" />
@@ -71,9 +71,9 @@ export default function PricingPage() {
           <StaggerItem>
             <Card className="border-primary-200 bg-primary-50">
               <CardHeader>
-                <CardTitle>Mentorler Icin</CardTitle>
+                <CardTitle>Mentorler İçin</CardTitle>
                 <CardDescription>
-                  Kendi ucretini sen belirle
+                  Kendi ücretini sen belirle
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -88,15 +88,15 @@ export default function PricingPage() {
                 <ul className="space-y-3">
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-green-600 mr-2" />
-                    <span>Ucretsiz kayit ve profil</span>
+                    <span>Ücretsiz kayıt ve profil</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-green-600 mr-2" />
-                    <span>Kendi fiyatini belirle</span>
+                    <span>Kendi fiyatını belirle</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-green-600 mr-2" />
-                    <span>Hizli odeme (24 saat)</span>
+                    <span>Hızlı ödeme (24 saat)</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-green-600 mr-2" />
@@ -110,9 +110,9 @@ export default function PricingPage() {
 
         <FadeInDiv className="text-center mt-12" delay={0.3}>
           <p className="text-gray-600 mb-6">
-            Sorulariniz mi var?{' '}
+            Sorularınız mı var?{' '}
             <Link href="/public/faq" className="text-primary-600 hover:underline">SSS</Link>{' '}
-            sayfamizi ziyaret edin
+            sayfamızı ziyaret edin
           </p>
           <Link href={ctaHref}>
             <Button size="lg">{ctaLabel}</Button>

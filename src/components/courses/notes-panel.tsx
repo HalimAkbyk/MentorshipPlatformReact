@@ -40,9 +40,9 @@ export default function NotesPanel({ lectureId, onSeek, currentTimeSec = 0 }: No
       });
       setNewNoteContent('');
       setIsAdding(false);
-      toast.success('Not eklendi');
+      toast.success('Not eklendi.');
     } catch {
-      toast.error('Not eklenirken bir hata olustu');
+      toast.error('Not eklenirken bir hata oluştu');
     }
   };
 
@@ -57,9 +57,9 @@ export default function NotesPanel({ lectureId, onSeek, currentTimeSec = 0 }: No
       });
       setEditingNoteId(null);
       setEditContent('');
-      toast.success('Not guncellendi');
+      toast.success('Not güncellendi.');
     } catch {
-      toast.error('Not guncellenirken bir hata olustu');
+      toast.error('Not güncellenirken bir hata oluştu');
     }
   };
 
@@ -68,7 +68,7 @@ export default function NotesPanel({ lectureId, onSeek, currentTimeSec = 0 }: No
       await deleteNote.mutateAsync({ noteId, lectureId });
       toast.success('Not silindi');
     } catch {
-      toast.error('Not silinirken bir hata olustu');
+      toast.error('Not silinirken bir hata oluştu');
     }
   };
 
@@ -92,7 +92,7 @@ export default function NotesPanel({ lectureId, onSeek, currentTimeSec = 0 }: No
       <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
         <div className="flex items-center gap-2.5">
           <StickyNote className="w-4.5 h-4.5 text-primary-400" />
-          <h3 className="font-bold text-sm text-gray-100">Notlarim</h3>
+          <h3 className="font-bold text-sm text-gray-100">Notlarım</h3>
           {sortedNotes.length > 0 && (
             <span className="text-[11px] font-semibold text-gray-400 bg-white/[0.06] px-2 py-0.5 rounded-full">
               {sortedNotes.length}
@@ -124,7 +124,7 @@ export default function NotesPanel({ lectureId, onSeek, currentTimeSec = 0 }: No
           <textarea
             value={newNoteContent}
             onChange={(e) => setNewNoteContent(e.target.value)}
-            placeholder="Notunuzu yazin..."
+            placeholder="Notunuzu yazın..."
             className="w-full px-3.5 py-2.5 bg-[#141414] border border-white/[0.08] rounded-lg text-sm text-gray-200 placeholder-gray-500 resize-none focus:outline-none focus:border-primary-500/40 focus:ring-1 focus:ring-primary-500/20 transition-all"
             rows={3}
             autoFocus
@@ -148,7 +148,7 @@ export default function NotesPanel({ lectureId, onSeek, currentTimeSec = 0 }: No
               }}
               className="px-4 py-2 text-gray-400 hover:text-gray-200 text-[13px] font-medium rounded-lg hover:bg-white/[0.04] transition-colors"
             >
-              Iptal
+              İptal
             </button>
           </div>
         </div>
@@ -198,7 +198,7 @@ export default function NotesPanel({ lectureId, onSeek, currentTimeSec = 0 }: No
                         onClick={cancelEditing}
                         className="px-3.5 py-1.5 text-gray-400 hover:text-gray-200 text-[13px] font-medium rounded-lg hover:bg-white/[0.04] transition-colors"
                       >
-                        Iptal
+                        İptal
                       </button>
                     </div>
                   </div>
@@ -221,7 +221,7 @@ export default function NotesPanel({ lectureId, onSeek, currentTimeSec = 0 }: No
                         className="text-xs text-gray-500 hover:text-gray-300 flex items-center gap-1 font-medium transition-colors"
                       >
                         <Pencil className="w-3.5 h-3.5" />
-                        Duzenle
+                        Düzenle
                       </button>
                       <button
                         onClick={() => handleDeleteNote(note.id)}
@@ -242,9 +242,9 @@ export default function NotesPanel({ lectureId, onSeek, currentTimeSec = 0 }: No
             <div className="w-12 h-12 rounded-xl bg-white/[0.04] flex items-center justify-center mx-auto mb-3">
               <MessageSquarePlus className="w-6 h-6 text-gray-600" />
             </div>
-            <p className="text-sm text-gray-400 font-semibold">Henuz not eklemediniz</p>
+            <p className="text-sm text-gray-400 font-semibold">Henüz not eklemediniz</p>
             <p className="text-xs text-gray-500 mt-1.5">
-              Video izlerken onemli anlari not alin
+              Video izlerken önemli anları not alın
             </p>
           </div>
         )}

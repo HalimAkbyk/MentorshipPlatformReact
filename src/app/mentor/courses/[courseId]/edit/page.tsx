@@ -38,14 +38,14 @@ import type { CourseEditDto, CourseSectionEditDto, CourseLectureEditDto } from '
 // ==================== SCHEMA ====================
 
 const courseSettingsSchema = z.object({
-  title: z.string().min(3, 'Kurs adi en az 3 karakter').max(150),
+  title: z.string().min(3, 'Kurs adı en az 3 karakter').max(150),
   shortDescription: z.string().max(300).optional().or(z.literal('')),
   description: z.string().max(5000).optional().or(z.literal('')),
-  price: z.coerce.number().min(0, 'Fiyat 0 veya daha fazla olmali'),
+  price: z.coerce.number().min(0, 'Fiyat 0 veya daha fazla olmalı'),
   level: z.string(),
   category: z.string().optional().or(z.literal('')),
   language: z.string().default('tr'),
-  coverImageUrl: z.string().url('Gecerli bir URL girin').optional().or(z.literal('')),
+  coverImageUrl: z.string().url('Geçerli bir URL girin').optional().or(z.literal('')),
   whatYouWillLearn: z.array(z.object({ value: z.string() })).max(10),
   requirements: z.array(z.object({ value: z.string() })).max(10),
   targetAudience: z.array(z.object({ value: z.string() })).max(5),
@@ -56,21 +56,21 @@ type CourseSettingsFormData = z.infer<typeof courseSettingsSchema>;
 // ==================== CONSTANTS ====================
 
 const CATEGORIES = [
-  { value: '', label: 'Kategori secin...' },
-  { value: 'Yazilim', label: 'Yazilim' },
-  { value: 'Tasarim', label: 'Tasarim' },
+  { value: '', label: 'Kategori seçin...' },
+  { value: 'Yazılım', label: 'Yazılım' },
+  { value: 'Tasarım', label: 'Tasarım' },
   { value: 'Pazarlama', label: 'Pazarlama' },
-  { value: 'Kisisel Gelisim', label: 'Kisisel Gelisim' },
+  { value: 'Kişisel Gelişim', label: 'Kişisel Gelişim' },
   { value: 'Dil', label: 'Dil' },
-  { value: 'Muzik', label: 'Muzik' },
-  { value: 'Diger', label: 'Diger' },
+  { value: 'Müzik', label: 'Müzik' },
+  { value: 'Diğer', label: 'Diğer' },
 ];
 
 const LEVELS = [
-  { value: CourseLevel.AllLevels, label: 'Tum Seviyeler' },
-  { value: CourseLevel.Beginner, label: 'Baslangic' },
+  { value: CourseLevel.AllLevels, label: 'Tüm Seviyeler' },
+  { value: CourseLevel.Beginner, label: 'Başlangıç' },
   { value: CourseLevel.Intermediate, label: 'Orta' },
-  { value: CourseLevel.Advanced, label: 'Ileri' },
+  { value: CourseLevel.Advanced, label: 'İleri' },
 ];
 
 function formatDuration(totalSec: number): string {
@@ -97,15 +97,15 @@ export default function CourseEditPage() {
 
     const totalLectures = course.sections.reduce((sum, s) => sum + s.lectures.length, 0);
     if (course.sections.length === 0 || totalLectures === 0) {
-      toast.error('Yayinlamak icin en az 1 bolum ve 1 ders gerekli');
+      toast.error('Yayınlamak için en az 1 bölüm ve 1 ders gerekli');
       return;
     }
 
     try {
       await publishMutation.mutateAsync(courseId);
-      toast.success('Kurs basariyla yayinlandi!');
+      toast.success('Kurs başarıyla yayınlandı!');
     } catch {
-      toast.error('Kurs yayinlanirken hata olustu');
+      toast.error('Kurs yayınlanırken hata oluştu');
     }
   };
 
@@ -120,7 +120,7 @@ export default function CourseEditPage() {
   if (!course) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Kurs bulunamadi</p>
+        <p className="text-gray-500">Kurs bulunamadı</p>
       </div>
     );
   }
@@ -140,7 +140,7 @@ export default function CourseEditPage() {
             <div>
               <h1 className="text-lg font-bold truncate max-w-md">{course.title}</h1>
               <div className="flex items-center gap-2 text-sm text-gray-500">
-                <span>{course.sections.length} bolum</span>
+                <span>{course.sections.length} bölüm</span>
                 <span>-</span>
                 <span>{course.totalLectures} ders</span>
                 <span>-</span>
@@ -156,14 +156,14 @@ export default function CourseEditPage() {
                 ) : (
                   <Send className="w-4 h-4" />
                 )}
-                Yayinla
+                Yayınla
               </Button>
             )}
             {course.status === CourseStatus.Published && (
-              <Badge variant="success">Yayinda</Badge>
+              <Badge variant="success">Yayında</Badge>
             )}
             {course.status === CourseStatus.Archived && (
-              <Badge variant="secondary">Arsiv</Badge>
+              <Badge variant="secondary">Arşiv</Badge>
             )}
           </div>
         </div>
@@ -255,19 +255,19 @@ function CourseSettingsForm({
       });
       toast.success('Kurs bilgileri kaydedildi');
     } catch {
-      toast.error('Kaydetme sirasinda hata olustu');
+      toast.error('Kaydetme sırasında hata oluştu');
     }
   };
 
   return (
     <Card>
       <CardContent className="p-5">
-        <h2 className="text-lg font-semibold mb-4">Kurs Ayarlari</h2>
+        <h2 className="text-lg font-semibold mb-4">Kurs Ayarları</h2>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
           {/* Title */}
           <div>
             <label className="block text-sm font-medium mb-1">
-              Kurs Adi <span className="text-red-500">*</span>
+              Kurs Adı <span className="text-red-500">*</span>
             </label>
             <Input {...form.register('title')} />
             {form.formState.errors.title && (
@@ -277,13 +277,13 @@ function CourseSettingsForm({
 
           {/* Short Description */}
           <div>
-            <label className="block text-sm font-medium mb-1">Kisa Aciklama</label>
+            <label className="block text-sm font-medium mb-1">Kısa Açıklama</label>
             <Input {...form.register('shortDescription')} />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium mb-1">Detayli Aciklama</label>
+            <label className="block text-sm font-medium mb-1">Detaylı Açıklama</label>
             <textarea
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[100px]"
               {...form.register('description')}
@@ -328,15 +328,15 @@ function CourseSettingsForm({
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 h-10 bg-white"
                 {...form.register('language')}
               >
-                <option value="tr">Turkce</option>
-                <option value="en">Ingilizce</option>
+                <option value="tr">Türkçe</option>
+                <option value="en">İngilizce</option>
               </select>
             </div>
           </div>
 
           {/* Cover Image URL */}
           <div>
-            <label className="block text-sm font-medium mb-1">Kapak Gorseli URL</label>
+            <label className="block text-sm font-medium mb-1">Kapak Görseli URL</label>
             <Input placeholder="https://..." {...form.register('coverImageUrl')} />
             {form.formState.errors.coverImageUrl && (
               <p className="text-sm text-red-600 mt-1">
@@ -347,7 +347,7 @@ function CourseSettingsForm({
               <div className="mt-2 rounded-lg overflow-hidden border h-32">
                 <img
                   src={watchCoverImage}
-                  alt="Kapak onizleme"
+                  alt="Kapak önizleme"
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
@@ -359,13 +359,13 @@ function CourseSettingsForm({
 
           {/* WhatYouWillLearn */}
           <DynamicStringList
-            label="Neler Ogreneceksiniz"
+            label="Neler Öğreneceksiniz"
             fields={learnFields}
             register={(index) => form.register(`whatYouWillLearn.${index}.value`)}
             onAppend={() => appendLearn({ value: '' })}
             onRemove={removeLearn}
             maxItems={10}
-            placeholder="orn: React Hook kullanimi"
+            placeholder="örn: React Hook kullanımı"
           />
 
           {/* Requirements */}
@@ -376,7 +376,7 @@ function CourseSettingsForm({
             onAppend={() => appendReq({ value: '' })}
             onRemove={removeReq}
             maxItems={10}
-            placeholder="orn: Temel JavaScript bilgisi"
+            placeholder="örn: Temel JavaScript bilgisi"
           />
 
           {/* Target Audience */}
@@ -387,7 +387,7 @@ function CourseSettingsForm({
             onAppend={() => appendAudience({ value: '' })}
             onRemove={removeAudience}
             maxItems={5}
-            placeholder="orn: Web gelistirmeye yeni baslayanlar"
+            placeholder="örn: Web geliştirmeye yeni başlayanlar"
           />
 
           {/* Save Button */}
@@ -506,35 +506,35 @@ function CurriculumBuilder({
     if (!addingSectionTitle.trim()) return;
     try {
       await createSectionMut.mutateAsync({ courseId, title: addingSectionTitle.trim() });
-      toast.success('Bolum eklendi');
+      toast.success('Bölüm eklendi');
       setAddingSectionTitle('');
       setShowAddSection(false);
     } catch {
-      toast.error('Bolum eklenirken hata olustu');
+      toast.error('Bölüm eklenirken hata oluştu');
     }
   };
 
   const handleUpdateSectionTitle = async (sectionId: string, newTitle: string) => {
     try {
       await updateSectionMut.mutateAsync({ courseId, sectionId, title: newTitle });
-      toast.success('Bolum adi guncellendi');
+      toast.success('Bölüm adı güncellendi');
     } catch {
-      toast.error('Bolum adi guncellenemedi');
+      toast.error('Bölüm adı güncellenemedi');
     }
   };
 
   const handleDeleteSection = (section: CourseSectionEditDto) => {
     confirm({
-      title: 'Bolumu Sil',
-      description: `"${section.title}" bolumu ve icindeki tum dersler silinecek. Bu islem geri alinamaz.`,
+      title: 'Bölümü Sil',
+      description: `"${section.title}" bölümü ve içindeki tüm dersler silinecek. Bu işlem geri alınamaz.`,
       variant: 'danger',
       confirmText: 'Sil',
       onConfirm: async () => {
         try {
           await deleteSectionMut.mutateAsync({ courseId, sectionId: section.id });
-          toast.success('Bolum silindi');
+          toast.success('Bölüm silindi');
         } catch {
-          toast.error('Bolum silinirken hata olustu');
+          toast.error('Bölüm silinirken hata oluştu');
         }
       },
     });
@@ -545,7 +545,7 @@ function CurriculumBuilder({
   const handleDeleteLecture = (sectionId: string, lecture: CourseLectureEditDto) => {
     confirm({
       title: 'Dersi Sil',
-      description: `"${lecture.title}" dersini silmek istediginize emin misiniz?`,
+      description: `"${lecture.title}" dersini silmek istediğinize emin misiniz?`,
       variant: 'danger',
       confirmText: 'Sil',
       onConfirm: async () => {
@@ -553,7 +553,7 @@ function CurriculumBuilder({
           await deleteLectureMut.mutateAsync({ courseId, sectionId, lectureId: lecture.id });
           toast.success('Ders silindi');
         } catch {
-          toast.error('Ders silinirken hata olustu');
+          toast.error('Ders silinirken hata oluştu');
         }
       },
     });
@@ -562,7 +562,7 @@ function CurriculumBuilder({
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">Mufredat</h2>
+        <h2 className="text-lg font-semibold">Müfredat</h2>
         <Button
           size="sm"
           variant="outline"
@@ -570,7 +570,7 @@ function CurriculumBuilder({
           className="gap-1"
         >
           <Plus className="w-4 h-4" />
-          Yeni Bolum Ekle
+          Yeni Bölüm Ekle
         </Button>
       </div>
 
@@ -580,7 +580,7 @@ function CurriculumBuilder({
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Input
-                placeholder="Bolum adi girin..."
+                placeholder="Bölüm adı girin..."
                 value={addingSectionTitle}
                 onChange={(e) => setAddingSectionTitle(e.target.value)}
                 onKeyDown={(e) => {
@@ -622,13 +622,13 @@ function CurriculumBuilder({
         <Card className="text-center py-12">
           <CardContent>
             <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 mb-2">Henuz bolum eklenmedi</p>
+            <p className="text-gray-500 mb-2">Henüz bölüm eklenmedi</p>
             <p className="text-sm text-gray-400 mb-4">
-              Mufredat olusturmak icin bolum ekleyin
+              Müfredat oluşturmak için bölüm ekleyin
             </p>
             <Button variant="outline" onClick={() => setShowAddSection(true)} className="gap-1">
               <Plus className="w-4 h-4" />
-              Ilk Bolumu Ekle
+              İlk Bölümü Ekle
             </Button>
           </CardContent>
         </Card>
@@ -795,7 +795,7 @@ function SectionCard({
         <CardContent className="p-0">
           {section.lectures.length === 0 ? (
             <div className="p-4 text-center text-sm text-gray-400">
-              Bu bolumde henuz ders yok
+              Bu bölümde henüz ders yok
             </div>
           ) : (
             <div className="divide-y">
@@ -866,7 +866,7 @@ function LectureRow({
             {lecture.isPreview && (
               <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-[10px]">
                 <Eye className="w-3 h-3 mr-0.5" />
-                Onizleme
+                Önizleme
               </Badge>
             )}
           </div>
@@ -882,7 +882,7 @@ function LectureRow({
             {lecture.type === LectureType.Video && lecture.videoKey && (
               <Badge className="bg-green-100 text-green-700 border-green-200 text-[10px]">
                 <CheckCircle className="w-3 h-3 mr-0.5" />
-                Yuklendi
+                Yüklendi
               </Badge>
             )}
           </div>
@@ -898,7 +898,7 @@ function LectureRow({
               className="gap-1 h-7 text-xs"
             >
               <Upload className="w-3 h-3" />
-              Video Yukle
+              Video Yükle
             </Button>
           )}
           {lecture.type === LectureType.Video && lecture.videoKey && (
@@ -909,7 +909,7 @@ function LectureRow({
               className="gap-1 h-7 text-xs"
             >
               <Upload className="w-3 h-3" />
-              Degistir
+              Değiştir
             </Button>
           )}
           <Button size="icon" variant="ghost" onClick={onEdit} className="h-7 w-7">
@@ -1005,13 +1005,13 @@ function VideoUploadWidget({
               const resp = JSON.parse(xhr.responseText);
               resolve(resp.videoKey || resp.fileKey);
             } catch {
-              reject(new Error('Yanit islenemedi'));
+              reject(new Error('Yanıt işlenemedi'));
             }
           } else {
-            reject(new Error(`Yukleme basarisiz: ${xhr.status}`));
+            reject(new Error(`Yükleme başarısız: ${xhr.status}`));
           }
         });
-        xhr.addEventListener('error', () => reject(new Error('Yukleme basarisiz')));
+        xhr.addEventListener('error', () => reject(new Error('Yükleme başarısız')));
         xhr.open('POST', `${API_URL}/lectures/${lectureId}/upload-video`);
         if (token) {
           xhr.setRequestHeader('Authorization', `Bearer ${token}`);
@@ -1028,11 +1028,11 @@ function VideoUploadWidget({
       // Step 5: Invalidate query
       queryClient.invalidateQueries({ queryKey: ['course', 'edit', courseId] });
 
-      toast.success('Video basariyla yuklendi!');
+      toast.success('Video başarıyla yüklendi!');
       onComplete();
     } catch (error) {
       console.error('Video upload error:', error);
-      toast.error('Video yuklenirken hata olustu');
+      toast.error('Video yüklenirken hata oluştu');
     } finally {
       setUploading(false);
       setProgress(0);
@@ -1071,7 +1071,7 @@ function VideoUploadWidget({
           className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-400 hover:bg-primary-50 transition-colors text-sm text-gray-600"
         >
           <Upload className="w-4 h-4" />
-          Video dosyasi secin
+          Video dosyası seçin
         </button>
       )}
     </div>
@@ -1081,7 +1081,7 @@ function VideoUploadWidget({
 // ==================== ADD LECTURE MODAL ====================
 
 const addLectureSchema = z.object({
-  title: z.string().min(2, 'Ders adi en az 2 karakter').max(200),
+  title: z.string().min(2, 'Ders adı en az 2 karakter').max(200),
   type: z.string().default(LectureType.Video),
   isPreview: z.boolean().default(false),
 });
@@ -1122,19 +1122,19 @@ function AddLectureModal({
       toast.success('Ders eklendi');
       onClose();
     } catch {
-      toast.error('Ders eklenirken hata olustu');
+      toast.error('Ders eklenirken hata oluştu');
     }
   };
 
   return (
-    <Modal open onClose={onClose} title="Yeni Ders Ekle" description="Derse ait temel bilgileri girin">
+    <Modal open onClose={onClose} title="Yeni Ders Ekle" description="Derse ait temel bilgileri girin.">
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         {/* Title */}
         <div>
           <label className="block text-sm font-medium mb-1">
-            Ders Adi <span className="text-red-500">*</span>
+            Ders Adı <span className="text-red-500">*</span>
           </label>
-          <Input placeholder="orn: React Giris" {...form.register('title')} autoFocus />
+          <Input placeholder="örn: React Giriş" {...form.register('title')} autoFocus />
           {form.formState.errors.title && (
             <p className="text-sm text-red-600 mt-1">{form.formState.errors.title.message}</p>
           )}
@@ -1176,14 +1176,14 @@ function AddLectureModal({
               className="rounded border-gray-300"
             />
             <Eye className="w-4 h-4 text-gray-500" />
-            <span className="text-sm">Ucretsiz onizleme olarak yayinla</span>
+            <span className="text-sm">Ücretsiz önizleme olarak yayınla</span>
           </label>
         </div>
 
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-2 border-t">
           <Button type="button" variant="outline" onClick={onClose}>
-            Iptal
+            İptal
           </Button>
           <Button type="submit" disabled={createLectureMut.isPending}>
             {createLectureMut.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
@@ -1198,7 +1198,7 @@ function AddLectureModal({
 // ==================== EDIT LECTURE MODAL ====================
 
 const editLectureSchema = z.object({
-  title: z.string().min(2, 'Ders adi en az 2 karakter').max(200),
+  title: z.string().min(2, 'Ders adı en az 2 karakter').max(200),
   description: z.string().max(1000).optional().or(z.literal('')),
   isPreview: z.boolean().default(false),
   textContent: z.string().max(50000).optional().or(z.literal('')),
@@ -1242,10 +1242,10 @@ function EditLectureModal({
           textContent: data.textContent || undefined,
         },
       });
-      toast.success('Ders guncellendi');
+      toast.success('Ders güncellendi');
       onClose();
     } catch {
-      toast.error('Ders guncellenirken hata olustu');
+      toast.error('Ders güncellenirken hata oluştu');
     }
   };
 
@@ -1253,15 +1253,15 @@ function EditLectureModal({
     <Modal
       open
       onClose={onClose}
-      title="Dersi Duzenle"
-      description={`"${lecture.title}" dersini duzenleyin`}
+      title="Dersi Düzenle"
+      description={`"${lecture.title}" dersini düzenleyin`}
       className="max-h-[70vh] overflow-y-auto"
     >
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         {/* Title */}
         <div>
           <label className="block text-sm font-medium mb-1">
-            Ders Adi <span className="text-red-500">*</span>
+            Ders Adı <span className="text-red-500">*</span>
           </label>
           <Input {...form.register('title')} />
           {form.formState.errors.title && (
@@ -1271,10 +1271,10 @@ function EditLectureModal({
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium mb-1">Aciklama</label>
+          <label className="block text-sm font-medium mb-1">Açıklama</label>
           <textarea
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[80px]"
-            placeholder="Ders hakkinda kisa bir aciklama"
+            placeholder="Ders hakkında kısa bir açıklama"
             {...form.register('description')}
           />
         </div>
@@ -1282,10 +1282,10 @@ function EditLectureModal({
         {/* Text Content (for Text type lectures) */}
         {lecture.type === LectureType.Text && (
           <div>
-            <label className="block text-sm font-medium mb-1">Metin Icerigi</label>
+            <label className="block text-sm font-medium mb-1">Metin İçeriği</label>
             <textarea
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[200px] font-mono"
-              placeholder="Ders metin icerigini buraya yazin..."
+              placeholder="Ders metin içeriğini buraya yazın..."
               {...form.register('textContent')}
             />
           </div>
@@ -1300,14 +1300,14 @@ function EditLectureModal({
               className="rounded border-gray-300"
             />
             <Eye className="w-4 h-4 text-gray-500" />
-            <span className="text-sm">Ucretsiz onizleme olarak yayinla</span>
+            <span className="text-sm">Ücretsiz önizleme olarak yayınla</span>
           </label>
         </div>
 
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-2 border-t">
           <Button type="button" variant="outline" onClick={onClose}>
-            Iptal
+            İptal
           </Button>
           <Button type="submit" disabled={updateLectureMut.isPending}>
             {updateLectureMut.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}

@@ -33,7 +33,7 @@ export default function AdminAvatarsPage() {
       const data = await adminAvatarApi.getAll();
       setAvatars(data);
     } catch {
-      toast.error('Avatarlar yuklenirken hata olustu');
+      toast.error('Avatarlar yüklenirken hata oluştu');
     } finally {
       setLoading(false);
     }
@@ -65,12 +65,12 @@ export default function AdminAvatarsPage() {
     if (!file) return;
 
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      toast.error('Gecersiz dosya tipi. JPG, PNG, GIF, WebP veya SVG yukleyin.');
+      toast.error('Geçersiz dosya tipi. JPG, PNG, GIF, WebP veya SVG yükleyin.');
       e.target.value = '';
       return;
     }
     if (file.size > MAX_FILE_SIZE) {
-      toast.error('Dosya boyutu 2MB dan buyuk olamaz.');
+      toast.error('Dosya boyutu 2MB\'dan büyük olamaz.');
       e.target.value = '';
       return;
     }
@@ -94,7 +94,7 @@ export default function AdminAvatarsPage() {
     }
 
     if (!editingId && !formFile) {
-      toast.error('Lütfen bir avatar dosyasi secin');
+      toast.error('Lütfen bir avatar dosyası seçin');
       return;
     }
 
@@ -115,7 +115,7 @@ export default function AdminAvatarsPage() {
           await adminAvatarApi.updateImage(editingId, formFile);
         }
 
-        toast.success('Avatar guncellendi');
+        toast.success('Avatar güncellendi');
       } else {
         // Create new avatar with file upload
         await adminAvatarApi.create(formFile!, formLabel, formSortOrder);
@@ -125,7 +125,7 @@ export default function AdminAvatarsPage() {
       resetForm();
       fetchAvatars();
     } catch {
-      toast.error('Islem basarisiz');
+      toast.error('İşlem başarısız');
     } finally {
       setSubmitting(false);
     }
@@ -141,18 +141,18 @@ export default function AdminAvatarsPage() {
       toast.success(avatar.isActive ? 'Avatar deaktif edildi' : 'Avatar aktif edildi');
       fetchAvatars();
     } catch {
-      toast.error('Islem basarisiz');
+      toast.error('İşlem başarısız');
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Bu avatari silmek istediginizden emin misiniz?')) return;
+    if (!confirm('Bu avatarı silmek istediğinizden emin misiniz?')) return;
     try {
       await adminAvatarApi.delete(id);
       toast.success('Avatar silindi');
       fetchAvatars();
     } catch {
-      toast.error('Silme basarisiz');
+      toast.error('Silme başarısız');
     }
   };
 
@@ -181,9 +181,9 @@ export default function AdminAvatarsPage() {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <ImageIcon className="w-6 h-6 text-primary-600" />
-              Onerilen Avatarlar
+              Önerilen Avatarlar
             </h1>
-            <p className="text-sm text-gray-500">Kullanicilara onerilecek avatarlari yonet</p>
+            <p className="text-sm text-gray-500">Kullanıcılara önerilecek avatarları yönet</p>
           </div>
         </div>
         <Button onClick={() => { resetForm(); setShowForm(true); setFormSortOrder(avatars.length); }}>
@@ -195,7 +195,7 @@ export default function AdminAvatarsPage() {
       {showForm && (
         <Card className="mb-6 border-primary-200">
           <CardHeader>
-            <CardTitle>{editingId ? 'Avatar Duzenle' : 'Yeni Avatar Ekle'}</CardTitle>
+            <CardTitle>{editingId ? 'Avatar Düzenle' : 'Yeni Avatar Ekle'}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-start gap-4">
@@ -217,7 +217,7 @@ export default function AdminAvatarsPage() {
                 {/* File Upload */}
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Avatar Dosyasi {!editingId && <span className="text-red-500">*</span>}
+                    Avatar Dosyası {!editingId && <span className="text-red-500">*</span>}
                   </label>
                   <div className="flex items-center gap-2">
                     <input
@@ -234,7 +234,7 @@ export default function AdminAvatarsPage() {
                       onClick={() => fileInputRef.current?.click()}
                     >
                       <Upload className="w-4 h-4 mr-2" />
-                      {formFile ? 'Dosya Degistir' : 'Dosya Sec'}
+                      {formFile ? 'Dosya Değiştir' : 'Dosya Seç'}
                     </Button>
                     {formFile && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -254,7 +254,7 @@ export default function AdminAvatarsPage() {
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
                     JPG, PNG, GIF, WebP veya SVG. Maks 2MB.
-                    {editingId && !formFile && ' Yeni dosya secmezseniz mevcut resim korunur.'}
+                    {editingId && !formFile && ' Yeni dosya seçmezseniz mevcut resim korunur.'}
                   </p>
                 </div>
 
@@ -271,7 +271,7 @@ export default function AdminAvatarsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Sira</label>
+                    <label className="block text-sm font-medium mb-1">Sıra</label>
                     <Input
                       type="number"
                       value={formSortOrder}
@@ -283,9 +283,9 @@ export default function AdminAvatarsPage() {
             </div>
             <div className="flex gap-2">
               <Button onClick={handleSubmit} disabled={submitting}>
-                {submitting ? 'Kaydediliyor...' : editingId ? 'Guncelle' : 'Ekle'}
+                {submitting ? 'Kaydediliyor...' : editingId ? 'Güncelle' : 'Ekle'}
               </Button>
-              <Button variant="outline" onClick={resetForm}>Iptal</Button>
+              <Button variant="outline" onClick={resetForm}>İptal</Button>
             </div>
           </CardContent>
         </Card>
@@ -300,9 +300,9 @@ export default function AdminAvatarsPage() {
         <Card>
           <CardContent className="py-12 text-center">
             <ImageIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 mb-4">Henuz onerilen avatar eklenmemis</p>
+            <p className="text-gray-500 mb-4">Henüz önerilen avatar eklenmemiş</p>
             <Button onClick={() => { setShowForm(true); setFormSortOrder(0); }}>
-              <Plus className="w-4 h-4 mr-2" />Ilk Avatari Ekle
+              <Plus className="w-4 h-4 mr-2" />İlk Avatarı Ekle
             </Button>
           </CardContent>
         </Card>
@@ -324,7 +324,7 @@ export default function AdminAvatarsPage() {
                     )}>
                       {avatar.isActive ? 'Aktif' : 'Pasif'}
                     </span>
-                    <span className="text-xs text-gray-400">Sira: {avatar.sortOrder}</span>
+                    <span className="text-xs text-gray-400">Sıra: {avatar.sortOrder}</span>
                   </div>
                   <p className="text-xs text-gray-500 truncate mt-0.5">{avatar.url}</p>
                 </div>

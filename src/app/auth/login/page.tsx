@@ -15,8 +15,8 @@ import { SocialLoginButtons } from '@/components/auth/social-login-buttons';
 import { toast } from 'sonner';
 
 const loginSchema = z.object({
-  email: z.string().email('Gecerli bir email adresi girin'),
-  password: z.string().min(8, 'Sifre en az 8 karakter olmali'),
+  email: z.string().email('Geçerli bir email adresi girin'),
+  password: z.string().min(8, 'Şifre en az 8 karakter olmalı'),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -73,12 +73,12 @@ export default function LoginPage() {
       // User exists but has no role — show role selection modal
       if (result.pendingToken) {
         setPendingSocial({ provider, token: result.pendingToken, displayName });
-        toast.info('Devam etmek icin bir rol secin');
+        toast.info('Devam etmek için bir rol seçin');
         return;
       }
 
       if (result.isNewUser) {
-        toast.success('Hesabiniz olusturuldu!');
+        toast.success('Hesabınız oluşturuldu!');
       }
 
       navigateAfterAuth();
@@ -98,7 +98,7 @@ export default function LoginPage() {
         initialRole: role,
       });
       setPendingSocial(null);
-      toast.success('Giris basarili!');
+      toast.success('Giriş başarılı!');
       navigateAfterAuth();
     } catch {
       // Error already handled by interceptor
@@ -111,9 +111,9 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold font-heading text-center">Giris Yap</CardTitle>
+          <CardTitle className="text-2xl font-bold font-heading text-center">Giriş Yap</CardTitle>
           <CardDescription className="text-center">
-            Hesabina giris yapmak icin email ve sifreni gir
+            Hesabına giriş yapmak için email ve şifreni gir
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -154,7 +154,7 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium">
-                Sifre
+                Şifre
               </label>
               <Input
                 id="password"
@@ -168,14 +168,14 @@ export default function LoginPage() {
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Giris yapiliyor...' : 'Giris Yap'}
+              {isLoading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
             </Button>
           </form>
 
           <div className="mt-4 text-center text-sm">
-            <span className="text-gray-600">Hesabin yok mu? </span>
+            <span className="text-gray-600">Hesabın yok mu? </span>
             <Link href="/auth/signup" className="text-primary-600 hover:underline font-medium">
-              Kayit Ol
+              Kayıt Ol
             </Link>
           </div>
         </CardContent>
@@ -185,9 +185,9 @@ export default function LoginPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
           <Card className="w-full max-w-sm">
             <CardHeader>
-              <CardTitle className="text-lg text-center">Rol Secin</CardTitle>
+              <CardTitle className="text-lg text-center">Rol Seçin</CardTitle>
               <CardDescription className="text-center">
-                Devam etmek icin bir rol secin
+                Devam etmek için bir rol seçin
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -196,7 +196,7 @@ export default function LoginPage() {
                 onClick={() => handleRoleSelectAndRetry('Student')}
                 disabled={isLoading}
               >
-                Danisan olarak devam et
+                Danışan olarak devam et
               </Button>
               <Button
                 variant="outline"
@@ -212,7 +212,7 @@ export default function LoginPage() {
                 onClick={() => setPendingSocial(null)}
                 disabled={isLoading}
               >
-                Iptal
+                İptal
               </Button>
             </CardContent>
           </Card>

@@ -96,7 +96,7 @@ class ApiClient {
           if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth/login')) {
             if (!isRedirectingToLogin) {
               isRedirectingToLogin = true;
-              toast.error('Oturum sureniz doldu. Lutfen tekrar giris yapin.');
+              toast.error('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
               window.location.href = '/auth/login';
             }
           }
@@ -106,12 +106,12 @@ class ApiClient {
 
         // 403 -> yetki yok
         if (status === 403) {
-          toast.error('Bu islem icin yetkiniz yok.');
+          toast.error('Bu işlem için yetkiniz yok.');
           return Promise.reject(error);
         }
 
         if (status === 500) {
-          toast.error('Sunucu hatasi olustu. Lutfen daha sonra tekrar deneyin.');
+          toast.error('Sunucu hatası oluştu. Lütfen daha sonra tekrar deneyin.');
           return Promise.reject(error);
         }
 

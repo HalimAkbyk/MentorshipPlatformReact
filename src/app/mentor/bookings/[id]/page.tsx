@@ -57,7 +57,7 @@ export default function MentorBookingDetailPage() {
         );
         setRescheduleSlots(slots);
       } catch (e) {
-        toast.error('Musait slotlar yuklenemedi');
+        toast.error('Müsait slotlar yüklenemedi');
         setRescheduleSlots([]);
       } finally {
         setLoadingSlots(false);
@@ -73,7 +73,7 @@ export default function MentorBookingDetailPage() {
       setBooking(response);
     } catch (error) {
       console.error('Error loading booking:', error);
-      toast.error('Rezervasyon yuklenemedi');
+      toast.error('Rezervasyon yüklenemedi');
     } finally {
       setIsLoading(false);
     }
@@ -107,19 +107,19 @@ export default function MentorBookingDetailPage() {
 
   const handleReschedule = async () => {
     if (!selectedSlot) {
-      toast.error('Lutfen bir saat secin');
+      toast.error('Lütfen bir saat seçin');
       return;
     }
     try {
       setRescheduling(true);
       await apiClient.post(`/bookings/${bookingId}/reschedule`, { newStartAt: selectedSlot.startAt });
-      toast.success('Saat degisikligi talebi ogrenciye iletildi');
+      toast.success('Saat değişikliği talebi öğrenciye iletildi');
       setShowRescheduleModal(false);
       setRescheduleDate('');
       setSelectedSlot(null);
       loadBooking();
     } catch (error: any) {
-      toast.error(error.response?.data?.errors?.[0] || 'Saat degisikligi talebi gonderilemedi');
+      toast.error(error.response?.data?.errors?.[0] || 'Saat değişikliği talebi gönderilemedi');
     } finally {
       setRescheduling(false);
     }
@@ -132,37 +132,37 @@ export default function MentorBookingDetailPage() {
       [BookingStatus.Confirmed]: {
         variant: 'default' as const,
         icon: CheckCircle,
-        label: 'Onaylandi',
+        label: 'Onaylandı',
         color: 'text-green-600'
       },
       [BookingStatus.Completed]: {
         variant: 'outline' as const,
         icon: CheckCircle,
-        label: 'Tamamlandi',
+        label: 'Tamamlandı',
         color: 'text-gray-600'
       },
       [BookingStatus.Cancelled]: {
         variant: 'destructive' as const,
         icon: XCircle,
-        label: 'Iptal Edildi',
+        label: 'İptal Edildi',
         color: 'text-red-600'
       },
       [BookingStatus.PendingPayment]: {
         variant: 'secondary' as const,
         icon: AlertCircle,
-        label: 'Odeme Bekliyor',
+        label: 'Ödeme Bekliyor',
         color: 'text-yellow-600'
       },
       [BookingStatus.NoShow]: {
         variant: 'outline' as const,
         icon: UserX,
-        label: 'Katilim Yok',
+        label: 'Katılım Yok',
         color: 'text-amber-600'
       },
       [BookingStatus.Disputed]: {
         variant: 'destructive' as const,
         icon: AlertTriangle,
-        label: 'Odeme Itiraz Edildi',
+        label: 'Ödeme İtiraz Edildi',
         color: 'text-red-600'
       }
     };
@@ -203,10 +203,10 @@ export default function MentorBookingDetailPage() {
         <div className="container mx-auto px-4 max-w-4xl">
           <Card className="p-8 text-center">
             <AlertCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-xl font-semibold mb-2">Rezervasyon bulunamadi</h3>
+            <h3 className="text-xl font-semibold mb-2">Rezervasyon bulunamadı</h3>
             <Button onClick={() => router.push('/mentor/bookings')} className="mt-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Geri Don
+              Geri Dön
             </Button>
           </Card>
         </div>
@@ -225,12 +225,12 @@ export default function MentorBookingDetailPage() {
           <Link href="/mentor/bookings">
             <Button variant="ghost" size="sm" className="mb-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Seanslarima Don
+              Seanslarıma Dön
             </Button>
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Seans Detaylari</h1>
+              <h1 className="text-3xl font-bold mb-2">Seans Detayları</h1>
               <p className="text-gray-600">Rezervasyon #{booking.id.slice(0, 8)}</p>
             </div>
             {getStatusBadge()}
@@ -244,12 +244,12 @@ export default function MentorBookingDetailPage() {
               <div className="flex items-center gap-3">
                 <RefreshCw className="w-5 h-5 text-blue-600" />
                 <div>
-                  <h3 className="font-semibold text-blue-900">Saat Degisikligi Onay Bekliyor</h3>
+                  <h3 className="font-semibold text-blue-900">Saat Değişikliği Onay Bekliyor</h3>
                   <p className="text-sm text-blue-800">
                     Talep edilen yeni tarih: {format(new Date(booking.pendingRescheduleStartAt), 'dd MMMM yyyy, HH:mm', { locale: tr })}
                   </p>
                   <p className="text-xs text-blue-600 mt-1">
-                    Ogrenci onaylayinca seans saati otomatik guncellenecektir.
+                    Öğrenci onaylayınca seans saati otomatik güncellenecektir.
                   </p>
                 </div>
               </div>
@@ -264,18 +264,18 @@ export default function MentorBookingDetailPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-semibold text-lg mb-1">
-                    {isLive ? 'Seans Su Anda Canli!' : 'Seans Yakinda Baslayacak'}
+                    {isLive ? 'Seans Şu Anda Canlı!' : 'Seans Yakında Başlayacak'}
                   </h3>
                   <p className="text-sm text-gray-600">
                     {isLive
-                      ? 'Hemen derse katilabilirsiniz'
-                      : 'Odayi aktiflestirerek hazirlik yapabilirsiniz'}
+                      ? 'Hemen derse katılabilirsiniz'
+                      : 'Odayı aktifleştirerek hazırlık yapabilirsiniz'}
                   </p>
                 </div>
                 <Link href={`/mentor/classroom/${booking.id}`}>
                   <Button size="lg" variant={isLive ? "default" : "outline"}>
                     <Video className="w-5 h-5 mr-2" />
-                    {isLive ? 'Derse Katil' : 'Odayi Ac'}
+                    {isLive ? 'Derse Katıl' : 'Odayı Aç'}
                   </Button>
                 </Link>
               </div>
@@ -289,7 +289,7 @@ export default function MentorBookingDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <User className="w-5 h-5 mr-2" />
-                Ogrenci Bilgileri
+                Öğrenci Bilgileri
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -300,8 +300,8 @@ export default function MentorBookingDetailPage() {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-semibold text-lg">{booking.studentName || 'Ogrenci'}</h3>
-                  <p className="text-sm text-gray-500">Ogrenci</p>
+                  <h3 className="font-semibold text-lg">{booking.studentName || 'Öğrenci'}</h3>
+                  <p className="text-sm text-gray-500">Öğrenci</p>
                 </div>
               </div>
             </CardContent>
@@ -322,7 +322,7 @@ export default function MentorBookingDetailPage() {
                     onClick={() => setShowRescheduleModal(true)}
                   >
                     <RefreshCw className="w-4 h-4 mr-1" />
-                    Saati Guncelle
+                    Saati Güncelle
                   </Button>
                 )}
               </div>
@@ -347,7 +347,7 @@ export default function MentorBookingDetailPage() {
                 </div>
               </div>
               <div>
-                <label className="text-sm text-gray-500 block mb-1">Sure</label>
+                <label className="text-sm text-gray-500 block mb-1">Süre</label>
                 <span className="font-medium">{booking.durationMin} dakika</span>
               </div>
               <div>
@@ -357,7 +357,7 @@ export default function MentorBookingDetailPage() {
               {/* Reschedule count info */}
               {booking.status === BookingStatus.Confirmed && (
                 <div className="text-xs text-gray-500 pt-2 border-t">
-                  Kalan saat degisikligi hakki: {2 - (booking.rescheduleCountMentor ?? 0)}/2
+                  Kalan saat değişikliği hakkı: {2 - (booking.rescheduleCountMentor ?? 0)}/2
                 </div>
               )}
             </CardContent>
@@ -369,7 +369,7 @@ export default function MentorBookingDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <HelpCircle className="w-5 h-5 mr-2" />
-                  Ogrenci Cevaplari
+                  Öğrenci Cevapları
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -393,12 +393,12 @@ export default function MentorBookingDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <CreditCard className="w-5 h-5 mr-2" />
-                Odeme Bilgileri
+                Ödeme Bilgileri
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <span className="text-gray-600">Toplam Ucret</span>
+                <span className="text-gray-600">Toplam Ücret</span>
                 <span className="text-2xl font-bold text-primary-600">
                   {formatCurrency(booking.price, booking.currency)}
                 </span>
@@ -412,7 +412,7 @@ export default function MentorBookingDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center text-red-700">
                   <XCircle className="w-5 h-5 mr-2" />
-                  Iptal Nedeni
+                  İptal Nedeni
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -428,9 +428,9 @@ export default function MentorBookingDetailPage() {
             <Card className="max-w-lg w-full max-h-[80vh] overflow-y-auto">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Seans Saatini Guncelle</CardTitle>
+                  <CardTitle>Seans Saatini Güncelle</CardTitle>
                   <CardDescription>
-                    Yeni tarih ve saat secin. Ogrenci onayladiktan sonra guncellenir. (Kalan hak: {2 - (booking.rescheduleCountMentor ?? 0)}/2)
+                    Yeni tarih ve saat seçin. Öğrenci onayladıktan sonra güncellenir. (Kalan hak: {2 - (booking.rescheduleCountMentor ?? 0)}/2)
                   </CardDescription>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => setShowRescheduleModal(false)}>
@@ -440,7 +440,7 @@ export default function MentorBookingDetailPage() {
               <CardContent className="space-y-4">
                 {/* Date Selection - Horizontal scrollable date buttons */}
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Tarih Secin</label>
+                  <label className="text-sm font-medium mb-2 block">Tarih Seçin</label>
                   <div className="flex gap-2 overflow-x-auto pb-2">
                     {Array.from({ length: 30 }, (_, i) => {
                       const d = new Date();
@@ -470,18 +470,18 @@ export default function MentorBookingDetailPage() {
                 {rescheduleDate && (
                   <div>
                     <label className="text-sm font-medium mb-2 block">
-                      {format(new Date(rescheduleDate + 'T00:00:00'), 'dd MMMM yyyy, EEEE', { locale: tr })} - Musait Saatler
+                      {format(new Date(rescheduleDate + 'T00:00:00'), 'dd MMMM yyyy, EEEE', { locale: tr })} - Müsait Saatler
                     </label>
                     {loadingSlots ? (
                       <div className="text-center py-4">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto" />
-                        <p className="text-sm text-gray-500 mt-2">Uygun saatler hesaplaniyor...</p>
+                        <p className="text-sm text-gray-500 mt-2">Uygun saatler hesaplanıyor...</p>
                       </div>
                     ) : rescheduleSlots.length === 0 ? (
                       <div className="text-center py-6 text-gray-500">
                         <Calendar className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                        <p className="text-sm font-medium">Bu tarihte musait saat yok</p>
-                        <p className="text-xs mt-1">Baska bir tarih secin</p>
+                        <p className="text-sm font-medium">Bu tarihte müsait saat yok</p>
+                        <p className="text-xs mt-1">Başka bir tarih seçin</p>
                       </div>
                     ) : (
                       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -517,10 +517,10 @@ export default function MentorBookingDetailPage() {
                 {selectedSlot && (
                   <div className="bg-primary-50 border border-primary-200 rounded-lg p-3">
                     <p className="text-sm font-medium text-primary-900">
-                      Secilen: {format(new Date(selectedSlot.startAt), 'dd MMMM yyyy, HH:mm', { locale: tr })} - {format(new Date(selectedSlot.endAt), 'HH:mm')}
+                      Seçilen: {format(new Date(selectedSlot.startAt), 'dd MMMM yyyy, HH:mm', { locale: tr })} - {format(new Date(selectedSlot.endAt), 'HH:mm')}
                     </p>
                     <p className="text-xs text-primary-700 mt-1">
-                      Ogrenci onayladiktan sonra seans saati guncellenecektir.
+                      Öğrenci onayladıktan sonra seans saati güncellenecektir.
                     </p>
                   </div>
                 )}
@@ -536,14 +536,14 @@ export default function MentorBookingDetailPage() {
                     }}
                     className="flex-1"
                   >
-                    Vazgec
+                    Vazgeç
                   </Button>
                   <Button
                     onClick={handleReschedule}
                     className="flex-1"
                     disabled={!selectedSlot || rescheduling}
                   >
-                    {rescheduling ? 'Gonderiliyor...' : 'Talep Gonder'}
+                    {rescheduling ? 'Gönderiliyor...' : 'Talep Gönder'}
                   </Button>
                 </div>
               </CardContent>

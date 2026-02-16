@@ -75,7 +75,7 @@ export default function MentorOfferingsPage() {
       const data = await offeringsApi.getMyOfferings();
       setOfferings(data ?? []);
     } catch {
-      toast.error('Paketler yüklenirken hata olustu');
+      toast.error('Paketler yüklenirken hata oluştu');
     } finally {
       setLoading(false);
     }
@@ -93,9 +93,9 @@ export default function MentorOfferingsPage() {
       setOfferings(prev =>
         prev.map(o => o.id === offering.id ? { ...o, isActive: res.isActive } : o)
       );
-      toast.success(res.isActive ? 'Paket aktiflestirildi' : 'Paket pasife alindi');
+      toast.success(res.isActive ? 'Paket aktifleştirildi' : 'Paket pasife alındı');
     } catch {
-      toast.error('Islem basarisiz');
+      toast.error('İşlem başarısız');
     } finally {
       setActionLoading(null);
     }
@@ -105,7 +105,7 @@ export default function MentorOfferingsPage() {
   const handleDelete = (offering: OfferingDto) => {
     confirm({
       title: 'Paketi Sil',
-      description: `"${offering.title}" paketini silmek istediginize emin misiniz? Bu islem geri alinamaz.`,
+      description: `"${offering.title}" paketini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`,
       variant: 'danger',
       confirmText: 'Sil',
       onConfirm: async () => {
@@ -114,7 +114,7 @@ export default function MentorOfferingsPage() {
           setOfferings(prev => prev.filter(o => o.id !== offering.id));
           toast.success('Paket silindi');
         } catch {
-          toast.error('Silme basarisiz');
+          toast.error('Silme başarısız');
         }
       },
     });
@@ -132,7 +132,7 @@ export default function MentorOfferingsPage() {
     try {
       await offeringsApi.reorder(newOfferings.map(o => o.id));
     } catch {
-      toast.error('Siralama guncellenemedi');
+      toast.error('Sıralama güncellenemedi');
       fetchOfferings(); // rollback
     }
   };
@@ -163,7 +163,7 @@ export default function MentorOfferingsPage() {
             </button>
             <div>
               <h1 className="text-2xl font-bold font-heading">Paketlerim</h1>
-              <p className="text-sm text-gray-500">Mentorluk paketlerinizi yonetin</p>
+              <p className="text-sm text-gray-500">Mentorluk paketlerinizi yönetin</p>
             </div>
           </div>
           <Button onClick={() => setShowCreateModal(true)} className="gap-2">
@@ -178,13 +178,13 @@ export default function MentorOfferingsPage() {
           <Card className="text-center py-16">
             <CardContent>
               <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold font-heading text-gray-700 mb-2">Henuz paket olusturmadiniz</h3>
+              <h3 className="text-lg font-semibold font-heading text-gray-700 mb-2">Henüz paket oluşturmadınız</h3>
               <p className="text-gray-500 mb-6">
-                Ogrencilerinize sunacaginiz mentorluk paketlerini olusturun.
+                Öğrencilerinize sunacağınız mentorluk paketlerini oluşturun.
               </p>
               <Button onClick={() => setShowCreateModal(true)} className="gap-2">
                 <Plus className="w-4 h-4" />
-                Ilk Paketinizi Olusturun
+                İlk Paketinizi Oluşturun
               </Button>
             </CardContent>
           </Card>
@@ -227,10 +227,10 @@ export default function MentorOfferingsPage() {
                         {offering.availabilityTemplateId ? (
                           <Badge variant="default" className="bg-purple-100 text-purple-700 hover:bg-purple-200 text-[10px]">
                             <Calendar className="w-3 h-3 mr-0.5" />
-                            Ozel Program
+                            Özel Program
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-[10px]">Varsayilan</Badge>
+                          <Badge variant="outline" className="text-[10px]">Varsayılan</Badge>
                         )}
                         {offering.category && (
                           <Badge variant="outline">{offering.category}</Badge>
@@ -268,7 +268,7 @@ export default function MentorOfferingsPage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => setExpandedId(expandedId === offering.id ? null : offering.id)}
-                        title="Detaylari goster"
+                        title="Detayları göster"
                       >
                         <ChevronDown
                           className={`w-4 h-4 transition-transform ${expandedId === offering.id ? 'rotate-180' : ''}`}
@@ -278,7 +278,7 @@ export default function MentorOfferingsPage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => setScheduleOffering(offering)}
-                        title="Musaitlik programi"
+                        title="Müsaitlik programı"
                       >
                         <Calendar className="w-4 h-4" />
                       </Button>
@@ -286,7 +286,7 @@ export default function MentorOfferingsPage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => setQuestionsOffering(offering)}
-                        title="Sorulari duzenle"
+                        title="Soruları düzenle"
                       >
                         <MessageSquare className="w-4 h-4" />
                       </Button>
@@ -309,7 +309,7 @@ export default function MentorOfferingsPage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => setEditingOffering(offering)}
-                        title="Duzenle"
+                        title="Düzenle"
                       >
                         <Pencil className="w-4 h-4" />
                       </Button>
@@ -331,36 +331,36 @@ export default function MentorOfferingsPage() {
                       <div className="grid md:grid-cols-2 gap-4 text-sm">
                         {offering.description && (
                           <div>
-                            <span className="font-medium text-gray-700">Aciklama:</span>
+                            <span className="font-medium text-gray-700">Açıklama:</span>
                             <p className="text-gray-600 mt-1">{offering.description}</p>
                           </div>
                         )}
                         {offering.detailedDescription && (
                           <div>
-                            <span className="font-medium text-gray-700">Detayli Aciklama:</span>
+                            <span className="font-medium text-gray-700">Detaylı Açıklama:</span>
                             <p className="text-gray-600 mt-1">{offering.detailedDescription}</p>
                           </div>
                         )}
                         <div>
-                          <span className="font-medium text-gray-700">Randevu Ayarlari:</span>
+                          <span className="font-medium text-gray-700">Randevu Ayarları:</span>
                           <ul className="text-gray-600 mt-1 space-y-1">
-                            <li>En fazla {offering.maxBookingDaysAhead} gun ilerisi icin randevu</li>
-                            <li>En az {offering.minNoticeHours} saat onceden bildirim</li>
+                            <li>En fazla {offering.maxBookingDaysAhead} gün ilerisi için randevu</li>
+                            <li>En az {offering.minNoticeHours} saat önceden bildirim</li>
                           </ul>
                         </div>
                         <div>
-                          <span className="font-medium text-gray-700">Musaitlik Programi:</span>
+                          <span className="font-medium text-gray-700">Müsaitlik Programı:</span>
                           <p className="text-gray-600 mt-1">
                             {offering.availabilityTemplateId
-                              ? 'Bu paket icin ozel musaitlik programi tanimlanmis.'
-                              : 'Varsayilan musaitlik programi kullaniliyor.'}
+                              ? 'Bu paket için özel müsaitlik programı tanımlanmış.'
+                              : 'Varsayılan müsaitlik programı kullanılıyor.'}
                           </p>
                           <button
                             onClick={() => setScheduleOffering(offering)}
                             className="text-primary-600 hover:text-primary-800 text-sm mt-1 flex items-center gap-1"
                           >
                             <Calendar className="w-3 h-3" />
-                            {offering.availabilityTemplateId ? 'Programi Duzenle' : 'Ozel Program Tanimla'}
+                            {offering.availabilityTemplateId ? 'Programı Düzenle' : 'Özel Program Tanımla'}
                           </button>
                         </div>
                         {offering.questions.length > 0 && (
@@ -493,7 +493,7 @@ function OfferingFormModal({
           minNoticeHours: data.minNoticeHours,
           coverImageUrl: data.coverImageUrl || undefined,
         });
-        toast.success('Paket guncellendi');
+        toast.success('Paket güncellendi');
       } else {
         await offeringsApi.create({
           title: data.title,
@@ -507,11 +507,11 @@ function OfferingFormModal({
           maxBookingDaysAhead: data.maxBookingDaysAhead,
           minNoticeHours: data.minNoticeHours,
         });
-        toast.success('Paket olusturuldu');
+        toast.success('Paket oluşturuldu');
       }
       onSuccess();
     } catch {
-      toast.error(isEdit ? 'Guncelleme basarisiz' : 'Olusturma basarisiz');
+      toast.error(isEdit ? 'Güncelleme başarısız' : 'Oluşturma başarısız');
     } finally {
       setSubmitting(false);
     }
@@ -521,15 +521,15 @@ function OfferingFormModal({
     <Modal
       open
       onClose={onClose}
-      title={isEdit ? 'Paketi Duzenle' : 'Yeni Paket Olustur'}
-      description={isEdit ? 'Paket bilgilerini guncelleyin' : 'Ogrencilerinize sunacaginiz yeni bir paket tanimlayun'}
+      title={isEdit ? 'Paketi Düzenle' : 'Yeni Paket Oluştur'}
+      description={isEdit ? 'Paket bilgilerini güncelleyin' : 'Öğrencilerinize sunacağınız yeni bir paket tanımlayın'}
       className="max-h-[70vh] overflow-y-auto"
     >
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         {/* Title */}
         <div>
-          <label className="block text-sm font-medium mb-1">Paket Adi *</label>
-          <Input placeholder="orn: Matematik Mentorlugu" {...form.register('title')} />
+          <label className="block text-sm font-medium mb-1">Paket Adı *</label>
+          <Input placeholder="örn: Matematik Mentorluğu" {...form.register('title')} />
           {form.formState.errors.title && (
             <p className="text-sm text-red-600 mt-1">{form.formState.errors.title.message}</p>
           )}
@@ -537,26 +537,26 @@ function OfferingFormModal({
 
         {/* Subtitle */}
         <div>
-          <label className="block text-sm font-medium mb-1">Alt Baslik</label>
-          <Input placeholder="orn: YKS Matematik Hazirlik" {...form.register('subtitle')} />
+          <label className="block text-sm font-medium mb-1">Alt Başlık</label>
+          <Input placeholder="örn: YKS Matematik Hazırlık" {...form.register('subtitle')} />
         </div>
 
         {/* Category & Session Type */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium mb-1">Kategori</label>
-            <Input placeholder="orn: Matematik" {...form.register('category')} />
+            <Input placeholder="örn: Matematik" {...form.register('category')} />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Oturum Tipi</label>
-            <Input placeholder="orn: Online, Yuz yuze" {...form.register('sessionType')} />
+            <Input placeholder="örn: Online, Yüz yüze" {...form.register('sessionType')} />
           </div>
         </div>
 
         {/* Duration & Price */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium mb-1">Sure (dakika) *</label>
+            <label className="block text-sm font-medium mb-1">Süre (dakika) *</label>
             <Input type="number" min={15} max={180} {...form.register('durationMin')} />
             {form.formState.errors.durationMin && (
               <p className="text-sm text-red-600 mt-1">{form.formState.errors.durationMin.message}</p>
@@ -573,39 +573,39 @@ function OfferingFormModal({
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium mb-1">Kisa Aciklama</label>
+          <label className="block text-sm font-medium mb-1">Kısa Açıklama</label>
           <textarea
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             rows={2}
-            placeholder="Paketi kisa bir sekilde tanitin"
+            placeholder="Paketi kısa bir şekilde tanıtın"
             {...form.register('description')}
           />
         </div>
 
         {/* Detailed Description */}
         <div>
-          <label className="block text-sm font-medium mb-1">Detayli Aciklama</label>
+          <label className="block text-sm font-medium mb-1">Detaylı Açıklama</label>
           <textarea
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             rows={4}
-            placeholder="Paketin icerigini, kazanimlari, hedef kitleyi detayli anlatin"
+            placeholder="Paketin içeriğini, kazanımları, hedef kitleyi detaylı anlatın"
             {...form.register('detailedDescription')}
           />
         </div>
 
         {/* Booking Settings */}
         <div className="border-t pt-4">
-          <h4 className="text-sm font-semibold mb-3 text-gray-700">Randevu Ayarlari</h4>
+          <h4 className="text-sm font-semibold mb-3 text-gray-700">Randevu Ayarları</h4>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium mb-1">Max Ileri Gun</label>
+              <label className="block text-sm font-medium mb-1">Max İleri Gün</label>
               <Input type="number" min={1} max={365} {...form.register('maxBookingDaysAhead')} />
-              <p className="text-xs text-gray-500 mt-1">Kac gun ilerisi icin randevu alinabilir</p>
+              <p className="text-xs text-gray-500 mt-1">Kaç gün ilerisi için randevu alınabilir</p>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Min Bildirim (saat)</label>
               <Input type="number" min={0} max={72} {...form.register('minNoticeHours')} />
-              <p className="text-xs text-gray-500 mt-1">En az kac saat onceden alinmali</p>
+              <p className="text-xs text-gray-500 mt-1">En az kaç saat önceden alınmalı</p>
             </div>
           </div>
         </div>
@@ -613,7 +613,7 @@ function OfferingFormModal({
         {/* Cover Image URL */}
         {isEdit && (
           <div>
-            <label className="block text-sm font-medium mb-1">Kapak Gorseli URL</label>
+            <label className="block text-sm font-medium mb-1">Kapak Görseli URL</label>
             <Input placeholder="https://..." {...form.register('coverImageUrl')} />
           </div>
         )}
@@ -621,11 +621,11 @@ function OfferingFormModal({
         {/* Submit */}
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="outline" onClick={onClose}>
-            Iptal
+            İptal
           </Button>
           <Button type="submit" disabled={submitting}>
             {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            {isEdit ? 'Guncelle' : 'Olustur'}
+            {isEdit ? 'Güncelle' : 'Oluştur'}
           </Button>
         </div>
       </form>
@@ -670,10 +670,10 @@ function QuestionsModal({
     setSubmitting(true);
     try {
       await offeringsApi.upsertQuestions(offering.id, questions);
-      toast.success('Sorular guncellendi');
+      toast.success('Sorular güncellendi');
       onSuccess();
     } catch {
-      toast.error('Sorular guncellenemedi');
+      toast.error('Sorular güncellenemedi');
     } finally {
       setSubmitting(false);
     }
@@ -684,7 +684,7 @@ function QuestionsModal({
       open
       onClose={onClose}
       title="Booking Sorulari" /* QuestionsModal */
-      description={`"${offering.title}" paketi icin ogrencilerin rezervasyon sirasinda cevaplayacagi sorular (max 4)`}
+      description={`"${offering.title}" paketi için öğrencilerin rezervasyon sırasında cevaplayacağı sorular (max 4)`}
     >
       <div className="space-y-4">
         {/* Existing questions */}
@@ -735,14 +735,14 @@ function QuestionsModal({
 
         {questions.length === 0 && (
           <p className="text-sm text-gray-500 text-center py-4">
-            Henuz soru eklenmedi. Ogrencilerden randevu sirasinda bilgi almak icin soru ekleyin.
+            Henüz soru eklenmedi. Öğrencilerden randevu sırasında bilgi almak için soru ekleyin.
           </p>
         )}
 
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-2 border-t">
           <Button variant="outline" onClick={onClose}>
-            Iptal
+            İptal
           </Button>
           <Button onClick={handleSave} disabled={submitting}>
             {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
@@ -870,10 +870,10 @@ function ScheduleEditorModal({
       if (templateData?.hasCustomSchedule) {
         try {
           await deleteTemplate.mutateAsync(offering.id);
-          toast.success('Varsayilan programa donuldu');
+          toast.success('Varsayılan programa dönüldü');
           onSuccess();
         } catch {
-          toast.error('Islem basarisiz');
+          toast.error('İşlem başarısız');
         }
       } else {
         onClose();
@@ -899,16 +899,16 @@ function ScheduleEditorModal({
       await saveTemplate.mutateAsync({
         offeringId: offering.id,
         data: {
-          name: `${offering.title} Programi`,
+          name: `${offering.title} Programı`,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           rules,
           settings,
         },
       });
-      toast.success('Ozel musaitlik programi kaydedildi!');
+      toast.success('Özel müsaitlik programı kaydedildi!');
       onSuccess();
     } catch {
-      toast.error('Program kaydedilirken hata olustu');
+      toast.error('Program kaydedilirken hata oluştu');
     }
   };
 
@@ -918,8 +918,8 @@ function ScheduleEditorModal({
     <Modal
       open
       onClose={onClose}
-      title={`Musaitlik Programi: ${offering.title}`}
-      description="Bu paket icin varsayilan veya ozel musaitlik programi belirleyin"
+      title={`Müsaitlik Programı: ${offering.title}`}
+      description="Bu paket için varsayılan veya özel müsaitlik programı belirleyin"
       className="max-h-[80vh] overflow-y-auto"
     >
       {isLoading ? (
@@ -939,9 +939,9 @@ function ScheduleEditorModal({
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              <div className="font-medium text-sm">Varsayilan Program</div>
+              <div className="font-medium text-sm">Varsayılan Program</div>
               <div className="text-xs text-gray-500 mt-1">
-                Musaitlik sayfasindaki genel programi kullan
+                Müsaitlik sayfasındaki genel programı kullan
               </div>
             </button>
             <button
@@ -955,10 +955,10 @@ function ScheduleEditorModal({
             >
               <div className="font-medium text-sm flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5" />
-                Ozel Program
+                Özel Program
               </div>
               <div className="text-xs text-gray-500 mt-1">
-                Bu paket icin farkli gunler ve saatler belirle
+                Bu paket için farklı günler ve saatler belirle
               </div>
             </button>
           </div>
@@ -966,7 +966,7 @@ function ScheduleEditorModal({
           {/* Custom Schedule Editor */}
           {useCustom && (
             <div className="space-y-3 border-t pt-4">
-              <h4 className="text-sm font-semibold text-gray-700">Haftalik Program</h4>
+              <h4 className="text-sm font-semibold text-gray-700">Haftalık Program</h4>
 
               {weeklyRules.map(rule => (
                 <div
@@ -1030,7 +1030,7 @@ function ScheduleEditorModal({
                         </button>
                       </div>
                     ) : (
-                      <span className="text-xs text-gray-400 mt-1 block">Kapali</span>
+                      <span className="text-xs text-gray-400 mt-1 block">Kapalı</span>
                     )}
                   </div>
                 </div>
@@ -1044,12 +1044,12 @@ function ScheduleEditorModal({
                   className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1"
                 >
                   <Settings2 className="w-3.5 h-3.5" />
-                  {showSettings ? 'Ayarlari Gizle' : 'Gelismis Ayarlar'}
+                  {showSettings ? 'Ayarları Gizle' : 'Gelişmiş Ayarlar'}
                 </button>
                 {showSettings && (
                   <div className="mt-2 grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[11px] text-gray-500 mb-0.5 block">Arasi Tampon (dk)</label>
+                      <label className="text-[11px] text-gray-500 mb-0.5 block">Arası Tampon (dk)</label>
                       <Input
                         type="number"
                         min={0}
@@ -1059,7 +1059,7 @@ function ScheduleEditorModal({
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] text-gray-500 mb-0.5 block">Slot Aralik (dk)</label>
+                      <label className="text-[11px] text-gray-500 mb-0.5 block">Slot Aralık (dk)</label>
                       <Input
                         type="number"
                         min={5}
@@ -1069,7 +1069,7 @@ function ScheduleEditorModal({
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] text-gray-500 mb-0.5 block">Max Gunluk Ders</label>
+                      <label className="text-[11px] text-gray-500 mb-0.5 block">Max Günlük Ders</label>
                       <Input
                         type="number"
                         min={1}
@@ -1079,7 +1079,7 @@ function ScheduleEditorModal({
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] text-gray-500 mb-0.5 block">Max Ileri Gun</label>
+                      <label className="text-[11px] text-gray-500 mb-0.5 block">Max İleri Gün</label>
                       <Input
                         type="number"
                         min={1}
@@ -1097,21 +1097,21 @@ function ScheduleEditorModal({
           {/* Not using custom - show info */}
           {!useCustom && templateData?.hasCustomSchedule && (
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
-              <strong>Not:</strong> Bu pakete tanimli ozel program silinecek ve varsayilan programa donulecek.
+              <strong>Not:</strong> Bu pakete tanımlı özel program silinecek ve varsayılan programa dönülecek.
             </div>
           )}
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-2 border-t">
             <Button variant="outline" onClick={onClose}>
-              Iptal
+              İptal
             </Button>
             <Button onClick={handleSave} disabled={isSaving}>
               {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               {useCustom ? (
                 <>
                   <Save className="w-4 h-4 mr-1" />
-                  Programi Kaydet
+                  Programı Kaydet
                 </>
               ) : (
                 'Kaydet'

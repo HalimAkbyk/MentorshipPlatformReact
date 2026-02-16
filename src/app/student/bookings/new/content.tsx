@@ -98,7 +98,7 @@ export default function NewBookingContent() {
   useEffect(() => {
     if (selectedDate && step !== 'select-date') {
       if (isBefore(startOfDay(selectedDate), startOfDay(new Date()))) {
-        toast.error('Gecmis tarihli bir slot secemezsiniz. Lutfen gecerli bir tarih secin.');
+        toast.error('Geçmiş tarihli bir slot seçemezsiniz. Lütfen geçerli bir tarih seçin.');
         setStep('select-date');
         setSelectedDate(null);
         setSelectedSlot(null);
@@ -163,7 +163,7 @@ export default function NewBookingContent() {
     const clickedDate = new Date(info.dateStr);
     const dateKey = info.dateStr;
     if (isBefore(startOfDay(clickedDate), startOfDay(new Date()))) {
-      toast.error('Gecmis tarihli bir gun secemezsiniz');
+      toast.error('Geçmiş tarihli bir gün seçemezsiniz');
       return;
     }
     if (availableDates.has(dateKey)) {
@@ -206,7 +206,7 @@ export default function NewBookingContent() {
 
   const handleSubmit = async () => {
     if (!selectedOffering || !selectedSlot || !user) {
-      toast.error('Eksik bilgi var');
+      toast.error('Eksik bilgi var.');
       return;
     }
 
@@ -215,14 +215,14 @@ export default function NewBookingContent() {
       const requiredUnanswered = enrichedOffering.questions
         .filter(q => q.isRequired && !questionResponses[q.id]?.trim());
       if (requiredUnanswered.length > 0) {
-        toast.error('Lutfen zorunlu sorulari cevaplayin');
+        toast.error('Lütfen zorunlu soruları cevaplayın');
         return;
       }
     }
 
     // Final safety check: block past slot booking
     if (new Date(selectedSlot.startAt) <= new Date()) {
-      toast.error('Bu slot artik gecmis bir zamanda. Lutfen baska bir saat secin.');
+      toast.error('Bu slot artık geçmiş bir zamanda. Lütfen başka bir saat seçin.');
       setStep('select-date');
       setSelectedDate(null);
       setSelectedSlot(null);
@@ -267,7 +267,7 @@ export default function NewBookingContent() {
       } else if (orderResult.paymentPageUrl) {
         window.location.href = orderResult.paymentPageUrl;
       } else {
-        toast.success('Rezervasyon olusturuldu!');
+        toast.success('Rezervasyon oluşturuldu!');
         router.push(`/student/bookings/${bookingResult.bookingId}`);
         setIsProcessing(false);
       }
@@ -307,8 +307,8 @@ export default function NewBookingContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Mentor bulunamadi</h2>
-          <Button onClick={() => router.back()}>Geri Don</Button>
+          <h2 className="text-xl font-semibold mb-2">Mentor bulunamadı</h2>
+          <Button onClick={() => router.back()}>Geri Dön</Button>
         </div>
       </div>
     );
@@ -318,9 +318,9 @@ export default function NewBookingContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Hizmet bulunamadi</h2>
-          <p className="text-gray-600 mb-4">Bu mentor icin aktif bir hizmet bulunmuyor.</p>
-          <Button onClick={() => router.back()}>Geri Don</Button>
+          <h2 className="text-xl font-semibold mb-2">Hizmet bulunamadı</h2>
+          <p className="text-gray-600 mb-4">Bu mentor için aktif bir hizmet bulunmuyor.</p>
+          <Button onClick={() => router.back()}>Geri Dön</Button>
         </div>
       </div>
     );
@@ -379,8 +379,8 @@ export default function NewBookingContent() {
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-center gap-2">
               {[
-                { key: 'select-date', label: 'Tarih Sec', num: 1 },
-                { key: 'select-slot', label: 'Saat Sec', num: 2 },
+                { key: 'select-date', label: 'Tarih Seç', num: 1 },
+                { key: 'select-slot', label: 'Saat Seç', num: 2 },
                 { key: 'confirm', label: 'Onayla', num: 3 },
               ].map((s, i) => {
                 const isActive = s.key === step;
@@ -437,10 +437,10 @@ export default function NewBookingContent() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <CalendarIcon className="w-5 h-5 text-[#227070]" />
-                      Tarih Secin
+                      Tarih Seçin
                     </CardTitle>
                     <p className="text-sm text-gray-500 mt-1">
-                      Yesil renkli gunler musait slotlari gosterir. Bir gune tiklayarak saatleri gorun.
+                      Yeşil renkli günler müsait slotları gösterir. Bir güne tıklayarak saatleri görün.
                     </p>
                   </CardHeader>
                   <CardContent>
@@ -508,7 +508,7 @@ export default function NewBookingContent() {
                     {availableDates.size > 0 && (
                       <div className="mt-4 pt-3 border-t">
                         <p className="text-xs text-gray-500 mb-2">
-                          Musait gunler ({availableDates.size} gun):
+                          Müsait günler ({availableDates.size} gün):
                         </p>
                         <div className="flex flex-wrap gap-1.5">
                           {Array.from(availableDates.entries())
@@ -530,7 +530,7 @@ export default function NewBookingContent() {
                             ))}
                           {availableDates.size > 10 && (
                             <span className="text-xs text-gray-400 self-center">
-                              +{availableDates.size - 10} gun daha
+                              +{availableDates.size - 10} gün daha
                             </span>
                           )}
                         </div>
@@ -540,7 +540,7 @@ export default function NewBookingContent() {
                     {isSlotsLoading && (
                       <div className="flex items-center justify-center py-4">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#227070]" />
-                        <span className="ml-2 text-sm text-gray-500">Slotlar yukleniyor...</span>
+                        <span className="ml-2 text-sm text-gray-500">Slotlar yükleniyor...</span>
                       </div>
                     )}
                   </CardContent>
@@ -560,11 +560,11 @@ export default function NewBookingContent() {
                           className="mb-2 -ml-2 text-gray-600"
                         >
                           <ChevronLeft className="w-4 h-4 mr-1" />
-                          Takvime Don
+                          Takvime Dön
                         </Button>
                         <CardTitle className="flex items-center gap-2 text-lg">
                           <Clock className="w-5 h-5 text-[#227070]" />
-                          Saat Secin
+                          Saat Seçin
                         </CardTitle>
                         <p className="text-sm text-gray-500 mt-1">
                           {format(selectedDate, 'dd MMMM yyyy, EEEE', { locale: tr })}
@@ -574,7 +574,7 @@ export default function NewBookingContent() {
                         variant="outline"
                         className="text-[#227070] border-[#227070]"
                       >
-                        {isTimeSlotsLoading ? '...' : `${computedTimeSlots.length} musait saat`}
+                        {isTimeSlotsLoading ? '...' : `${computedTimeSlots.length} müsait saat`}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -582,13 +582,13 @@ export default function NewBookingContent() {
                     {isTimeSlotsLoading ? (
                       <div className="flex items-center justify-center py-12">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#227070]" />
-                        <span className="ml-3 text-sm text-gray-500">Uygun saatler hesaplaniyor...</span>
+                        <span className="ml-3 text-sm text-gray-500">Uygun saatler hesaplanıyor...</span>
                       </div>
                     ) : computedTimeSlots.length === 0 ? (
                       <div className="text-center py-12 text-gray-500">
                         <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                        <p className="font-medium">Bu tarihte musait saat bulunamadi</p>
-                        <p className="text-sm mt-1">Baska bir tarih deneyin</p>
+                        <p className="font-medium">Bu tarihte müsait saat bulunamadı</p>
+                        <p className="text-sm mt-1">Başka bir tarih deneyin</p>
                       </div>
                     ) : (
                       <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
@@ -633,7 +633,7 @@ export default function NewBookingContent() {
                     {computedTimeSlots.length > 0 && (
                       <div className="mt-4 pt-3 border-t">
                         <p className="text-xs text-gray-400">
-                          Her ders {effectiveDuration} dakika surmektedir. Dersler arasi tampon suresi otomatik olarak uygulanmaktadir.
+                          Her ders {effectiveDuration} dakika sürmektedir. Dersler arası tampon süresi otomatik olarak uygulanmaktadır.
                         </p>
                       </div>
                     )}
@@ -653,11 +653,11 @@ export default function NewBookingContent() {
                         className="mb-2 -ml-2 text-gray-600"
                       >
                         <ChevronLeft className="w-4 h-4 mr-1" />
-                        Saat Secimine Don
+                        Saat Seçimine Dön
                       </Button>
                       <CardTitle className="flex items-center gap-2 text-lg">
                         <CheckCircle2 className="w-5 h-5 text-[#227070]" />
-                        Rezervasyonu Onaylayin
+                        Rezervasyonu Onaylayın
                       </CardTitle>
                     </div>
                   </CardHeader>
@@ -706,14 +706,14 @@ export default function NewBookingContent() {
                         <div className="flex items-start gap-2">
                           <Video className="w-4 h-4 text-[#227070] mt-0.5" />
                           <div>
-                            <div className="text-xs text-gray-500">Tur</div>
+                            <div className="text-xs text-gray-500">Tür</div>
                             <div className="font-medium text-sm">{selectedOffering.title}</div>
                           </div>
                         </div>
                         <div className="flex items-start gap-2">
                           <Clock className="w-4 h-4 text-[#227070] mt-0.5" />
                           <div>
-                            <div className="text-xs text-gray-500">Sure</div>
+                            <div className="text-xs text-gray-500">Süre</div>
                             <div className="font-medium text-sm">{selectedSlot.durationMin} dakika</div>
                           </div>
                         </div>
@@ -725,7 +725,7 @@ export default function NewBookingContent() {
                       <div className="space-y-3">
                         <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                           <HelpCircle className="w-4 h-4 text-[#227070]" />
-                          Mentor Sorulari
+                          Mentor Soruları
                         </h4>
                         {enrichedOffering.questions.map(q => (
                           <div key={q.id}>
@@ -740,7 +740,7 @@ export default function NewBookingContent() {
                                 ...prev,
                                 [q.id]: e.target.value,
                               }))}
-                              placeholder="Cevabinizi yazin..."
+                              placeholder="Cevabınızı yazın..."
                               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#227070]/30 focus:border-[#227070] transition-all"
                               maxLength={500}
                             />
@@ -758,7 +758,7 @@ export default function NewBookingContent() {
                         rows={3}
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        placeholder="Konusmak istediginiz konular, hedefleriniz..."
+                        placeholder="Konuşmak istediğiniz konular, hedefleriniz..."
                         className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#227070]/30 focus:border-[#227070] transition-all"
                         maxLength={500}
                       />
@@ -794,20 +794,20 @@ export default function NewBookingContent() {
                       {isProcessing ? (
                         <div className="flex items-center gap-2">
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                          Isleniyor...
+                          İşleniyor...
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
                           <CreditCard className="w-5 h-5" />
-                          Odemeye Gec - {formatCurrency(totalPrice)}
+                          Ödemeye Geç - {formatCurrency(totalPrice)}
                         </div>
                       )}
                     </Button>
 
                     {/* Cancellation Policy */}
                     <div className="text-xs text-gray-500 text-center space-y-1">
-                      <p>Ders baslangicinda 24 saat once iptal ederseniz %100 iade alirsiniz.</p>
-                      <p>Odemeniz guvenli bir sekilde saklanir ve ders tamamlandiktan sonra mentore aktarilir.</p>
+                      <p>Ders başlangıcında 24 saat önce iptal ederseniz %100 iade alırsınız.</p>
+                      <p>Ödemeniz güvenli bir şekilde saklanır ve ders tamamlandıktan sonra mentöre aktarılır.</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -844,11 +844,11 @@ export default function NewBookingContent() {
                         <span className="font-medium text-right text-xs">{selectedOffering.title}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-500">Sure</span>
+                        <span className="text-gray-500">Süre</span>
                         <span className="font-medium">{selectedOffering.durationMin} dk</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-500">Ucret</span>
+                        <span className="text-gray-500">Ücret</span>
                         <span className="font-semibold text-[#227070]">
                           {formatCurrency(selectedOffering.price)}
                         </span>
@@ -868,7 +868,7 @@ export default function NewBookingContent() {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm flex items-center gap-2">
                       <CalendarIcon className="w-4 h-4 text-[#227070]" />
-                      Seciminiz
+                      Seçiminiz
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
@@ -879,7 +879,7 @@ export default function NewBookingContent() {
                           {format(selectedDate, 'dd MMMM yyyy', { locale: tr })}
                         </div>
                       ) : (
-                        <div className="text-sm text-gray-400 italic">Secilmedi</div>
+                        <div className="text-sm text-gray-400 italic">Seçilmedi</div>
                       )}
                     </div>
                     <div>
@@ -890,7 +890,7 @@ export default function NewBookingContent() {
                           {format(parseISO(selectedSlot.endAt), 'HH:mm')}
                         </div>
                       ) : (
-                        <div className="text-sm text-gray-400 italic">Secilmedi</div>
+                        <div className="text-sm text-gray-400 italic">Seçilmedi</div>
                       )}
                     </div>
 
@@ -913,15 +913,15 @@ export default function NewBookingContent() {
                   <ul className="text-xs text-gray-600 space-y-1.5">
                     <li className="flex items-start gap-1.5">
                       <CheckCircle2 className="w-3 h-3 text-[#227070] mt-0.5 flex-shrink-0" />
-                      Odemeniz guvenli altyapida saklanir
+                      Ödemeniz güvenli altyapıda saklanır
                     </li>
                     <li className="flex items-start gap-1.5">
                       <CheckCircle2 className="w-3 h-3 text-[#227070] mt-0.5 flex-shrink-0" />
-                      24 saat oncesine kadar ucretsiz iptal
+                      24 saat öncesine kadar ücretsiz iptal
                     </li>
                     <li className="flex items-start gap-1.5">
                       <CheckCircle2 className="w-3 h-3 text-[#227070] mt-0.5 flex-shrink-0" />
-                      Ders sonrasi degerlendirme yapabilirsiniz
+                      Ders sonrası değerlendirme yapabilirsiniz
                     </li>
                   </ul>
                 </div>

@@ -200,9 +200,9 @@ function CoursePlayerContent() {
     if (!playerData?.currentLecture) return;
     try {
       await completeLecture.mutateAsync(playerData.currentLecture.id);
-      toast.success('Ders tamamlandi olarak isaretlendi!');
+      toast.success('Ders tamamlandı olarak işaretlendi!');
     } catch {
-      toast.error('Ders tamamlanirken bir hata olustu');
+      toast.error('Ders tamamlanırken bir hata oluştu');
     }
   };
 
@@ -238,7 +238,7 @@ function CoursePlayerContent() {
             <div className="absolute inset-0 rounded-full border-2 border-primary-800/30" />
             <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary-400 animate-spin" />
           </div>
-          <p className="text-gray-500 text-sm font-medium tracking-wide">Ders yukleniyor...</p>
+          <p className="text-gray-500 text-sm font-medium tracking-wide">Ders yükleniyor...</p>
         </div>
       </div>
     );
@@ -252,15 +252,15 @@ function CoursePlayerContent() {
           <div className="w-16 h-16 rounded-2xl bg-gray-800/50 flex items-center justify-center mx-auto mb-5">
             <BookOpen className="w-8 h-8 text-gray-600" />
           </div>
-          <h2 className="text-lg font-semibold text-gray-300 mb-2">Kurs bulunamadi</h2>
-          <p className="text-gray-500 text-sm mb-6">Kurs icerigi yuklenemedi veya erisim izniniz yok.</p>
+          <h2 className="text-lg font-semibold text-gray-300 mb-2">Kurs bulunamadı</h2>
+          <p className="text-gray-500 text-sm mb-6">Kurs içeriği yüklenemedi veya erişim izniniz yok.</p>
           <Button
             variant="outline"
             onClick={() => router.push(ROUTES.STUDENT_COURSES)}
             className="bg-gray-800/50 border-gray-700 text-gray-300 hover:bg-gray-700/50 hover:text-white"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Kurslarima Don
+            Kurslarıma Dön
           </Button>
         </div>
       </div>
@@ -289,7 +289,7 @@ function CoursePlayerContent() {
           <button
             onClick={() => router.push(ROUTES.STUDENT_COURSES)}
             className="text-gray-500 hover:text-white transition-all duration-200 p-2 -ml-2 rounded-lg hover:bg-white/[0.06]"
-            title="Kurslarima Don"
+            title="Kurslarıma Dön"
           >
             <ArrowLeft className="w-[18px] h-[18px]" />
           </button>
@@ -346,7 +346,7 @@ function CoursePlayerContent() {
               <div className="bg-[#1a1a1a] p-8 lg:p-12 min-h-[400px]">
                 <div className="max-w-3xl mx-auto">
                   <div className="prose prose-invert prose-gray max-w-none whitespace-pre-line text-gray-300 leading-relaxed">
-                    {currentLecture.textContent || 'Icerik bulunamadi'}
+                    {currentLecture.textContent || 'İçerik bulunamadı'}
                   </div>
                 </div>
               </div>
@@ -354,7 +354,7 @@ function CoursePlayerContent() {
               <div className="aspect-video bg-[#1a1a1a] flex items-center justify-center">
                 <div className="text-center text-gray-600">
                   <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p className="text-sm">Video bulunamadi</p>
+                  <p className="text-sm">Video bulunamadı</p>
                 </div>
               </div>
             )}
@@ -380,7 +380,7 @@ function CoursePlayerContent() {
                   {currentLecture.isCompleted ? (
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                       <CheckCircle className="w-4 h-4 text-emerald-400" />
-                      <span className="text-xs font-medium text-emerald-400">Tamamlandi</span>
+                      <span className="text-xs font-medium text-emerald-400">Tamamlandı</span>
                     </div>
                   ) : canComplete ? (
                     <Button
@@ -451,7 +451,7 @@ function CoursePlayerContent() {
             />
             <div className="fixed right-0 top-0 bottom-0 w-[320px] bg-[#141414] z-40 lg:hidden overflow-y-auto shadow-2xl shadow-black/50 animate-slide-in-right">
               <div className="flex items-center justify-between px-5 h-14 border-b border-white/[0.06]">
-                <h3 className="font-semibold text-sm text-gray-300">Mufredat</h3>
+                <h3 className="font-semibold text-sm text-gray-300">Müfredat</h3>
                 <button
                   onClick={() => setSidebarOpen(false)}
                   className="text-gray-500 hover:text-white p-1.5 rounded-lg hover:bg-white/[0.06] transition-colors"
@@ -482,7 +482,7 @@ export default function CoursePlayerPage() {
               <div className="absolute inset-0 rounded-full border-2 border-primary-800/30" />
               <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary-400 animate-spin" />
             </div>
-            <p className="text-gray-500 text-sm font-medium tracking-wide">Ders yukleniyor...</p>
+            <p className="text-gray-500 text-sm font-medium tracking-wide">Ders yükleniyor...</p>
           </div>
         </div>
       }

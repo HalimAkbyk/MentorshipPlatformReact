@@ -177,7 +177,7 @@ export default function MentorClassroomPage() {
         const data = (resp as any)?.data ?? resp;
         const status = data?.status;
         if (status && status !== 'Confirmed') {
-          toast.error('Bu seans iptal edilmis veya tamamlanmis.');
+          toast.error('Bu seans iptal edilmiş veya tamamlanmış.');
           router.push('/mentor/bookings');
         }
       } catch (e) {
@@ -596,15 +596,15 @@ export default function MentorClassroomPage() {
     try {
       const result = await apiClient.post(`/bookings/${bookingId}/complete`);
       // Basarili — seans tamamlandi
-      toast.success('Seans tamamlandi');
+      toast.success('Seans tamamlandı');
       router.push('/mentor/bookings');
     } catch (e: any) {
       // Erken sonlandirma — seans suresi dolmamis
       const errorMsg = e?.response?.data?.errors?.[0] || e?.message || '';
       if (errorMsg.includes('henüz dolmadı') || errorMsg.includes('dolmad')) {
-        toast.warning('Video oturumu sonlandirildi ancak seans suresi dolmadi. Odayi tekrar aktiflestirebilirsiniz.');
+        toast.warning('Video oturumu sonlandırıldı ancak seans süresi dolmadı. Odayı tekrar aktifleştirebilirsiniz.');
       } else {
-        toast.warning('Video oturumu sonlandirildi: ' + errorMsg);
+        toast.warning('Video oturumu sonlandırıldı: ' + errorMsg);
       }
       router.push('/mentor/bookings');
     }

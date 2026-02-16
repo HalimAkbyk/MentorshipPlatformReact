@@ -38,9 +38,9 @@ function statusBadge(status: CourseStatus) {
     case CourseStatus.Draft:
       return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Taslak</Badge>;
     case CourseStatus.Published:
-      return <Badge variant="success">Yayinda</Badge>;
+      return <Badge variant="success">Yayında</Badge>;
     case CourseStatus.Archived:
-      return <Badge variant="secondary">Arsiv</Badge>;
+      return <Badge variant="secondary">Arşiv</Badge>;
     default:
       return null;
   }
@@ -71,25 +71,25 @@ export default function MentorCoursesPage() {
   const handlePublish = async (course: MentorCourseDto) => {
     try {
       await publishMutation.mutateAsync(course.id);
-      toast.success('Kurs basariyla yayinlandi!');
+      toast.success('Kurs başarıyla yayınlandı!');
     } catch {
-      toast.error('Kurs yayinlanirken hata olustu');
+      toast.error('Kurs yayınlanırken hata oluştu');
     }
   };
 
   const handleArchive = async (course: MentorCourseDto) => {
     try {
       await archiveMutation.mutateAsync(course.id);
-      toast.success('Kurs arsivlendi');
+      toast.success('Kurs arşivlendi');
     } catch {
-      toast.error('Kurs arsivlenirken hata olustu');
+      toast.error('Kurs arşivlenirken hata oluştu');
     }
   };
 
   const handleDelete = (course: MentorCourseDto) => {
     confirm({
       title: 'Kursu Sil',
-      description: `"${course.title}" kursunu silmek istediginize emin misiniz? Bu islem geri alinamaz.`,
+      description: `"${course.title}" kursunu silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`,
       variant: 'danger',
       confirmText: 'Sil',
       onConfirm: async () => {
@@ -97,7 +97,7 @@ export default function MentorCoursesPage() {
           await deleteMutation.mutateAsync(course.id);
           toast.success('Kurs silindi');
         } catch {
-          toast.error('Kurs silinirken hata olustu');
+          toast.error('Kurs silinirken hata oluştu');
         }
       },
     });
@@ -106,10 +106,10 @@ export default function MentorCoursesPage() {
   // ===== Tabs =====
 
   const tabs: { key: FilterTab; label: string }[] = [
-    { key: 'all', label: 'Tumu' },
+    { key: 'all', label: 'Tümü' },
     { key: CourseStatus.Draft, label: 'Taslak' },
-    { key: CourseStatus.Published, label: 'Yayinda' },
-    { key: CourseStatus.Archived, label: 'Arsiv' },
+    { key: CourseStatus.Published, label: 'Yayında' },
+    { key: CourseStatus.Archived, label: 'Arşiv' },
   ];
 
   // ===== Loading State =====
@@ -135,13 +135,13 @@ export default function MentorCoursesPage() {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold font-heading">Kurslarim</h1>
-              <p className="text-sm text-gray-500">Video kurslarinizi yonetin</p>
+              <h1 className="text-2xl font-bold font-heading">Kurslarım</h1>
+              <p className="text-sm text-gray-500">Video kurslarınızı yönetin</p>
             </div>
           </div>
           <Button onClick={() => router.push(ROUTES.MENTOR_COURSE_NEW)} className="gap-2">
             <Plus className="w-4 h-4" />
-            Yeni Kurs Olustur
+            Yeni Kurs Oluştur
           </Button>
         </div>
       </header>
@@ -171,16 +171,16 @@ export default function MentorCoursesPage() {
               <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-semibold font-heading text-gray-700 mb-2">
                 {activeTab === 'all'
-                  ? 'Henuz kurs olusturmadiniz'
-                  : `Bu kategoride kurs bulunamadi`}
+                  ? 'Henüz kurs oluşturmadınız'
+                  : `Bu kategoride kurs bulunamadı`}
               </h3>
               <p className="text-gray-500 mb-6">
-                Ogrencilerinize sunacaginiz video kurslarini olusturun.
+                Öğrencilerinize sunacağınız video kurslarını oluşturun.
               </p>
               {activeTab === 'all' && (
                 <Button onClick={() => router.push(ROUTES.MENTOR_COURSE_NEW)} className="gap-2">
                   <Plus className="w-4 h-4" />
-                  Ilk Kursunuzu Olusturun
+                  İlk Kursunuzu Oluşturun
                 </Button>
               )}
             </CardContent>
@@ -277,14 +277,14 @@ function CourseCard({
 
         {/* Price */}
         <div className="text-lg font-bold text-primary-600 mb-4">
-          {course.price > 0 ? `${course.price.toFixed(2)} ${course.currency}` : 'Ucretsiz'}
+          {course.price > 0 ? `${course.price.toFixed(2)} ${course.currency}` : 'Ücretsiz'}
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-2 border-t pt-3">
           <Button variant="outline" size="sm" onClick={onEdit} className="flex-1 gap-1">
             <Pencil className="w-3.5 h-3.5" />
-            Duzenle
+            Düzenle
           </Button>
 
           {course.status === CourseStatus.Draft && (
@@ -300,7 +300,7 @@ function CourseCard({
                 ) : (
                   <Send className="w-3.5 h-3.5" />
                 )}
-                Yayinla
+                Yayınla
               </Button>
               <Button
                 variant="ghost"
@@ -326,7 +326,7 @@ function CourseCard({
               ) : (
                 <Archive className="w-3.5 h-3.5" />
               )}
-              Arsivle
+              Arşivle
             </Button>
           )}
         </div>

@@ -77,11 +77,11 @@ export default function AdminDashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ImageIcon className="w-5 h-5" /> Onerilen Avatarlar
+              <ImageIcon className="w-5 h-5" /> Önerilen Avatarlar
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600 mb-4">Kullanicilara onerilecek avatarlari yonet.</p>
+            <p className="text-sm text-gray-600 mb-4">Kullanıcılara önerilecek avatarları yönet.</p>
             <Link href="/admin/avatars">
               <Button className="w-full">Avatarlara Git</Button>
             </Link>

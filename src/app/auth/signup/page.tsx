@@ -16,9 +16,9 @@ import { toast } from 'sonner';
 import { UserRole } from '@/lib/types/enums';
 
 const signupSchema = z.object({
-  displayName: z.string().min(2, 'Isim en az 2 karakter olmali'),
-  email: z.string().email('Gecerli bir email adresi girin'),
-  password: z.string().min(8, 'Sifre en az 8 karakter olmali'),
+  displayName: z.string().min(2, 'İsim en az 2 karakter olmalı'),
+  email: z.string().email('Geçerli bir email adresi girin'),
+  password: z.string().min(8, 'Şifre en az 8 karakter olmalı'),
   role: z.enum(['Student', 'Mentor']),
 });
 
@@ -89,12 +89,12 @@ export default function SignupPage() {
       // but handle gracefully
       if (result.pendingToken) {
         setPendingSocial({ provider, token: result.pendingToken, displayName });
-        toast.info('Lutfen rol seciniz ve tekrar deneyin');
+        toast.info('Lütfen rol seçiniz ve tekrar deneyin');
         return;
       }
 
       if (result.isNewUser) {
-        toast.success('Hesabiniz olusturuldu!');
+        toast.success('Hesabınız oluşturuldu!');
       }
 
       navigateAfterAuth();
@@ -114,7 +114,7 @@ export default function SignupPage() {
         initialRole: role,
       });
       setPendingSocial(null);
-      toast.success('Hesabiniz olusturuldu!');
+      toast.success('Hesabınız oluşturuldu!');
       navigateAfterAuth();
     } catch (e) {
       // Error already handled by interceptor
@@ -127,15 +127,15 @@ export default function SignupPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 px-4 py-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold font-heading text-center">Kayit Ol</CardTitle>
+          <CardTitle className="text-2xl font-bold font-heading text-center">Kayıt Ol</CardTitle>
           <CardDescription className="text-center">
-            Degisim Mentorluk&apos;a katilmak icin bilgilerini gir
+            Değişim Mentorluk&apos;a katılmak için bilgilerini gir
           </CardDescription>
         </CardHeader>
         <CardContent>
           {/* Role Selection — shown first for social login context */}
           <div className="space-y-2 mb-4">
-            <label className="text-sm font-medium">Rol Secimi</label>
+            <label className="text-sm font-medium">Rol Seçimi</label>
             <div className="grid grid-cols-2 gap-4">
               <label className="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
                 <input
@@ -144,7 +144,7 @@ export default function SignupPage() {
                   {...register('role')}
                   className="text-primary-600"
                 />
-                <span>Danisan</span>
+                <span>Danışan</span>
               </label>
               <label className="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
                 <input
@@ -183,11 +183,11 @@ export default function SignupPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <label htmlFor="displayName" className="text-sm font-medium">
-                Isim Soyisim
+                İsim Soyisim
               </label>
               <Input
                 id="displayName"
-                placeholder="Ahmet Yilmaz"
+                placeholder="Ahmet Yılmaz"
                 {...register('displayName')}
               />
               {errors.displayName && (
@@ -212,7 +212,7 @@ export default function SignupPage() {
 
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium">
-                Sifre
+                Şifre
               </label>
               <Input
                 id="password"
@@ -226,14 +226,14 @@ export default function SignupPage() {
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Kayit yapiliyor...' : 'Kayit Ol'}
+              {isLoading ? 'Kayıt yapılıyor...' : 'Kayıt Ol'}
             </Button>
           </form>
 
           <div className="mt-4 text-center text-sm">
             <span className="text-gray-600">Zaten hesabin var mi? </span>
             <Link href="/auth/login" className="text-primary-600 hover:underline font-medium">
-              Giris Yap
+              Giriş Yap
             </Link>
           </div>
         </CardContent>
@@ -244,9 +244,9 @@ export default function SignupPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
           <Card className="w-full max-w-sm">
             <CardHeader>
-              <CardTitle className="text-lg text-center">Rol Secin</CardTitle>
+              <CardTitle className="text-lg text-center">Rol Seçin</CardTitle>
               <CardDescription className="text-center">
-                Devam etmek icin bir rol secin
+                Devam etmek için bir rol seçin
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -255,7 +255,7 @@ export default function SignupPage() {
                 onClick={() => handleRoleSelectAndRetry('Student')}
                 disabled={isLoading}
               >
-                Danisan olarak devam et
+                Danışan olarak devam et
               </Button>
               <Button
                 variant="outline"
@@ -271,7 +271,7 @@ export default function SignupPage() {
                 onClick={() => setPendingSocial(null)}
                 disabled={isLoading}
               >
-                Iptal
+                İptal
               </Button>
             </CardContent>
           </Card>

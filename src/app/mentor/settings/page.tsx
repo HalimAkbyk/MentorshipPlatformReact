@@ -26,17 +26,17 @@ import { cn } from '../../../lib/utils/cn';
 
 const profileSchema = z.object({
   displayName: z.string().min(2, 'En az 2 karakter'),
-  email: z.string().email('Gecerli email adresi girin'),
+  email: z.string().email('Geçerli email adresi girin'),
   phone: z.string().optional(),
   birthYear: z.coerce.number().min(1950).max(2010).optional().or(z.literal(0).transform(() => undefined)),
 });
 
 const passwordSchema = z.object({
-  currentPassword: z.string().min(8, 'Mevcut sifrenizi girin'),
+  currentPassword: z.string().min(8, 'Mevcut şifrenizi girin'),
   newPassword: z.string().min(8, 'En az 8 karakter'),
   confirmPassword: z.string(),
 }).refine((data) => data.newPassword === data.confirmPassword, {
-  message: 'Sifreler eslemiyor',
+  message: 'Şifreler eşlemiyor',
   path: ['confirmPassword'],
 });
 
@@ -45,7 +45,7 @@ type PasswordForm = z.infer<typeof passwordSchema>;
 
 const tabs = [
   { id: 'profile', name: 'Profil', icon: User },
-  { id: 'security', name: 'Guvenlik', icon: Lock },
+  { id: 'security', name: 'Güvenlik', icon: Lock },
   { id: 'notifications', name: 'Bildirimler', icon: Bell },
   { id: 'privacy', name: 'Gizlilik', icon: Shield },
 ];
@@ -86,10 +86,10 @@ export default function MentorSettingsPage() {
         phone: data.phone,
         birthYear: data.birthYear,
       });
-      toast.success('Profil guncellendi');
+      toast.success('Profil güncellendi');
       refreshUser?.();
     } catch (error: any) {
-      toast.error(error.response?.data?.errors?.[0] || 'Bir hata olustu');
+      toast.error(error.response?.data?.errors?.[0] || 'Bir hata oluştu');
     } finally {
       setIsUpdating(false);
     }
@@ -102,24 +102,24 @@ export default function MentorSettingsPage() {
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
       });
-      toast.success('Sifre guncellendi');
+      toast.success('Şifre güncellendi');
       passwordForm.reset();
     } catch (error: any) {
-      toast.error(error.response?.data?.errors?.[0] || 'Bir hata olustu');
+      toast.error(error.response?.data?.errors?.[0] || 'Bir hata oluştu');
     } finally {
       setIsUpdating(false);
     }
   };
 
   const handleFileUpload = async (file: File) => {
-    if (file.size > 2 * 1024 * 1024) { toast.error('Dosya boyutu 2MB\'den buyuk olamaz'); return; }
+    if (file.size > 2 * 1024 * 1024) { toast.error('Dosya boyutu 2MB\'den büyük olamaz'); return; }
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) { toast.error('Sadece JPG, PNG, GIF veya WebP yuklenebilir'); return; }
+    if (!allowedTypes.includes(file.type)) { toast.error('Sadece JPG, PNG, GIF veya WebP yüklenebilir'); return; }
     try {
       setIsUploadingAvatar(true); setSelectedPreset(null);
       await userApi.uploadAvatar(file);
-      toast.success('Avatar guncellendi'); refreshUser?.();
-    } catch { toast.error('Dosya yuklenirken hata olustu'); }
+      toast.success('Avatar güncellendi'); refreshUser?.();
+    } catch { toast.error('Dosya yüklenirken hata oluştu'); }
     finally { setIsUploadingAvatar(false); }
   };
 
@@ -127,8 +127,8 @@ export default function MentorSettingsPage() {
     try {
       setIsUploadingAvatar(true); setSelectedPreset(presetUrl);
       await userApi.setAvatarUrl(presetUrl);
-      toast.success('Avatar guncellendi'); refreshUser?.();
-    } catch { toast.error('Avatar guncellenirken hata olustu'); setSelectedPreset(null); }
+      toast.success('Avatar güncellendi'); refreshUser?.();
+    } catch { toast.error('Avatar güncellenirken hata oluştu'); setSelectedPreset(null); }
     finally { setIsUploadingAvatar(false); }
   };
 
@@ -141,7 +141,7 @@ export default function MentorSettingsPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold font-heading">Ayarlar</h1>
-          <p className="text-gray-600">Hesap ayarlarinizi yonetin</p>
+          <p className="text-gray-600">Hesap ayarlarınızı yönetin</p>
         </div>
         <div className="grid lg:grid-cols-4 gap-6">
           <div className="lg:col-span-1">
@@ -164,8 +164,8 @@ export default function MentorSettingsPage() {
               <>
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Camera className="w-5 h-5" />Profil Fotografi</CardTitle>
-                    <CardDescription>Kendi fotografinizi yukleyin veya onerilen avatarlardan birini secin</CardDescription>
+                    <CardTitle className="flex items-center gap-2"><Camera className="w-5 h-5" />Profil Fotoğrafı</CardTitle>
+                    <CardDescription>Kendi fotoğrafınızı yükleyin veya önerilen avatarlardan birini seçin</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="flex items-center space-x-6">
@@ -184,15 +184,15 @@ export default function MentorSettingsPage() {
                         <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden"
                           onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFileUpload(file); e.target.value = ''; }} />
                         <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploadingAvatar}>
-                          <Upload className="w-4 h-4 mr-2" />{isUploadingAvatar ? 'Yukleniyor...' : 'Bilgisayarimdan Yukle'}
+                          <Upload className="w-4 h-4 mr-2" />{isUploadingAvatar ? 'Yükleniyor...' : 'Bilgisayarımdan Yükle'}
                         </Button>
                         <p className="text-xs text-gray-500 mt-2">JPG, PNG, GIF veya WebP. Max 2MB.</p>
                       </div>
                     </div>
                     {presetAvatars.length > 0 && (
                       <div>
-                        <div className="flex items-center gap-2 mb-3"><ImageIcon className="w-4 h-4 text-gray-500" /><h4 className="text-sm font-medium text-gray-700">Onerilen Avatarlar</h4></div>
-                        <p className="text-xs text-gray-500 mb-3">Birini secin, otomatik olarak kaydedilir</p>
+                        <div className="flex items-center gap-2 mb-3"><ImageIcon className="w-4 h-4 text-gray-500" /><h4 className="text-sm font-medium text-gray-700">Önerilen Avatarlar</h4></div>
+                        <p className="text-xs text-gray-500 mb-3">Birini seçin, otomatik olarak kaydedilir</p>
                         <div className="flex flex-wrap gap-3">
                           {presetAvatars.map((preset) => {
                             const isActive = activePreset === preset.url;
@@ -212,14 +212,14 @@ export default function MentorSettingsPage() {
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardHeader><CardTitle>Kisisel Bilgiler</CardTitle><CardDescription>Ad, email ve iletisim bilgilerinizi guncelleyin</CardDescription></CardHeader>
+                  <CardHeader><CardTitle>Kişisel Bilgiler</CardTitle><CardDescription>Ad, email ve iletişim bilgilerinizi güncelleyin</CardDescription></CardHeader>
                   <CardContent>
                     <form onSubmit={profileForm.handleSubmit(updateProfile)} className="space-y-4">
-                      <div><label className="block text-sm font-medium mb-2">Isim Soyisim</label><Input {...profileForm.register('displayName')} />{profileForm.formState.errors.displayName && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.displayName.message}</p>}</div>
-                      <div><label className="block text-sm font-medium mb-2">Email</label><Input type="email" {...profileForm.register('email')} disabled /><p className="text-xs text-gray-500 mt-1">Email adresi degistirilemez</p></div>
+                      <div><label className="block text-sm font-medium mb-2">İsim Soyisim</label><Input {...profileForm.register('displayName')} />{profileForm.formState.errors.displayName && <p className="text-sm text-red-600 mt-1">{profileForm.formState.errors.displayName.message}</p>}</div>
+                      <div><label className="block text-sm font-medium mb-2">Email</label><Input type="email" {...profileForm.register('email')} disabled /><p className="text-xs text-gray-500 mt-1">Email adresi değiştirilemez</p></div>
                       <div><label className="block text-sm font-medium mb-2">Telefon (Opsiyonel)</label><Input type="tel" {...profileForm.register('phone')} /></div>
-                      <div><label className="block text-sm font-medium mb-2">Dogum Yili (Opsiyonel)</label><Input type="number" {...profileForm.register('birthYear')} placeholder="1990" /></div>
-                      <Button type="submit" disabled={isUpdating}>{isUpdating ? 'Kaydediliyor...' : 'Degisiklikleri Kaydet'}</Button>
+                      <div><label className="block text-sm font-medium mb-2">Doğum Yılı (Opsiyonel)</label><Input type="number" {...profileForm.register('birthYear')} placeholder="1990" /></div>
+                      <Button type="submit" disabled={isUpdating}>{isUpdating ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}</Button>
                     </form>
                   </CardContent>
                 </Card>
@@ -227,41 +227,41 @@ export default function MentorSettingsPage() {
             )}
             {activeTab === 'security' && (
               <Card>
-                <CardHeader><CardTitle>Sifre Degistir</CardTitle><CardDescription>Guclu bir sifre kullanin (en az 8 karakter)</CardDescription></CardHeader>
+                <CardHeader><CardTitle>Şifre Değiştir</CardTitle><CardDescription>Güçlü bir şifre kullanın (en az 8 karakter)</CardDescription></CardHeader>
                 <CardContent>
                   <form onSubmit={passwordForm.handleSubmit(updatePassword)} className="space-y-4">
-                    <div><label className="block text-sm font-medium mb-2">Mevcut Sifre</label><Input type="password" {...passwordForm.register('currentPassword')} />{passwordForm.formState.errors.currentPassword && <p className="text-sm text-red-600 mt-1">{passwordForm.formState.errors.currentPassword.message}</p>}</div>
-                    <div><label className="block text-sm font-medium mb-2">Yeni Sifre</label><Input type="password" {...passwordForm.register('newPassword')} />{passwordForm.formState.errors.newPassword && <p className="text-sm text-red-600 mt-1">{passwordForm.formState.errors.newPassword.message}</p>}</div>
-                    <div><label className="block text-sm font-medium mb-2">Yeni Sifre (Tekrar)</label><Input type="password" {...passwordForm.register('confirmPassword')} />{passwordForm.formState.errors.confirmPassword && <p className="text-sm text-red-600 mt-1">{passwordForm.formState.errors.confirmPassword.message}</p>}</div>
-                    <Button type="submit" disabled={isUpdating}>{isUpdating ? 'Guncelleniyor...' : 'Sifreyi Guncelle'}</Button>
+                    <div><label className="block text-sm font-medium mb-2">Mevcut Şifre</label><Input type="password" {...passwordForm.register('currentPassword')} />{passwordForm.formState.errors.currentPassword && <p className="text-sm text-red-600 mt-1">{passwordForm.formState.errors.currentPassword.message}</p>}</div>
+                    <div><label className="block text-sm font-medium mb-2">Yeni Şifre</label><Input type="password" {...passwordForm.register('newPassword')} />{passwordForm.formState.errors.newPassword && <p className="text-sm text-red-600 mt-1">{passwordForm.formState.errors.newPassword.message}</p>}</div>
+                    <div><label className="block text-sm font-medium mb-2">Yeni Şifre (Tekrar)</label><Input type="password" {...passwordForm.register('confirmPassword')} />{passwordForm.formState.errors.confirmPassword && <p className="text-sm text-red-600 mt-1">{passwordForm.formState.errors.confirmPassword.message}</p>}</div>
+                    <Button type="submit" disabled={isUpdating}>{isUpdating ? 'Güncelleniyor...' : 'Şifreyi Güncelle'}</Button>
                   </form>
                 </CardContent>
               </Card>
             )}
             {activeTab === 'notifications' && (
-              <Card><CardHeader><CardTitle>Bildirim Tercihleri</CardTitle><CardDescription>Hangi bildirimleri almak istediginizi secin</CardDescription></CardHeader>
+              <Card><CardHeader><CardTitle>Bildirim Tercihleri</CardTitle><CardDescription>Hangi bildirimleri almak istediğinizi seçin</CardDescription></CardHeader>
                 <CardContent className="space-y-4">
-                  <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50"><div><p className="font-medium">Email Bildirimleri</p><p className="text-sm text-gray-600">Yeni mesajlar ve ders hatirlatmalari</p></div><input type="checkbox" defaultChecked className="w-5 h-5" /></label>
+                  <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50"><div><p className="font-medium">Email Bildirimleri</p><p className="text-sm text-gray-600">Yeni mesajlar ve ders hatırlatmaları</p></div><input type="checkbox" defaultChecked className="w-5 h-5" /></label>
                   <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50"><div><p className="font-medium">SMS Bildirimleri</p><p className="text-sm text-gray-600">Sadece acil durumlarda</p></div><input type="checkbox" className="w-5 h-5" /></label>
-                  <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50"><div><p className="font-medium">Push Bildirimleri</p><p className="text-sm text-gray-600">Tarayici bildirimleri</p></div><input type="checkbox" defaultChecked className="w-5 h-5" /></label>
+                  <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50"><div><p className="font-medium">Push Bildirimleri</p><p className="text-sm text-gray-600">Tarayıcı bildirimleri</p></div><input type="checkbox" defaultChecked className="w-5 h-5" /></label>
                   <Button>Tercihleri Kaydet</Button>
                 </CardContent>
               </Card>
             )}
             {activeTab === 'privacy' && (
               <>
-                <Card><CardHeader><CardTitle>Gizlilik Ayarlari</CardTitle><CardDescription>Verilerinizi ve gorunurlugunuzu kontrol edin</CardDescription></CardHeader>
+                <Card><CardHeader><CardTitle>Gizlilik Ayarları</CardTitle><CardDescription>Verilerinizi ve görünürlüğünüzü kontrol edin</CardDescription></CardHeader>
                   <CardContent className="space-y-4">
-                    <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50"><div><p className="font-medium">Profil Gorunurlugu</p><p className="text-sm text-gray-600">Profilinizi herkese goster</p></div><input type="checkbox" defaultChecked className="w-5 h-5" /></label>
-                    <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50"><div><p className="font-medium">Aktivite Durumu</p><p className="text-sm text-gray-600">Cevrimici durumunuzu goster</p></div><input type="checkbox" defaultChecked className="w-5 h-5" /></label>
-                    <Button>Ayarlari Kaydet</Button>
+                    <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50"><div><p className="font-medium">Profil Görünürlüğü</p><p className="text-sm text-gray-600">Profilinizi herkese göster</p></div><input type="checkbox" defaultChecked className="w-5 h-5" /></label>
+                    <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50"><div><p className="font-medium">Aktivite Durumu</p><p className="text-sm text-gray-600">Çevrimiçi durumunuzu göster</p></div><input type="checkbox" defaultChecked className="w-5 h-5" /></label>
+                    <Button>Ayarları Kaydet</Button>
                   </CardContent>
                 </Card>
-                <Card className="border-red-200"><CardHeader><CardTitle className="text-red-600">Tehlikeli Bolge</CardTitle><CardDescription>Kalici islemler - dikkatli olun</CardDescription></CardHeader>
+                <Card className="border-red-200"><CardHeader><CardTitle className="text-red-600">Tehlikeli Bölge</CardTitle><CardDescription>Kalıcı işlemler - dikkatli olun</CardDescription></CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg">
-                      <div><p className="font-medium">Hesabi Sil</p><p className="text-sm text-gray-600">Tum verileriniz kalici olarak silinecek</p></div>
-                      <Button variant="destructive" size="sm"><Trash2 className="w-4 h-4 mr-2" />Hesabi Sil</Button>
+                      <div><p className="font-medium">Hesabı Sil</p><p className="text-sm text-gray-600">Tüm verileriniz kalıcı olarak silinecek</p></div>
+                      <Button variant="destructive" size="sm"><Trash2 className="w-4 h-4 mr-2" />Hesabı Sil</Button>
                     </div>
                   </CardContent>
                 </Card>

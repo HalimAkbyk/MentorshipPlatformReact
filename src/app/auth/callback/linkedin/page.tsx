@@ -26,13 +26,13 @@ export default function LinkedInCallbackPage() {
     const stateParam = searchParams.get('state');
 
     if (errorParam) {
-      setError('LinkedIn girisi iptal edildi veya basarisiz oldu.');
+      setError('LinkedIn girişi iptal edildi veya başarısız oldu.');
       setIsLoading(false);
       return;
     }
 
     if (!code) {
-      setError('LinkedIn dogrulama kodu bulunamadi.');
+      setError('LinkedIn doğrulama kodu bulunamadı.');
       setIsLoading(false);
       return;
     }
@@ -72,12 +72,12 @@ export default function LinkedInCallbackPage() {
       }
 
       if (result.isNewUser) {
-        toast.success('Hesabiniz olusturuldu!');
+        toast.success('Hesabınız oluşturuldu!');
       }
 
       navigateAfterAuth();
     } catch {
-      setError('LinkedIn girisi basarisiz oldu. Lutfen tekrar deneyin.');
+      setError('LinkedIn girişi başarısız oldu. Lütfen tekrar deneyin.');
       setIsLoading(false);
     }
   };
@@ -95,10 +95,10 @@ export default function LinkedInCallbackPage() {
         initialRole: role,
       });
 
-      toast.success('Hesabiniz olusturuldu!');
+      toast.success('Hesabınız oluşturuldu!');
       navigateAfterAuth();
     } catch {
-      setError('Kayit basarisiz oldu. Lutfen tekrar deneyin.');
+      setError('Kayıt başarısız oldu. Lütfen tekrar deneyin.');
       setIsLoading(false);
     }
   };
@@ -114,9 +114,9 @@ export default function LinkedInCallbackPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <Card className="w-full max-w-sm">
           <CardHeader>
-            <CardTitle className="text-lg text-center">Rol Secin</CardTitle>
+            <CardTitle className="text-lg text-center">Rol Seçin</CardTitle>
             <CardDescription className="text-center">
-              LinkedIn ile devam etmek icin bir rol secin
+              LinkedIn ile devam etmek için bir rol seçin
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -125,7 +125,7 @@ export default function LinkedInCallbackPage() {
               onClick={() => handleRoleSelect('Student')}
               disabled={isLoading}
             >
-              Danisan olarak devam et
+              Danışan olarak devam et
             </Button>
             <Button
               variant="outline"
@@ -141,7 +141,7 @@ export default function LinkedInCallbackPage() {
               onClick={() => router.push('/auth/login')}
               disabled={isLoading}
             >
-              Iptal
+              İptal
             </Button>
           </CardContent>
         </Card>
@@ -157,7 +157,7 @@ export default function LinkedInCallbackPage() {
           <CardContent className="pt-6 text-center space-y-4">
             <p className="text-red-600">{error}</p>
             <Button onClick={() => router.push('/auth/login')} variant="outline">
-              Giris sayfasina don
+              Giriş sayfasına dön
             </Button>
           </CardContent>
         </Card>
@@ -170,7 +170,7 @@ export default function LinkedInCallbackPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center space-y-4">
         <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary-600" />
-        <p className="text-gray-600">LinkedIn ile giris yapiliyor...</p>
+        <p className="text-gray-600">LinkedIn ile giriş yapılıyor...</p>
       </div>
     </div>
   );

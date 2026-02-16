@@ -6,9 +6,9 @@ export default function SupportPage() {
     <div className="min-h-screen py-16">
       <div className="container mx-auto px-4 max-w-4xl">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold font-heading mb-4">Iletisim ve Destek</h1>
+          <h1 className="text-4xl font-bold font-heading mb-4">İletişim ve Destek</h1>
           <p className="text-xl text-gray-600">
-            Size yardimci olmaktan mutluluk duyariz
+            Size yardımcı olmaktan mutluluk duyarız
           </p>
         </div>
 
@@ -21,7 +21,7 @@ export default function SupportPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 mb-2">Genel sorular ve destek icin:</p>
+              <p className="text-gray-600 mb-2">Genel sorular ve destek için:</p>
               <a
                 href="mailto:destek@degisimmentorluk.com"
                 className="text-primary-600 hover:underline font-medium"
@@ -39,7 +39,7 @@ export default function SupportPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 mb-2">Bizi arayin:</p>
+              <p className="text-gray-600 mb-2">Bizi arayın:</p>
               <a
                 href="tel:+905331408819"
                 className="text-primary-600 hover:underline font-medium"
@@ -58,7 +58,7 @@ export default function SupportPage() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600">
-                Sancaktepe / Istanbul
+                Sancaktepe / İstanbul
               </p>
             </CardContent>
           </Card>
@@ -67,7 +67,7 @@ export default function SupportPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="w-5 h-5 text-primary-500" />
-                Calisma Saatleri
+                Çalışma Saatleri
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -82,13 +82,13 @@ export default function SupportPage() {
         </div>
 
         <div className="mt-12 bg-primary-50 rounded-2xl p-8 text-center">
-          <h2 className="text-2xl font-bold font-heading mb-4">Hizli Destek</h2>
+          <h2 className="text-2xl font-bold font-heading mb-4">Hızlı Destek</h2>
           <p className="text-gray-600 max-w-xl mx-auto">
-            Sikca sorulan sorular icin{' '}
+            Sıkça sorulan sorular için{' '}
             <a href="/public/faq" className="text-primary-600 hover:underline font-medium">
-              SSS sayfamizi
+              SSS sayfamızı
             </a>{' '}
-            ziyaret edebilirsiniz. Cevabinizi bulamadiysiniz mi? Bize e-posta gonderin, en kisa surede donecegiz.
+            ziyaret edebilirsiniz. Cevabınızı bulamadınız mı? Bize e-posta gönderin, en kısa sürede döneceğiz.
           </p>
         </div>
       </div>
