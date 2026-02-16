@@ -143,8 +143,9 @@ export default function CourseDetailPage() {
     );
   }
 
-  const totalLectures = course.sections.reduce(
-    (sum, sec) => sum + sec.lectures.length,
+  const sections = sections ?? [];
+  const totalLectures = sections.reduce(
+    (sum, sec) => sum + (sec.lectures?.length ?? 0),
     0
   );
 
@@ -179,7 +180,7 @@ export default function CourseDetailPage() {
               {/* Rating */}
               <div className="flex items-center gap-1">
                 <span className="font-bold text-amber-400">
-                  {course.ratingAvg.toFixed(1)}
+                  {(course.ratingAvg ?? 0).toFixed(1)}
                 </span>
                 <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
                 <span className="text-gray-400">
@@ -200,7 +201,7 @@ export default function CourseDetailPage() {
             <div className="flex items-center gap-2 mt-4">
               <Avatar className="w-8 h-8">
                 <AvatarImage src={course.mentorAvatar} />
-                <AvatarFallback>{course.mentorName.charAt(0)}</AvatarFallback>
+                <AvatarFallback>{(course.mentorName ?? '').charAt(0)}</AvatarFallback>
               </Avatar>
               <span className="text-sm text-gray-300">
                 Egitmen: <span className="text-white font-medium">{course.mentorName}</span>
@@ -302,26 +303,26 @@ export default function CourseDetailPage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-sm text-gray-500">
-                    {course.sections.length} bolum - {totalLectures} ders -{' '}
+                    {sections.length} bolum - {totalLectures} ders -{' '}
                     {formatDuration(course.totalDurationSec)} toplam sure
                   </p>
                   <button
                     onClick={() => {
-                      if (expandedSections.size === course.sections.length) {
+                      if (expandedSections.size === sections.length) {
                         setExpandedSections(new Set());
                       } else {
-                        setExpandedSections(new Set(course.sections.map((s) => s.id)));
+                        setExpandedSections(new Set(sections.map((s) => s.id)));
                       }
                     }}
                     className="text-sm text-primary-600 hover:underline"
                   >
-                    {expandedSections.size === course.sections.length
+                    {expandedSections.size === sections.length
                       ? 'Tumu Kapat'
                       : 'Tumu Ac'}
                   </button>
                 </div>
 
-                {course.sections.map((section) => (
+                {sections.map((section) => (
                   <div key={section.id} className="border rounded-lg overflow-hidden bg-white">
                     <button
                       onClick={() => toggleSection(section.id)}
@@ -384,7 +385,7 @@ export default function CourseDetailPage() {
                   <Avatar className="w-20 h-20">
                     <AvatarImage src={course.mentorAvatar} />
                     <AvatarFallback className="text-2xl">
-                      {course.mentorName.charAt(0)}
+                      {(course.mentorName ?? '').charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div>

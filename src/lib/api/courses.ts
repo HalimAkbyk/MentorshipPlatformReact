@@ -143,7 +143,57 @@ export const coursesApi = {
   },
 
   getCourseDetail: async (id: string): Promise<CourseDetailDto> => {
-    return apiClient.get<CourseDetailDto>(`/courses/${id}`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const raw: any = await apiClient.get(`/courses/${id}`);
+
+    // Backend returns: mentor (object), curriculum (array), *Json (strings)
+    // Frontend expects: mentorId/mentorName/etc (flat), sections (array), arrays
+    const parseJsonArray = (val: unknown): string[] => {
+      if (Array.isArray(val)) return val;
+      if (typeof val === 'string') {
+        try { const parsed = JSON.parse(val); return Array.isArray(parsed) ? parsed : []; } catch { return []; }
+      }
+      return [];
+    };
+
+    return {
+      id: raw.id,
+      title: raw.title,
+      shortDescription: raw.shortDescription,
+      description: raw.description,
+      coverImageUrl: raw.coverImageUrl,
+      promoVideoKey: raw.promoVideoKey,
+      price: raw.price ?? 0,
+      currency: raw.currency ?? 'TRY',
+      level: raw.level,
+      language: raw.language,
+      category: raw.category,
+      whatYouWillLearn: parseJsonArray(raw.whatYouWillLearn ?? raw.whatYouWillLearnJson),
+      requirements: parseJsonArray(raw.requirements ?? raw.requirementsJson),
+      targetAudience: parseJsonArray(raw.targetAudience ?? raw.targetAudienceJson),
+      totalLectures: raw.totalLectures ?? 0,
+      totalDurationSec: raw.totalDurationSec ?? 0,
+      ratingAvg: raw.ratingAvg ?? 0,
+      ratingCount: raw.ratingCount ?? 0,
+      enrollmentCount: raw.enrollmentCount ?? 0,
+      mentorId: raw.mentor?.userId ?? raw.mentorId ?? '',
+      mentorName: raw.mentor?.displayName ?? raw.mentorName ?? '',
+      mentorAvatar: raw.mentor?.avatarUrl ?? raw.mentorAvatar,
+      mentorBio: raw.mentor?.bio ?? raw.mentorBio,
+      isEnrolled: raw.isEnrolled ?? false,
+      sections: (raw.curriculum ?? raw.sections ?? []).map((s: any) => ({
+        id: s.id,
+        title: s.title,
+        sortOrder: s.sortOrder ?? 0,
+        lectures: (s.lectures ?? []).map((l: any) => ({
+          id: l.id,
+          title: l.title,
+          durationSec: l.durationSec ?? 0,
+          isPreview: l.isPreview ?? false,
+          type: l.type,
+        })),
+      })),
+    } as CourseDetailDto;
   },
 
   // === Enrollment ===
