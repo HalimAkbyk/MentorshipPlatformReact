@@ -78,6 +78,16 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-urbanist)", "system-ui", "sans-serif"],
       },
+
+      keyframes: {
+        "fade-in": {
+          "0%": { opacity: "0", transform: "scale(0.85)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+      },
+      animation: {
+        "fade-in": "fade-in 0.2s ease-out",
+      },
     },
   },
   plugins: [],
