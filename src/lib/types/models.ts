@@ -38,6 +38,8 @@ export interface MentorDetail {
   headline?: string;
   ratingAvg: number;
   ratingCount: number;
+  isListed: boolean;
+  isOwnProfile: boolean;
   offerings: Offering[];
   badges: VerificationBadge[];
   availableSlots: AvailabilitySlot[];

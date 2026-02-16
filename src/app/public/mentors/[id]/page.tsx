@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Calendar, Star, CheckCircle, Video, Clock, HelpCircle, Tag } from 'lucide-react';
+import { Calendar, Star, CheckCircle, Video, Clock, HelpCircle, Tag, AlertTriangle } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../../components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../../components/ui/avatar';
@@ -53,6 +53,32 @@ export default function MentorProfilePage() {
   }
 
   if (!mentor) {
+    // Kendi profiline bakan ama henüz profili oluşturulmamış/onaylanmamış mentor
+    if (isOwnProfile) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center max-w-md mx-auto px-4">
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <HelpCircle className="w-8 h-8 text-amber-600" />
+            </div>
+            <h2 className="text-2xl font-bold mb-2 text-gray-800">Profiliniz Henüz Yayında Değil</h2>
+            <p className="text-gray-600 mb-6">
+              Mentor profilinizin herkese görünür olması için lütfen profil bilgilerinizi tamamlayın ve
+              doğrulama belgelerinizi yükleyin. Admin onayı sonrasında profiliniz yayına alınacaktır.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button onClick={() => router.push('/auth/onboarding/mentor')}>
+                Profili Tamamla
+              </Button>
+              <Button variant="outline" onClick={() => router.push('/mentor/dashboard')}>
+                Dashboard&apos;a Dön
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -98,6 +124,31 @@ export default function MentorProfilePage() {
           </div>
         </div>
       </header>
+
+      {/* Kendi profili ama henüz yayında değil uyarısı */}
+      {mentor.isOwnProfile && !mentor.isListed && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="container mx-auto px-4 py-3 flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm text-amber-800 font-medium">
+                Profiliniz henüz herkese açık değil.
+              </p>
+              <p className="text-xs text-amber-600">
+                Bu sayfa yalnızca size gösteriliyor. Belgeleriniz onaylandıktan sonra profiliniz diğer kullanıcılara da görünür olacaktır.
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-amber-300 text-amber-700 hover:bg-amber-100 shrink-0"
+              onClick={() => router.push('/auth/onboarding/mentor')}
+            >
+              Belgeleri Tamamla
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
