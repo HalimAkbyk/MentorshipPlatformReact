@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Star,
@@ -16,16 +16,18 @@ import {
   ChevronUp,
   FileText,
   Loader2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useCourseDetail, useEnrollInCourse } from '@/lib/hooks/use-courses';
+import { useCourseDetail, useEnrollInCourse, usePreviewLecture } from '@/lib/hooks/use-courses';
 import { ROUTES } from '@/lib/constants/routes';
 import { formatCurrency } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/cn';
 import { CourseLevel, LectureType } from '@/lib/types/enums';
 import { toast } from 'sonner';
+import type { PreviewLectureDto } from '@/lib/types/models';
 
 type Tab = 'overview' | 'curriculum' | 'instructor';
 
@@ -61,9 +63,41 @@ export default function CourseDetailPage() {
 
   const { data: course, isLoading } = useCourseDetail(courseId);
   const enrollMutation = useEnrollInCourse();
+  const previewMutation = usePreviewLecture();
 
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [previewData, setPreviewData] = useState<PreviewLectureDto | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handlePreviewClick = useCallback(async (lectureId: string) => {
+    try {
+      const data = await previewMutation.mutateAsync({ courseId, lectureId });
+      setPreviewData(data);
+      setPreviewOpen(true);
+    } catch {
+      toast.error('Onizleme yuklenirken bir hata olustu');
+    }
+  }, [courseId, previewMutation]);
+
+  const closePreview = useCallback(() => {
+    setPreviewOpen(false);
+    // Pause video when closing
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+    setTimeout(() => setPreviewData(null), 300);
+  }, []);
+
+  // Close modal on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && previewOpen) closePreview();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [previewOpen, closePreview]);
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections((prev) => {
@@ -346,17 +380,32 @@ export default function CourseDetailPage() {
                         {section.lectures.map((lecture) => (
                           <div
                             key={lecture.id}
-                            className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 border-b last:border-b-0"
+                            onClick={lecture.isPreview ? () => handlePreviewClick(lecture.id) : undefined}
+                            className={cn(
+                              'flex items-center justify-between px-4 py-3 border-b last:border-b-0 transition-colors',
+                              lecture.isPreview
+                                ? 'cursor-pointer hover:bg-primary-50 group'
+                                : 'hover:bg-gray-50'
+                            )}
                           >
                             <div className="flex items-center gap-3">
                               {lecture.isPreview ? (
-                                <Play className="w-4 h-4 text-primary-600" />
+                                <div className="w-7 h-7 rounded-full bg-primary-100 flex items-center justify-center group-hover:bg-primary-200 transition-colors">
+                                  <Play className="w-3.5 h-3.5 text-primary-600" />
+                                </div>
                               ) : (
                                 <Lock className="w-4 h-4 text-gray-400" />
                               )}
-                              <span className="text-sm text-gray-700">{lecture.title}</span>
+                              <span className={cn(
+                                'text-sm',
+                                lecture.isPreview
+                                  ? 'text-primary-700 font-medium group-hover:text-primary-800'
+                                  : 'text-gray-700'
+                              )}>
+                                {lecture.title}
+                              </span>
                               {lecture.isPreview && (
-                                <Badge variant="outline" className="text-xs">
+                                <Badge className="text-xs bg-primary-100 text-primary-700 hover:bg-primary-200 border-0">
                                   Ucretsiz Onizleme
                                 </Badge>
                               )}
@@ -493,6 +542,86 @@ export default function CourseDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Preview Video Modal */}
+      {previewOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={closePreview}
+        >
+          <div
+            className="relative w-full max-w-4xl mx-4 bg-black rounded-xl overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 py-3 bg-gray-900">
+              <div className="flex items-center gap-2 min-w-0">
+                <Play className="w-4 h-4 text-primary-400 shrink-0" />
+                <span className="text-white text-sm font-medium truncate">
+                  {previewData?.title || 'Onizleme'}
+                </span>
+                <Badge className="bg-primary-600/20 text-primary-300 border-0 text-xs shrink-0">
+                  Ucretsiz Onizleme
+                </Badge>
+              </div>
+              <button
+                onClick={closePreview}
+                className="text-gray-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Video / Text Content */}
+            {previewMutation.isPending ? (
+              <div className="aspect-video flex items-center justify-center">
+                <div className="text-center">
+                  <Loader2 className="w-10 h-10 text-white animate-spin mx-auto mb-3" />
+                  <p className="text-gray-400 text-sm">Ders yukleniyor...</p>
+                </div>
+              </div>
+            ) : previewData?.videoUrl ? (
+              <video
+                ref={videoRef}
+                src={previewData.videoUrl}
+                controls
+                autoPlay
+                className="w-full aspect-video"
+                controlsList="nodownload"
+              />
+            ) : previewData?.textContent ? (
+              <div className="p-6 max-h-[70vh] overflow-y-auto bg-white">
+                <div className="prose prose-gray max-w-none whitespace-pre-line text-gray-800">
+                  {previewData.textContent}
+                </div>
+              </div>
+            ) : (
+              <div className="aspect-video flex items-center justify-center">
+                <p className="text-gray-400 text-sm">Bu ders icin icerik bulunamadi</p>
+              </div>
+            )}
+
+            {/* Modal Footer */}
+            {!course.isEnrolled && (
+              <div className="flex items-center justify-between px-5 py-3 bg-gray-900 border-t border-gray-800">
+                <p className="text-gray-400 text-sm">
+                  Tum derslere erisim icin kursa kayit olun
+                </p>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    closePreview();
+                    handleEnroll();
+                  }}
+                  disabled={enrollMutation.isPending}
+                >
+                  {course.price === 0 ? 'Ucretsiz Kayit Ol' : 'Kayit Ol'}
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

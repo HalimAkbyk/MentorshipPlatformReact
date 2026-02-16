@@ -246,6 +246,15 @@ export function useCourseDetail(id: string) {
   });
 }
 
+// ===== Preview =====
+
+export function usePreviewLecture() {
+  return useMutation({
+    mutationFn: ({ courseId, lectureId }: { courseId: string; lectureId: string }) =>
+      coursesApi.getPreviewLecture(courseId, lectureId),
+  });
+}
+
 // ===== Student Enrollment =====
 
 export function useEnrollInCourse() {

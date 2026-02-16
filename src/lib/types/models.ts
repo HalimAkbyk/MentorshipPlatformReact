@@ -288,6 +288,16 @@ export interface CourseDetailLectureDto {
   type: LectureType;
 }
 
+export interface PreviewLectureDto {
+  lectureId: string;
+  title: string;
+  description?: string;
+  type: string;
+  videoUrl?: string;
+  textContent?: string;
+  durationSec: number;
+}
+
 export interface CoursePlayerDto {
   courseId: string;
   courseTitle: string;

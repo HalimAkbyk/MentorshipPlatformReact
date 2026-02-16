@@ -9,6 +9,7 @@ import type {
   CourseProgressDto,
   LectureNoteDto,
   VideoUploadUrlResponse,
+  PreviewLectureDto,
 } from '../types/models';
 
 // ===== Request types =====
@@ -194,6 +195,11 @@ export const coursesApi = {
         })),
       })),
     } as CourseDetailDto;
+  },
+
+  // === Preview ===
+  getPreviewLecture: async (courseId: string, lectureId: string): Promise<PreviewLectureDto> => {
+    return apiClient.get<PreviewLectureDto>(`/courses/${courseId}/preview/${lectureId}`);
   },
 
   // === Enrollment ===
