@@ -9,8 +9,13 @@ import { UserRole } from '@/lib/types/enums';
 export function Footer() {
   const { user, isAuthenticated } = useAuthStore();
   const isMentor = isAuthenticated && user?.roles.includes(UserRole.Mentor);
+  const isStudent = isAuthenticated && user?.roles.includes(UserRole.Student);
 
-  const mentorOlHref = isMentor ? '/mentor/dashboard' : '/auth/signup?role=mentor';
+  const mentorOlHref = isMentor
+    ? '/mentor/dashboard'
+    : isStudent
+      ? '/auth/onboarding/mentor?source=student'
+      : '/auth/signup?role=mentor';
   const mentorOlLabel = isMentor ? 'Mentör Panelim' : 'Mentör Ol';
 
   return (
