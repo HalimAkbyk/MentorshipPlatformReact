@@ -58,20 +58,13 @@
   }
 }
 
-/* Vidstack video player sizing fix */
-media-player,
-media-player video,
-media-player .vds-video-layout,
-media-player .media-outlet,
-media-outlet {
-  width: 100% !important;
-  height: 100% !important;
-  max-height: 100% !important;
-  object-fit: contain;
+/* Video player: disable right-click save */
+video::-internal-media-controls-download-button {
+  display: none !important;
 }
-
-media-player {
-  --media-height: 100%;
-  display: block !important;
+video::-webkit-media-controls-enclosure {
   overflow: hidden;
+}
+video::-webkit-media-controls-panel {
+  width: calc(100% + 30px);
 }

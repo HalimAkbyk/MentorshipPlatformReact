@@ -186,21 +186,23 @@ function CoursePlayerContent() {
   return (
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
       {/* Top Bar */}
-      <header className="bg-gray-900 text-white px-4 py-3 flex items-center justify-between shrink-0 z-20">
-        <div className="flex items-center gap-3">
+      <header className="bg-gray-900 text-white px-6 py-3.5 flex items-center justify-between shrink-0 z-20 border-b border-gray-800">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => router.push(ROUTES.STUDENT_COURSES)}
-            className="text-gray-400 hover:text-white transition-colors"
+            className="text-gray-400 hover:text-white transition-colors p-1 rounded-md hover:bg-gray-800"
+            title="Kurslarima Don"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-sm font-medium truncate max-w-md">{courseTitle}</h1>
+          <div className="h-5 w-px bg-gray-700" />
+          <h1 className="text-sm font-medium truncate max-w-lg">{courseTitle}</h1>
         </div>
 
         {/* Mobile sidebar toggle */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="lg:hidden text-gray-400 hover:text-white transition-colors"
+          className="lg:hidden text-gray-400 hover:text-white transition-colors p-1.5 rounded-md hover:bg-gray-800"
         >
           {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
