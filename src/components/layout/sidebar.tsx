@@ -24,6 +24,7 @@ export function Sidebar() {
         { label: 'Paketlerim', href: '/mentor/offerings' },
         { label: 'Uygunluk', href: '/mentor/availability' },
         { label: 'Derslerim', href: '/mentor/bookings' },
+        { label: 'Grup Dersleri', href: '/mentor/group-classes' },
         { label: 'Mesajlarım', href: '/mentor/messages' },
         { label: 'Kazançlarım', href: '/mentor/earnings' },
         { label: 'Mentor Ayarlar', href: '/mentor/settings' },
@@ -37,6 +38,7 @@ export function Sidebar() {
           // Mentor+Student: sadece ogrenci-spesifik sayfalar
           { label: 'Eğitim Keşfet', href: '/student/explore-courses' },
           { label: 'Aldığım Kurslar', href: '/student/courses' },
+          { label: 'Grup Dersleri', href: '/student/explore-classes' },
           { label: 'Rezervasyonlarım', href: '/student/bookings' },
           { label: 'Mesajlarım', href: '/student/messages' },
           { label: 'Ödemelerim', href: '/student/payments' },
@@ -46,6 +48,7 @@ export function Sidebar() {
           { label: 'Panel', href: '/student/dashboard' },
           { label: 'Eğitimler', href: '/student/explore-courses' },
           { label: 'Kurslarim', href: '/student/courses' },
+          { label: 'Grup Dersleri', href: '/student/explore-classes' },
           { label: 'Rezervasyonlarım', href: '/student/bookings' },
           { label: 'Mesajlarım', href: '/student/messages' },
           { label: 'Ödemelerim', href: '/student/payments' },

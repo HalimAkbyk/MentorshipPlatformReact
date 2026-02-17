@@ -1,7 +1,7 @@
 import { apiClient } from './client';
 
 export interface CreateOrderData {
-  type: 'Booking' | 'ClassSeat';
+  type: 'Booking' | 'GroupClass' | 'Course';
   resourceId: string;
 }
 

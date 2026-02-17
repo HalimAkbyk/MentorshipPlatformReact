@@ -23,8 +23,17 @@ export enum VerificationType {
 
 export enum OrderType {
   Booking = 'Booking',
-  ClassSeat = 'ClassSeat',
+  GroupClass = 'GroupClass',
   Course = 'Course',
+}
+
+export enum EnrollmentStatus {
+  PendingPayment = 'PendingPayment',
+  Confirmed = 'Confirmed',
+  Cancelled = 'Cancelled',
+  Attended = 'Attended',
+  NoShow = 'NoShow',
+  Refunded = 'Refunded',
 }
 
 export enum CourseStatus {

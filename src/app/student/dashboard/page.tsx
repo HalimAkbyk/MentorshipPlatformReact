@@ -313,6 +313,12 @@ export default function StudentDashboardPage() {
                     Video Eğitimler
                   </Button>
                 </Link>
+                <Link href="/student/explore-classes">
+                  <Button variant="outline" className="w-full justify-start text-primary-600 border-primary-200 hover:bg-primary-50">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Grup Dersleri
+                  </Button>
+                </Link>
                 <Link href="/student/courses">
                   <Button variant="outline" className="w-full justify-start">
                     <GraduationCap className="w-4 h-4 mr-2" />

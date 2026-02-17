@@ -145,10 +145,12 @@ export interface CreateAvailabilitySlotRequest {
 export interface CreateGroupClassRequest {
   title: string;
   description?: string;
+  category: string;
   startAt: string;
   endAt: string;
   capacity: number;
   pricePerSeat: number;
+  coverImageUrl?: string;
 }
 
 // Video

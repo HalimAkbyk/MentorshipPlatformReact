@@ -131,6 +131,8 @@ export interface GroupClass {
   mentorAvatar?: string;
   title: string;
   description?: string;
+  category: string;
+  coverImageUrl?: string;
   startAt: string;
   endAt: string;
   capacity: number;
@@ -138,6 +140,38 @@ export interface GroupClass {
   pricePerSeat: number;
   currency: string;
   status: ClassStatus;
+}
+
+export interface GroupClassDetail extends GroupClass {
+  enrollments?: ClassEnrollmentDto[];
+}
+
+export interface ClassEnrollmentDto {
+  id: string;
+  studentUserId: string;
+  studentName: string;
+  studentAvatar?: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface MyEnrollment {
+  enrollmentId: string;
+  classId: string;
+  classTitle: string;
+  classDescription?: string;
+  category: string;
+  coverImageUrl?: string;
+  startAt: string;
+  endAt: string;
+  pricePerSeat: number;
+  currency: string;
+  classStatus: string;
+  enrollmentStatus: string;
+  mentorName: string;
+  mentorAvatar?: string;
+  mentorUserId: string;
+  enrolledAt: string;
 }
 
 export interface Review {
