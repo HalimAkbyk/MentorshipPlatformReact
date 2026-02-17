@@ -453,6 +453,100 @@ export interface FeatureFlagDto {
   updatedAt: string;
 }
 
+// ---------------------------------------------------------------------------
+// Analytics Types (Phase 9)
+// ---------------------------------------------------------------------------
+
+export interface RegistrationTrendPoint {
+  week: string;
+  count: number;
+}
+
+export interface AnalyticsOverviewDto {
+  totalUsers: number;
+  totalMentors: number;
+  totalStudents: number;
+  activeUsersLast30Days: number;
+  newUsersThisMonth: number;
+  newUsersLastMonth: number;
+  totalRevenue: number;
+  thisMonthRevenue: number;
+  totalBookings: number;
+  totalCourseEnrollments: number;
+  totalGroupClassEnrollments: number;
+  weeklyRegistrations: RegistrationTrendPoint[];
+}
+
+export interface UserAnalyticsDto {
+  totalUsers: number;
+  activeUsers: number;
+  suspendedUsers: number;
+  roleDistribution: Record<string, number>;
+  providerDistribution: Record<string, number>;
+  monthlyRegistrations: RegistrationTrendPoint[];
+}
+
+export interface MonthlyRevenuePoint {
+  month: string;
+  revenue: number;
+  refunded: number;
+}
+
+export interface FinancialAnalyticsDto {
+  totalRevenue: number;
+  totalRefunded: number;
+  netRevenue: number;
+  platformCommission: number;
+  mentorPayouts: number;
+  averageOrderAmount: number;
+  revenueByType: Record<string, number>;
+  monthlyRevenue: MonthlyRevenuePoint[];
+}
+
+export interface TopMentorDto {
+  mentorUserId: string;
+  mentorName: string;
+  mentorEmail: string | null;
+  totalEarned: number;
+  completedBookings: number;
+  averageRating: number | null;
+}
+
+export interface TopCourseDto {
+  courseId: string;
+  title: string;
+  mentorName: string;
+  enrollmentCount: number;
+  revenue: number;
+}
+
+// ---------------------------------------------------------------------------
+// System Types (Phase 10)
+// ---------------------------------------------------------------------------
+
+export interface AuditLogDto {
+  id: string;
+  entityType: string;
+  entityId: string;
+  action: string;
+  oldValue: string | null;
+  newValue: string | null;
+  description: string | null;
+  performedBy: string;
+  performedByName: string | null;
+  performedByRole: string | null;
+  createdAt: string;
+}
+
+export interface SystemHealthInfoDto {
+  status: string;
+  databaseStatus: string;
+  totalUsers: number;
+  totalOrders: number;
+  serverTime: string;
+  environment: string;
+}
+
 export const adminApi = {
   // Dashboard
   getDashboard: async (): Promise<AdminDashboardDto> => {
@@ -834,4 +928,62 @@ export const adminApi = {
 
   seedSettings: (): Promise<void> =>
     apiClient.post('/admin/settings/seed'),
+
+  // ---------------------------------------------------------------------------
+  // Analytics (Phase 9)
+  // ---------------------------------------------------------------------------
+
+  getAnalyticsOverview: (): Promise<AnalyticsOverviewDto> =>
+    apiClient.get('/admin/analytics/overview'),
+
+  getUserAnalytics: (): Promise<UserAnalyticsDto> =>
+    apiClient.get('/admin/analytics/users'),
+
+  getFinancialAnalytics: (params?: {
+    dateFrom?: string;
+    dateTo?: string;
+  }): Promise<FinancialAnalyticsDto> =>
+    apiClient.get('/admin/analytics/financial', params),
+
+  getTopMentors: (): Promise<TopMentorDto[]> =>
+    apiClient.get('/admin/analytics/top-mentors'),
+
+  getTopCourses: (): Promise<TopCourseDto[]> =>
+    apiClient.get('/admin/analytics/top-courses'),
+
+  exportData: async (type: string): Promise<Blob> => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5072/api';
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const res = await fetch(`${API_URL}/admin/analytics/export/${type}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) throw new Error('Export failed');
+    return res.blob();
+  },
+
+  // ---------------------------------------------------------------------------
+  // System (Phase 10)
+  // ---------------------------------------------------------------------------
+
+  getAuditLog: (params: {
+    page?: number;
+    pageSize?: number;
+    entityType?: string;
+    action?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  }): Promise<PagedResult<AuditLogDto>> =>
+    apiClient.get('/admin/system/audit-log', params),
+
+  getSystemHealthInfo: (): Promise<SystemHealthInfoDto> =>
+    apiClient.get('/admin/system/health'),
+
+  getFeatureFlags: (): Promise<FeatureFlagDto[]> =>
+    apiClient.get('/admin/system/feature-flags'),
+
+  updateFeatureFlag: (key: string, isEnabled: boolean): Promise<FeatureFlagDto> =>
+    apiClient.put(`/admin/system/feature-flags/${key}`, { isEnabled }),
+
+  seedFeatureFlags: (): Promise<FeatureFlagDto[]> =>
+    apiClient.post('/admin/system/feature-flags/seed'),
 };
