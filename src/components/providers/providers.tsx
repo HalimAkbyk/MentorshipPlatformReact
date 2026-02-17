@@ -6,6 +6,12 @@ import { useEffect, useState, useRef } from 'react';
 import { useAuthStore } from '../../lib/stores/auth-store';
 import { ConfirmDialogProvider } from './confirmDialogProvider';
 import { FloatingChatWidget } from '../features/messaging/floating-chat-widget';
+import { useSignalR } from '../../lib/hooks/use-signalr';
+
+function SignalRProvider() {
+  useSignalR();
+  return null;
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +50,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <Toaster position="top-right" />
       <ConfirmDialogProvider />
       <FloatingChatWidget />
+      <SignalRProvider />
     </QueryClientProvider>
   );
 }

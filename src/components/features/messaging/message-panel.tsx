@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useBookingMessages, useSendMessage, useMarkAsRead } from '@/lib/hooks/use-messages';
 import { ReportDialog } from './report-dialog';
+import { MessageStatus } from './message-status';
+import { setActiveBookingId } from '@/lib/hooks/use-signalr';
 import { cn } from '@/lib/utils/cn';
 
 interface MessagePanelProps {
@@ -50,6 +52,12 @@ export function MessagePanel({ bookingId }: MessagePanelProps) {
     const el = scrollContainerRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length]);
+
+  // Track active booking for auto-read
+  useEffect(() => {
+    setActiveBookingId(bookingId);
+    return () => setActiveBookingId(null);
+  }, [bookingId]);
 
   const handleSend = async () => {
     const trimmed = content.trim();
@@ -130,6 +138,7 @@ export function MessagePanel({ bookingId }: MessagePanelProps) {
                   <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                   <div className="flex items-center justify-end gap-1.5 mt-1">
                     <span className="text-[10px] text-gray-400">{formatTime(msg.createdAt)}</span>
+                    <MessageStatus isOwnMessage={msg.isOwnMessage} deliveredAt={msg.deliveredAt} readAt={msg.readAt} />
                     {/* Report button — only on other party's messages */}
                     {!msg.isOwnMessage && (
                       <button

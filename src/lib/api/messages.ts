@@ -10,6 +10,8 @@ export interface MessageDto {
   isRead: boolean;
   isOwnMessage: boolean;
   createdAt: string;
+  deliveredAt: string | null;
+  readAt: string | null;
 }
 
 export interface PaginatedMessages {

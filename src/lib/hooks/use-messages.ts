@@ -7,7 +7,6 @@ export function useBookingMessages(bookingId: string, page = 1) {
     queryKey: ['messages', bookingId, page],
     queryFn: () => messagesApi.getByBooking(bookingId, page),
     enabled: !!bookingId,
-    refetchInterval: 15000,
   });
 }
 
@@ -16,7 +15,6 @@ export function useConversations(enabled = true) {
     queryKey: ['conversations'],
     queryFn: () => messagesApi.getConversations(),
     enabled,
-    refetchInterval: 30000,
   });
 }
 
@@ -48,7 +46,6 @@ export function useUnreadCount() {
   return useQuery({
     queryKey: ['unreadCount'],
     queryFn: () => messagesApi.getUnreadCount(),
-    refetchInterval: 30000,
   });
 }
 

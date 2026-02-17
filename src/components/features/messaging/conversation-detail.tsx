@@ -6,7 +6,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useBookingMessages, useSendMessage, useMarkAsRead } from '@/lib/hooks/use-messages';
 import { ReportDialog } from './report-dialog';
+import { MessageStatus } from './message-status';
 import { BookingInfoHeader } from './booking-info-header';
+import { setActiveBookingId } from '@/lib/hooks/use-signalr';
 import type { ConversationDto } from '@/lib/types/models';
 import { cn } from '@/lib/utils/cn';
 
@@ -53,9 +55,11 @@ export function ConversationDetail({ conversation, bookingDetailHref }: Conversa
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length]);
 
-  // Reset input when switching conversations
+  // Reset input when switching conversations + track active booking
   useEffect(() => {
     setContent('');
+    setActiveBookingId(conversation.bookingId);
+    return () => setActiveBookingId(null);
   }, [conversation.bookingId]);
 
   const handleSend = async () => {
@@ -130,6 +134,7 @@ export function ConversationDetail({ conversation, bookingDetailHref }: Conversa
               <p className="whitespace-pre-wrap break-words">{msg.content}</p>
               <div className="flex items-center justify-end gap-1.5 mt-1">
                 <span className="text-[10px] text-gray-400">{formatTime(msg.createdAt)}</span>
+                <MessageStatus isOwnMessage={msg.isOwnMessage} deliveredAt={msg.deliveredAt} readAt={msg.readAt} />
                 {!msg.isOwnMessage && (
                   <button
                     onClick={() => setReportMessageId(msg.id)}
