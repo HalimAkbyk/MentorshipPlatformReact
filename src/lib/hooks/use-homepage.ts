@@ -1,6 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { homepageApi } from '../api/homepage';
 
+export function useActiveModules() {
+  return useQuery({
+    queryKey: ['cms-modules'],
+    queryFn: () => homepageApi.getActiveModules(),
+    staleTime: 2 * 60 * 1000, // 2 min
+  });
+}
+
 export function useTopRatedMentors(limit = 12) {
   return useQuery({
     queryKey: ['homepage', 'mentors', 'top-rated', limit],

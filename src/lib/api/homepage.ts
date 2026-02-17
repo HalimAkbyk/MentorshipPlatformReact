@@ -2,6 +2,17 @@ import { apiClient } from './client';
 import type { MentorListItem, PublicCourseDto } from '@/lib/types/models';
 import type { PaginatedResponse } from '@/lib/types/api';
 
+// ── CMS Module types ──
+
+export interface ActiveModule {
+  id: string;
+  moduleType: string;
+  title: string;
+  subtitle: string | null;
+  content: string | null;
+  sortOrder: number;
+}
+
 // ── Homepage-specific API calls ──
 
 export interface PlatformStatistics {
@@ -25,6 +36,16 @@ export interface TestimonialDto {
 }
 
 export const homepageApi = {
+  // CMS active modules
+  getActiveModules: async (): Promise<ActiveModule[]> => {
+    try {
+      const res = await apiClient.get<ActiveModule[]>('/cms/modules/active');
+      return res;
+    } catch {
+      return [];
+    }
+  },
+
   // Use existing mentors endpoint with different sort params
   getTopRatedMentors: async (limit = 12): Promise<MentorListItem[]> => {
     const res = await apiClient.get<PaginatedResponse<MentorListItem>>('/mentors', {

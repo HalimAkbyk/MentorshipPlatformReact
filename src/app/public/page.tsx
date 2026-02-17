@@ -8,51 +8,67 @@ import StatsSection from '@/components/sections/StatsSection';
 import HowItWorks from '@/components/sections/HowItWorks';
 import TestimonialCarousel from '@/components/sections/TestimonialCarousel';
 import BecomeMentor from '@/components/sections/BecomeMentor';
-import { useTopRatedMentors, useNewestMentors } from '@/lib/hooks/use-homepage';
+import CmsModuleRenderer from '@/components/sections/CmsModuleRenderer';
+import { useTopRatedMentors, useNewestMentors, useActiveModules } from '@/lib/hooks/use-homepage';
 
 export default function HomePage() {
+  const { data: modules = [], isLoading: modulesLoading } = useActiveModules();
   const { data: topRatedMentors = [], isLoading: loadingTopRated } = useTopRatedMentors(12);
   const { data: newestMentors = [], isLoading: loadingNewest } = useNewestMentors(12);
 
+  // ── CMS-driven layout ──
+  // If there are active CMS modules, render them in sort order
+  if (!modulesLoading && modules.length > 0) {
+    return (
+      <div className="min-h-screen bg-[var(--bg-primary)]">
+        {modules.map((mod) => (
+          <CmsModuleRenderer key={mod.id} module={mod} />
+        ))}
+      </div>
+    );
+  }
+
+  // ── Fallback: hardcoded layout ──
+  // Shown when no CMS modules exist or while loading
   return (
     <div className="min-h-screen bg-[var(--bg-primary)]">
       {/* 1. Hero Section */}
       <HeroCarousel />
 
-      {/* 2. Popüler Eğitimler (Video Kurslar — API Driven) */}
+      {/* 2. Popular Courses */}
       <CourseStrip />
 
-      {/* 3. En Yüksek Puanlı Mentörler */}
+      {/* 3. Top Rated Mentors */}
       <MentorCarouselSection
-        title="En Yüksek Puanlı Mentörler"
+        title="En Yuksek Puanli Mentorler"
         icon="⭐"
         mentors={topRatedMentors}
         isLoading={loadingTopRated}
         viewAllHref="/public/mentors"
       />
 
-      {/* 4. Promosyon Banner */}
+      {/* 4. Promo Banner */}
       <PromoBanner />
 
-      {/* 5. Yeni Katılan Mentörler */}
+      {/* 5. Newest Mentors */}
       <MentorCarouselSection
-        title="Yeni Katılan Mentörler"
+        title="Yeni Katilan Mentorler"
         icon="🆕"
         mentors={newestMentors}
         isLoading={loadingNewest}
         viewAllHref="/public/mentors"
       />
 
-      {/* 6. Nasıl Çalışır */}
+      {/* 6. How It Works */}
       <HowItWorks />
 
-      {/* 7. İstatistikler */}
+      {/* 7. Stats */}
       <StatsSection />
 
-      {/* 8. Başarı Hikayeleri */}
+      {/* 8. Testimonials */}
       <TestimonialCarousel />
 
-      {/* 9. Mentör Ol CTA */}
+      {/* 9. Become Mentor CTA */}
       <BecomeMentor />
     </div>
   );
