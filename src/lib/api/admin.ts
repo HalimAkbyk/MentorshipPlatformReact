@@ -415,6 +415,44 @@ export interface MessageReportDto {
   messageContent: string | null;
 }
 
+// Moderation
+export interface BlacklistEntryDto {
+  id: string;
+  type: string;
+  value: string;
+  reason: string | null;
+  createdByName: string | null;
+  createdAt: string;
+}
+
+export interface ContentReviewItemDto {
+  id: string;
+  entityType: string;
+  title: string;
+  description: string | null;
+  ownerName: string;
+  createdAt: string;
+}
+
+// Settings
+export interface PlatformSettingDto {
+  id: string;
+  key: string;
+  value: string;
+  description: string | null;
+  category: string;
+  updatedAt: string;
+}
+
+// Feature Flags (for later use)
+export interface FeatureFlagDto {
+  id: string;
+  key: string;
+  isEnabled: boolean;
+  description: string | null;
+  updatedAt: string;
+}
+
 export const adminApi = {
   // Dashboard
   getDashboard: async (): Promise<AdminDashboardDto> => {
@@ -768,4 +806,32 @@ export const adminApi = {
     data: { status: string; adminNotes?: string }
   ): Promise<void> =>
     apiClient.post(`/admin/message-reports/${reportId}/review`, data),
+
+  // Moderation - Blacklist
+  getBlacklist: (type?: string): Promise<BlacklistEntryDto[]> =>
+    apiClient.get('/admin/moderation/blacklist', type ? { type } : undefined),
+
+  createBlacklistEntry: (data: {
+    type: string;
+    value: string;
+    reason?: string;
+  }): Promise<{ id: string }> =>
+    apiClient.post('/admin/moderation/blacklist', data),
+
+  deleteBlacklistEntry: (id: string): Promise<void> =>
+    apiClient.delete(`/admin/moderation/blacklist/${id}`),
+
+  // Moderation - Content Review
+  getContentReview: (): Promise<ContentReviewItemDto[]> =>
+    apiClient.get('/admin/moderation/content'),
+
+  // Settings
+  getSettings: (): Promise<PlatformSettingDto[]> =>
+    apiClient.get('/admin/settings'),
+
+  updateSetting: (key: string, value: string): Promise<void> =>
+    apiClient.put(`/admin/settings/${key}`, { value }),
+
+  seedSettings: (): Promise<void> =>
+    apiClient.post('/admin/settings/seed'),
 };
