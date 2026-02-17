@@ -228,6 +228,50 @@ export interface StaticPageDto {
   updatedAt: string;
 }
 
+// Education Types
+export interface AdminBookingListDto {
+  id: string;
+  studentUserId: string;
+  studentName: string;
+  mentorUserId: string;
+  mentorName: string;
+  startAt: string;
+  durationMinutes: number;
+  status: string;
+  offeringTitle: string | null;
+  createdAt: string;
+}
+
+export interface AdminGroupClassDto {
+  id: string;
+  title: string;
+  category: string;
+  mentorUserId: string;
+  mentorName: string;
+  startAt: string;
+  endAt: string;
+  capacity: number;
+  enrolledCount: number;
+  pricePerSeat: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface AdminCourseDto {
+  id: string;
+  title: string;
+  instructorUserId: string;
+  instructorName: string;
+  price: number;
+  currency: string;
+  status: string;
+  level: string;
+  category: string;
+  enrollmentCount: number;
+  createdAt: string;
+}
+
 export const adminApi = {
   // Dashboard
   getDashboard: async (): Promise<AdminDashboardDto> => {
@@ -454,4 +498,34 @@ export const adminApi = {
 
   deletePage: (id: string): Promise<void> =>
     apiClient.delete(`/admin/cms/pages/${id}`),
+
+  // Education - Bookings
+  getEducationBookings: (params: {
+    page?: number;
+    pageSize?: number;
+    status?: string;
+    search?: string;
+    from?: string;
+    to?: string;
+  }): Promise<PagedResult<AdminBookingListDto>> =>
+    apiClient.get('/admin/education/bookings', params),
+
+  // Education - Group Classes
+  getEducationGroupClasses: (params: {
+    page?: number;
+    pageSize?: number;
+    category?: string;
+    status?: string;
+    search?: string;
+  }): Promise<PagedResult<AdminGroupClassDto>> =>
+    apiClient.get('/admin/education/group-classes', params),
+
+  // Education - Courses
+  getEducationCourses: (params: {
+    page?: number;
+    pageSize?: number;
+    status?: string;
+    search?: string;
+  }): Promise<PagedResult<AdminCourseDto>> =>
+    apiClient.get('/admin/education/courses', params),
 };
