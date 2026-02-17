@@ -4,13 +4,15 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Calendar, Clock, User, MapPin, AlertCircle, Video, MessageSquare, CheckCircle, HelpCircle, RefreshCw, X } from 'lucide-react';
+import { Calendar, Clock, User, MapPin, AlertCircle, Video, MessageSquare, CheckCircle, HelpCircle, RefreshCw, X, Mail } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../../components/ui/avatar';
 import { Badge } from '../../../../components/ui/badge';
 import { ReviewModal } from '../../../../components/features/reviews/review-modal';
+import { MessagePanel } from '../../../../components/features/messaging/message-panel';
 import { useBooking, useCancelBooking, useRescheduleBooking, useApproveReschedule, useRejectReschedule } from '../../../../lib/hooks/use-bookings';
+import { useUnreadCount } from '../../../../lib/hooks/use-messages';
 import { formatDate, formatTime, formatCurrency } from '../../../../lib/utils/format';
 import { BookingStatus } from '../../../../lib/types/enums';
 import { ROUTES } from '../../../../lib/constants/routes';
@@ -36,9 +38,11 @@ export default function BookingDetailPage() {
   const rescheduleBooking = useRescheduleBooking();
   const approveReschedule = useApproveReschedule();
   const rejectReschedule = useRejectReschedule();
+  const { data: unreadData } = useUnreadCount();
 
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [roomStatus, setRoomStatus] = useState<RoomStatus | null>(null);
   const [checkingRoom, setCheckingRoom] = useState(false);
@@ -306,13 +310,29 @@ export default function BookingDetailPage() {
                     <h3 className="font-semibold text-lg">{booking.mentorName}</h3>
                     <p className="text-sm text-gray-600">{booking.offeringTitle}</p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowMessages(!showMessages)}
+                    className="relative"
+                  >
                     <MessageSquare className="w-4 h-4 mr-2" />
-                    Mesaj Gönder
+                    {showMessages ? 'Mesajları Gizle' : 'Mesaj Gönder'}
+                    {(() => {
+                      const unread = unreadData?.perBooking?.find((b) => b.bookingId === bookingId)?.count ?? 0;
+                      return unread > 0 ? (
+                        <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                          {unread > 9 ? '9+' : unread}
+                        </span>
+                      ) : null;
+                    })()}
                   </Button>
                 </div>
               </CardContent>
             </Card>
+
+            {/* Message Panel */}
+            {showMessages && <MessagePanel bookingId={bookingId} />}
 
             {/* Session Details */}
             <Card>

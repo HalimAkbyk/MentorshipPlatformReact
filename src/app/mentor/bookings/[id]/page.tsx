@@ -7,7 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft, Calendar, Clock, User, CreditCard,
   AlertCircle, CheckCircle, XCircle, Video,
-  UserX, AlertTriangle, HelpCircle, RefreshCw, X
+  UserX, AlertTriangle, HelpCircle, RefreshCw, X, MessageSquare
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '../../../../components/ui/button';
@@ -15,6 +15,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Avatar, AvatarFallback, AvatarImage } from '../../../../components/ui/avatar';
 import { Badge } from '../../../../components/ui/badge';
 import { apiClient } from '../../../../lib/api/client';
+import { MessagePanel } from '../../../../components/features/messaging/message-panel';
+import { useUnreadCount } from '../../../../lib/hooks/use-messages';
 import { formatDate, formatTime, formatCurrency } from '../../../../lib/utils/format';
 import { BookingStatus } from '../../../../lib/types/enums';
 import type { BookingDetail } from '../../../../lib/types/models';
@@ -30,6 +32,8 @@ export default function MentorBookingDetailPage() {
 
   const [booking, setBooking] = useState<BookingDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showMessages, setShowMessages] = useState(false);
+  const { data: unreadData } = useUnreadCount();
 
   // Reschedule state
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
@@ -299,13 +303,33 @@ export default function MentorBookingDetailPage() {
                     {booking.studentName?.charAt(0).toUpperCase() || 'O'}
                   </AvatarFallback>
                 </Avatar>
-                <div>
+                <div className="flex-1">
                   <h3 className="font-semibold text-lg">{booking.studentName || 'Öğrenci'}</h3>
                   <p className="text-sm text-gray-500">Öğrenci</p>
                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowMessages(!showMessages)}
+                  className="relative"
+                >
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  {showMessages ? 'Mesajları Gizle' : 'Mesaj Gönder'}
+                  {(() => {
+                    const unread = unreadData?.perBooking?.find((b) => b.bookingId === bookingId)?.count ?? 0;
+                    return unread > 0 ? (
+                      <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                        {unread > 9 ? '9+' : unread}
+                      </span>
+                    ) : null;
+                  })()}
+                </Button>
               </div>
             </CardContent>
           </Card>
+
+          {/* Message Panel */}
+          {showMessages && <MessagePanel bookingId={bookingId} />}
 
           {/* Session Info */}
           <Card>
