@@ -868,6 +868,15 @@ export const adminApi = {
   getEducationCourseDetail: (id: string): Promise<any> =>
     apiClient.get(`/admin/education/courses/${id}`),
 
+  getEducationBookingDetail: (id: string): Promise<any> =>
+    apiClient.get(`/admin/education/bookings/${id}`),
+
+  getEducationGroupClassDetail: (id: string): Promise<any> =>
+    apiClient.get(`/admin/education/group-classes/${id}`),
+
+  getEducationExamDetail: (id: string): Promise<any> =>
+    apiClient.get(`/admin/education/exams/${id}`),
+
   // Finance - Orders
   getOrders: (params: {
     page?: number;

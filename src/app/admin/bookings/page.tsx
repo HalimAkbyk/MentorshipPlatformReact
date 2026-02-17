@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 import {
   BookOpen,
   Search,
@@ -84,6 +84,7 @@ const statusFilters = [
 
 export default function AdminBookingsPage() {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   // --- State ---
   const [search, setSearch] = useState('');
@@ -189,7 +190,7 @@ export default function AdminBookingsPage() {
           size="sm"
           onClick={(e) => {
             e.stopPropagation();
-            toast.info('Detay sayfasi yakinda eklenecek');
+            router.push(`/admin/bookings/${item.id}`);
           }}
         >
           <Eye className="h-3.5 w-3.5 mr-1" />

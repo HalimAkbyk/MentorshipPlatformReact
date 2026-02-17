@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import {
   ClipboardList,
   Search,
   Loader2,
   Eye,
   EyeOff,
+  FileText,
   X,
 } from 'lucide-react';
 
@@ -34,6 +36,7 @@ const scopeLabels: Record<string, string> = {
 
 export default function AdminExamsPage() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const pageSize = 20;
   const [search, setSearch] = useState('');
@@ -148,6 +151,18 @@ export default function AdminExamsPage() {
       label: '',
       render: (e) => (
         <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={(ev) => {
+              ev.stopPropagation();
+              router.push(`/admin/exams/${e.id}`);
+            }}
+          >
+            <FileText className="h-3 w-3 mr-1" />
+            Detay
+          </Button>
           {e.isPublished ? (
             <Button
               variant="outline"

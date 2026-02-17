@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 import {
   Users,
   Search,
@@ -107,6 +107,7 @@ function categoryBadgeVariant(category: string) {
 
 export default function AdminGroupClassesPage() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const categoryNames = useCategoryNames('GroupClass');
   const categoryFilters = [
     { label: 'Tumu', value: '' },
@@ -255,7 +256,7 @@ export default function AdminGroupClassesPage() {
           size="sm"
           onClick={(e) => {
             e.stopPropagation();
-            toast.info('Detay sayfasi yakinda eklenecek');
+            router.push(`/admin/group-classes/${item.id}`);
           }}
         >
           <Eye className="h-3.5 w-3.5 mr-1" />
