@@ -11,6 +11,7 @@ export enum BookingStatus {
   Completed = 'Completed',
   NoShow = 'NoShow',
   Disputed = 'Disputed',
+  Expired = 'Expired',
 }
 
 export enum VerificationType {

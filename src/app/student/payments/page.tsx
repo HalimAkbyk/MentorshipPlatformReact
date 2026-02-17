@@ -245,7 +245,7 @@ export default function StudentPaymentsPage() {
                 <option value="">Tumu</option>
                 <option value="Paid">Odendi</option>
                 <option value="Refunded">Iade Edildi</option>
-                <option value="Failed">Basarisiz</option>
+                <option value="PartiallyRefunded">Kismi Iade</option>
               </select>
             </div>
           </div>
