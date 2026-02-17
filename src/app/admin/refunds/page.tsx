@@ -55,12 +55,12 @@ export default function AdminRefundsPage() {
       });
     },
     onSuccess: async (_, { isApproved }) => {
-      toast.success(isApproved ? 'Iade onaylandi' : 'Iade reddedildi');
+      toast.success(isApproved ? 'İade onaylandı' : 'İade reddedildi');
       setProcessingId(null);
       await qc.invalidateQueries({ queryKey: ['admin', 'refund-requests'] });
     },
     onError: (e: any) => {
-      toast.error(e?.response?.data?.errors?.[0] || 'Hata olustu');
+      toast.error(e?.response?.data?.errors?.[0] || 'Hata oluştu');
       setProcessingId(null);
     },
   });
@@ -75,12 +75,12 @@ export default function AdminRefundsPage() {
       });
     },
     onSuccess: async () => {
-      toast.success('Iade baslatildi');
+      toast.success('İade başlatıldı');
       setShowInitiateModal(false);
       setInitiateForm({ orderId: '', amount: '', reason: '', isGoodwill: false });
       await qc.invalidateQueries({ queryKey: ['admin', 'refund-requests'] });
     },
-    onError: (e: any) => toast.error(e?.response?.data?.errors?.[0] || 'Hata olustu'),
+    onError: (e: any) => toast.error(e?.response?.data?.errors?.[0] || 'Hata oluştu'),
   });
 
   const getStatusBadge = (status: string) => {
@@ -88,7 +88,7 @@ export default function AdminRefundsPage() {
       case 'Pending':
         return <Badge className="bg-yellow-100 text-yellow-700 text-xs">Beklemede</Badge>;
       case 'Approved':
-        return <Badge className="bg-green-100 text-green-700 text-xs">Onaylandi</Badge>;
+        return <Badge className="bg-green-100 text-green-700 text-xs">Onaylandı</Badge>;
       case 'Rejected':
         return <Badge className="bg-red-100 text-red-700 text-xs">Reddedildi</Badge>;
       default:
@@ -99,7 +99,7 @@ export default function AdminRefundsPage() {
   const getTypeBadge = (type: string) => {
     switch (type) {
       case 'StudentRequest':
-        return <Badge variant="outline" className="text-xs border-blue-300 text-blue-700">Ogrenci</Badge>;
+        return <Badge variant="outline" className="text-xs border-blue-300 text-blue-700">Öğrenci</Badge>;
       case 'AdminInitiated':
         return <Badge variant="outline" className="text-xs border-purple-300 text-purple-700">Admin</Badge>;
       case 'GoodwillCredit':
@@ -113,20 +113,20 @@ export default function AdminRefundsPage() {
     { label: 'Bekleyen', value: 'Pending' },
     { label: 'Onaylanan', value: 'Approved' },
     { label: 'Reddedilen', value: 'Rejected' },
-    { label: 'Tumu', value: '' },
+    { label: 'Tümü', value: '' },
   ];
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Iade Yonetimi</h1>
-          <p className="text-sm text-gray-500">Iade taleplerini incele ve yonet</p>
+          <h1 className="text-2xl font-bold">İade Yönetimi</h1>
+          <p className="text-sm text-gray-500">İade taleplerini incele ve yönet</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowInitiateModal(true)}>
             <Plus className="w-4 h-4 mr-2" />
-            Yeni Iade Baslat
+            Yeni İade Başlat
           </Button>
           <Button variant="secondary" onClick={() => refetch()} disabled={isFetching}>
             <RefreshCw className="w-4 h-4 mr-2" />
@@ -156,8 +156,8 @@ export default function AdminRefundsPage() {
       {showInitiateModal && (
         <Card className="mb-6 border-primary-200 bg-primary-50/30">
           <CardHeader>
-            <CardTitle className="text-lg">Yeni Iade Baslat</CardTitle>
-            <CardDescription>Admin tarafindan dogrudan iade islemini baslatir</CardDescription>
+            <CardTitle className="text-lg">Yeni İade Başlat</CardTitle>
+            <CardDescription>Admin tarafından doğrudan iade işlemini başlatır</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
@@ -169,7 +169,7 @@ export default function AdminRefundsPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Iade Tutari (TRY)</label>
+              <label className="text-sm font-medium">İade Tutarı (TRY)</label>
               <Input
                 type="number"
                 step="0.01"
@@ -181,7 +181,7 @@ export default function AdminRefundsPage() {
             <div>
               <label className="text-sm font-medium">Sebep</label>
               <Input
-                placeholder="Iade sebebi..."
+                placeholder="İade sebebi..."
                 value={initiateForm.reason}
                 onChange={(e) => setInitiateForm({ ...initiateForm, reason: e.target.value })}
               />
@@ -194,7 +194,7 @@ export default function AdminRefundsPage() {
                 onChange={(e) => setInitiateForm({ ...initiateForm, isGoodwill: e.target.checked })}
               />
               <label htmlFor="isGoodwill" className="text-sm">
-                Goodwill iade (sadece platformdan dusulur, mentor kazancina dokunulmaz)
+                Goodwill iade (sadece platformdan düşülür, mentor kazancına dokunulmaz)
               </label>
             </div>
             <div className="flex gap-2">
@@ -202,7 +202,7 @@ export default function AdminRefundsPage() {
                 onClick={() => initiateMutation.mutate()}
                 disabled={initiateMutation.isPending || !initiateForm.orderId || !initiateForm.amount || !initiateForm.reason}
               >
-                Iadeyi Baslat
+                İadeyi Başlat
               </Button>
               <Button variant="outline" onClick={() => setShowInitiateModal(false)}>
                 Iptal
@@ -251,7 +251,7 @@ export default function AdminRefundsPage() {
                       </div>
                       {r.alreadyRefunded > 0 && (
                         <div className="text-xs text-red-500">
-                          Onceki iade: {formatCurrency(r.alreadyRefunded)}
+                          Önceki iade: {formatCurrency(r.alreadyRefunded)}
                         </div>
                       )}
                     </div>
@@ -262,7 +262,7 @@ export default function AdminRefundsPage() {
                     <div className="mt-4 pt-4 border-t space-y-3">
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="text-xs font-medium text-gray-500">Tutar degistir (opsiyonel)</label>
+                          <label className="text-xs font-medium text-gray-500">Tutar değiştir (opsiyonel)</label>
                           <Input
                             type="number"
                             step="0.01"

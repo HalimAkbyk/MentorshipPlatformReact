@@ -47,26 +47,26 @@ export default function StudentPaymentsPage() {
       return paymentsApi.requestRefund(data);
     },
     onSuccess: () => {
-      toast.success('Iade talebi olusturuldu');
+      toast.success('İade talebi oluşturuldu');
       setRefundOrderId(null);
       setRefundReason('');
       qc.invalidateQueries({ queryKey: ['student', 'refund-requests'] });
     },
     onError: (e: any) => {
-      toast.error(e?.response?.data?.errors?.[0] || 'Iade talebi olusturulamadi');
+      toast.error(e?.response?.data?.errors?.[0] || 'İade talebi oluşturulamadı');
     },
   });
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Paid':
-        return <Badge className="bg-green-100 text-green-700 text-xs">Odendi</Badge>;
+        return <Badge className="bg-green-100 text-green-700 text-xs">Ödendi</Badge>;
       case 'Refunded':
-        return <Badge className="bg-red-100 text-red-700 text-xs">Iade Edildi</Badge>;
+        return <Badge className="bg-red-100 text-red-700 text-xs">İade Edildi</Badge>;
       case 'PartiallyRefunded':
-        return <Badge className="bg-orange-100 text-orange-700 text-xs">Kismi Iade</Badge>;
+        return <Badge className="bg-orange-100 text-orange-700 text-xs">Kısmi İade</Badge>;
       case 'Failed':
-        return <Badge className="bg-gray-100 text-gray-600 text-xs">Basarisiz</Badge>;
+        return <Badge className="bg-gray-100 text-gray-600 text-xs">Başarısız</Badge>;
       default:
         return <Badge variant="outline" className="text-xs">{status}</Badge>;
     }
@@ -113,7 +113,7 @@ export default function StudentPaymentsPage() {
         return (
           <div className="flex items-center gap-1 text-green-600">
             <CheckCircle className="w-3.5 h-3.5" />
-            <span className="text-xs font-medium">Onaylandi</span>
+            <span className="text-xs font-medium">Onaylandı</span>
           </div>
         );
       case 'Rejected':
@@ -140,8 +140,8 @@ export default function StudentPaymentsPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold font-heading">Odeme Gecmisim</h1>
-          <p className="text-sm text-gray-500 mt-1">Tum satin alim ve odeme islemleriniz</p>
+          <h1 className="text-3xl font-bold font-heading">Ödeme Geçmişim</h1>
+          <p className="text-sm text-gray-500 mt-1">Tüm satın alım ve ödeme işlemleriniz</p>
         </div>
       </div>
 
@@ -161,7 +161,7 @@ export default function StudentPaymentsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam Siparis</CardTitle>
+            <CardTitle className="text-sm font-medium">Toplam Sipariş</CardTitle>
             <Receipt className="h-4 w-4 text-gray-600" />
           </CardHeader>
           <CardContent>
@@ -171,7 +171,7 @@ export default function StudentPaymentsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Iade Edilen</CardTitle>
+            <CardTitle className="text-sm font-medium">İade Edilen</CardTitle>
             <CreditCard className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
@@ -188,7 +188,7 @@ export default function StudentPaymentsPage() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <RotateCcw className="w-4 h-4" />
-              Iade Taleplerim
+              İade Taleplerim
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -230,7 +230,7 @@ export default function StudentPaymentsPage() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Siparislerim</CardTitle>
-              <CardDescription>Tum odeme islemleriniz</CardDescription>
+              <CardDescription>Tüm ödeme işlemleriniz</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-gray-400" />
@@ -242,10 +242,10 @@ export default function StudentPaymentsPage() {
                   setPage(1);
                 }}
               >
-                <option value="">Tumu</option>
-                <option value="Paid">Odendi</option>
-                <option value="Refunded">Iade Edildi</option>
-                <option value="PartiallyRefunded">Kismi Iade</option>
+                <option value="">Tümü</option>
+                <option value="Paid">Ödendi</option>
+                <option value="Refunded">İade Edildi</option>
+                <option value="PartiallyRefunded">Kısmi İade</option>
               </select>
             </div>
           </div>
@@ -315,10 +315,10 @@ export default function StudentPaymentsPage() {
                         <div className="ml-4 mr-4 p-3 border border-t-0 rounded-b-lg bg-red-50/50 space-y-2">
                           <div className="flex items-center gap-2 text-sm text-red-700">
                             <AlertCircle className="w-4 h-4" />
-                            <span className="font-medium">Iade talebi olustur</span>
+                            <span className="font-medium">İade talebi oluştur</span>
                           </div>
                           <Input
-                            placeholder="Iade sebebinizi yazin..."
+                            placeholder="İade sebebinizi yazın..."
                             value={refundReason}
                             onChange={(e) => setRefundReason(e.target.value)}
                           />
@@ -334,7 +334,7 @@ export default function StudentPaymentsPage() {
                                 })
                               }
                             >
-                              Iade Talep Et
+                              İade Talep Et
                             </Button>
                             <Button
                               size="sm"
@@ -344,7 +344,7 @@ export default function StudentPaymentsPage() {
                                 setRefundReason('');
                               }}
                             >
-                              Vazgec
+                              Vazgeç
                             </Button>
                           </div>
                         </div>
@@ -357,7 +357,7 @@ export default function StudentPaymentsPage() {
               {orders.totalPages > 1 && (
                 <div className="flex items-center justify-between mt-6 pt-4 border-t">
                   <span className="text-sm text-gray-500">
-                    Toplam {orders.totalCount} siparis
+                    Toplam {orders.totalCount} sipariş
                   </span>
                   <div className="flex items-center gap-2">
                     <Button
@@ -386,8 +386,8 @@ export default function StudentPaymentsPage() {
           ) : (
             <div className="text-center py-12 text-gray-500">
               <CreditCard className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p>Henuz odeme gecmisiniz bulunmuyor</p>
-              <p className="text-sm mt-1">Ders veya kurs satin aldiginizda burada gorunecek</p>
+              <p>Henüz ödeme geçmişiniz bulunmuyor</p>
+              <p className="text-sm mt-1">Ders veya kurs satın aldığınızda burada görünecek</p>
               <Link href="/public/mentors" className="mt-4 inline-block">
                 <Button>Mentor Bul</Button>
               </Link>

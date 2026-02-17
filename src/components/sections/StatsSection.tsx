@@ -21,7 +21,7 @@ interface StatItemConfig {
 const STAT_ITEMS: StatItemConfig[] = [
   {
     icon: Users,
-    label: 'Mutlu Ogrenci',
+    label: 'Mutlu Öğrenci',
     key: 'totalStudents',
     suffix: '+',
   },

@@ -42,9 +42,9 @@ export default function AdminRevenuePage() {
       case 'MentorAvailable':
         return <Badge className="bg-green-100 text-green-700 text-xs">Mentor Bakiye</Badge>;
       case 'MentorPayout':
-        return <Badge className="bg-purple-100 text-purple-700 text-xs">Mentor Odeme</Badge>;
+        return <Badge className="bg-purple-100 text-purple-700 text-xs">Mentor Ödeme</Badge>;
       case 'StudentRefund':
-        return <Badge className="bg-red-100 text-red-700 text-xs">Ogrenci Iade</Badge>;
+        return <Badge className="bg-red-100 text-red-700 text-xs">Öğrenci İade</Badge>;
       default:
         return <Badge variant="outline" className="text-xs">{type}</Badge>;
     }
@@ -54,7 +54,7 @@ export default function AdminRevenuePage() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold font-heading">Gelir Raporu</h1>
-        <p className="text-sm text-gray-500 mt-1">Platform gelir, gider ve finansal ozet</p>
+        <p className="text-sm text-gray-500 mt-1">Platform gelir, gider ve finansal özet</p>
       </div>
 
       {/* Summary Cards */}
@@ -81,7 +81,7 @@ export default function AdminRevenuePage() {
             <div className="text-2xl font-bold text-blue-700">
               {summaryLoading ? '...' : formatCurrency(summary?.netRevenue ?? 0)}
             </div>
-            <p className="text-xs text-gray-600">Iadeler dusuldukten sonra</p>
+            <p className="text-xs text-gray-600">İadeler düşüldükten sonra</p>
           </CardContent>
         </Card>
 
@@ -95,21 +95,21 @@ export default function AdminRevenuePage() {
               {summaryLoading ? '...' : formatCurrency(summary?.thisMonthRevenue ?? 0)}
             </div>
             <p className="text-xs text-gray-600">
-              Gecen ay: {summaryLoading ? '...' : formatCurrency(summary?.lastMonthRevenue ?? 0)}
+              Geçen ay: {summaryLoading ? '...' : formatCurrency(summary?.lastMonthRevenue ?? 0)}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam Iade</CardTitle>
+            <CardTitle className="text-sm font-medium">Toplam İade</CardTitle>
             <TrendingDown className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
               {summaryLoading ? '...' : formatCurrency(summary?.totalRefundsIssued ?? 0)}
             </div>
-            <p className="text-xs text-gray-600">{summary?.totalRefunds ?? 0} iade islemi</p>
+            <p className="text-xs text-gray-600">{summary?.totalRefunds ?? 0} iade işlemi</p>
           </CardContent>
         </Card>
       </div>
@@ -118,7 +118,7 @@ export default function AdminRevenuePage() {
       <div className="grid md:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Brut Islem Hacmi</CardTitle>
+            <CardTitle className="text-sm font-medium">Brüt İşlem Hacmi</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold">
@@ -136,7 +136,7 @@ export default function AdminRevenuePage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Mentor Kazanclari</CardTitle>
+            <CardTitle className="text-sm font-medium">Mentor Kazançları</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold">
@@ -151,8 +151,8 @@ export default function AdminRevenuePage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Muhasebe Kayitlari</CardTitle>
-              <CardDescription>Tum ledger hareketleri</CardDescription>
+              <CardTitle>Muhasebe Kayıtları</CardTitle>
+              <CardDescription>Tüm ledger hareketleri</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-gray-400" />
@@ -164,12 +164,12 @@ export default function AdminRevenuePage() {
                   setPage(1);
                 }}
               >
-                <option value="">Tumu</option>
+                <option value="">Tümü</option>
                 <option value="Platform">Platform</option>
                 <option value="MentorEscrow">Mentor Emanet</option>
                 <option value="MentorAvailable">Mentor Bakiye</option>
-                <option value="MentorPayout">Mentor Odeme</option>
-                <option value="StudentRefund">Ogrenci Iade</option>
+                <option value="MentorPayout">Mentor Ödeme</option>
+                <option value="StudentRefund">Öğrenci İade</option>
               </select>
             </div>
           </div>
@@ -256,7 +256,7 @@ export default function AdminRevenuePage() {
           ) : (
             <div className="text-center py-12 text-gray-500">
               <BarChart3 className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p>Henuz muhasebe kaydi bulunmuyor</p>
+              <p>Henüz muhasebe kaydı bulunmuyor</p>
             </div>
           )}
         </CardContent>

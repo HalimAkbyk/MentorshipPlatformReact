@@ -328,13 +328,13 @@ export default function StudentDashboardPage() {
                 <Link href="/student/payments">
                   <Button variant="outline" className="w-full justify-start">
                     <CreditCard className="w-4 h-4 mr-2" />
-                    Odeme Gecmisim
+                    Ödeme Geçmişim
                   </Button>
                 </Link>
                 <Link href="/student/bookings">
                   <Button variant="outline" className="w-full justify-start">
                     <Clock className="w-4 h-4 mr-2" />
-                    Tum Rezervasyonlar
+                    Tüm Rezervasyonlar
                   </Button>
                 </Link>
               </CardContent>

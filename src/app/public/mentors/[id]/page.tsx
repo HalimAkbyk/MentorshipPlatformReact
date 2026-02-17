@@ -429,7 +429,7 @@ export default function MentorProfilePage() {
                         </Card>
                       ))
                     ) : (
-                      <p className="text-center text-gray-500 py-8">Henuz paket bulunmuyor</p>
+                      <p className="text-center text-gray-500 py-8">Henüz paket bulunmuyor</p>
                     )}
 
                     {/* Available Slots Preview */}

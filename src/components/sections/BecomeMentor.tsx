@@ -47,7 +47,7 @@ function FloatingCards() {
           </div>
           <div>
             <p className="text-xs text-navy-300">Bu Ay</p>
-            <p className="font-heading font-bold text-navy-600 text-sm">Kazanc</p>
+            <p className="font-heading font-bold text-navy-600 text-sm">Kazanç</p>
           </div>
         </div>
         <p className="font-heading text-3xl font-extrabold text-navy-600">
@@ -56,7 +56,7 @@ function FloatingCards() {
         </p>
         <div className="mt-3 flex items-center gap-1.5 text-lime-600 text-xs font-semibold">
           <TrendingUp className="w-3.5 h-3.5" />
-          +32% gecen aya gore
+          +32% geçen aya göre
         </div>
       </motion.div>
 
@@ -117,7 +117,7 @@ function useMentorCta() {
     }
   }
 
-  return { label: 'Basvur', href: '/auth/signup?role=mentor' };
+  return { label: 'Başvur', href: '/auth/signup?role=mentor' };
 }
 
 /* ------------------------------------------------------------------ */
@@ -125,9 +125,9 @@ function useMentorCta() {
 /* ------------------------------------------------------------------ */
 
 const checklistItems = [
-  'Kendi fiyatini belirle',
-  'Esnek calisma saatleri',
-  'Guvenli odeme sistemi',
+  'Kendi fiyatını belirle',
+  'Esnek çalışma saatleri',
+  'Güvenli ödeme sistemi',
 ];
 
 /* ------------------------------------------------------------------ */
@@ -160,13 +160,13 @@ export default function BecomeMentor() {
 
             {/* Headline */}
             <h2 className="font-heading text-3xl md:text-4xl font-bold text-navy-600 leading-tight">
-              Bilgini Paylas, Gelir Elde Et
+              Bilgini Paylaş, Gelir Elde Et
             </h2>
 
             {/* Description */}
             <p className="text-navy-300 text-lg max-w-md">
-              Uzmanlik alaninda ogrencilere yol goster, kendi programini olustur
-              ve her dersen kazanc sagla.
+              Uzmanlık alanında öğrencilere yol göster, kendi programını oluştur
+              ve her dersen kazanç sağla.
             </p>
 
             {/* Checklist */}

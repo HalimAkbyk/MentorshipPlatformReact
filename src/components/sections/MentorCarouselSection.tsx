@@ -67,7 +67,7 @@ function EmptyState() {
       <div className="text-center">
         <div className="text-4xl mb-3">🎓</div>
         <p className="text-navy-300 text-sm">
-          Henuz mentor bulunamadi. Yakinda burada olacaklar!
+          Henüz mentor bulunamadı. Yakında burada olacaklar!
         </p>
       </div>
     </div>
@@ -163,7 +163,7 @@ function MentorCard({ mentor }: { mentor: MentorListItem }) {
           size="sm"
           className="w-full border-lime-400 text-lime-600 hover:bg-lime-50 hover:text-lime-700 font-semibold"
         >
-          Profili Gor
+          Profili Gör
         </Button>
       </div>
     </Link>
@@ -230,7 +230,7 @@ export default function MentorCarouselSection({
               href={viewAllHref}
               className="hidden sm:flex items-center gap-1 text-sm font-semibold text-lime-600 hover:text-lime-700 transition-colors"
             >
-              Tumunu Gor
+              Tümünü Gör
               <ChevronRight className="h-4 w-4" />
             </Link>
           )}
@@ -248,7 +248,7 @@ export default function MentorCarouselSection({
                 text-navy-400 hover:text-navy-600 hover:border-navy-200
                 opacity-0 group-hover/carousel:opacity-100
                 transition-all duration-200"
-              aria-label="Sola kaydir"
+              aria-label="Sola kaydır"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
@@ -264,7 +264,7 @@ export default function MentorCarouselSection({
                 text-navy-400 hover:text-navy-600 hover:border-navy-200
                 opacity-0 group-hover/carousel:opacity-100
                 transition-all duration-200"
-              aria-label="Saga kaydir"
+              aria-label="Sağa kaydır"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
@@ -316,7 +316,7 @@ export default function MentorCarouselSection({
               href={viewAllHref}
               className="inline-flex items-center gap-1 text-sm font-semibold text-lime-600 hover:text-lime-700 transition-colors"
             >
-              Tumunu Gor
+              Tümünü Gör
               <ChevronRight className="h-4 w-4" />
             </Link>
           </div>

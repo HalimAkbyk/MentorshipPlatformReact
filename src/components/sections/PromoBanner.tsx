@@ -46,23 +46,23 @@ export default function PromoBanner() {
             <motion.div variants={fadeInLeft} className="space-y-5">
               {/* Badge */}
               <span className="inline-block bg-white/20 text-white rounded-full px-4 py-1 text-sm font-medium backdrop-blur-sm">
-                Ozel Teklif
+                Özel Teklif
               </span>
 
               {/* Headline */}
               <h2 className="font-heading text-3xl md:text-4xl font-extrabold text-white leading-tight">
-                Ilk Dersin Ucretsiz!
+                İlk Dersin Ücretsiz!
               </h2>
 
               {/* Subtitle */}
               <p className="text-white/90 text-lg max-w-md">
-                Hemen kayit ol ve ilk mentorluk seansini ucretsiz dene.
+                Hemen kayıt ol ve ilk mentorluk seansını ücretsiz dene.
               </p>
 
               {/* CTA */}
               <Link href="/auth/signup">
                 <button className="inline-flex items-center gap-2 bg-white text-navy-600 hover:bg-lime-50 rounded-xl px-8 py-4 font-semibold text-base transition-all duration-200 hover:scale-[1.03] hover:shadow-lg active:scale-[0.98] mt-2">
-                  Ucretsiz Dene
+                  Ücretsiz Dene
                   <ChevronRight className="w-5 h-5" />
                 </button>
               </Link>

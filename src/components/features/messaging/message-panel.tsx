@@ -99,7 +99,7 @@ export function MessagePanel({ bookingId }: MessagePanelProps) {
             {!isLoading && messages.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full text-gray-400">
                 <MessageSquare className="w-10 h-10 mb-2" />
-                <p className="text-sm">Henuz mesaj yok. Ilk mesaji gonderin!</p>
+                <p className="text-sm">Henüz mesaj yok. İlk mesajı gönderin!</p>
               </div>
             )}
 
@@ -144,7 +144,7 @@ export function MessagePanel({ bookingId }: MessagePanelProps) {
                       <button
                         onClick={() => setReportMessageId(msg.id)}
                         className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-red-50 rounded"
-                        title="Mesaji bildir"
+                        title="Mesajı bildir"
                       >
                         <Flag className="w-3 h-3 text-red-400 hover:text-red-600" />
                       </button>
@@ -163,7 +163,7 @@ export function MessagePanel({ bookingId }: MessagePanelProps) {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Mesajinizi yazin..."
+              placeholder="Mesajınızı yazın..."
               maxLength={2000}
               rows={1}
               className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-300 resize-none min-h-[38px] max-h-[100px]"

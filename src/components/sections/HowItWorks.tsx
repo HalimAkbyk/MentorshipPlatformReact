@@ -32,13 +32,13 @@ const steps = [
     number: 1,
     icon: Search,
     title: 'Mentor Bul',
-    description: 'Universite ve bolume gore filtrele, sana uygun mentoru kesfet',
+    description: 'Üniversite ve bölüme göre filtrele, sana uygun mentörü keşfet',
   },
   {
     number: 2,
     icon: CalendarCheck,
     title: 'Randevu Al',
-    description: 'Uygun saati sec, guvenli odeme yap',
+    description: 'Uygun saati seç, güvenli ödeme yap',
   },
   {
     number: 3,
@@ -49,8 +49,8 @@ const steps = [
   {
     number: 4,
     icon: Star,
-    title: 'Degerlendir',
-    description: 'Deneyimini paylas, mentor hakkinda yorum yap',
+    title: 'Değerlendir',
+    description: 'Deneyimini paylaş, mentor hakkında yorum yap',
   },
 ];
 
@@ -65,10 +65,10 @@ export default function HowItWorks() {
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className="font-heading text-3xl md:text-4xl font-bold text-navy-600">
-            Nasil Calisir?
+            Nasıl Çalışır?
           </h2>
           <p className="mt-4 text-navy-300 text-lg max-w-2xl mx-auto">
-            Dort basit adimda hedeflerine ulasmaya basla
+            Dört basit adımda hedeflerine ulaşmaya başla
           </p>
         </div>
 

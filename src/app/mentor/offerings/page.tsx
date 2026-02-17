@@ -637,7 +637,7 @@ function OfferingFormModal({
           <div className="border-t pt-4">
             <p className="text-xs text-gray-500 flex items-center gap-1">
               <Package className="w-3.5 h-3.5" />
-              Kapak gorseli paketi olusturduktan sonra duzenle ekranindan eklenebilir.
+              Kapak görseli paketi oluşturduktan sonra düzenle ekranından eklenebilir.
             </p>
           </div>
         )}

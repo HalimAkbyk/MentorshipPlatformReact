@@ -161,10 +161,10 @@ export default function TestimonialCarousel() {
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className="font-heading text-3xl md:text-4xl font-bold text-navy-600">
-            Ogrencilerimiz Ne Diyor?
+            Öğrencilerimiz Ne Diyor?
           </h2>
           <p className="mt-4 text-navy-300 text-lg max-w-2xl mx-auto">
-            Binlerce ogrenci mentorluk hizmeti ile hedeflerine ulasti
+            Binlerce öğrenci mentorluk hizmeti ile hedeflerine ulaştı
           </p>
         </div>
 

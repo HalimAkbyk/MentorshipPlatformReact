@@ -137,7 +137,7 @@ export function CoverImageEditor({
 
   const handleUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      toast.error('Lutfen bir gorsel dosyasi secin');
+      toast.error('Lütfen bir görsel dosyası seçin');
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
@@ -170,13 +170,13 @@ export function CoverImageEditor({
             try {
               resolve(JSON.parse(xhr.responseText));
             } catch {
-              reject(new Error('Yanit islenemedi'));
+              reject(new Error('Yanıt işlenemedi'));
             }
           } else {
-            reject(new Error(`Yukleme basarisiz: ${xhr.status}`));
+            reject(new Error(`Yükleme başarısız: ${xhr.status}`));
           }
         });
-        xhr.addEventListener('error', () => reject(new Error('Yukleme basarisiz')));
+        xhr.addEventListener('error', () => reject(new Error('Yükleme başarısız')));
         xhr.open('POST', `${API_URL}${uploadEndpoint}`);
         if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
         xhr.send(formData);
@@ -185,10 +185,10 @@ export function CoverImageEditor({
       setPreviewUrl(result.coverImageUrl);
       onUploaded(result.coverImageUrl);
       onAfterUpload?.();
-      toast.success('Kapak gorseli yuklendi!');
+      toast.success('Kapak görseli yüklendi!');
     } catch (error) {
       console.error('Cover upload error:', error);
-      toast.error('Kapak gorseli yuklenirken hata olustu');
+      toast.error('Kapak görseli yüklenirken hata oluştu');
       setPreviewUrl(currentUrl || '');
     } finally {
       setUploading(false);
@@ -293,7 +293,7 @@ export function CoverImageEditor({
 
   return (
     <div>
-      <label className="block text-sm font-medium mb-1.5">Kapak Gorseli</label>
+      <label className="block text-sm font-medium mb-1.5">Kapak Görseli</label>
 
       <input
         ref={fileInputRef}
@@ -319,7 +319,7 @@ export function CoverImageEditor({
           >
             <img
               src={previewUrl}
-              alt="Kapak onizleme"
+              alt="Kapak önizleme"
               className="w-full h-full object-cover"
               style={getTransformStyle()}
               onError={() => {
@@ -360,7 +360,7 @@ export function CoverImageEditor({
             {isEditing && (
               <div className="absolute top-2 left-2 right-2 flex items-center justify-between">
                 <span className="px-2 py-1 bg-blue-500 text-white text-xs rounded-md font-medium">
-                  Gorseli duzenleyin
+                  Görseli düzenleyin
                 </span>
                 <button
                   type="button"
@@ -395,7 +395,7 @@ export function CoverImageEditor({
                 {/* Zoom */}
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-gray-500 w-12">Zoom</span>
-                  <button type="button" onClick={zoomOut} className="p-1 rounded hover:bg-gray-200 text-gray-600" title="Uzaklastir">
+                  <button type="button" onClick={zoomOut} className="p-1 rounded hover:bg-gray-200 text-gray-600" title="Uzaklaştır">
                     <ZoomOut className="w-4 h-4" />
                   </button>
                   <div className="w-16 bg-gray-200 rounded-full h-1.5 relative">
@@ -404,7 +404,7 @@ export function CoverImageEditor({
                       style={{ width: `${Math.min(((transform.scale - 0.5) / 2.5) * 100, 100)}%` }}
                     />
                   </div>
-                  <button type="button" onClick={zoomIn} className="p-1 rounded hover:bg-gray-200 text-gray-600" title="Yakinlastir">
+                  <button type="button" onClick={zoomIn} className="p-1 rounded hover:bg-gray-200 text-gray-600" title="Yakınlaştır">
                     <ZoomIn className="w-4 h-4" />
                   </button>
                   <span className="text-[10px] text-gray-400 ml-1 w-10">
@@ -414,12 +414,12 @@ export function CoverImageEditor({
 
                 {/* Rotate */}
                 <div className="flex items-center gap-1 border-l pl-4">
-                  <span className="text-xs text-gray-500 w-12">Dondur</span>
-                  <button type="button" onClick={rotateLeft} className="p-1 rounded hover:bg-gray-200 text-gray-600" title="Sola dondur">
+                  <span className="text-xs text-gray-500 w-12">Döndür</span>
+                  <button type="button" onClick={rotateLeft} className="p-1 rounded hover:bg-gray-200 text-gray-600" title="Sola döndür">
                     <RotateCcw className="w-4 h-4" />
                   </button>
                   <span className="text-[10px] text-gray-400 w-8 text-center">{transform.rotate}°</span>
-                  <button type="button" onClick={rotateRight} className="p-1 rounded hover:bg-gray-200 text-gray-600" title="Saga dondur">
+                  <button type="button" onClick={rotateRight} className="p-1 rounded hover:bg-gray-200 text-gray-600" title="Sağa döndür">
                     <RotateCw className="w-4 h-4" />
                   </button>
                 </div>
@@ -428,20 +428,20 @@ export function CoverImageEditor({
               {/* Pan controls */}
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
-                  <span className="text-xs text-gray-500 w-12">Tasi</span>
+                  <span className="text-xs text-gray-500 w-12">Taşı</span>
                   <div className="flex items-center gap-0.5">
-                    <button type="button" onClick={panLeft} className="p-1 rounded hover:bg-gray-200 text-gray-600" title="Sola tasi">
+                    <button type="button" onClick={panLeft} className="p-1 rounded hover:bg-gray-200 text-gray-600" title="Sola taşı">
                       <ArrowLeft className="w-3.5 h-3.5" />
                     </button>
                     <div className="flex flex-col gap-0.5">
-                      <button type="button" onClick={panUp} className="p-1 rounded hover:bg-gray-200 text-gray-600" title="Yukari tasi">
+                      <button type="button" onClick={panUp} className="p-1 rounded hover:bg-gray-200 text-gray-600" title="Yukarı taşı">
                         <ArrowUp className="w-3.5 h-3.5" />
                       </button>
-                      <button type="button" onClick={panDown} className="p-1 rounded hover:bg-gray-200 text-gray-600" title="Asagi tasi">
+                      <button type="button" onClick={panDown} className="p-1 rounded hover:bg-gray-200 text-gray-600" title="Aşağı taşı">
                         <ArrowDown className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                    <button type="button" onClick={panRight} className="p-1 rounded hover:bg-gray-200 text-gray-600" title="Saga tasi">
+                    <button type="button" onClick={panRight} className="p-1 rounded hover:bg-gray-200 text-gray-600" title="Sağa taşı">
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -451,11 +451,11 @@ export function CoverImageEditor({
                 <div className="flex items-center gap-1 border-l pl-4">
                   <span className="text-xs text-gray-500 mr-1">Konum</span>
                   {[
-                    { label: 'Ust', pos: 'center top' },
+                    { label: 'Üst', pos: 'center top' },
                     { label: 'Orta', pos: 'center center' },
                     { label: 'Alt', pos: 'center bottom' },
                     { label: 'Sol', pos: 'left center' },
-                    { label: 'Sag', pos: 'right center' },
+                    { label: 'Sağ', pos: 'right center' },
                   ].map((preset) => (
                     <button
                       key={preset.pos}
@@ -478,10 +478,10 @@ export function CoverImageEditor({
                     type="button"
                     onClick={resetTransform}
                     className="ml-auto flex items-center gap-1 px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded border border-red-200"
-                    title="Sifirla"
+                    title="Sıfırla"
                   >
                     <X className="w-3 h-3" />
-                    Sifirla
+                    Sıfırla
                   </button>
                 )}
               </div>
@@ -493,7 +493,7 @@ export function CoverImageEditor({
         <div className="rounded-lg border-2 border-gray-200 p-4 space-y-2">
           <div className="flex items-center gap-2 text-sm">
             <Loader2 className="w-4 h-4 animate-spin text-primary-600" />
-            <span className="text-gray-700">Yukleniyor...</span>
+            <span className="text-gray-700">Yükleniyor...</span>
             <span className="text-gray-400 ml-auto">{progress}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -518,10 +518,10 @@ export function CoverImageEditor({
         >
           <ImageIcon className="w-8 h-8 text-gray-300 mx-auto mb-2" />
           <p className="text-sm text-gray-600 font-medium">
-            Kapak gorseli yukleyin
+            Kapak görseli yükleyin
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            Surukle-birak veya tiklayarak secin - Max 10 MB - JPG, PNG, WebP
+            Sürükle-bırak veya tıklayarak seçin - Max 10 MB - JPG, PNG, WebP
           </p>
         </div>
       )}

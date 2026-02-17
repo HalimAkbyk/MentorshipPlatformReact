@@ -80,17 +80,17 @@ export function Header() {
   // --- Nav links ---
   const publicLinks: NavLink[] = [
     { href: '/public/mentors', label: 'Mentorler' },
-    { href: '/public/courses', label: 'Egitimler' },
-    { href: '/public/how-it-works', label: 'Nasil Calisir' },
-    { href: '/public/pricing', label: 'Fiyatlandirma' },
+    { href: '/public/courses', label: 'Eğitimler' },
+    { href: '/public/how-it-works', label: 'Nasıl Çalışır' },
+    { href: '/public/pricing', label: 'Fiyatlandırma' },
   ];
 
   // Unified authenticated links — same for Student & Mentor
   const authenticatedLinks: NavLink[] = [
-    { href: '/student/explore-courses', label: 'Egitimler', icon: <PlayCircle className="w-4 h-4" /> },
+    { href: '/student/explore-courses', label: 'Eğitimler', icon: <PlayCircle className="w-4 h-4" /> },
     { href: '/public/mentors', label: 'Mentor Bul', icon: <Search className="w-4 h-4" /> },
-    { href: '/student/courses', label: 'Kurslarim', icon: <GraduationCap className="w-4 h-4" /> },
-    { href: '/student/bookings', label: 'Rezervasyonlarim', icon: <BookOpen className="w-4 h-4" /> },
+    { href: '/student/courses', label: 'Kurslarım', icon: <GraduationCap className="w-4 h-4" /> },
+    { href: '/student/bookings', label: 'Rezervasyonlarım', icon: <BookOpen className="w-4 h-4" /> },
   ];
 
   const navLinks = isAuthenticated && !isAdmin ? authenticatedLinks : publicLinks;
@@ -130,16 +130,16 @@ export function Header() {
         />
       </div>
 
-      {/* Mentor Yonetimi */}
+      {/* Mentor Yönetimi */}
       {isMentor && (
         <div className="border-t border-navy-100 py-1">
-          <SectionLabel>Mentor Yonetimi</SectionLabel>
+          <SectionLabel>Mentor Yönetimi</SectionLabel>
           <DropdownLink href="/mentor/courses" icon={<PlayCircle className="w-4 h-4 text-navy-300" />} label="Video Kurslarim" onClick={onClose} />
           <DropdownLink href="/mentor/offerings" icon={<Package className="w-4 h-4 text-navy-300" />} label="Paketlerim" onClick={onClose} />
           <DropdownLink href="/mentor/availability" icon={<Calendar className="w-4 h-4 text-navy-300" />} label="Uygunluk" onClick={onClose} />
           <DropdownLink href="/mentor/bookings" icon={<BookOpen className="w-4 h-4 text-navy-300" />} label="Derslerim" onClick={onClose} />
           <DropdownLink href="/mentor/earnings" icon={<DollarSign className="w-4 h-4 text-navy-300" />} label="Kazanclarim" onClick={onClose} />
-          <DropdownLink href={`/public/mentors/${user?.id || ''}`} icon={<Eye className="w-4 h-4 text-navy-300" />} label="Profilimi Gor" onClick={onClose} />
+          <DropdownLink href={`/public/mentors/${user?.id || ''}`} icon={<Eye className="w-4 h-4 text-navy-300" />} label="Profilimi Gör" onClick={onClose} />
         </div>
       )}
 
@@ -158,10 +158,10 @@ export function Header() {
               )}
             </div>
           }
-          label="Mesajlarim"
+          label="Mesajlarım"
           onClick={onClose}
         />
-        <DropdownLink href="/student/payments" icon={<CreditCard className="w-4 h-4 text-navy-300" />} label="Odemelerim" onClick={onClose} />
+        <DropdownLink href="/student/payments" icon={<CreditCard className="w-4 h-4 text-navy-300" />} label="Ödemelerim" onClick={onClose} />
         <DropdownLink href={settingsHref} icon={<Settings className="w-4 h-4 text-navy-300" />} label="Ayarlar" onClick={onClose} />
         {isStudent && !isMentor && (
           <DropdownLink
@@ -174,7 +174,7 @@ export function Header() {
         )}
       </div>
 
-      {/* Cikis */}
+      {/* Çıkış */}
       <div className="border-t border-navy-100 py-1">
         <button
           onClick={() => { logout(); onClose(); router.push('/'); }}
@@ -205,7 +205,7 @@ export function Header() {
           <Link href="/" className="flex items-center shrink-0">
             <Image
               src="/images/logo.svg"
-              alt="Degisim Mentorluk"
+              alt="Değişim Mentorluk"
               width={200}
               height={50}
               className="h-10 md:h-12 w-auto"
@@ -238,12 +238,12 @@ export function Header() {
               <>
                 <Link href="/auth/login">
                   <Button variant="ghost" className="text-navy-500 hover:text-lime-600">
-                    Giris Yap
+                    Giriş Yap
                   </Button>
                 </Link>
                 <Link href="/auth/signup">
                   <Button className="text-white rounded-full px-6" style={{ background: 'var(--gradient-cta)' }}>
-                    Uye Ol
+                    Üye Ol
                   </Button>
                 </Link>
               </>
@@ -331,10 +331,10 @@ export function Header() {
             {!isAuthenticated ? (
               <div className="flex flex-col gap-2 pt-2">
                 <Link href="/auth/login" onClick={closeMobile}>
-                  <Button variant="outline" className="w-full border-navy-200 text-navy-500">Giris Yap</Button>
+                  <Button variant="outline" className="w-full border-navy-200 text-navy-500">Giriş Yap</Button>
                 </Link>
                 <Link href="/auth/signup" onClick={closeMobile}>
-                  <Button className="w-full text-white" style={{ background: 'var(--gradient-cta)' }}>Uye Ol</Button>
+                  <Button className="w-full text-white" style={{ background: 'var(--gradient-cta)' }}>Üye Ol</Button>
                 </Link>
               </div>
             ) : (

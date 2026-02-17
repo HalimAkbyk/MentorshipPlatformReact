@@ -21,16 +21,16 @@ function formatDuration(totalSec: number): string {
 }
 
 function formatPrice(price: number): string {
-  if (!price || price === 0) return 'Ucretsiz';
+  if (!price || price === 0) return 'Ücretsiz';
   return `₺${price.toLocaleString('tr-TR')}`;
 }
 
 function levelLabel(level: string): string {
   const map: Record<string, string> = {
-    Beginner: 'Baslangic',
+    Beginner: 'Başlangıç',
     Intermediate: 'Orta',
-    Advanced: 'Ileri',
-    AllLevels: 'Tum Seviyeler',
+    Advanced: 'İleri',
+    AllLevels: 'Tüm Seviyeler',
   };
   return map[level] ?? level;
 }
@@ -182,9 +182,9 @@ function EmptyState() {
       <div className="h-16 w-16 rounded-2xl bg-navy-50 flex items-center justify-center mb-4">
         <BookOpen className="h-8 w-8 text-navy-200" />
       </div>
-      <p className="text-navy-400 font-medium">Henuz egitim bulunmuyor.</p>
+      <p className="text-navy-400 font-medium">Henüz eğitim bulunmuyor.</p>
       <p className="text-sm text-navy-300 mt-1">
-        Yakında yeni egitimler eklenecek.
+        Yakında yeni eğitimler eklenecek.
       </p>
     </div>
   );
@@ -204,10 +204,10 @@ export default function CourseStrip() {
         <div className="flex items-end justify-between mb-8">
           <div>
             <h2 className="font-heading text-2xl md:text-3xl font-bold text-navy-600">
-              Populer Egitimler
+              Popüler Eğitimler
             </h2>
             <p className="text-navy-300 mt-1 text-sm">
-              En cok tercih edilen video egitimler
+              En çok tercih edilen video eğitimler
             </p>
           </div>
           <Link
@@ -218,7 +218,7 @@ export default function CourseStrip() {
               hover:text-lime-700 transition-colors
             "
           >
-            Tumunu Gor
+            Tümünü Gör
             <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
@@ -262,7 +262,7 @@ export default function CourseStrip() {
             href="/public/courses"
             className="inline-flex items-center gap-1 text-sm font-semibold text-lime-600 hover:text-lime-700 transition-colors"
           >
-            Tumunu Gor
+            Tümünü Gör
             <ChevronRight className="h-4 w-4" />
           </Link>
         </div>

@@ -51,7 +51,7 @@ function useCta() {
   const { user, isAuthenticated } = useAuthStore();
 
   if (!isAuthenticated || !user) {
-    return { label: 'Paketleri Incele', href: '/public/courses' };
+    return { label: 'Paketleri İncele', href: '/public/courses' };
   }
 
   const roles = user.roles ?? [];
@@ -63,7 +63,7 @@ function useCta() {
     return { label: 'Panelime Git', href: '/student/dashboard' };
   }
 
-  return { label: 'Paketleri Incele', href: '/public/courses' };
+  return { label: 'Paketleri İncele', href: '/public/courses' };
 }
 
 /* ------------------------------------------------------------------ */
@@ -81,7 +81,7 @@ function DecorativeVisual() {
             <GraduationCap className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="font-heading font-bold text-navy-600 text-sm">Ogrenci Ilerleme</p>
+            <p className="font-heading font-bold text-navy-600 text-sm">Öğrenci İlerleme</p>
             <p className="text-xs text-navy-300">Bu hafta</p>
           </div>
           <div className="ml-auto flex items-center gap-1 text-lime-600 text-xs font-semibold">
@@ -95,7 +95,7 @@ function DecorativeVisual() {
           {[
             { label: 'Matematik', pct: 85, color: 'bg-lime-500' },
             { label: 'Fizik', pct: 72, color: 'bg-teal-400' },
-            { label: 'Turkce', pct: 90, color: 'bg-sage-400' },
+            { label: 'Türkçe', pct: 90, color: 'bg-sage-400' },
           ].map((item) => (
             <div key={item.label} className="space-y-1">
               <div className="flex justify-between text-xs">
@@ -150,7 +150,7 @@ function DecorativeVisual() {
 /* ------------------------------------------------------------------ */
 
 const proofItems = [
-  { text: '2,500+ ogrenci', icon: Users },
+  { text: '2.500+ öğrenci', icon: Users },
   { text: '300+ mentor', icon: BookOpen },
   { text: '%94 memnuniyet', icon: Star },
 ];
@@ -208,8 +208,8 @@ export default function HeroCarousel() {
               transition={{ duration: 0.6, ease: 'easeOut' }}
               className="text-lg text-navy-300 max-w-lg"
             >
-              Turkiye&apos;nin en iyi mentorlarından birebir destek al,
-              video derslerle hazırlan ve hedefine bir adım daha yaklas.
+              Türkiye&apos;nin en iyi mentorlarından birebir destek al,
+              video derslerle hazırlan ve hedefine bir adım daha yaklaş.
             </motion.p>
 
             {/* Search bar */}

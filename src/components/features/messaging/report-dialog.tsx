@@ -34,7 +34,7 @@ export function ReportDialog({ messageId, isOpen, onClose }: ReportDialogProps) 
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-red-600">
             <Flag className="w-5 h-5" />
-            <h3 className="font-semibold text-lg">Mesaji Bildir</h3>
+            <h3 className="font-semibold text-lg">Mesajı Bildir</h3>
           </div>
           <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg">
             <X className="w-5 h-5 text-gray-400" />
@@ -42,7 +42,7 @@ export function ReportDialog({ messageId, isOpen, onClose }: ReportDialogProps) 
         </div>
 
         <p className="text-sm text-gray-600 mb-3">
-          Bu mesajin neden uygunsuz oldugunu aciklayiniz.
+          Bu mesajın neden uygunsuz olduğunu açıklayınız.
         </p>
 
         <textarea
@@ -67,7 +67,7 @@ export function ReportDialog({ messageId, isOpen, onClose }: ReportDialogProps) 
             onClick={handleSubmit}
             disabled={!reason.trim() || reportMutation.isPending}
           >
-            {reportMutation.isPending ? 'Gonderiliyor...' : 'Bildir'}
+            {reportMutation.isPending ? 'Gönderiliyor...' : 'Bildir'}
           </Button>
         </div>
       </div>

@@ -20,12 +20,12 @@ export function Sidebar() {
   const mentorItems: Item[] = isMentor
     ? [
         { label: 'Panel', href: '/mentor/dashboard' },
-        { label: 'Video Kurslarim', href: '/mentor/courses' },
+        { label: 'Video Kurslarım', href: '/mentor/courses' },
         { label: 'Paketlerim', href: '/mentor/offerings' },
         { label: 'Uygunluk', href: '/mentor/availability' },
         { label: 'Derslerim', href: '/mentor/bookings' },
-        { label: 'Mesajlarim', href: '/mentor/messages' },
-        { label: 'Kazanclarim', href: '/mentor/earnings' },
+        { label: 'Mesajlarım', href: '/mentor/messages' },
+        { label: 'Kazançlarım', href: '/mentor/earnings' },
         { label: 'Mentor Ayarlar', href: '/mentor/settings' },
       ]
     : [];
@@ -35,20 +35,20 @@ export function Sidebar() {
     ? isMentor
       ? [
           // Mentor+Student: sadece ogrenci-spesifik sayfalar
-          { label: 'Egitim Kesfet', href: '/student/explore-courses' },
-          { label: 'Aldugim Kurslar', href: '/student/courses' },
-          { label: 'Rezervasyonlarim', href: '/student/bookings' },
-          { label: 'Mesajlarim', href: '/student/messages' },
-          { label: 'Odemelerim', href: '/student/payments' },
+          { label: 'Eğitim Keşfet', href: '/student/explore-courses' },
+          { label: 'Aldığım Kurslar', href: '/student/courses' },
+          { label: 'Rezervasyonlarım', href: '/student/bookings' },
+          { label: 'Mesajlarım', href: '/student/messages' },
+          { label: 'Ödemelerim', href: '/student/payments' },
         ]
       : [
           // Sadece Student
           { label: 'Panel', href: '/student/dashboard' },
-          { label: 'Egitimler', href: '/student/explore-courses' },
+          { label: 'Eğitimler', href: '/student/explore-courses' },
           { label: 'Kurslarim', href: '/student/courses' },
-          { label: 'Rezervasyonlarim', href: '/student/bookings' },
-          { label: 'Mesajlarim', href: '/student/messages' },
-          { label: 'Odemelerim', href: '/student/payments' },
+          { label: 'Rezervasyonlarım', href: '/student/bookings' },
+          { label: 'Mesajlarım', href: '/student/messages' },
+          { label: 'Ödemelerim', href: '/student/payments' },
           { label: 'Ayarlar', href: '/student/settings' },
         ]
     : [];
@@ -61,7 +61,7 @@ export function Sidebar() {
         <div className="text-xs text-gray-500 mb-2">Menu</div>
         <nav className="flex flex-col gap-1">
           {items.length === 0 ? (
-            <div className="text-sm text-gray-500">Menu icin giris yapmalisin.</div>
+            <div className="text-sm text-gray-500">Menü için giriş yapmalısın.</div>
           ) : (
             items.map((it) => {
               const active = pathname === it.href || pathname?.startsWith(it.href + '/');
