@@ -85,7 +85,45 @@ export interface AdminRefundRequestDto {
   adminNotes: string | null;
 }
 
+// --- Dashboard ---
+export interface DailyStatDto {
+  date: string;
+  value: number;
+}
+
+export interface RecentActivityDto {
+  action: string;
+  entityType: string;
+  description: string;
+  performedBy: string;
+  createdAt: string;
+}
+
+export interface AdminDashboardDto {
+  totalUsers: number;
+  totalMentors: number;
+  totalStudents: number;
+  activeUsersLast30Days: number;
+  newUsersThisWeek: number;
+  newUsersLastWeek: number;
+  thisMonthRevenue: number;
+  lastMonthRevenue: number;
+  revenueChangePercent: number;
+  pendingVerifications: number;
+  pendingRefunds: number;
+  activeDisputes: number;
+  pendingOrders: number;
+  weeklyRegistrations: DailyStatDto[];
+  dailyRevenue: DailyStatDto[];
+  recentActivities: RecentActivityDto[];
+}
+
 export const adminApi = {
+  // Dashboard
+  getDashboard: async (): Promise<AdminDashboardDto> => {
+    return apiClient.get<AdminDashboardDto>('/admin/dashboard');
+  },
+
   // Verifications
   getPendingVerifications: async (): Promise<PendingVerificationDto[]> => {
     return apiClient.get<PendingVerificationDto[]>('/admin/verifications', { status: 'Pending' });
