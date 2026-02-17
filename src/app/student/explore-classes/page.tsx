@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useGroupClasses } from '@/lib/hooks/use-classes';
+import { useAuthStore } from '@/lib/stores/auth-store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +16,7 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
+  Settings,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -32,6 +34,7 @@ const CATEGORIES = [
 ];
 
 export default function ExploreClassesPage() {
+  const user = useAuthStore((s) => s.user);
   const [category, setCategory] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -106,7 +109,7 @@ export default function ExploreClassesPage() {
         <>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {data.items.map((gc) => (
-              <Link key={gc.id} href={`/student/group-classes/${gc.id}`}>
+              <Link key={gc.id} href={gc.mentorUserId === user?.id ? '/mentor/group-classes' : `/student/group-classes/${gc.id}`}>
                 <Card className="h-full hover:shadow-md transition-shadow cursor-pointer">
                   {gc.coverImageUrl && (
                     <div className="h-40 bg-gray-100 rounded-t-lg overflow-hidden">
@@ -162,9 +165,16 @@ export default function ExploreClassesPage() {
                       <span className="text-lg font-bold text-primary-700">
                         {formatCurrency(gc.pricePerSeat, gc.currency)}
                       </span>
-                      <Button size="sm" disabled={gc.enrolledCount >= gc.capacity}>
-                        {gc.enrolledCount >= gc.capacity ? 'Dolu' : 'Katıl'}
-                      </Button>
+                      {gc.mentorUserId === user?.id ? (
+                        <Button size="sm" variant="outline" className="text-indigo-600 border-indigo-200">
+                          <Settings className="w-3.5 h-3.5 mr-1" />
+                          Yönet
+                        </Button>
+                      ) : (
+                        <Button size="sm" disabled={gc.enrolledCount >= gc.capacity}>
+                          {gc.enrolledCount >= gc.capacity ? 'Dolu' : 'Katıl'}
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

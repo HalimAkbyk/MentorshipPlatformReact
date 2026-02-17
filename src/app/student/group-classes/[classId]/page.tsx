@@ -18,6 +18,7 @@ import {
   ArrowLeft,
   CreditCard,
   CheckCircle,
+  Info,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -124,6 +125,7 @@ export default function GroupClassDetailPage() {
   }
 
   const isFull = groupClass.enrolledCount >= groupClass.capacity;
+  const isOwnClass = groupClass.mentorUserId === user?.id;
   const platformFee = groupClass.pricePerSeat * 0.07;
   const totalPrice = groupClass.pricePerSeat + platformFee;
   const duration = getDurationMinutes(groupClass.startAt, groupClass.endAt);
@@ -214,43 +216,59 @@ export default function GroupClassDetailPage() {
                 </div>
               </div>
 
-              <div className="border-t pt-3 space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Ders ücreti</span>
-                  <span>{formatCurrency(groupClass.pricePerSeat, groupClass.currency)}</span>
+              {isOwnClass ? (
+                <div className="border-t pt-3 space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-indigo-700 bg-indigo-50 rounded-lg p-3">
+                    <Info className="w-4 h-4 shrink-0" />
+                    <span>Bu sizin oluşturduğunuz derstir.</span>
+                  </div>
+                  <Link href="/mentor/group-classes" className="block">
+                    <Button className="w-full" variant="outline">
+                      Derslerimi Yönet
+                    </Button>
+                  </Link>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Platform hizmet bedeli</span>
-                  <span>{formatCurrency(platformFee, groupClass.currency)}</span>
-                </div>
-                <div className="flex justify-between font-semibold pt-1 border-t">
-                  <span>Toplam</span>
-                  <span>{formatCurrency(totalPrice, groupClass.currency)}</span>
-                </div>
-              </div>
+              ) : (
+                <>
+                  <div className="border-t pt-3 space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Ders ücreti</span>
+                      <span>{formatCurrency(groupClass.pricePerSeat, groupClass.currency)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Platform hizmet bedeli</span>
+                      <span>{formatCurrency(platformFee, groupClass.currency)}</span>
+                    </div>
+                    <div className="flex justify-between font-semibold pt-1 border-t">
+                      <span>Toplam</span>
+                      <span>{formatCurrency(totalPrice, groupClass.currency)}</span>
+                    </div>
+                  </div>
 
-              <Button
-                className="w-full"
-                size="lg"
-                disabled={isFull || enrolling}
-                onClick={handleEnrollAndPay}
-              >
-                <CreditCard className="w-4 h-4 mr-2" />
-                {enrolling
-                  ? 'İşleniyor...'
-                  : isFull
-                  ? 'Kontenjan Dolu'
-                  : 'Kayıt Ol ve Öde'}
-              </Button>
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    disabled={isFull || enrolling}
+                    onClick={handleEnrollAndPay}
+                  >
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    {enrolling
+                      ? 'İşleniyor...'
+                      : isFull
+                      ? 'Kontenjan Dolu'
+                      : 'Kayıt Ol ve Öde'}
+                  </Button>
 
-              <div className="text-xs text-gray-500 text-center space-y-1">
-                <p>
-                  <CheckCircle className="w-3 h-3 inline mr-1" />
-                  24 saatten önce iptal: %100 iade
-                </p>
-                <p>2-24 saat arası: %50 iade</p>
-                <p>2 saatten az: İade yok</p>
-              </div>
+                  <div className="text-xs text-gray-500 text-center space-y-1">
+                    <p>
+                      <CheckCircle className="w-3 h-3 inline mr-1" />
+                      24 saatten önce iptal: %100 iade
+                    </p>
+                    <p>2-24 saat arası: %50 iade</p>
+                    <p>2 saatten az: İade yok</p>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
