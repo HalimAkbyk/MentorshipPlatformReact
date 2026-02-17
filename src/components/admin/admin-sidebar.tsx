@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Ticket,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -76,6 +77,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Iadeler', href: '/admin/refunds' },
       { label: 'Mentor Odemeleri', href: '/admin/payouts' },
       { label: 'Gelir Raporu', href: '/admin/revenue' },
+      { label: 'Kuponlar', href: '/admin/coupons' },
     ],
   },
   {

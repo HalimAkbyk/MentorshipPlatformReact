@@ -521,6 +521,65 @@ export interface TopCourseDto {
 }
 
 // ---------------------------------------------------------------------------
+// Exam Types
+// ---------------------------------------------------------------------------
+
+export interface AdminExamDto {
+  id: string;
+  title: string;
+  description: string | null;
+  mentorUserId: string;
+  mentorName: string;
+  scopeType: string;
+  scopeId: string | null;
+  durationMinutes: number;
+  passingScore: number;
+  isPublished: boolean;
+  questionCount: number;
+  attemptCount: number;
+  averageScore: number | null;
+  createdAt: string;
+}
+
+// ---------------------------------------------------------------------------
+// Coupon Types
+// ---------------------------------------------------------------------------
+
+export interface CouponDto {
+  id: string;
+  code: string;
+  description: string | null;
+  discountType: string;
+  discountValue: number;
+  maxDiscountAmount: number | null;
+  minOrderAmount: number;
+  createdByUserId: string;
+  createdByRole: string;
+  targetType: string;
+  targetUserId: string | null;
+  targetProductType: string | null;
+  targetProductId: string | null;
+  mentorUserId: string | null;
+  maxUsageCount: number;
+  maxUsagePerUser: number;
+  currentUsageCount: number;
+  isActive: boolean;
+  startDate: string | null;
+  endDate: string | null;
+  createdAt: string;
+}
+
+export interface CouponUsageDto {
+  id: string;
+  couponId: string;
+  userId: string;
+  userName: string | null;
+  orderId: string;
+  discountApplied: number;
+  usedAt: string;
+}
+
+// ---------------------------------------------------------------------------
 // System Types (Phase 10)
 // ---------------------------------------------------------------------------
 
@@ -986,4 +1045,81 @@ export const adminApi = {
 
   seedFeatureFlags: (): Promise<FeatureFlagDto[]> =>
     apiClient.post('/admin/system/feature-flags/seed'),
+
+  // ---------------------------------------------------------------------------
+  // Exams (Admin)
+  // ---------------------------------------------------------------------------
+
+  getAdminExams: (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    scopeType?: string;
+  }): Promise<PagedResult<AdminExamDto>> =>
+    apiClient.get('/exams/admin/all', params),
+
+  publishExam: (examId: string): Promise<void> =>
+    apiClient.post(`/exams/${examId}/publish`),
+
+  unpublishExam: (examId: string): Promise<void> =>
+    apiClient.post(`/exams/${examId}/unpublish`),
+
+  // ---------------------------------------------------------------------------
+  // Coupons (Admin)
+  // ---------------------------------------------------------------------------
+
+  getCoupons: (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    isActive?: boolean;
+  }): Promise<PagedResult<CouponDto>> =>
+    apiClient.get('/admin/coupons', params),
+
+  createCoupon: (data: {
+    code: string;
+    description?: string;
+    discountType: string;
+    discountValue: number;
+    maxDiscountAmount?: number;
+    minOrderAmount?: number;
+    targetType?: string;
+    targetUserId?: string;
+    targetProductType?: string;
+    targetProductId?: string;
+    maxUsageCount?: number;
+    maxUsagePerUser?: number;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<CouponDto> =>
+    apiClient.post('/admin/coupons', data),
+
+  updateCoupon: (id: string, data: {
+    description?: string;
+    discountType: string;
+    discountValue: number;
+    maxDiscountAmount?: number;
+    minOrderAmount?: number;
+    targetType?: string;
+    targetUserId?: string;
+    targetProductType?: string;
+    targetProductId?: string;
+    maxUsageCount?: number;
+    maxUsagePerUser?: number;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<CouponDto> =>
+    apiClient.put(`/admin/coupons/${id}`, data),
+
+  activateCoupon: (id: string): Promise<void> =>
+    apiClient.post(`/admin/coupons/${id}/activate`),
+
+  deactivateCoupon: (id: string): Promise<void> =>
+    apiClient.post(`/admin/coupons/${id}/deactivate`),
+
+  deleteCoupon: (id: string): Promise<void> =>
+    apiClient.delete(`/admin/coupons/${id}`),
+
+  getCouponUsages: (id: string): Promise<CouponUsageDto[]> =>
+    apiClient.get(`/admin/coupons/${id}/usages`),
 };
