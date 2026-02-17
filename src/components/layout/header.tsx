@@ -8,6 +8,7 @@ import {
   Menu, X, Settings, LogOut, ChevronDown, Search, BookOpen,
   LayoutDashboard, Eye, PlayCircle, Sparkles, CreditCard,
   GraduationCap, Package, Calendar, DollarSign, MessageSquare,
+  Users,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -89,6 +90,7 @@ export function Header() {
   const authenticatedLinks: NavLink[] = [
     { href: '/student/explore-courses', label: 'Eğitimler', icon: <PlayCircle className="w-4 h-4" /> },
     { href: '/public/mentors', label: 'Mentor Bul', icon: <Search className="w-4 h-4" /> },
+    { href: '/student/explore-classes', label: 'Grup Dersleri', icon: <Users className="w-4 h-4" /> },
     { href: '/student/courses', label: 'Kurslarım', icon: <GraduationCap className="w-4 h-4" /> },
     { href: '/student/bookings', label: 'Rezervasyonlarım', icon: <BookOpen className="w-4 h-4" /> },
   ];
@@ -138,6 +140,7 @@ export function Header() {
           <DropdownLink href="/mentor/offerings" icon={<Package className="w-4 h-4 text-navy-300" />} label="Paketlerim" onClick={onClose} />
           <DropdownLink href="/mentor/availability" icon={<Calendar className="w-4 h-4 text-navy-300" />} label="Uygunluk" onClick={onClose} />
           <DropdownLink href="/mentor/bookings" icon={<BookOpen className="w-4 h-4 text-navy-300" />} label="Derslerim" onClick={onClose} />
+          <DropdownLink href="/mentor/group-classes" icon={<Users className="w-4 h-4 text-navy-300" />} label="Grup Dersleri" onClick={onClose} />
           <DropdownLink href="/mentor/earnings" icon={<DollarSign className="w-4 h-4 text-navy-300" />} label="Kazanclarim" onClick={onClose} />
           <DropdownLink href={`/public/mentors/${user?.id || ''}`} icon={<Eye className="w-4 h-4 text-navy-300" />} label="Profilimi Gör" onClick={onClose} />
         </div>
@@ -161,6 +164,8 @@ export function Header() {
           label="Mesajlarım"
           onClick={onClose}
         />
+        <DropdownLink href="/student/explore-classes" icon={<Users className="w-4 h-4 text-navy-300" />} label="Grup Dersleri" onClick={onClose} />
+        <DropdownLink href="/student/my-classes" icon={<Calendar className="w-4 h-4 text-navy-300" />} label="Kayıtlarım" onClick={onClose} />
         <DropdownLink href="/student/payments" icon={<CreditCard className="w-4 h-4 text-navy-300" />} label="Ödemelerim" onClick={onClose} />
         <DropdownLink href={settingsHref} icon={<Settings className="w-4 h-4 text-navy-300" />} label="Ayarlar" onClick={onClose} />
         {isStudent && !isMentor && (

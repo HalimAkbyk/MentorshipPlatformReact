@@ -273,11 +273,17 @@ export default function MentorDashboardPage() {
             <CardTitle>Hızlı İşlemler</CardTitle>
             <CardDescription>Sık kullandığın işlemler</CardDescription>
           </CardHeader>
-          <CardContent className="grid md:grid-cols-6 gap-4">
+          <CardContent className="grid md:grid-cols-4 gap-4">
             <Link href="/mentor/courses">
               <Button variant="outline" className="w-full h-24 flex-col border-primary-200 hover:border-primary-400 hover:bg-primary-50">
                 <PlayCircle className="w-8 h-8 mb-2 text-primary-600" />
                 <span>Video Kurslarım</span>
+              </Button>
+            </Link>
+            <Link href="/mentor/group-classes">
+              <Button variant="outline" className="w-full h-24 flex-col border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50">
+                <Users className="w-8 h-8 mb-2 text-indigo-600" />
+                <span>Grup Dersleri</span>
               </Button>
             </Link>
             <Link href="/mentor/offerings">
@@ -309,12 +315,6 @@ export default function MentorDashboardPage() {
               <Button variant="outline" className="w-full h-24 flex-col">
                 <BookOpen className="w-8 h-8 mb-2" />
                 <span>Derslerim</span>
-              </Button>
-            </Link>
-            <Link href="/mentor/offerings">
-              <Button variant="outline" className="w-full h-24 flex-col">
-                <Users className="w-8 h-8 mb-2" />
-                <span>Hizmetlerim</span>
               </Button>
             </Link>
             <Link href="/mentor/earnings">

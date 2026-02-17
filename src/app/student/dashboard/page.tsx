@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Calendar, Video, Clock, TrendingUp, Eye, CheckCircle, AlertCircle, PlayCircle, GraduationCap, ArrowRight, Sparkles, CreditCard } from 'lucide-react';
+import { Calendar, Video, Clock, TrendingUp, Eye, CheckCircle, AlertCircle, PlayCircle, GraduationCap, ArrowRight, Sparkles, CreditCard, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -301,6 +301,30 @@ export default function StudentDashboardPage() {
               </Card>
             )}
 
+            {/* Grup Dersleri CTA */}
+            <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200">
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <Users className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <CardTitle className="text-indigo-900 text-base">Grup Dersleri</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 mb-3">
+                  Uzman mentorların canlı grup derslerine katılın.
+                </p>
+                <Link href="/student/explore-classes">
+                  <Button size="sm" className="w-full bg-indigo-600 hover:bg-indigo-700">
+                    <Users className="w-4 h-4 mr-2" />
+                    Grup Derslerini Keşfet
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
             {/* Quick Actions */}
             <Card>
               <CardHeader>
@@ -314,9 +338,15 @@ export default function StudentDashboardPage() {
                   </Button>
                 </Link>
                 <Link href="/student/explore-classes">
-                  <Button variant="outline" className="w-full justify-start text-primary-600 border-primary-200 hover:bg-primary-50">
-                    <Calendar className="w-4 h-4 mr-2" />
+                  <Button variant="outline" className="w-full justify-start text-indigo-600 border-indigo-200 hover:bg-indigo-50">
+                    <Users className="w-4 h-4 mr-2" />
                     Grup Dersleri
+                  </Button>
+                </Link>
+                <Link href="/student/my-classes">
+                  <Button variant="outline" className="w-full justify-start text-indigo-600 border-indigo-200 hover:bg-indigo-50">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Kayıtlarım
                   </Button>
                 </Link>
                 <Link href="/student/courses">
