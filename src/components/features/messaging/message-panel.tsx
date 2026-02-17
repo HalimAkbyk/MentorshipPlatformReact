@@ -26,7 +26,7 @@ function formatTime(dateString: string) {
 export function MessagePanel({ bookingId }: MessagePanelProps) {
   const [content, setContent] = useState('');
   const [reportMessageId, setReportMessageId] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { data, isLoading } = useBookingMessages(bookingId);
@@ -45,9 +45,10 @@ export function MessagePanel({ bookingId }: MessagePanelProps) {
     }
   }, [messages.length, bookingId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom (container-level only, not page)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const el = scrollContainerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length]);
 
   const handleSend = async () => {
@@ -80,7 +81,7 @@ export function MessagePanel({ bookingId }: MessagePanelProps) {
         </CardHeader>
         <CardContent className="p-0">
           {/* Message List */}
-          <div className="h-[400px] overflow-y-auto px-4 py-2 space-y-3 bg-gray-50/50">
+          <div ref={scrollContainerRef} className="h-[400px] overflow-y-auto px-4 py-2 space-y-3 bg-gray-50/50">
             {isLoading && (
               <div className="flex items-center justify-center h-full">
                 <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
@@ -143,7 +144,7 @@ export function MessagePanel({ bookingId }: MessagePanelProps) {
                 </div>
               </div>
             ))}
-            <div ref={messagesEndRef} />
+            <div />
           </div>
 
           {/* Input Area */}

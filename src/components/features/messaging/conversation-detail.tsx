@@ -28,7 +28,7 @@ function formatTime(dateString: string) {
 export function ConversationDetail({ conversation, bookingDetailHref }: ConversationDetailProps) {
   const [content, setContent] = useState('');
   const [reportMessageId, setReportMessageId] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { data, isLoading } = useBookingMessages(conversation.bookingId);
@@ -47,9 +47,10 @@ export function ConversationDetail({ conversation, bookingDetailHref }: Conversa
     }
   }, [messages.length, conversation.bookingId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-scroll
+  // Auto-scroll (container-level only, not page)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const el = scrollContainerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length]);
 
   // Reset input when switching conversations
@@ -82,7 +83,7 @@ export function ConversationDetail({ conversation, bookingDetailHref }: Conversa
       <BookingInfoHeader conversation={conversation} bookingDetailHref={bookingDetailHref} />
 
       {/* Message List */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50/30">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50/30">
         {isLoading && (
           <div className="flex items-center justify-center h-full">
             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
@@ -142,7 +143,7 @@ export function ConversationDetail({ conversation, bookingDetailHref }: Conversa
             </div>
           </div>
         ))}
-        <div ref={messagesEndRef} />
+        <div />
       </div>
 
       {/* Input Area */}

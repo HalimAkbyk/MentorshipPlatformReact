@@ -27,7 +27,7 @@ function formatTime(dateString: string) {
 export function PopupChatPanel({ conversation, onBack }: PopupChatPanelProps) {
   const [content, setContent] = useState('');
   const [reportMessageId, setReportMessageId] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { data, isLoading } = useBookingMessages(conversation.bookingId);
@@ -46,9 +46,10 @@ export function PopupChatPanel({ conversation, onBack }: PopupChatPanelProps) {
     }
   }, [messages.length, conversation.bookingId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-scroll
+  // Auto-scroll (container-level only, not page)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const el = scrollContainerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length]);
 
   // Reset on conversation change
@@ -95,7 +96,7 @@ export function PopupChatPanel({ conversation, onBack }: PopupChatPanelProps) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2.5 bg-gray-50/30">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-3 py-2 space-y-2.5 bg-gray-50/30">
         {isLoading && (
           <div className="flex items-center justify-center h-full">
             <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
@@ -153,7 +154,7 @@ export function PopupChatPanel({ conversation, onBack }: PopupChatPanelProps) {
             </div>
           </div>
         ))}
-        <div ref={messagesEndRef} />
+        <div />
       </div>
 
       {/* Input */}
