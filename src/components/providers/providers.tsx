@@ -5,6 +5,7 @@ import { Toaster } from 'sonner';
 import { useEffect, useState, useRef } from 'react';
 import { useAuthStore } from '../../lib/stores/auth-store';
 import { ConfirmDialogProvider } from './confirmDialogProvider';
+import { FloatingChatWidget } from '../features/messaging/floating-chat-widget';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +43,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       {children}
       <Toaster position="top-right" />
       <ConfirmDialogProvider />
+      <FloatingChatWidget />
     </QueryClientProvider>
   );
 }

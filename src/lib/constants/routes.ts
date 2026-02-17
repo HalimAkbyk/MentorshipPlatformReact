@@ -32,6 +32,10 @@ export const ROUTES = {
   COURSE_DETAIL: (id: string) => `/public/courses/${id}`,
   COURSE_PLAYER: (courseId: string) => `/student/courses/${courseId}/learn`,
 
+  // Messages
+  STUDENT_MESSAGES: '/student/messages',
+  MENTOR_MESSAGES: '/mentor/messages',
+
   // Classroom
   CLASSROOM: (sessionId: string) => `/student/classroom/${sessionId}`,
 

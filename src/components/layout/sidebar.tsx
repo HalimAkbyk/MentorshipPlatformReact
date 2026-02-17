@@ -24,6 +24,7 @@ export function Sidebar() {
         { label: 'Paketlerim', href: '/mentor/offerings' },
         { label: 'Uygunluk', href: '/mentor/availability' },
         { label: 'Derslerim', href: '/mentor/bookings' },
+        { label: 'Mesajlarim', href: '/mentor/messages' },
         { label: 'Kazanclarim', href: '/mentor/earnings' },
         { label: 'Mentor Ayarlar', href: '/mentor/settings' },
       ]
@@ -37,6 +38,7 @@ export function Sidebar() {
           { label: 'Egitim Kesfet', href: '/student/explore-courses' },
           { label: 'Aldugim Kurslar', href: '/student/courses' },
           { label: 'Rezervasyonlarim', href: '/student/bookings' },
+          { label: 'Mesajlarim', href: '/student/messages' },
           { label: 'Odemelerim', href: '/student/payments' },
         ]
       : [
@@ -45,6 +47,7 @@ export function Sidebar() {
           { label: 'Egitimler', href: '/student/explore-courses' },
           { label: 'Kurslarim', href: '/student/courses' },
           { label: 'Rezervasyonlarim', href: '/student/bookings' },
+          { label: 'Mesajlarim', href: '/student/messages' },
           { label: 'Odemelerim', href: '/student/payments' },
           { label: 'Ayarlar', href: '/student/settings' },
         ]

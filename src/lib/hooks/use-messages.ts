@@ -11,6 +11,15 @@ export function useBookingMessages(bookingId: string, page = 1) {
   });
 }
 
+export function useConversations(enabled = true) {
+  return useQuery({
+    queryKey: ['conversations'],
+    queryFn: () => messagesApi.getConversations(),
+    enabled,
+    refetchInterval: 30000,
+  });
+}
+
 export function useSendMessage() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -19,6 +28,7 @@ export function useSendMessage() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['messages', variables.bookingId] });
       queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
 }
@@ -29,6 +39,7 @@ export function useMarkAsRead() {
     mutationFn: (bookingId: string) => messagesApi.markAsRead(bookingId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
 }

@@ -7,11 +7,12 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   Menu, X, Settings, LogOut, ChevronDown, Search, BookOpen,
   LayoutDashboard, Eye, PlayCircle, Sparkles, CreditCard,
-  GraduationCap, Package, Calendar, DollarSign,
+  GraduationCap, Package, Calendar, DollarSign, MessageSquare,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useAuthStore } from '@/lib/stores/auth-store';
+import { useUnreadCount } from '@/lib/hooks/use-messages';
 import { UserRole } from '@/lib/types/enums';
 import { cn } from '@/lib/utils/cn';
 
@@ -64,6 +65,9 @@ export function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { data: unreadData } = useUnreadCount();
+  const totalUnread = unreadData?.totalUnread ?? 0;
+  const messagesHref = isMentor ? '/mentor/messages' : '/student/messages';
 
   const isActive = (href: string) => pathname === href || pathname?.startsWith(href + '/');
 
@@ -142,6 +146,21 @@ export function Header() {
       {/* Hesap */}
       <div className="border-t border-navy-100 py-1">
         <SectionLabel>Hesap</SectionLabel>
+        <DropdownLink
+          href={messagesHref}
+          icon={
+            <div className="relative">
+              <MessageSquare className="w-4 h-4 text-navy-300" />
+              {totalUnread > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[8px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                  {totalUnread > 9 ? '9+' : totalUnread}
+                </span>
+              )}
+            </div>
+          }
+          label="Mesajlarim"
+          onClick={onClose}
+        />
         <DropdownLink href="/student/payments" icon={<CreditCard className="w-4 h-4 text-navy-300" />} label="Odemelerim" onClick={onClose} />
         <DropdownLink href={settingsHref} icon={<Settings className="w-4 h-4 text-navy-300" />} label="Ayarlar" onClick={onClose} />
         {isStudent && !isMentor && (

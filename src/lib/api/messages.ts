@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { ConversationDto } from '../types/models';
 
 export interface MessageDto {
   id: string;
@@ -44,4 +45,7 @@ export const messagesApi = {
 
   report: (messageId: string, reason: string) =>
     apiClient.post<{ reportId: string }>(`/messages/${messageId}/report`, { reason }),
+
+  getConversations: () =>
+    apiClient.get<ConversationDto[]>('/messages/conversations'),
 };

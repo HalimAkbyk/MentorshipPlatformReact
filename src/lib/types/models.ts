@@ -392,6 +392,23 @@ export interface LectureNoteDto {
   updatedAt: string;
 }
 
+// ===== Messaging Models =====
+
+export interface ConversationDto {
+  bookingId: string;
+  otherUserId: string;
+  otherUserName: string;
+  otherUserAvatar: string | null;
+  offeringTitle: string;
+  bookingStartAt: string;
+  bookingEndAt: string;
+  bookingStatus: string;
+  lastMessageContent: string | null;
+  lastMessageAt: string | null;
+  lastMessageIsOwn: boolean;
+  unreadCount: number;
+}
+
 export interface VideoUploadUrlResponse {
   uploadUrl: string;
   videoKey: string;
