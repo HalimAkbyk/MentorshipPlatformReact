@@ -176,6 +176,58 @@ export interface MentorProfileSummaryDto {
   totalEarned: number;
 }
 
+// CMS Types
+export interface HomepageModuleDto {
+  id: string;
+  moduleType: string;
+  title: string;
+  subtitle: string | null;
+  content: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BannerDto {
+  id: string;
+  title: string;
+  description: string | null;
+  imageUrl: string | null;
+  linkUrl: string | null;
+  position: string;
+  isActive: boolean;
+  startDate: string | null;
+  endDate: string | null;
+  sortOrder: number;
+  createdAt: string;
+}
+
+export interface AnnouncementDto {
+  id: string;
+  title: string;
+  content: string;
+  type: string;
+  targetAudience: string;
+  isActive: boolean;
+  startDate: string | null;
+  endDate: string | null;
+  isDismissible: boolean;
+  createdAt: string;
+}
+
+export interface StaticPageDto {
+  id: string;
+  slug: string;
+  title: string;
+  content?: string;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const adminApi = {
   // Dashboard
   getDashboard: async (): Promise<AdminDashboardDto> => {
@@ -314,4 +366,92 @@ export const adminApi = {
   unsuspendUser: async (userId: string): Promise<void> => {
     return apiClient.post<void>(`/admin/users/${userId}/unsuspend`);
   },
+
+  // CMS - Modules
+  getModules: (): Promise<HomepageModuleDto[]> =>
+    apiClient.get('/admin/cms/modules'),
+
+  createModule: (data: {
+    moduleType: string;
+    title: string;
+    subtitle?: string;
+    content?: string;
+    sortOrder: number;
+  }): Promise<{ id: string }> =>
+    apiClient.post('/admin/cms/modules', data),
+
+  updateModule: (
+    id: string,
+    data: {
+      title: string;
+      subtitle?: string;
+      content?: string;
+      sortOrder: number;
+      isActive: boolean;
+    }
+  ): Promise<void> =>
+    apiClient.put(`/admin/cms/modules/${id}`, data),
+
+  deleteModule: (id: string): Promise<void> =>
+    apiClient.delete(`/admin/cms/modules/${id}`),
+
+  reorderModules: (items: { id: string; sortOrder: number }[]): Promise<void> =>
+    apiClient.put('/admin/cms/modules/reorder', items),
+
+  // CMS - Banners
+  getBanners: (): Promise<BannerDto[]> =>
+    apiClient.get('/admin/cms/banners'),
+
+  createBanner: (data: any): Promise<{ id: string }> =>
+    apiClient.post('/admin/cms/banners', data),
+
+  updateBanner: (id: string, data: any): Promise<void> =>
+    apiClient.put(`/admin/cms/banners/${id}`, data),
+
+  deleteBanner: (id: string): Promise<void> =>
+    apiClient.delete(`/admin/cms/banners/${id}`),
+
+  // CMS - Announcements
+  getAnnouncements: (): Promise<AnnouncementDto[]> =>
+    apiClient.get('/admin/cms/announcements'),
+
+  createAnnouncement: (data: any): Promise<{ id: string }> =>
+    apiClient.post('/admin/cms/announcements', data),
+
+  updateAnnouncement: (id: string, data: any): Promise<void> =>
+    apiClient.put(`/admin/cms/announcements/${id}`, data),
+
+  deleteAnnouncement: (id: string): Promise<void> =>
+    apiClient.delete(`/admin/cms/announcements/${id}`),
+
+  // CMS - Pages
+  getPages: (): Promise<StaticPageDto[]> =>
+    apiClient.get('/admin/cms/pages'),
+
+  getPage: (id: string): Promise<StaticPageDto> =>
+    apiClient.get(`/admin/cms/pages/${id}`),
+
+  createPage: (data: {
+    slug: string;
+    title: string;
+    content: string;
+    metaTitle?: string;
+    metaDescription?: string;
+  }): Promise<{ id: string }> =>
+    apiClient.post('/admin/cms/pages', data),
+
+  updatePage: (
+    id: string,
+    data: {
+      title: string;
+      content: string;
+      metaTitle?: string;
+      metaDescription?: string;
+      isPublished: boolean;
+    }
+  ): Promise<void> =>
+    apiClient.put(`/admin/cms/pages/${id}`, data),
+
+  deletePage: (id: string): Promise<void> =>
+    apiClient.delete(`/admin/cms/pages/${id}`),
 };
