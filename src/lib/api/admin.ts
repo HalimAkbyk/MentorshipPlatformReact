@@ -118,6 +118,64 @@ export interface AdminDashboardDto {
   recentActivities: RecentActivityDto[];
 }
 
+// --- User Management ---
+export interface AdminUserDto {
+  id: string;
+  email: string;
+  displayName: string;
+  avatarUrl: string | null;
+  phone: string | null;
+  birthYear: number | null;
+  status: string;
+  roles: string[];
+  createdAt: string;
+  lastLoginAt: string | null;
+  bookingCount: number;
+  orderCount: number;
+}
+
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface UserDetailDto {
+  id: string;
+  email: string;
+  displayName: string;
+  avatarUrl: string | null;
+  phone: string | null;
+  birthYear: number | null;
+  status: string;
+  roles: string[];
+  externalProvider: string | null;
+  createdAt: string;
+  updatedAt: string;
+  bookingCount: number;
+  completedBookingCount: number;
+  orderCount: number;
+  totalSpent: number;
+  courseEnrollmentCount: number;
+  classEnrollmentCount: number;
+  reviewCount: number;
+  averageRating: number | null;
+  mentorProfile: MentorProfileSummaryDto | null;
+}
+
+export interface MentorProfileSummaryDto {
+  university: string;
+  department: string;
+  graduationYear: number | null;
+  isListed: boolean;
+  isApprovedForBookings: boolean;
+  offeringCount: number;
+  completedSessionCount: number;
+  totalEarned: number;
+}
+
 export const adminApi = {
   // Dashboard
   getDashboard: async (): Promise<AdminDashboardDto> => {
@@ -225,6 +283,30 @@ export const adminApi = {
   },
 
   // Users
+  getUsers: async (params: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    role?: string;
+    status?: string;
+    sortBy?: string;
+    sortDesc?: boolean;
+  }): Promise<PagedResult<AdminUserDto>> => {
+    return apiClient.get<PagedResult<AdminUserDto>>('/admin/users', params);
+  },
+
+  getUserDetail: async (userId: string): Promise<UserDetailDto> => {
+    return apiClient.get<UserDetailDto>(`/admin/users/${userId}/detail`);
+  },
+
+  changeUserRole: async (
+    userId: string,
+    role: string,
+    action: 'add' | 'remove'
+  ): Promise<void> => {
+    return apiClient.post<void>(`/admin/users/${userId}/role`, { role, action });
+  },
+
   suspendUser: async (userId: string, reason: string): Promise<void> => {
     return apiClient.post<void>(`/admin/users/${userId}/suspend`, { reason });
   },
