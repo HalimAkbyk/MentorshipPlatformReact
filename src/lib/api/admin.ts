@@ -272,6 +272,105 @@ export interface AdminCourseDto {
   createdAt: string;
 }
 
+// --- Finance: Orders ---
+export interface AdminOrderDto {
+  id: string;
+  buyerName: string;
+  buyerEmail: string | null;
+  type: string;
+  amountTotal: number;
+  currency: string;
+  status: string;
+  refundedAmount: number;
+  paymentProvider: string | null;
+  createdAt: string;
+}
+
+export interface LedgerEntryDto {
+  id: string;
+  accountType: string;
+  direction: string;
+  amount: number;
+  referenceType: string;
+  createdAt: string;
+}
+
+export interface RefundRequestDto {
+  id: string;
+  status: string;
+  requestedAmount: number;
+  approvedAmount: number | null;
+  reason: string | null;
+  adminNotes: string | null;
+  type: string | null;
+  createdAt: string;
+  processedAt: string | null;
+}
+
+export interface AdminOrderDetailDto {
+  id: string;
+  buyerUserId: string;
+  buyerName: string;
+  buyerEmail: string | null;
+  type: string;
+  resourceId: string;
+  amountTotal: number;
+  currency: string;
+  status: string;
+  refundedAmount: number;
+  paymentProvider: string | null;
+  providerPaymentId: string | null;
+  createdAt: string;
+  ledgerEntries: LedgerEntryDto[];
+  refundRequests: RefundRequestDto[];
+}
+
+// --- Finance: Mentor Payouts ---
+export interface MentorPayoutSummaryDto {
+  mentorUserId: string;
+  mentorName: string;
+  mentorEmail: string | null;
+  totalEarned: number;
+  totalPaidOut: number;
+  availableBalance: number;
+  inEscrow: number;
+  completedBookings: number;
+}
+
+export interface MentorPayoutDetailDto {
+  mentorUserId: string;
+  mentorName: string;
+  mentorEmail: string | null;
+  totalEarned: number;
+  totalPaidOut: number;
+  availableBalance: number;
+  inEscrow: number;
+  completedBookings: number;
+  recentTransactions: LedgerEntryDto[];
+}
+
+// --- Finance: Revenue Charts ---
+export interface RevenueChartPoint {
+  label: string;
+  revenue: number;
+  platformFee: number;
+}
+
+export interface RevenueChartDto {
+  points: RevenueChartPoint[];
+  totalRevenue: number;
+  totalPlatformFee: number;
+}
+
+export interface RevenueBreakdownDto {
+  bookingRevenue: number;
+  groupClassRevenue: number;
+  courseRevenue: number;
+  totalRevenue: number;
+  totalRefunded: number;
+  netRevenue: number;
+}
+
 export const adminApi = {
   // Dashboard
   getDashboard: async (): Promise<AdminDashboardDto> => {
@@ -528,4 +627,43 @@ export const adminApi = {
     search?: string;
   }): Promise<PagedResult<AdminCourseDto>> =>
     apiClient.get('/admin/education/courses', params),
+
+  // Finance - Orders
+  getOrders: (params: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    type?: string;
+    status?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  }): Promise<PagedResult<AdminOrderDto>> =>
+    apiClient.get('/admin/finance/orders', params),
+
+  getOrderDetail: (id: string): Promise<AdminOrderDetailDto> =>
+    apiClient.get(`/admin/finance/orders/${id}`),
+
+  // Finance - Payouts
+  getMentorPayouts: (params: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+  }): Promise<PagedResult<MentorPayoutSummaryDto>> =>
+    apiClient.get('/admin/finance/payouts/mentors', params),
+
+  getMentorPayoutDetail: (mentorUserId: string): Promise<MentorPayoutDetailDto> =>
+    apiClient.get(`/admin/finance/payouts/mentors/${mentorUserId}`),
+
+  // Finance - Revenue
+  getRevenueChart: (params?: {
+    period?: string;
+    days?: number;
+  }): Promise<RevenueChartDto> =>
+    apiClient.get('/admin/finance/revenue/chart', params),
+
+  getRevenueBreakdown: (params?: {
+    dateFrom?: string;
+    dateTo?: string;
+  }): Promise<RevenueBreakdownDto> =>
+    apiClient.get('/admin/finance/revenue/breakdown', params),
 };
