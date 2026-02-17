@@ -35,6 +35,7 @@ import { coursesApi } from '@/lib/api/courses';
 import { CourseLevel, CourseStatus, LectureType } from '@/lib/types/enums';
 import { ROUTES } from '@/lib/constants/routes';
 import type { CourseEditDto, CourseSectionEditDto, CourseLectureEditDto } from '@/lib/types/models';
+import { useCategoryNames } from '@/lib/hooks/use-categories';
 
 // ==================== SCHEMA ====================
 
@@ -58,17 +59,6 @@ type CourseSettingsFormData = z.infer<typeof courseSettingsSchema>;
 
 // ==================== CONSTANTS ====================
 
-const CATEGORIES = [
-  { value: '', label: 'Kategori seçin...' },
-  { value: 'Yazılım', label: 'Yazılım' },
-  { value: 'Tasarım', label: 'Tasarım' },
-  { value: 'Pazarlama', label: 'Pazarlama' },
-  { value: 'Kişisel Gelişim', label: 'Kişisel Gelişim' },
-  { value: 'Dil', label: 'Dil' },
-  { value: 'Müzik', label: 'Müzik' },
-  { value: 'Diğer', label: 'Diğer' },
-];
-
 const LEVELS = [
   { value: CourseLevel.AllLevels, label: 'Tüm Seviyeler' },
   { value: CourseLevel.Beginner, label: 'Başlangıç' },
@@ -89,6 +79,11 @@ export default function CourseEditPage() {
   const params = useParams();
   const courseId = params.courseId as string;
   const router = useRouter();
+  const categoryNames = useCategoryNames('Course');
+  const CATEGORIES = [
+    { value: '', label: 'Kategori seçin...' },
+    ...categoryNames.map((name) => ({ value: name, label: name })),
+  ];
 
   const { data: course, isLoading } = useCourseForEdit(courseId);
   const publishMutation = usePublishCourse();

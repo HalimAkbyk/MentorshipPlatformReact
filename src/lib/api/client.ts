@@ -93,8 +93,13 @@ class ApiClient {
 
           this.clearTokens();
 
-          if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth/login')) {
-            if (!isRedirectingToLogin) {
+          // Only redirect to login from protected pages (student, mentor, admin).
+          // Public pages should never force a login redirect on 401.
+          if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
+            const isProtectedRoute = ['/student', '/mentor', '/admin'].some(
+              (prefix) => window.location.pathname.startsWith(prefix)
+            );
+            if (isProtectedRoute && !isRedirectingToLogin) {
               isRedirectingToLogin = true;
               toast.error('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
               window.location.href = '/auth/login';

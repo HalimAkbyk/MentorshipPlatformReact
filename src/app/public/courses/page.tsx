@@ -12,6 +12,7 @@ import { CourseLevel } from '@/lib/types/enums';
 import { ROUTES } from '@/lib/constants/routes';
 import { formatCurrency } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/cn';
+import { useCategoryNames } from '@/lib/hooks/use-categories';
 
 const levelOptions = [
   { value: '', label: 'Tüm Seviyeler' },
@@ -29,19 +30,6 @@ const sortOptions = [
   { value: 'price-desc', label: 'Fiyat (Yüksekten Düşüğe)' },
 ];
 
-const categoryOptions = [
-  { value: '', label: 'Tüm Kategoriler' },
-  { value: 'programming', label: 'Programlama' },
-  { value: 'design', label: 'Tasarım' },
-  { value: 'business', label: 'İş Dünyası' },
-  { value: 'marketing', label: 'Pazarlama' },
-  { value: 'music', label: 'Müzik' },
-  { value: 'language', label: 'Dil' },
-  { value: 'math', label: 'Matematik' },
-  { value: 'science', label: 'Fen Bilimleri' },
-  { value: 'other', label: 'Diğer' },
-];
-
 function formatDuration(totalSeconds: number): string {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -53,6 +41,11 @@ function formatDuration(totalSeconds: number): string {
 
 export default function CourseCatalogPage() {
   const router = useRouter();
+  const categoryNames = useCategoryNames('Course');
+  const categoryOptions = [
+    { value: '', label: 'Tüm Kategoriler' },
+    ...categoryNames.map((name) => ({ value: name, label: name })),
+  ];
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [level, setLevel] = useState('');

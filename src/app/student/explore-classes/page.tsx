@@ -19,22 +19,15 @@ import {
   Settings,
 } from 'lucide-react';
 import Link from 'next/link';
-
-const CATEGORIES = [
-  { label: 'Tümü', value: '' },
-  { label: 'Matematik', value: 'Matematik' },
-  { label: 'Yazılım', value: 'Yazılım' },
-  { label: 'Müzik', value: 'Müzik' },
-  { label: 'Dil', value: 'Dil' },
-  { label: 'Sanat', value: 'Sanat' },
-  { label: 'İş/Kariyer', value: 'İş/Kariyer' },
-  { label: 'Bilim', value: 'Bilim' },
-  { label: 'Spor/Sağlık', value: 'Spor/Sağlık' },
-  { label: 'Diğer', value: 'Diğer' },
-];
+import { useCategoryNames } from '@/lib/hooks/use-categories';
 
 export default function ExploreClassesPage() {
   const user = useAuthStore((s) => s.user);
+  const categoryNames = useCategoryNames('GroupClass');
+  const CATEGORIES = [
+    { label: 'Tümü', value: '' },
+    ...categoryNames.map((name) => ({ label: name, value: name })),
+  ];
   const [category, setCategory] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);

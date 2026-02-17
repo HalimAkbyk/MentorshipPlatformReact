@@ -11,11 +11,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Menu,
   Search,
-  Bell,
   LogOut,
   ChevronRight,
   User as UserIcon,
 } from 'lucide-react';
+import { AdminSearchDialog } from '@/components/admin/admin-search-dialog';
+import { AdminNotificationsDropdown } from '@/components/admin/admin-notifications-dropdown';
 
 // ─── Constants ──────────────────────────────────────────
 
@@ -123,6 +124,7 @@ export default function AdminLayout({
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Load collapsed preference from localStorage
@@ -188,6 +190,18 @@ export default function AdminLayout({
         document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [avatarDropdownOpen]);
+
+  // Ctrl+K / Cmd+K shortcut for search
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, []);
 
   // Close mobile sidebar on route change
   const pathname = usePathname();
@@ -261,22 +275,19 @@ export default function AdminLayout({
 
             {/* Right side: search, notifications, avatar */}
             <div className="flex items-center gap-3">
-              {/* Search (placeholder) */}
-              <div className="hidden sm:flex items-center gap-2 bg-slate-100 rounded-lg px-3 py-2 w-56 lg:w-72">
+              {/* Search */}
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="hidden sm:flex items-center gap-2 bg-slate-100 rounded-lg px-3 py-2 w-56 lg:w-72 hover:bg-slate-200 transition-colors cursor-pointer"
+              >
                 <Search className="h-4 w-4 text-slate-400 shrink-0" />
-                <input
-                  type="text"
-                  placeholder="Ara..."
-                  className="bg-transparent text-sm text-slate-700 placeholder-slate-400 outline-none w-full"
-                  readOnly
-                />
-              </div>
-
-              {/* Notifications (placeholder) */}
-              <button className="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full" />
+                <span className="text-sm text-slate-400 flex-1 text-left">Ara...</span>
+                <kbd className="text-[10px] text-slate-400 border border-slate-300 rounded px-1.5 py-0.5">⌘K</kbd>
               </button>
+              <AdminSearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
+
+              {/* Notifications */}
+              <AdminNotificationsDropdown />
 
               {/* Separator */}
               <div className="hidden sm:block h-8 w-px bg-slate-200" />

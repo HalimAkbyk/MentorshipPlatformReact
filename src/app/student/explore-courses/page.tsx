@@ -27,6 +27,7 @@ import { CourseLevel } from '@/lib/types/enums';
 import { ROUTES } from '@/lib/constants/routes';
 import { formatCurrency } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/cn';
+import { useCategoryNames } from '@/lib/hooks/use-categories';
 
 // ---------- Filter Options ----------
 
@@ -44,19 +45,6 @@ const sortOptions = [
   { value: 'rating', label: 'En Yüksek Puan', icon: <Star className="w-3.5 h-3.5" /> },
   { value: 'price-asc', label: 'Fiyat: Düşükten Yükseğe', icon: null },
   { value: 'price-desc', label: 'Fiyat: Yüksekten Düşüğe', icon: null },
-];
-
-const categoryOptions = [
-  { value: '', label: 'Tüm Kategoriler', color: 'bg-gray-100 text-gray-700 hover:bg-gray-200' },
-  { value: 'programming', label: 'Programlama', color: 'bg-blue-50 text-blue-700 hover:bg-blue-100' },
-  { value: 'design', label: 'Tasarım', color: 'bg-pink-50 text-pink-700 hover:bg-pink-100' },
-  { value: 'business', label: 'İş Dünyası', color: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' },
-  { value: 'marketing', label: 'Pazarlama', color: 'bg-orange-50 text-orange-700 hover:bg-orange-100' },
-  { value: 'music', label: 'Müzik', color: 'bg-purple-50 text-purple-700 hover:bg-purple-100' },
-  { value: 'language', label: 'Dil', color: 'bg-cyan-50 text-cyan-700 hover:bg-cyan-100' },
-  { value: 'math', label: 'Matematik', color: 'bg-amber-50 text-amber-700 hover:bg-amber-100' },
-  { value: 'science', label: 'Fen Bilimleri', color: 'bg-teal-50 text-teal-700 hover:bg-teal-100' },
-  { value: 'other', label: 'Diğer', color: 'bg-slate-50 text-slate-700 hover:bg-slate-100' },
 ];
 
 const priceRangeOptions = [
@@ -101,6 +89,11 @@ function getLevelColor(level: CourseLevel): string {
 export default function StudentExploreCoursesPage() {
   const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const categoryNames = useCategoryNames('Course');
+  const categoryOptions = [
+    { value: '', label: 'Tüm Kategoriler', color: 'bg-gray-100 text-gray-700 hover:bg-gray-200' },
+    ...categoryNames.map((name) => ({ value: name, label: name, color: 'bg-gray-50 text-gray-700 hover:bg-gray-100' })),
+  ];
 
   // Filters
   const [search, setSearch] = useState('');

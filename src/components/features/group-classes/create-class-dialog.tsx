@@ -7,18 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
-
-const CATEGORIES = [
-  'Matematik',
-  'Yazılım',
-  'Müzik',
-  'Dil',
-  'Sanat',
-  'İş/Kariyer',
-  'Bilim',
-  'Spor/Sağlık',
-  'Diğer',
-];
+import { useCategoryNames } from '@/lib/hooks/use-categories';
 
 interface CreateClassDialogProps {
   open: boolean;
@@ -27,6 +16,7 @@ interface CreateClassDialogProps {
 
 export function CreateClassDialog({ open, onClose }: CreateClassDialogProps) {
   const createMutation = useCreateGroupClass();
+  const CATEGORIES = useCategoryNames('GroupClass');
 
   const [form, setForm] = useState({
     title: '',

@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { useCreateCourse } from '@/lib/hooks/use-courses';
 import { CourseLevel } from '@/lib/types/enums';
 import { ROUTES } from '@/lib/constants/routes';
+import { useCategoryNames } from '@/lib/hooks/use-categories';
 
 // ==================== SCHEMA ====================
 
@@ -43,17 +44,6 @@ type CreateCourseFormData = z.infer<typeof createCourseSchema>;
 
 // ==================== CONSTANTS ====================
 
-const CATEGORIES = [
-  { value: '', label: 'Kategori seçin...' },
-  { value: 'Yazılım', label: 'Yazılım' },
-  { value: 'Tasarım', label: 'Tasarım' },
-  { value: 'Pazarlama', label: 'Pazarlama' },
-  { value: 'Kişisel Gelişim', label: 'Kişisel Gelişim' },
-  { value: 'Dil', label: 'Dil' },
-  { value: 'Müzik', label: 'Müzik' },
-  { value: 'Diğer', label: 'Diğer' },
-];
-
 const LEVELS = [
   { value: CourseLevel.AllLevels, label: 'Tüm Seviyeler' },
   { value: CourseLevel.Beginner, label: 'Başlangıç' },
@@ -66,6 +56,11 @@ const LEVELS = [
 export default function NewCoursePage() {
   const router = useRouter();
   const createMutation = useCreateCourse();
+  const categoryNames = useCategoryNames('Course');
+  const CATEGORIES = [
+    { value: '', label: 'Kategori seçin...' },
+    ...categoryNames.map((name) => ({ value: name, label: name })),
+  ];
 
   const form = useForm<CreateCourseFormData>({
     resolver: zodResolver(createCourseSchema),

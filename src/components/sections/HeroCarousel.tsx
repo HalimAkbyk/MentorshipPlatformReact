@@ -9,10 +9,14 @@ import {
   Users,
   CheckCircle2,
   BookOpen,
-  TrendingUp,
+  Video,
+  CalendarCheck,
+  Sparkles,
+  type LucideIcon,
 } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { UserRole } from '@/lib/types/enums';
@@ -67,77 +71,149 @@ function useCta() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Decorative stat card (right column)                                */
+/*  Animated "How It Works" steps (right column)                       */
 /* ------------------------------------------------------------------ */
 
+interface HowStep {
+  num: number;
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+  products: string[];
+  gradient: string;
+  iconBg: string;
+}
+
+const HOW_STEPS: HowStep[] = [
+  {
+    num: 1,
+    icon: Search,
+    title: 'Keşfet & Seç',
+    desc: 'İhtiyacına uygun eğitim ürününü bul. Mentorları incele, kurslara göz at veya grup derslerini keşfet.',
+    products: ['1:1 Ders', 'Video Kurs', 'Grup Dersi'],
+    gradient: 'from-lime-500 to-lime-600',
+    iconBg: 'bg-lime-50 text-lime-600',
+  },
+  {
+    num: 2,
+    icon: CalendarCheck,
+    title: 'Planla & Kayıt Ol',
+    desc: 'Uygun zamanı seç, ödeme yap ve hemen başla. Güvenli ödeme altyapısıyla tek tıkla kayıt ol.',
+    products: ['Esnek Takvim', 'Güvenli Ödeme', 'Anında Erişim'],
+    gradient: 'from-teal-400 to-teal-500',
+    iconBg: 'bg-teal-50 text-teal-600',
+  },
+  {
+    num: 3,
+    icon: Sparkles,
+    title: 'Öğren & Gelişim',
+    desc: 'Canlı derslerle bire bir öğren, video kurslarla kendi hızında ilerle, sınavlarla kendini test et.',
+    products: ['Canlı Video', 'İlerleme Takibi', 'Sertifika'],
+    gradient: 'from-violet-500 to-violet-600',
+    iconBg: 'bg-violet-50 text-violet-600',
+  },
+];
+
 function DecorativeVisual() {
+  const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % HOW_STEPS.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const step = HOW_STEPS[activeStep];
+
   return (
     <div className="relative w-full max-w-md mx-auto">
       {/* Main card */}
-      <div className="relative rounded-2xl bg-white/80 backdrop-blur-sm border border-navy-100 shadow-xl p-6 space-y-5">
+      <div className="relative rounded-2xl bg-white/80 backdrop-blur-sm border border-navy-100 shadow-xl p-6 space-y-5 overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-lime-500 to-lime-600 flex items-center justify-center">
             <GraduationCap className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="font-heading font-bold text-navy-600 text-sm">Öğrenci İlerleme</p>
-            <p className="text-xs text-navy-300">Bu hafta</p>
-          </div>
-          <div className="ml-auto flex items-center gap-1 text-lime-600 text-xs font-semibold">
-            <TrendingUp className="h-3.5 w-3.5" />
-            +24%
+            <p className="font-heading font-bold text-navy-600 text-sm">Nasıl Çalışır?</p>
+            <p className="text-xs text-navy-300">3 adımda başla</p>
           </div>
         </div>
 
-        {/* Progress bars */}
-        <div className="space-y-3">
-          {[
-            { label: 'Matematik', pct: 85, color: 'bg-lime-500' },
-            { label: 'Fizik', pct: 72, color: 'bg-teal-400' },
-            { label: 'Türkçe', pct: 90, color: 'bg-sage-400' },
-          ].map((item) => (
-            <div key={item.label} className="space-y-1">
-              <div className="flex justify-between text-xs">
-                <span className="text-navy-500 font-medium">{item.label}</span>
-                <span className="text-navy-300">{item.pct}%</span>
+        {/* Animated step content */}
+        <div className="relative min-h-[180px]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeStep}
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -40 }}
+              transition={{ duration: 0.4, ease: 'easeInOut' }}
+              className="space-y-4"
+            >
+              {/* Step number + icon */}
+              <div className="flex items-center gap-3">
+                <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${step.gradient} flex items-center justify-center shadow-md`}>
+                  <step.icon className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-navy-300 uppercase tracking-wider">
+                      Adım {step.num}
+                    </span>
+                  </div>
+                  <p className="font-heading font-bold text-navy-600 text-base">
+                    {step.title}
+                  </p>
+                </div>
               </div>
-              <div className="h-2 rounded-full bg-navy-50 overflow-hidden">
-                <motion.div
-                  className={`h-full rounded-full ${item.color}`}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${item.pct}%` }}
-                  transition={{ duration: 1.2, delay: 0.6, ease: 'easeOut' }}
-                />
+
+              {/* Description */}
+              <p className="text-sm text-navy-400 leading-relaxed">
+                {step.desc}
+              </p>
+
+              {/* Product tags */}
+              <div className="flex flex-wrap gap-2">
+                {step.products.map((product) => (
+                  <span
+                    key={product}
+                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium ${step.iconBg}`}
+                  >
+                    <CheckCircle2 className="h-3 w-3" />
+                    {product}
+                  </span>
+                ))}
               </div>
-            </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Step indicators */}
+        <div className="flex items-center justify-center gap-2 pt-1">
+          {HOW_STEPS.map((s, i) => (
+            <button
+              key={s.num}
+              onClick={() => setActiveStep(i)}
+              className={`transition-all duration-300 rounded-full ${
+                i === activeStep
+                  ? 'w-8 h-2.5 bg-gradient-to-r from-lime-500 to-teal-400'
+                  : 'w-2.5 h-2.5 bg-navy-200 hover:bg-navy-300'
+              }`}
+            />
           ))}
-        </div>
-
-        {/* Stat chips */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl bg-lime-50 p-3 text-center">
-            <p className="text-xl font-heading font-bold text-lime-700">48</p>
-            <p className="text-xs text-lime-600">Tamamlanan Ders</p>
-          </div>
-          <div className="rounded-xl bg-teal-50 p-3 text-center">
-            <p className="text-xl font-heading font-bold text-teal-600">4.9</p>
-            <p className="text-xs text-teal-500 flex items-center justify-center gap-0.5">
-              <Star className="h-3 w-3 fill-current" />
-              Ortalama Puan
-            </p>
-          </div>
         </div>
       </div>
 
-      {/* Floating accent element */}
+      {/* Floating accent elements */}
       <motion.div
         className="absolute -top-4 -right-4 h-20 w-20 rounded-2xl bg-gradient-to-br from-teal-400/20 to-lime-500/20 backdrop-blur-sm border border-white/40"
         animate={{ y: [0, -8, 0] }}
         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
       />
       <motion.div
-        className="absolute -bottom-3 -left-3 h-14 w-14 rounded-xl bg-gradient-to-br from-lime-500/20 to-sage-400/20 backdrop-blur-sm border border-white/40"
+        className="absolute -bottom-3 -left-3 h-14 w-14 rounded-xl bg-gradient-to-br from-lime-500/20 to-violet-400/20 backdrop-blur-sm border border-white/40"
         animate={{ y: [0, 6, 0] }}
         transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
       />

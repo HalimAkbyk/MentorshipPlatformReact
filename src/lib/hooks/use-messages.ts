@@ -43,9 +43,15 @@ export function useMarkAsRead() {
 }
 
 export function useUnreadCount() {
+  // Only fetch when user is authenticated — prevents 401 redirect on public pages
+  const isAuthenticated = typeof window !== 'undefined'
+    ? !!localStorage.getItem('accessToken')
+    : false;
+
   return useQuery({
     queryKey: ['unreadCount'],
     queryFn: () => messagesApi.getUnreadCount(),
+    enabled: isAuthenticated,
   });
 }
 

@@ -2,6 +2,8 @@ import { apiClient } from './client';
 import type { VerificationApprovalRequest, RefundApprovalRequest } from '../../lib/types';
 import type { PendingRefundDto, PendingVerificationDto, PendingMentorDto } from '../types/admin';
 
+export type { CategoryDto } from './categories';
+
 export interface AdminBookingDto {
   id: string;
   studentUserId: string;
@@ -863,6 +865,9 @@ export const adminApi = {
   }): Promise<PagedResult<AdminCourseDto>> =>
     apiClient.get('/admin/education/courses', params),
 
+  getEducationCourseDetail: (id: string): Promise<any> =>
+    apiClient.get(`/admin/education/courses/${id}`),
+
   // Finance - Orders
   getOrders: (params: {
     page?: number;
@@ -987,6 +992,43 @@ export const adminApi = {
 
   seedSettings: (): Promise<void> =>
     apiClient.post('/admin/settings/seed'),
+
+  // Categories
+  getCategories: (): Promise<import('./categories').CategoryDto[]> =>
+    apiClient.get('/admin/categories'),
+  createCategory: (data: { name: string; icon?: string; sortOrder: number; entityType?: string }): Promise<any> =>
+    apiClient.post('/admin/categories', data),
+  updateCategory: (id: string, data: { name: string; icon?: string; sortOrder: number; entityType?: string }): Promise<any> =>
+    apiClient.put(`/admin/categories/${id}`, data),
+  deleteCategory: (id: string): Promise<any> =>
+    apiClient.delete(`/admin/categories/${id}`),
+  activateCategory: (id: string): Promise<any> =>
+    apiClient.post(`/admin/categories/${id}/activate`),
+  deactivateCategory: (id: string): Promise<any> =>
+    apiClient.post(`/admin/categories/${id}/deactivate`),
+
+  // ---------------------------------------------------------------------------
+  // Global Search
+  // ---------------------------------------------------------------------------
+
+  globalSearch: (q: string): Promise<any> =>
+    apiClient.get('/admin/search', { q }),
+
+  // ---------------------------------------------------------------------------
+  // Admin Notifications
+  // ---------------------------------------------------------------------------
+
+  getNotifications: (page = 1, pageSize = 20): Promise<any> =>
+    apiClient.get('/admin/notifications', { page, pageSize }),
+
+  getNotificationUnreadCount: (): Promise<{ count: number }> =>
+    apiClient.get('/admin/notifications/unread-count'),
+
+  markNotificationAsRead: (id: string): Promise<any> =>
+    apiClient.post(`/admin/notifications/${id}/read`),
+
+  markAllNotificationsAsRead: (): Promise<any> =>
+    apiClient.post('/admin/notifications/read-all'),
 
   // ---------------------------------------------------------------------------
   // Analytics (Phase 9)

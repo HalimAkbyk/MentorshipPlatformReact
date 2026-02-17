@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
   Video,
@@ -118,6 +119,7 @@ function levelLabel(level: string): string {
 
 export default function AdminCoursesPage() {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   // --- State ---
   const [search, setSearch] = useState('');
@@ -241,7 +243,7 @@ export default function AdminCoursesPage() {
           size="sm"
           onClick={(e) => {
             e.stopPropagation();
-            toast.info('Detay sayfasi yakinda eklenecek');
+            router.push(`/admin/courses/${item.id}`);
           }}
         >
           <Eye className="h-3.5 w-3.5 mr-1" />

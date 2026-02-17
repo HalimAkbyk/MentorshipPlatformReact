@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils/cn';
+import { useCategoryNames } from '@/lib/hooks/use-categories';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -77,18 +78,7 @@ function FilterButton({
 // Category filters
 // ---------------------------------------------------------------------------
 
-const categoryFilters = [
-  { label: 'Tumu', value: '' },
-  { label: 'Matematik', value: 'Matematik' },
-  { label: 'Yazilim', value: 'Yazılım' },
-  { label: 'Muzik', value: 'Müzik' },
-  { label: 'Dil', value: 'Dil' },
-  { label: 'Sanat', value: 'Sanat' },
-  { label: 'Is/Kariyer', value: 'İş/Kariyer' },
-  { label: 'Bilim', value: 'Bilim' },
-  { label: 'Spor/Saglik', value: 'Spor/Sağlık' },
-  { label: 'Diger', value: 'Diğer' },
-];
+// categoryFilters are now dynamically computed inside the component via useCategoryNames
 
 // ---------------------------------------------------------------------------
 // Category badge color mapping
@@ -117,6 +107,11 @@ function categoryBadgeVariant(category: string) {
 
 export default function AdminGroupClassesPage() {
   const queryClient = useQueryClient();
+  const categoryNames = useCategoryNames('GroupClass');
+  const categoryFilters = [
+    { label: 'Tumu', value: '' },
+    ...categoryNames.map((name) => ({ label: name, value: name })),
+  ];
 
   // --- State ---
   const [search, setSearch] = useState('');
