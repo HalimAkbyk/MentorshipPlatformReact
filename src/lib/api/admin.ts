@@ -371,6 +371,50 @@ export interface RevenueBreakdownDto {
   netRevenue: number;
 }
 
+// Notification Templates
+export interface NotificationTemplateDto {
+  id: string;
+  key: string;
+  name: string;
+  subject: string;
+  body: string;
+  variables: string | null;
+  channel: string;
+  isActive: boolean;
+  updatedAt: string;
+}
+
+// Bulk Notifications
+export interface BulkNotificationDto {
+  id: string;
+  subject: string;
+  body: string;
+  targetAudience: string;
+  channel: string;
+  scheduledAt: string | null;
+  sentAt: string | null;
+  recipientCount: number;
+  status: string;
+  sentByName: string | null;
+  createdAt: string;
+}
+
+// Message Reports
+export interface MessageReportDto {
+  id: string;
+  messageId: string;
+  reporterUserId: string;
+  reporterName: string;
+  reportedUserId: string;
+  reportedName: string;
+  reason: string;
+  status: string;
+  adminNotes: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  messageContent: string | null;
+}
+
 export const adminApi = {
   // Dashboard
   getDashboard: async (): Promise<AdminDashboardDto> => {
@@ -666,4 +710,62 @@ export const adminApi = {
     dateTo?: string;
   }): Promise<RevenueBreakdownDto> =>
     apiClient.get('/admin/finance/revenue/breakdown', params),
+
+  // Notification Templates
+  getNotificationTemplates: (): Promise<NotificationTemplateDto[]> =>
+    apiClient.get('/admin/notifications/templates'),
+
+  createNotificationTemplate: (data: {
+    key: string;
+    name: string;
+    subject: string;
+    body: string;
+    variables?: string;
+    channel?: string;
+  }): Promise<{ id: string }> =>
+    apiClient.post('/admin/notifications/templates', data),
+
+  updateNotificationTemplate: (
+    id: string,
+    data: {
+      name: string;
+      subject: string;
+      body: string;
+      variables?: string;
+    }
+  ): Promise<void> =>
+    apiClient.put(`/admin/notifications/templates/${id}`, data),
+
+  deleteNotificationTemplate: (id: string): Promise<void> =>
+    apiClient.delete(`/admin/notifications/templates/${id}`),
+
+  // Bulk Notifications
+  getNotificationHistory: (params: {
+    page?: number;
+    pageSize?: number;
+  }): Promise<PagedResult<BulkNotificationDto>> =>
+    apiClient.get('/admin/notifications/history', params),
+
+  sendBulkNotification: (data: {
+    subject: string;
+    body: string;
+    targetAudience: string;
+    channel: string;
+    scheduledAt?: string;
+  }): Promise<{ id: string }> =>
+    apiClient.post('/admin/notifications/send', data),
+
+  // Message Reports
+  getMessageReports: (params: {
+    status?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<PagedResult<MessageReportDto>> =>
+    apiClient.get('/admin/message-reports', params),
+
+  reviewMessageReport: (
+    reportId: string,
+    data: { status: string; adminNotes?: string }
+  ): Promise<void> =>
+    apiClient.post(`/admin/message-reports/${reportId}/review`, data),
 };

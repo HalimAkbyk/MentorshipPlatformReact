@@ -52,6 +52,13 @@ const statusMap: Record<string, StatusConfig> = {
   // Purple - refund
   Refunded: { label: 'Iade Edildi', dotColor: 'bg-purple-500', bgColor: 'bg-purple-50', textColor: 'text-purple-700' },
   PartiallyRefunded: { label: 'Kismi Iade', dotColor: 'bg-purple-500', bgColor: 'bg-purple-50', textColor: 'text-purple-700' },
+
+  // Notification / Report statuses
+  Reviewed: { label: 'Incelendi', dotColor: 'bg-green-500', bgColor: 'bg-green-50', textColor: 'text-green-700' },
+  Dismissed: { label: 'Reddedildi', dotColor: 'bg-gray-400', bgColor: 'bg-gray-100', textColor: 'text-gray-600' },
+  Scheduled: { label: 'Zamanlanmis', dotColor: 'bg-blue-500', bgColor: 'bg-blue-50', textColor: 'text-blue-700' },
+  Sending: { label: 'Gonderiliyor', dotColor: 'bg-amber-500', bgColor: 'bg-amber-50', textColor: 'text-amber-700' },
+  Sent: { label: 'Gonderildi', dotColor: 'bg-green-500', bgColor: 'bg-green-50', textColor: 'text-green-700' },
 };
 
 function getStatusConfig(status: string): StatusConfig {
