@@ -79,8 +79,17 @@ export function onMessageDelivered(callback: (payload: MessageDeliveredPayload) 
   connection?.on('MessageDelivered', callback);
 }
 
+export type NotificationCountPayload = {
+  unreadCount: number;
+};
+
+export function onNotificationCountUpdated(callback: (payload: NotificationCountPayload) => void): void {
+  connection?.on('NotificationCountUpdated', callback);
+}
+
 export function removeAllListeners(): void {
   connection?.off('ReceiveMessage');
   connection?.off('MessagesRead');
   connection?.off('MessageDelivered');
+  connection?.off('NotificationCountUpdated');
 }

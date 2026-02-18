@@ -447,6 +447,26 @@ function CourseSettingsForm({
     },
   });
 
+  // Reset form when course data changes (e.g. after save + refetch)
+  useEffect(() => {
+    form.reset({
+      title: course.title,
+      shortDescription: course.shortDescription || '',
+      description: course.description || '',
+      price: course.price,
+      level: course.level,
+      category: course.category || '',
+      language: course.language || 'tr',
+      coverImageUrl: course.coverImageUrl || '',
+      coverImagePosition: course.coverImagePosition || 'center center',
+      coverImageTransform: course.coverImageTransform || '',
+      whatYouWillLearn: (course.whatYouWillLearn || []).map((v) => ({ value: v })),
+      requirements: (course.requirements || []).map((v) => ({ value: v })),
+      targetAudience: (course.targetAudience || []).map((v) => ({ value: v })),
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [course]);
+
   const watchCoverImage = form.watch('coverImageUrl');
 
   const {
@@ -1089,17 +1109,25 @@ function LectureRow({
     if (!lecture.videoKey) return;
     setLoadingVideo(true);
     try {
-      // Use the course player to get the presigned video URL
-      const playerData: any = await coursesApiClient.getCoursePlayer(courseId, lecture.id);
-      // Try multiple possible locations for the video URL
-      const url = playerData?.currentLecture?.videoUrl
-        || playerData?.videoUrl
-        || (typeof playerData === 'object' && playerData?.currentLecture && playerData.currentLecture.videoUrl);
+      // Direct API call to bypass getCoursePlayer mapping issues
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5072/api';
+      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+      const res = await fetch(
+        `${API_URL}/course-enrollments/${courseId}/player?lectureId=${lecture.id}`,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+      if (!res.ok) {
+        toast.error('Video yüklenirken hata oluştu');
+        return;
+      }
+      const raw = await res.json();
+      // Backend returns flat: videoUrl field directly in the response
+      const url = raw?.videoUrl || raw?.currentLecture?.videoUrl || raw?.VideoUrl;
       if (url) {
         setVideoUrl(url);
         setShowVideoPreview(true);
       } else {
-        console.error('Video URL not found in response:', JSON.stringify(playerData, null, 2));
+        console.error('Video URL not found in response:', raw);
         toast.error('Video URL alınamadı');
       }
     } catch (err: any) {

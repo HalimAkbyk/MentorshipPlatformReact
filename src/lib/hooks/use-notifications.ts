@@ -12,7 +12,8 @@ export function useNotificationCount() {
   return useQuery({
     queryKey: ['user-notification-count'],
     queryFn: () => notificationsApi.getUnreadCount(),
-    refetchInterval: 30000, // Poll every 30 seconds
+    refetchInterval: 120000, // Slow fallback poll (2min) - real-time via SignalR
+    staleTime: 60000,
   });
 }
 

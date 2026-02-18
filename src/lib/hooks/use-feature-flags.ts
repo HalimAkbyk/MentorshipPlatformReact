@@ -11,8 +11,8 @@ export function useFeatureFlags() {
   const { data, isLoading } = useQuery({
     queryKey: FEATURE_FLAGS_QUERY_KEY,
     queryFn: featureFlagsApi.getAll,
-    staleTime: 60 * 1000,        // 60s cache
-    refetchInterval: 60 * 1000,   // Auto-refresh every 60s
+    staleTime: 5 * 60 * 1000,     // 5min cache
+    refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5min
     refetchOnWindowFocus: true,    // Refresh on tab focus
     retry: 2,
   });

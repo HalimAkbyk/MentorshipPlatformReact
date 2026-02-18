@@ -9,10 +9,12 @@ import {
   onReceiveMessage,
   onMessagesRead,
   onMessageDelivered,
+  onNotificationCountUpdated,
   removeAllListeners,
   type NewMessagePayload,
   type MessagesReadPayload,
   type MessageDeliveredPayload,
+  type NotificationCountPayload,
 } from '../signalr/chat-connection';
 import { messagesApi } from '../api/messages';
 import type { PaginatedMessages } from '../api/messages';
@@ -103,6 +105,12 @@ export function useSignalR() {
             };
           }
         );
+      });
+
+      // Real-time notification count updates (replaces polling)
+      onNotificationCountUpdated((payload: NotificationCountPayload) => {
+        queryClient.setQueryData(['user-notification-count'], payload.unreadCount);
+        queryClient.invalidateQueries({ queryKey: ['user-notifications'] });
       });
     };
 
