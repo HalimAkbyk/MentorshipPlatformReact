@@ -20,8 +20,9 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useCategoryNames } from '@/lib/hooks/use-categories';
+import { FeatureGate } from '@/components/feature-gate';
 
-export default function ExploreClassesPage() {
+function ExploreClassesContent() {
   const user = useAuthStore((s) => s.user);
   const categoryNames = useCategoryNames('GroupClass');
   const CATEGORIES = [
@@ -217,5 +218,13 @@ export default function ExploreClassesPage() {
         </Card>
       )}
     </div>
+  );
+}
+
+export default function ExploreClassesPage() {
+  return (
+    <FeatureGate flag="group_classes_enabled">
+      <ExploreClassesContent />
+    </FeatureGate>
   );
 }

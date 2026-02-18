@@ -14,6 +14,8 @@ import { pickDefaultDashboard, safeRedirectPath } from '@/lib/utils/auth-redirec
 import { SocialLoginButtons } from '@/components/auth/social-login-buttons';
 import { toast } from 'sonner';
 import { UserRole } from '@/lib/types/enums';
+import { useFeatureFlag } from '@/lib/hooks/use-feature-flags';
+import { AlertTriangle } from 'lucide-react';
 
 const signupSchema = z.object({
   displayName: z.string().min(2, 'İsim en az 2 karakter olmalı'),
@@ -31,6 +33,7 @@ export default function SignupPage() {
   const signup = useAuthStore((s) => s.signup);
   const externalLogin = useAuthStore((s) => s.externalLogin);
   const defaultRole = searchParams.get('role') === 'mentor' ? 'Mentor' : 'Student';
+  const registrationEnabled = useFeatureFlag('registration_enabled');
 
   // Pending social login data (waiting for role selection)
   const [pendingSocial, setPendingSocial] = useState<{
@@ -122,6 +125,45 @@ export default function SignupPage() {
       setIsLoading(false);
     }
   };
+
+  // Show disabled state when registration is turned off
+  if (!registrationEnabled) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 px-4 py-8">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1">
+            <div className="flex justify-center mb-4">
+              <div className="bg-amber-50 rounded-full p-4">
+                <AlertTriangle className="h-10 w-10 text-amber-500" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-bold font-heading text-center">
+              Kayitlar Kapatildi
+            </CardTitle>
+            <CardDescription className="text-center text-base">
+              Yeni kullanici kayitlari gecici olarak durdurulmustur.
+              Lutfen daha sonra tekrar deneyin.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center">
+              <Link href="/auth/login">
+                <Button variant="outline" className="w-full">
+                  Mevcut Hesabinla Giris Yap
+                </Button>
+              </Link>
+              <Link
+                href="/public"
+                className="block mt-3 text-sm text-primary-600 hover:underline"
+              >
+                Ana Sayfaya Don
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 px-4 py-8">

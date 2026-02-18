@@ -19,6 +19,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import Link from 'next/link';
+import { FeatureGate } from '@/components/feature-gate';
 
 const STATUS_TABS = [
   { label: 'Aktif', value: 'Published' },
@@ -27,7 +28,7 @@ const STATUS_TABS = [
   { label: 'Tümü', value: '' },
 ];
 
-export default function MentorGroupClassesPage() {
+function MentorGroupClassesContent() {
   const [statusFilter, setStatusFilter] = useState('Published');
   const [showCreate, setShowCreate] = useState(false);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
@@ -254,5 +255,13 @@ export default function MentorGroupClassesPage() {
 
       <CreateClassDialog open={showCreate} onClose={() => setShowCreate(false)} />
     </div>
+  );
+}
+
+export default function MentorGroupClassesPage() {
+  return (
+    <FeatureGate flag="group_classes_enabled">
+      <MentorGroupClassesContent />
+    </FeatureGate>
   );
 }

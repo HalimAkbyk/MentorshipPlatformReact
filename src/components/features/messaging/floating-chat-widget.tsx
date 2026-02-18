@@ -5,6 +5,7 @@ import { MessageSquare, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { useUnreadCount } from '@/lib/hooks/use-messages';
+import { useFeatureFlag } from '@/lib/hooks/use-feature-flags';
 import { ConversationListCompact } from './conversation-list-compact';
 import { PopupChatPanel } from './popup-chat-panel';
 import type { ConversationDto } from '@/lib/types/models';
@@ -19,12 +20,13 @@ export function FloatingChatWidget() {
   const pathname = usePathname();
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const chatEnabled = useFeatureFlag('chat_enabled');
   const { data: unreadData } = useUnreadCount();
   const totalUnread = unreadData?.totalUnread ?? 0;
 
-  // Hide on classroom, messages, admin, and auth pages
+  // Hide on classroom, messages, admin, and auth pages, or when chat is disabled
   const hiddenPaths = ['/classroom/', '/messages', '/admin', '/auth'];
-  const shouldHide = !isAuthenticated || hiddenPaths.some((p) => pathname?.includes(p));
+  const shouldHide = !isAuthenticated || !chatEnabled || hiddenPaths.some((p) => pathname?.includes(p));
 
   // Close on outside click
   useEffect(() => {
