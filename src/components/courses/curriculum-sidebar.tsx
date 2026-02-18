@@ -182,7 +182,9 @@ export default function CurriculumSidebar({
                           </p>
                           <div className="flex items-center gap-1.5 mt-1">
                             {isInactive ? (
-                              <span className="text-[11px] text-gray-600 font-medium">Pasif</span>
+                              <span className="text-[11px] text-red-400 font-medium">
+                                Bu ders admin tarafından pasife alındı
+                              </span>
                             ) : isVideoType ? (
                               <Play className="w-3 h-3 text-gray-500" />
                             ) : (

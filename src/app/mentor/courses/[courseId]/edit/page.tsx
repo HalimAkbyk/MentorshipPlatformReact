@@ -74,8 +74,12 @@ const LEVELS = [
 function formatDuration(totalSec: number): string {
   const hours = Math.floor(totalSec / 3600);
   const minutes = Math.floor((totalSec % 3600) / 60);
+  const seconds = totalSec % 60;
   if (hours > 0) return `${hours}s ${minutes.toString().padStart(2, '0')}dk`;
-  return `${minutes}dk`;
+  if (minutes > 0 && seconds > 0) return `${minutes}dk ${seconds}sn`;
+  if (minutes > 0) return `${minutes}dk`;
+  if (seconds > 0) return `${seconds}sn`;
+  return '0sn';
 }
 
 // ==================== MAIN PAGE ====================
@@ -360,12 +364,20 @@ export default function CourseEditPage() {
                         )}
                         <Badge className={`text-[10px] ${
                           note.noteType === 'Suspension' ? 'bg-red-100 text-red-700' :
+                          note.noteType === 'Unsuspension' ? 'bg-green-100 text-green-700' :
                           note.noteType === 'LectureFlag' ? 'bg-amber-100 text-amber-700' :
+                          note.noteType === 'LectureDeactivated' ? 'bg-red-100 text-red-700' :
+                          note.noteType === 'LectureActivated' ? 'bg-green-100 text-green-700' :
+                          note.noteType === 'General' ? 'bg-blue-100 text-blue-700' :
                           'bg-gray-100 text-gray-600'
                         }`}>
-                          {note.noteType === 'Suspension' ? 'Askıya Alma' :
-                           note.noteType === 'LectureFlag' ? 'Ders İşareti' :
-                           note.noteType === 'General' ? 'Genel Not' : note.noteType}
+                          {note.noteType === 'Suspension' ? 'Kurs Askıya Alındı' :
+                           note.noteType === 'Unsuspension' ? 'Askı Kaldırıldı' :
+                           note.noteType === 'LectureFlag' ? 'Ders İşaretlendi' :
+                           note.noteType === 'LectureDeactivated' ? 'Ders Pasife Alındı' :
+                           note.noteType === 'LectureActivated' ? 'Ders Aktife Alındı' :
+                           note.noteType === 'General' ? 'Genel Not' :
+                           note.noteType === 'ReviewComment' ? 'İnceleme Notu' : note.noteType}
                         </Badge>
                         <span className="text-[10px] text-gray-400">
                           {new Date(note.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
@@ -1078,15 +1090,20 @@ function LectureRow({
     setLoadingVideo(true);
     try {
       // Use the course player to get the presigned video URL
-      const playerData = await coursesApiClient.getCoursePlayer(courseId, lecture.id);
-      const url = playerData?.currentLecture?.videoUrl;
+      const playerData: any = await coursesApiClient.getCoursePlayer(courseId, lecture.id);
+      // Try multiple possible locations for the video URL
+      const url = playerData?.currentLecture?.videoUrl
+        || playerData?.videoUrl
+        || (typeof playerData === 'object' && playerData?.currentLecture && playerData.currentLecture.videoUrl);
       if (url) {
         setVideoUrl(url);
         setShowVideoPreview(true);
       } else {
+        console.error('Video URL not found in response:', JSON.stringify(playerData, null, 2));
         toast.error('Video URL alınamadı');
       }
-    } catch {
+    } catch (err: any) {
+      console.error('Video preview error:', err);
       toast.error('Video yüklenirken hata oluştu');
     } finally {
       setLoadingVideo(false);
