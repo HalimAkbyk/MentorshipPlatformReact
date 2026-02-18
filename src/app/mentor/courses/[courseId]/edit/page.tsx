@@ -82,12 +82,6 @@ export default function CourseEditPage() {
   const params = useParams();
   const courseId = params.courseId as string;
   const router = useRouter();
-  const categoryNames = useCategoryNames('Course');
-  const CATEGORIES = [
-    { value: '', label: 'Kategori seçin...' },
-    ...categoryNames.map((name) => ({ value: name, label: name })),
-  ];
-
   const { data: course, isLoading } = useCourseForEdit(courseId);
   const publishMutation = usePublishCourse();
   const resubmitMutation = useResubmitCourse();
@@ -344,6 +338,12 @@ function CourseSettingsForm({
   courseId: string;
 }) {
   const updateMutation = useUpdateCourse();
+  const queryClient = useQueryClient();
+  const categoryNames = useCategoryNames('Course');
+  const CATEGORIES = [
+    { value: '', label: 'Kategori seçin...' },
+    ...categoryNames.map((name) => ({ value: name, label: name })),
+  ];
 
   const form = useForm<CourseSettingsFormData>({
     resolver: zodResolver(courseSettingsSchema),
