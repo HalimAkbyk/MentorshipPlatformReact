@@ -11,6 +11,14 @@ import {
   X,
   Download,
   Loader2,
+  Globe,
+  Percent,
+  Mail,
+  MessageSquare,
+  CreditCard,
+  Gauge,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 
 import { adminApi, type PlatformSettingDto } from '@/lib/api/admin';
@@ -24,14 +32,49 @@ import { toast } from 'sonner';
 // Helpers
 // ---------------------------------------------------------------------------
 
-const categoryLabels: Record<string, string> = {
-  General: 'Genel',
-  Fee: 'Komisyon',
-  Registration: 'Kayit',
-  Maintenance: 'Bakim',
+const categoryConfig: Record<string, { label: string; icon: React.ElementType; description: string }> = {
+  General: {
+    label: 'Genel Ayarlar',
+    icon: Globe,
+    description: 'Platform adi, aciklama ve destek bilgileri',
+  },
+  Fee: {
+    label: 'Komisyon Oranlari',
+    icon: Percent,
+    description: 'Platform ve mentor komisyon yuzdeleri',
+  },
+  Email: {
+    label: 'E-posta (SMTP)',
+    icon: Mail,
+    description: 'E-posta gonderim sunucu ayarlari',
+  },
+  SMS: {
+    label: 'SMS Ayarlari',
+    icon: MessageSquare,
+    description: 'SMS bildirim entegrasyonu',
+  },
+  Payment: {
+    label: 'Odeme Ayarlari',
+    icon: CreditCard,
+    description: 'Odeme saglayici yapilandirmasi',
+  },
+  Limits: {
+    label: 'Limitler',
+    icon: Gauge,
+    description: 'Sistem limitleri ve varsayilan degerler',
+  },
 };
 
-const categoryOrder = ['General', 'Fee', 'Registration', 'Maintenance'];
+const categoryOrder = ['General', 'Fee', 'Email', 'SMS', 'Payment', 'Limits'];
+
+// Sensitive keys that should be masked by default
+const sensitiveKeys = new Set([
+  'smtp_password',
+  'smtp_username',
+  'iyzico_api_key',
+  'iyzico_secret_key',
+  'twilio_auth_token',
+]);
 
 function isBooleanValue(value: string): boolean {
   return value === 'true' || value === 'false';
@@ -39,6 +82,10 @@ function isBooleanValue(value: string): boolean {
 
 function isNumericValue(value: string): boolean {
   return /^\d+(\.\d+)?$/.test(value);
+}
+
+function isPercentageKey(key: string): boolean {
+  return key.endsWith('_rate');
 }
 
 const formatDate = (iso: string) =>
@@ -65,6 +112,8 @@ function SettingRow({
 }) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(setting.value);
+  const [showSensitive, setShowSensitive] = useState(false);
+  const isSensitive = sensitiveKeys.has(setting.key);
 
   useEffect(() => {
     setEditValue(setting.value);
@@ -85,10 +134,32 @@ function SettingRow({
     onSave(setting.key, newVal);
   };
 
+  const displayValue = (() => {
+    if (isSensitive && !showSensitive && setting.value) {
+      return '••••••••';
+    }
+    if (isPercentageKey(setting.key) && setting.value) {
+      const num = parseFloat(setting.value);
+      if (!isNaN(num)) return `%${(num * 100).toFixed(0)}`;
+    }
+    return setting.value || '-';
+  })();
+
   return (
     <div className="flex items-center justify-between py-4 px-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors">
       <div className="flex-1 min-w-0 mr-4">
-        <p className="font-mono text-sm font-bold text-gray-800">{setting.key}</p>
+        <div className="flex items-center gap-2">
+          <p className="font-mono text-sm font-bold text-gray-800">{setting.key}</p>
+          {isSensitive && (
+            <button
+              onClick={() => setShowSensitive(!showSensitive)}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+              title={showSensitive ? 'Gizle' : 'Goster'}
+            >
+              {showSensitive ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+            </button>
+          )}
+        </div>
         {setting.description && (
           <p className="text-xs text-gray-500 mt-0.5">{setting.description}</p>
         )}
@@ -122,6 +193,7 @@ function SettingRow({
             {isNumericValue(setting.value) ? (
               <Input
                 type="number"
+                step={isPercentageKey(setting.key) ? '0.01' : '1'}
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 className="w-40 h-9 text-sm"
@@ -129,11 +201,17 @@ function SettingRow({
               />
             ) : (
               <Input
+                type={isSensitive ? 'password' : 'text'}
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 className="w-60 h-9 text-sm"
                 autoFocus
               />
+            )}
+            {isPercentageKey(setting.key) && (
+              <span className="text-xs text-gray-400 whitespace-nowrap">
+                (orn: 0.07 = %7)
+              </span>
             )}
             <Button
               variant="outline"
@@ -158,7 +236,7 @@ function SettingRow({
           // Display mode
           <div className="flex items-center gap-2">
             <span className="font-mono text-sm text-gray-700 bg-gray-100 px-3 py-1 rounded">
-              {setting.value}
+              {displayValue}
             </span>
             <Button
               variant="outline"
@@ -191,7 +269,12 @@ function CategorySection({
   isSaving: boolean;
 }) {
   const [collapsed, setCollapsed] = useState(false);
-  const label = categoryLabels[category] || category;
+  const config = categoryConfig[category] || {
+    label: category,
+    icon: Settings,
+    description: '',
+  };
+  const Icon = config.icon;
 
   return (
     <div className="rounded-xl border border-gray-200/80 bg-white shadow-sm overflow-hidden">
@@ -200,8 +283,16 @@ function CategorySection({
         className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <h3 className="text-lg font-semibold text-gray-900">{label}</h3>
-          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-50 text-primary-600">
+            <Icon className="h-5 w-5" />
+          </div>
+          <div className="text-left">
+            <h3 className="text-lg font-semibold text-gray-900">{config.label}</h3>
+            {config.description && (
+              <p className="text-xs text-gray-500">{config.description}</p>
+            )}
+          </div>
+          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full ml-2">
             {settings.length} ayar
           </span>
         </div>
@@ -299,7 +390,7 @@ export default function AdminSettingsPage() {
             <h1 className="text-2xl font-bold text-gray-900">Platform Ayarlari</h1>
           </div>
           <p className="text-sm text-gray-500">
-            Platform genelindeki ayarlari bu sayfadan yonetebilirsiniz.
+            Platform genelindeki ayarlari bu sayfadan yonetebilirsiniz. Komisyon oranlari, e-posta, SMS ve limit ayarlarini buradan yapilandirin.
           </p>
         </div>
         <Button
