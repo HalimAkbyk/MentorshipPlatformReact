@@ -44,7 +44,27 @@ export function useUpdateCourse() {
 export function usePublishCourse() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => coursesApi.publish(id),
+    mutationFn: ({ id, mentorNotes }: { id: string; mentorNotes?: string }) =>
+      coursesApi.publish(id, mentorNotes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+    },
+  });
+}
+
+export function useCourseReviewStatus(courseId: string) {
+  return useQuery({
+    queryKey: ['course', 'review-status', courseId],
+    queryFn: () => coursesApi.getReviewStatus(courseId),
+    enabled: !!courseId,
+  });
+}
+
+export function useResubmitCourse() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, mentorNotes }: { id: string; mentorNotes?: string }) =>
+      coursesApi.resubmitForReview(id, mentorNotes),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
     },

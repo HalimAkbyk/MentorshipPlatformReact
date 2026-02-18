@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   Plus, Pencil, Trash2, Archive, Send, Loader2,
   BookOpen, Users, Star, Clock, ArrowLeft,
+  XCircle, RotateCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -38,6 +39,12 @@ function statusBadge(status: CourseStatus) {
   switch (status) {
     case CourseStatus.Draft:
       return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Taslak</Badge>;
+    case CourseStatus.PendingReview:
+      return <Badge className="bg-blue-100 text-blue-800 border-blue-200">İncelemede</Badge>;
+    case CourseStatus.RevisionRequested:
+      return <Badge className="bg-orange-100 text-orange-800 border-orange-200">Revizyon İstendi</Badge>;
+    case CourseStatus.Rejected:
+      return <Badge className="bg-red-100 text-red-800 border-red-200">Reddedildi</Badge>;
     case CourseStatus.Published:
       return <Badge variant="success">Yayında</Badge>;
     case CourseStatus.Archived:
@@ -71,10 +78,10 @@ export default function MentorCoursesPage() {
 
   const handlePublish = async (course: MentorCourseDto) => {
     try {
-      await publishMutation.mutateAsync(course.id);
-      toast.success('Kurs başarıyla yayınlandı!');
+      await publishMutation.mutateAsync({ id: course.id });
+      toast.success('Kurs onaya gönderildi!');
     } catch {
-      toast.error('Kurs yayınlanırken hata oluştu');
+      toast.error('Kurs onaya gönderilirken hata oluştu');
     }
   };
 
@@ -109,7 +116,10 @@ export default function MentorCoursesPage() {
   const tabs: { key: FilterTab; label: string }[] = [
     { key: 'all', label: 'Tümü' },
     { key: CourseStatus.Draft, label: 'Taslak' },
+    { key: CourseStatus.PendingReview, label: 'İncelemede' },
+    { key: CourseStatus.RevisionRequested, label: 'Revizyon' },
     { key: CourseStatus.Published, label: 'Yayında' },
+    { key: CourseStatus.Rejected, label: 'Reddedildi' },
     { key: CourseStatus.Archived, label: 'Arşiv' },
   ];
 
@@ -149,12 +159,12 @@ export default function MentorCoursesPage() {
 
       <div className="container mx-auto px-4 py-6">
         {/* Filter Tabs */}
-        <div className="flex gap-1 mb-6 bg-white rounded-lg border p-1 w-fit">
+        <div className="flex gap-1 mb-6 bg-white rounded-lg border p-1 w-fit overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.key
                   ? 'bg-primary-600 text-white'
                   : 'text-gray-600 hover:bg-gray-100'
@@ -302,7 +312,7 @@ function CourseCard({
                 ) : (
                   <Send className="w-3.5 h-3.5" />
                 )}
-                Yayınla
+                Onaya Gönder
               </Button>
               <Button
                 variant="ghost"
@@ -313,6 +323,32 @@ function CourseCard({
                 <Trash2 className="w-3.5 h-3.5" />
               </Button>
             </>
+          )}
+
+          {course.status === CourseStatus.PendingReview && (
+            <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+              <Clock className="w-3 h-3 mr-1" />
+              İnceleniyor
+            </Badge>
+          )}
+
+          {course.status === CourseStatus.RevisionRequested && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onEdit}
+              className="gap-1 border-orange-300 text-orange-700 hover:bg-orange-50"
+            >
+              <RotateCw className="w-3.5 h-3.5" />
+              Düzenle & Gönder
+            </Button>
+          )}
+
+          {course.status === CourseStatus.Rejected && (
+            <Badge className="bg-red-50 text-red-700 border-red-200 text-xs">
+              <XCircle className="w-3 h-3 mr-1" />
+              Reddedildi
+            </Badge>
           )}
 
           {course.status === CourseStatus.Published && (

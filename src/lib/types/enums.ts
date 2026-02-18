@@ -38,6 +38,9 @@ export enum EnrollmentStatus {
 
 export enum CourseStatus {
   Draft = 'Draft',
+  PendingReview = 'PendingReview',
+  RevisionRequested = 'RevisionRequested',
+  Rejected = 'Rejected',
   Published = 'Published',
   Archived = 'Archived',
 }

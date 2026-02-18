@@ -608,6 +608,83 @@ export interface SystemHealthInfoDto {
   environment: string;
 }
 
+// Course Review Types
+export interface PendingCourseReviewDto {
+  id: string;
+  title: string;
+  mentorName: string;
+  mentorEmail: string | null;
+  category: string | null;
+  totalLectures: number;
+  totalDurationSec: number;
+  price: number;
+  currency: string;
+  submittedAt: string;
+  roundNumber: number;
+  coverImageUrl: string | null;
+}
+
+export interface ReviewLectureDto {
+  id: string;
+  title: string;
+  videoUrl: string | null;
+  durationSec: number;
+  sortOrder: number;
+  isPreview: boolean;
+  type: string;
+}
+
+export interface ReviewSectionDto {
+  id: string;
+  title: string;
+  sortOrder: number;
+  lectures: ReviewLectureDto[];
+}
+
+export interface LectureCommentDto {
+  id: string;
+  lectureId: string | null;
+  lectureTitle: string;
+  videoKey: string | null;
+  flag: string;
+  comment: string;
+  createdByUserId: string;
+  createdAt: string;
+}
+
+export interface ReviewRoundDto {
+  id: string;
+  roundNumber: number;
+  submittedAt: string;
+  mentorNotes: string | null;
+  reviewedByUserId: string | null;
+  reviewedAt: string | null;
+  outcome: string | null;
+  adminGeneralNotes: string | null;
+  lectureComments: LectureCommentDto[];
+}
+
+export interface CourseReviewDetailDto {
+  id: string;
+  title: string;
+  description: string | null;
+  shortDescription: string | null;
+  coverImageUrl: string | null;
+  price: number;
+  currency: string;
+  category: string | null;
+  level: string;
+  language: string | null;
+  status: string;
+  mentorName: string;
+  mentorEmail: string | null;
+  mentorUserId: string;
+  totalLectures: number;
+  totalDurationSec: number;
+  sections: ReviewSectionDto[];
+  reviewRounds: ReviewRoundDto[];
+}
+
 export const adminApi = {
   // Dashboard
   getDashboard: async (): Promise<AdminDashboardDto> => {
@@ -1173,4 +1250,25 @@ export const adminApi = {
 
   getCouponUsages: (id: string): Promise<CouponUsageDto[]> =>
     apiClient.get(`/admin/coupons/${id}/usages`),
+
+  // ---------------------------------------------------------------------------
+  // Course Reviews (Admin)
+  // ---------------------------------------------------------------------------
+
+  getPendingCourseReviews: (): Promise<PendingCourseReviewDto[]> =>
+    apiClient.get('/admin/course-reviews'),
+
+  getCourseReviewDetail: (courseId: string): Promise<CourseReviewDetailDto> =>
+    apiClient.get(`/admin/course-reviews/${courseId}`),
+
+  reviewCourse: (courseId: string, data: {
+    outcome: string;
+    generalNotes?: string;
+    lectureComments?: {
+      lectureId: string;
+      flag: string;
+      comment: string;
+    }[];
+  }): Promise<void> =>
+    apiClient.post(`/admin/course-reviews/${courseId}`, data),
 };

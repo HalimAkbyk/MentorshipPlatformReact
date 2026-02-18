@@ -6,6 +6,7 @@ import {
   ArrowLeft, Loader2, Save, Send, Plus, Trash2, Pencil,
   ChevronDown, ChevronRight, Video, FileText, Eye, X,
   Upload, CheckCircle, BookOpen, GripVertical,
+  AlertTriangle, RotateCw, XCircle, Clock, MessageSquare,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -24,6 +25,8 @@ import {
   useCourseForEdit,
   useUpdateCourse,
   usePublishCourse,
+  useResubmitCourse,
+  useCourseReviewStatus,
   useCreateSection,
   useUpdateSection,
   useDeleteSection,
@@ -87,23 +90,41 @@ export default function CourseEditPage() {
 
   const { data: course, isLoading } = useCourseForEdit(courseId);
   const publishMutation = usePublishCourse();
+  const resubmitMutation = useResubmitCourse();
+  const { data: reviewStatus } = useCourseReviewStatus(courseId);
+  const [showResubmitModal, setShowResubmitModal] = useState(false);
+  const [mentorNotes, setMentorNotes] = useState('');
 
-  // ===== Publish =====
+  // ===== Publish / Submit for Review =====
 
   const handlePublish = async () => {
     if (!course) return;
 
     const totalLectures = course.sections.reduce((sum, s) => sum + s.lectures.length, 0);
     if (course.sections.length === 0 || totalLectures === 0) {
-      toast.error('Yayınlamak için en az 1 bölüm ve 1 ders gerekli');
+      toast.error('Onaya göndermek için en az 1 bölüm ve 1 ders gerekli');
       return;
     }
 
     try {
-      await publishMutation.mutateAsync(courseId);
-      toast.success('Kurs başarıyla yayınlandı!');
+      await publishMutation.mutateAsync({ id: courseId });
+      toast.success('Kurs onaya gönderildi!');
     } catch {
-      toast.error('Kurs yayınlanırken hata oluştu');
+      toast.error('Kurs onaya gönderilirken hata oluştu');
+    }
+  };
+
+  // ===== Resubmit for Review =====
+
+  const handleResubmit = async () => {
+    try {
+      await resubmitMutation.mutateAsync({ id: courseId, mentorNotes: mentorNotes || undefined });
+      setShowResubmitModal(false);
+      setMentorNotes('');
+      toast.success('Kurs tekrar onaya gönderildi!');
+    } catch (err: any) {
+      const msg = err?.message || err?.errors?.[0] || 'Tekrar gönderilirken hata oluştu';
+      toast.error(msg);
     }
   };
 
@@ -154,8 +175,32 @@ export default function CourseEditPage() {
                 ) : (
                   <Send className="w-4 h-4" />
                 )}
-                Yayınla
+                Onaya Gönder
               </Button>
+            )}
+            {course.status === CourseStatus.PendingReview && (
+              <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                <Clock className="w-3 h-3 mr-1" /> İncelemede
+              </Badge>
+            )}
+            {course.status === CourseStatus.RevisionRequested && (
+              <Button
+                onClick={() => setShowResubmitModal(true)}
+                disabled={resubmitMutation.isPending}
+                className="gap-2 bg-orange-600 hover:bg-orange-700"
+              >
+                {resubmitMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RotateCw className="w-4 h-4" />
+                )}
+                Tekrar Onaya Gönder
+              </Button>
+            )}
+            {course.status === CourseStatus.Rejected && (
+              <Badge className="bg-red-100 text-red-800 border-red-200">
+                <XCircle className="w-3 h-3 mr-1" /> Reddedildi
+              </Badge>
             )}
             {course.status === CourseStatus.Published && (
               <Badge variant="success">Yayında</Badge>
@@ -166,6 +211,110 @@ export default function CourseEditPage() {
           </div>
         </div>
       </header>
+
+      {/* Review Feedback Banner */}
+      {(course.status === CourseStatus.RevisionRequested || course.status === CourseStatus.Rejected) && reviewStatus && (
+        <div className="container mx-auto px-4 pt-4">
+          <div className={`rounded-lg border p-4 ${
+            course.status === CourseStatus.RevisionRequested
+              ? 'bg-orange-50 border-orange-200'
+              : 'bg-red-50 border-red-200'
+          }`}>
+            <div className="flex items-start gap-3">
+              <AlertTriangle className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
+                course.status === CourseStatus.RevisionRequested ? 'text-orange-600' : 'text-red-600'
+              }`} />
+              <div className="flex-1">
+                <h3 className={`font-semibold ${
+                  course.status === CourseStatus.RevisionRequested ? 'text-orange-800' : 'text-red-800'
+                }`}>
+                  {course.status === CourseStatus.RevisionRequested
+                    ? 'Admin tarafından revizyon istendi'
+                    : 'Kurs reddedildi'}
+                </h3>
+
+                {/* Admin general notes */}
+                {reviewStatus.latestRound?.adminGeneralNotes && (
+                  <p className="text-sm text-gray-700 mt-1">
+                    <strong>Admin Notu:</strong> {reviewStatus.latestRound.adminGeneralNotes}
+                  </p>
+                )}
+
+                {/* Lecture-specific comments */}
+                {reviewStatus.latestRound?.lectureComments?.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-sm font-medium text-gray-700">Ders Yorumları:</p>
+                    {reviewStatus.latestRound.lectureComments.map((lc: any) => (
+                      <div key={lc.id} className="flex items-start gap-2 bg-white rounded-md p-2 border">
+                        <MessageSquare className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <span className="font-medium">{lc.lectureTitle}</span>
+                          {lc.flag && lc.flag !== 'None' && (
+                            <Badge className={`ml-2 text-xs ${
+                              lc.flag === 'Risky' ? 'bg-yellow-100 text-yellow-800' :
+                              lc.flag === 'Inappropriate' ? 'bg-red-100 text-red-800' :
+                              lc.flag === 'CopyrightIssue' ? 'bg-purple-100 text-purple-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {lc.flag === 'Risky' ? 'Riskli' :
+                               lc.flag === 'Inappropriate' ? 'Uygunsuz' :
+                               lc.flag === 'CopyrightIssue' ? 'Telif Hakkı' : lc.flag}
+                            </Badge>
+                          )}
+                          <p className="text-gray-600 mt-0.5">{lc.comment}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {course.status === CourseStatus.RevisionRequested && (
+                  <p className="text-sm text-orange-700 mt-3">
+                    Riskli bulunan içeriği düzenleyerek veya açıklama ekleyerek tekrar onaya gönderebilirsiniz.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Resubmit Modal */}
+      {showResubmitModal && (
+        <Modal onClose={() => setShowResubmitModal(false)} title="Tekrar Onaya Gönder">
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Riskli bulunan videolarda değişiklik yapmadıysanız, açıklama yazmanız zorunludur.
+            </p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Açıklama (Mentor Notu)
+              </label>
+              <textarea
+                value={mentorNotes}
+                onChange={(e) => setMentorNotes(e.target.value)}
+                className="w-full border rounded-lg p-3 text-sm min-h-[100px] focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                placeholder="Yaptığınız değişiklikleri veya videoları neden değiştirmediğinizi açıklayın..."
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowResubmitModal(false)}>İptal</Button>
+              <Button
+                onClick={handleResubmit}
+                disabled={resubmitMutation.isPending}
+                className="gap-2 bg-orange-600 hover:bg-orange-700"
+              >
+                {resubmitMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+                Gönder
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* Two Column Layout */}
       <div className="container mx-auto px-4 py-6">

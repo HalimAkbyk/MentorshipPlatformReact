@@ -88,8 +88,16 @@ export const coursesApi = {
     return apiClient.put(`/courses/${id}`, data);
   },
 
-  publish: async (id: string): Promise<void> => {
-    return apiClient.post(`/courses/${id}/publish`);
+  publish: async (id: string, mentorNotes?: string): Promise<void> => {
+    return apiClient.post(`/courses/${id}/publish`, { mentorNotes });
+  },
+
+  getReviewStatus: async (id: string): Promise<any> => {
+    return apiClient.get(`/courses/${id}/review-status`);
+  },
+
+  resubmitForReview: async (id: string, mentorNotes?: string): Promise<void> => {
+    return apiClient.post(`/courses/${id}/resubmit`, { mentorNotes });
   },
 
   archive: async (id: string): Promise<void> => {

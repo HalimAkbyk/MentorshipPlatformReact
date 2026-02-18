@@ -65,6 +65,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: '1:1 Dersler', href: '/admin/bookings' },
       { label: 'Grup Dersleri', href: '/admin/group-classes' },
       { label: 'Video Kurslar', href: '/admin/courses' },
+      { label: 'Kurs Incelemeleri', href: '/admin/course-reviews' },
       { label: 'Sinav Modulu', href: '/admin/exams' },
     ],
   },
