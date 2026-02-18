@@ -222,6 +222,16 @@ export interface MentorCourseDto {
   updatedAt: string;
 }
 
+export interface CourseAdminNoteEditDto {
+  id: string;
+  noteType: string;
+  flag: string | null;
+  content: string;
+  lectureId: string | null;
+  lectureTitle: string | null;
+  createdAt: string;
+}
+
 export interface CourseEditDto {
   id: string;
   title: string;
@@ -243,6 +253,7 @@ export interface CourseEditDto {
   totalDurationSec: number;
   totalLectures: number;
   sections: CourseSectionEditDto[];
+  adminNotes?: CourseAdminNoteEditDto[];
 }
 
 export interface CourseSectionEditDto {
@@ -262,6 +273,7 @@ export interface CourseLectureEditDto {
   isPreview: boolean;
   type: LectureType;
   textContent?: string;
+  isActive?: boolean;
 }
 
 export interface PublicCourseDto {

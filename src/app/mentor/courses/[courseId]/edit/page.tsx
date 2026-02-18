@@ -7,6 +7,7 @@ import {
   ChevronDown, ChevronRight, Video, FileText, Eye, X,
   Upload, CheckCircle, BookOpen, GripVertical,
   AlertTriangle, RotateCw, XCircle, Clock, MessageSquare,
+  ShieldAlert, Lock, Flag, Play,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -37,8 +38,9 @@ import {
 import { coursesApi } from '@/lib/api/courses';
 import { CourseLevel, CourseStatus, LectureType } from '@/lib/types/enums';
 import { ROUTES } from '@/lib/constants/routes';
-import type { CourseEditDto, CourseSectionEditDto, CourseLectureEditDto } from '@/lib/types/models';
+import type { CourseEditDto, CourseSectionEditDto, CourseLectureEditDto, CourseAdminNoteEditDto } from '@/lib/types/models';
 import { useCategoryNames } from '@/lib/hooks/use-categories';
+import { coursesApi as coursesApiClient } from '@/lib/api/courses';
 
 // ==================== SCHEMA ====================
 
@@ -308,6 +310,75 @@ export default function CourseEditPage() {
             </div>
           </div>
         </Modal>
+      )}
+
+      {/* Admin Moderation Notes (for Published/Suspended courses) */}
+      {course.adminNotes && course.adminNotes.length > 0 && (
+        <div className="container mx-auto px-4 pt-4">
+          <Card className="border-amber-200 bg-amber-50/50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <ShieldAlert className="w-5 h-5 text-amber-600" />
+                <h3 className="font-semibold text-amber-800">Admin Moderasyon Notları</h3>
+                <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-xs">
+                  {course.adminNotes.length}
+                </Badge>
+              </div>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {course.adminNotes.map((note) => (
+                  <div key={note.id} className="flex items-start gap-3 bg-white rounded-lg p-3 border border-amber-100">
+                    <div className="mt-0.5 flex-shrink-0">
+                      {note.flag ? (
+                        <Flag className={`w-4 h-4 ${
+                          note.flag === 'Risky' ? 'text-yellow-500' :
+                          note.flag === 'Inappropriate' ? 'text-red-500' :
+                          note.flag === 'CopyrightIssue' ? 'text-purple-500' :
+                          'text-gray-400'
+                        }`} />
+                      ) : note.noteType === 'Suspension' ? (
+                        <XCircle className="w-4 h-4 text-red-500" />
+                      ) : (
+                        <MessageSquare className="w-4 h-4 text-gray-400" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {note.lectureTitle && (
+                          <span className="text-sm font-medium text-gray-700">{note.lectureTitle}</span>
+                        )}
+                        {note.flag && (
+                          <Badge className={`text-[10px] ${
+                            note.flag === 'Risky' ? 'bg-yellow-100 text-yellow-800' :
+                            note.flag === 'Inappropriate' ? 'bg-red-100 text-red-800' :
+                            note.flag === 'CopyrightIssue' ? 'bg-purple-100 text-purple-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {note.flag === 'Risky' ? 'Riskli' :
+                             note.flag === 'Inappropriate' ? 'Uygunsuz' :
+                             note.flag === 'CopyrightIssue' ? 'Telif Hakkı' : note.flag}
+                          </Badge>
+                        )}
+                        <Badge className={`text-[10px] ${
+                          note.noteType === 'Suspension' ? 'bg-red-100 text-red-700' :
+                          note.noteType === 'LectureFlag' ? 'bg-amber-100 text-amber-700' :
+                          'bg-gray-100 text-gray-600'
+                        }`}>
+                          {note.noteType === 'Suspension' ? 'Askıya Alma' :
+                           note.noteType === 'LectureFlag' ? 'Ders İşareti' :
+                           note.noteType === 'General' ? 'Genel Not' : note.noteType}
+                        </Badge>
+                        <span className="text-[10px] text-gray-400">
+                          {new Date(note.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">{note.content}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Two Column Layout */}
@@ -792,6 +863,7 @@ function CurriculumBuilder({
                 onDeleteLecture={(lecture) => handleDeleteLecture(section.id, lecture)}
                 courseId={courseId}
                 isUpdating={updateSectionMut.isPending}
+                adminNotes={course.adminNotes}
               />
             ))}
         </div>
@@ -832,6 +904,7 @@ function SectionCard({
   onDeleteLecture,
   courseId,
   isUpdating,
+  adminNotes,
 }: {
   section: CourseSectionEditDto;
   isExpanded: boolean;
@@ -843,6 +916,7 @@ function SectionCard({
   onDeleteLecture: (lecture: CourseLectureEditDto) => void;
   courseId: string;
   isUpdating: boolean;
+  adminNotes?: CourseAdminNoteEditDto[];
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(section.title);
@@ -950,6 +1024,7 @@ function SectionCard({
                     courseId={courseId}
                     onEdit={() => onEditLecture(lecture)}
                     onDelete={() => onDeleteLecture(lecture)}
+                    adminNotes={adminNotes}
                   />
                 ))}
             </div>
@@ -979,105 +1054,222 @@ function LectureRow({
   courseId,
   onEdit,
   onDelete,
+  adminNotes,
 }: {
   lecture: CourseLectureEditDto;
   sectionId: string;
   courseId: string;
   onEdit: () => void;
   onDelete: () => void;
+  adminNotes?: CourseAdminNoteEditDto[];
 }) {
   const [showUpload, setShowUpload] = useState(false);
+  const [showVideoPreview, setShowVideoPreview] = useState(false);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [loadingVideo, setLoadingVideo] = useState(false);
+  const isInactive = lecture.isActive === false;
+
+  // Get admin notes for this lecture
+  const lectureNotes = adminNotes?.filter(n => n.lectureId === lecture.id) ?? [];
+  const hasFlaggedNote = lectureNotes.some(n => n.flag);
+
+  const handleWatchVideo = async () => {
+    if (!lecture.videoKey) return;
+    setLoadingVideo(true);
+    try {
+      // Use the course player to get the presigned video URL
+      const playerData = await coursesApiClient.getCoursePlayer(courseId, lecture.id);
+      const url = playerData?.currentLecture?.videoUrl;
+      if (url) {
+        setVideoUrl(url);
+        setShowVideoPreview(true);
+      } else {
+        toast.error('Video URL alınamadı');
+      }
+    } catch {
+      toast.error('Video yüklenirken hata oluştu');
+    } finally {
+      setLoadingVideo(false);
+    }
+  };
 
   return (
-    <div className="px-4 py-3 hover:bg-gray-50 transition-colors">
-      <div className="flex items-center gap-3">
-        {/* Type Icon */}
-        <div className="flex-shrink-0">
-          {lecture.type === LectureType.Video ? (
-            <Video className="w-4 h-4 text-blue-500" />
-          ) : (
-            <FileText className="w-4 h-4 text-green-500" />
-          )}
-        </div>
-
-        {/* Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium truncate">{lecture.title}</span>
-            {lecture.isPreview && (
-              <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-[10px]">
-                <Eye className="w-3 h-3 mr-0.5" />
-                Önizleme
-              </Badge>
+    <>
+      <div className={`px-4 py-3 transition-colors ${
+        isInactive
+          ? 'bg-red-50 border-l-4 border-red-400'
+          : hasFlaggedNote
+            ? 'bg-amber-50 border-l-4 border-amber-400'
+            : 'hover:bg-gray-50'
+      }`}>
+        <div className="flex items-center gap-3">
+          {/* Type Icon */}
+          <div className="flex-shrink-0">
+            {isInactive ? (
+              <Lock className="w-4 h-4 text-red-500" />
+            ) : lecture.type === LectureType.Video ? (
+              <Video className="w-4 h-4 text-blue-500" />
+            ) : (
+              <FileText className="w-4 h-4 text-green-500" />
             )}
           </div>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs text-gray-400">
-              {lecture.type === LectureType.Video ? 'Video' : 'Metin'}
-            </span>
-            {lecture.durationSec > 0 && (
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`text-sm font-medium truncate ${isInactive ? 'line-through text-red-600' : ''}`}>{lecture.title}</span>
+              {isInactive && (
+                <Badge className="bg-red-100 text-red-700 border-red-200 text-[10px]">
+                  <Lock className="w-3 h-3 mr-0.5" />
+                  Pasif
+                </Badge>
+              )}
+              {hasFlaggedNote && !isInactive && (
+                <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[10px]">
+                  <Flag className="w-3 h-3 mr-0.5" />
+                  İşaretlendi
+                </Badge>
+              )}
+              {lecture.isPreview && (
+                <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-[10px]">
+                  <Eye className="w-3 h-3 mr-0.5" />
+                  Önizleme
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2 mt-0.5">
               <span className="text-xs text-gray-400">
-                - {formatDuration(lecture.durationSec)}
+                {lecture.type === LectureType.Video ? 'Video' : 'Metin'}
               </span>
+              {lecture.durationSec > 0 && (
+                <span className="text-xs text-gray-400">
+                  - {formatDuration(lecture.durationSec)}
+                </span>
+              )}
+              {lecture.type === LectureType.Video && lecture.videoKey && (
+                <Badge className="bg-green-100 text-green-700 border-green-200 text-[10px]">
+                  <CheckCircle className="w-3 h-3 mr-0.5" />
+                  Yüklendi
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-1">
+            {/* Watch Video button for inactive/flagged lectures */}
+            {lecture.type === LectureType.Video && lecture.videoKey && (isInactive || hasFlaggedNote) && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleWatchVideo}
+                disabled={loadingVideo}
+                className="gap-1 h-7 text-xs border-blue-200 text-blue-600 hover:bg-blue-50"
+              >
+                {loadingVideo ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
+                İzle
+              </Button>
+            )}
+            {lecture.type === LectureType.Video && !lecture.videoKey && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowUpload(!showUpload)}
+                className="gap-1 h-7 text-xs"
+              >
+                <Upload className="w-3 h-3" />
+                Video Yükle
+              </Button>
             )}
             {lecture.type === LectureType.Video && lecture.videoKey && (
-              <Badge className="bg-green-100 text-green-700 border-green-200 text-[10px]">
-                <CheckCircle className="w-3 h-3 mr-0.5" />
-                Yüklendi
-              </Badge>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowUpload(!showUpload)}
+                className="gap-1 h-7 text-xs"
+              >
+                <Upload className="w-3 h-3" />
+                Değiştir
+              </Button>
             )}
+            <Button size="icon" variant="ghost" onClick={onEdit} className="h-7 w-7">
+              <Pencil className="w-3.5 h-3.5" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={onDelete}
+              className="h-7 w-7 text-red-500 hover:text-red-700"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </Button>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-1">
-          {lecture.type === LectureType.Video && !lecture.videoKey && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setShowUpload(!showUpload)}
-              className="gap-1 h-7 text-xs"
-            >
-              <Upload className="w-3 h-3" />
-              Video Yükle
-            </Button>
-          )}
-          {lecture.type === LectureType.Video && lecture.videoKey && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setShowUpload(!showUpload)}
-              className="gap-1 h-7 text-xs"
-            >
-              <Upload className="w-3 h-3" />
-              Değiştir
-            </Button>
-          )}
-          <Button size="icon" variant="ghost" onClick={onEdit} className="h-7 w-7">
-            <Pencil className="w-3.5 h-3.5" />
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={onDelete}
-            className="h-7 w-7 text-red-500 hover:text-red-700"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </Button>
-        </div>
+        {/* Inactive lecture info banner */}
+        {isInactive && (
+          <div className="mt-2 ml-7 p-2 bg-red-100 rounded-md border border-red-200">
+            <p className="text-xs text-red-700 flex items-center gap-1">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              Bu video admin tarafından pasife alındı. Kursiyerler bu videoyu göremez ama siz izleyebiliyorsunuz.
+            </p>
+          </div>
+        )}
+
+        {/* Flagged lecture admin notes */}
+        {lectureNotes.length > 0 && (
+          <div className="mt-2 ml-7 space-y-1">
+            {lectureNotes.map(note => (
+              <div key={note.id} className="p-2 bg-white rounded-md border border-gray-200 text-xs">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  {note.flag && (
+                    <Badge className={`text-[9px] px-1 py-0 ${
+                      note.flag === 'Risky' ? 'bg-yellow-100 text-yellow-800' :
+                      note.flag === 'Inappropriate' ? 'bg-red-100 text-red-800' :
+                      note.flag === 'CopyrightIssue' ? 'bg-purple-100 text-purple-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {note.flag === 'Risky' ? 'Riskli' :
+                       note.flag === 'Inappropriate' ? 'Uygunsuz' :
+                       note.flag === 'CopyrightIssue' ? 'Telif Hakkı' : note.flag}
+                    </Badge>
+                  )}
+                  <span className="text-gray-400">
+                    {new Date(note.createdAt).toLocaleDateString('tr-TR')}
+                  </span>
+                </div>
+                <p className="text-gray-600">{note.content}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Video Upload Widget */}
+        {showUpload && lecture.type === LectureType.Video && (
+          <div className="mt-3 ml-7">
+            <VideoUploadWidget
+              lectureId={lecture.id}
+              courseId={courseId}
+              onComplete={() => setShowUpload(false)}
+            />
+          </div>
+        )}
       </div>
 
-      {/* Video Upload Widget */}
-      {showUpload && lecture.type === LectureType.Video && (
-        <div className="mt-3 ml-7">
-          <VideoUploadWidget
-            lectureId={lecture.id}
-            courseId={courseId}
-            onComplete={() => setShowUpload(false)}
-          />
-        </div>
+      {/* Video Preview Modal */}
+      {showVideoPreview && videoUrl && (
+        <Modal onClose={() => { setShowVideoPreview(false); setVideoUrl(null); }} title={`Video Önizleme: ${lecture.title}`}>
+          <div className="aspect-video bg-black rounded-lg overflow-hidden">
+            <video
+              src={videoUrl}
+              controls
+              autoPlay
+              className="w-full h-full"
+            />
+          </div>
+        </Modal>
       )}
-    </div>
+    </>
   );
 }
 

@@ -306,4 +306,9 @@ export const coursesApi = {
   deleteNote: async (noteId: string): Promise<void> => {
     return apiClient.delete(`/course-notes/${noteId}`);
   },
+
+  // === Admin Notes (Mentor view) ===
+  getMyAdminNotes: async (courseId: string): Promise<any[]> => {
+    return apiClient.get(`/courses/${courseId}/admin-notes`);
+  },
 };

@@ -16,6 +16,7 @@ import { useAuthStore } from '@/lib/stores/auth-store';
 import { useUnreadCount } from '@/lib/hooks/use-messages';
 import { UserRole } from '@/lib/types/enums';
 import { cn } from '@/lib/utils/cn';
+import { UserNotificationsDropdown } from '../features/notifications/user-notifications-dropdown';
 
 type NavLink = { href: string; label: string; icon?: React.ReactNode };
 
@@ -253,7 +254,10 @@ export function Header() {
                 </Link>
               </>
             ) : (
-              /* User Dropdown */
+              <div className="flex items-center gap-1">
+              {/* Notification Bell */}
+              <UserNotificationsDropdown />
+              {/* User Dropdown */}
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -294,6 +298,7 @@ export function Header() {
                     {renderDropdownSections(closeDropdown)}
                   </div>
                 )}
+              </div>
               </div>
             )}
           </div>

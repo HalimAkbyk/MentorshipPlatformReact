@@ -22,12 +22,15 @@ import {
   Ticket,
   type LucideIcon,
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { adminApi } from '@/lib/api/admin';
 
 // ─── Types ──────────────────────────────────────────────
 
 interface NavItem {
   label: string;
   href: string;
+  badgeKey?: string;
 }
 
 interface NavGroup {
@@ -53,7 +56,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: Users,
     items: [
       { label: 'Tum Kullanicilar', href: '/admin/users' },
-      { label: 'Mentor Onaylari', href: '/admin/verifications' },
+      { label: 'Mentor Onaylari', href: '/admin/verifications', badgeKey: 'pendingVerifications' },
       { label: 'Roller & Izinler', href: '/admin/roles' },
     ],
   },
@@ -65,7 +68,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: '1:1 Dersler', href: '/admin/bookings' },
       { label: 'Grup Dersleri', href: '/admin/group-classes' },
       { label: 'Video Kurslar', href: '/admin/courses' },
-      { label: 'Kurs Incelemeleri', href: '/admin/course-reviews' },
+      { label: 'Kurs Incelemeleri', href: '/admin/course-reviews', badgeKey: 'pendingCourseReviews' },
       { label: 'Sinav Modulu', href: '/admin/exams' },
     ],
   },
@@ -186,6 +189,17 @@ export function AdminSidebar({
     [pathname]
   );
 
+  // Fetch pending counts for badges
+  const { data: pendingCounts } = useQuery({
+    queryKey: ['admin-pending-counts'],
+    queryFn: () => adminApi.getPendingCounts(),
+    refetchInterval: 60000, // Poll every 60s
+  });
+  const badgeCounts: Record<string, number> = {
+    pendingVerifications: pendingCounts?.pendingVerifications ?? 0,
+    pendingCourseReviews: pendingCounts?.pendingCourseReviews ?? 0,
+  };
+
   // ── Sidebar inner content ──────────────────────────────
 
   const sidebarContent = (
@@ -296,20 +310,28 @@ export function AdminSidebar({
                   )}
                 >
                   <div className="ml-4 border-l border-slate-700/50 pl-3 py-1 space-y-0.5">
-                    {group.items.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={cn(
-                          'block rounded-md px-3 py-2 text-sm transition-all duration-150',
-                          isActive(item.href)
-                            ? 'bg-lime-500/15 text-lime-400 font-medium'
-                            : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-                        )}
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
+                    {group.items.map((item) => {
+                      const badgeCount = item.badgeKey ? badgeCounts[item.badgeKey] ?? 0 : 0;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className={cn(
+                            'flex items-center justify-between rounded-md px-3 py-2 text-sm transition-all duration-150',
+                            isActive(item.href)
+                              ? 'bg-lime-500/15 text-lime-400 font-medium'
+                              : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                          )}
+                        >
+                          <span>{item.label}</span>
+                          {badgeCount > 0 && (
+                            <span className="min-w-[20px] h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1.5">
+                              {badgeCount > 99 ? '99+' : badgeCount}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               )}

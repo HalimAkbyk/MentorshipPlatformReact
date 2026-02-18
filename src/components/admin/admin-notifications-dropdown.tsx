@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Bell, Check, CheckCheck, Loader2, AlertTriangle, UserCheck, RefreshCw, CreditCard } from 'lucide-react';
+import { Bell, Check, CheckCheck, Loader2, AlertTriangle, UserCheck, RefreshCw, CreditCard, PlayCircle } from 'lucide-react';
 import { adminApi } from '@/lib/api/admin';
 
 interface AdminNotificationItem {
@@ -34,6 +35,8 @@ function NotificationIcon({ type }: { type: string }) {
   switch (type) {
     case 'MentorVerification':
       return <UserCheck className="h-4 w-4 text-indigo-500" />;
+    case 'CourseReview':
+      return <PlayCircle className="h-4 w-4 text-lime-500" />;
     case 'RefundRequest':
       return <RefreshCw className="h-4 w-4 text-amber-500" />;
     case 'PaymentFailed':
@@ -45,7 +48,22 @@ function NotificationIcon({ type }: { type: string }) {
   }
 }
 
+function getAdminNavUrl(notif: AdminNotificationItem): string | null {
+  if (!notif.referenceType) return null;
+  switch (notif.referenceType) {
+    case 'MentorVerification':
+      return '/admin/verifications';
+    case 'CourseReview':
+      return '/admin/course-reviews';
+    case 'RefundRequest':
+      return '/admin/refunds';
+    default:
+      return null;
+  }
+}
+
 export function AdminNotificationsDropdown() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -138,39 +156,46 @@ export function AdminNotificationsDropdown() {
                 Bildirim yok.
               </div>
             ) : (
-              notifications.map((notif) => (
-                <div
-                  key={notif.id}
-                  className={`flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-50 ${
-                    !notif.isRead ? 'bg-indigo-50/50' : ''
-                  }`}
-                >
-                  <div className="mt-0.5 shrink-0">
-                    <NotificationIcon type={notif.type} />
+              notifications.map((notif) => {
+                const navUrl = getAdminNavUrl(notif);
+                return (
+                  <div
+                    key={notif.id}
+                    onClick={() => {
+                      if (!notif.isRead) markReadMutation.mutate(notif.id);
+                      if (navUrl) { setOpen(false); router.push(navUrl); }
+                    }}
+                    className={`flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-50 ${
+                      navUrl ? 'cursor-pointer' : ''
+                    } ${!notif.isRead ? 'bg-indigo-50/50' : ''}`}
+                  >
+                    <div className="mt-0.5 shrink-0">
+                      <NotificationIcon type={notif.type} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-sm ${notif.isRead ? 'text-slate-600' : 'text-slate-800 font-medium'}`}>
+                        {notif.title}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">
+                        {notif.message}
+                      </p>
+                      <p className="text-[10px] text-slate-300 mt-1">{timeAgo(notif.createdAt)}</p>
+                    </div>
+                    {!notif.isRead && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          markReadMutation.mutate(notif.id);
+                        }}
+                        className="shrink-0 p-1 text-slate-400 hover:text-indigo-600 transition-colors"
+                        title="Okundu isaretle"
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className={`text-sm ${notif.isRead ? 'text-slate-600' : 'text-slate-800 font-medium'}`}>
-                      {notif.title}
-                    </p>
-                    <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">
-                      {notif.message}
-                    </p>
-                    <p className="text-[10px] text-slate-300 mt-1">{timeAgo(notif.createdAt)}</p>
-                  </div>
-                  {!notif.isRead && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        markReadMutation.mutate(notif.id);
-                      }}
-                      className="shrink-0 p-1 text-slate-400 hover:text-indigo-600 transition-colors"
-                      title="Okundu isaretle"
-                    >
-                      <Check className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 

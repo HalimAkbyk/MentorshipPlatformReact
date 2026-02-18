@@ -393,3 +393,13 @@ export function useDeleteNote() {
     },
   });
 }
+
+// ===== Admin Notes (Mentor view) =====
+
+export function useCourseAdminNotes(courseId: string) {
+  return useQuery({
+    queryKey: ['course', 'admin-notes', courseId],
+    queryFn: () => coursesApi.getMyAdminNotes(courseId),
+    enabled: !!courseId,
+  });
+}

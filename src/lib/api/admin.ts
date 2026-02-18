@@ -1304,4 +1304,8 @@ export const adminApi = {
 
   getCourseAdminNotes: (courseId: string): Promise<CourseAdminNoteDto[]> =>
     apiClient.get(`/admin/education/courses/${courseId}/notes`),
+
+  // Pending Counts (for sidebar badges)
+  getPendingCounts: (): Promise<{ pendingVerifications: number; pendingCourseReviews: number }> =>
+    apiClient.get('/admin/pending-counts'),
 };
