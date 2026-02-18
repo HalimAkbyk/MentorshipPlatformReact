@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft,
   Video,
@@ -12,19 +12,41 @@ import {
   BookOpen,
   ChevronDown,
   ChevronRight,
-  Eye,
   Calendar,
+  ShieldAlert,
+  ShieldCheck,
+  MessageSquarePlus,
+  Play,
+  Flag,
+  ToggleLeft,
+  ToggleRight,
+  AlertTriangle,
+  FileText,
+  Ban,
+  CheckCircle2,
+  X,
 } from 'lucide-react';
-import { adminApi } from '@/lib/api/admin';
+import { adminApi, type CourseAdminNoteDto } from '@/lib/api/admin';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('tr-TR', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
+  });
+}
+
+function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString('tr-TR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
@@ -40,15 +62,274 @@ function formatCurrency(value: number, currency?: string): string {
   return `${symbol}${value.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
 }
 
+const FLAG_OPTIONS = [
+  { value: 'Risky', label: 'Riskli Icerik', color: 'bg-amber-100 text-amber-700' },
+  { value: 'Inappropriate', label: 'Uygunsuz Icerik', color: 'bg-red-100 text-red-700' },
+  { value: 'CopyrightIssue', label: 'Telif Hakki', color: 'bg-purple-100 text-purple-700' },
+];
+
+const NOTE_TYPE_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
+  General: { label: 'Genel Yorum', icon: <MessageSquarePlus className="h-4 w-4" />, color: 'text-blue-500' },
+  Flag: { label: 'Isaretleme', icon: <Flag className="h-4 w-4" />, color: 'text-amber-500' },
+  LectureDeactivated: { label: 'Ders Pasife Alindi', icon: <Ban className="h-4 w-4" />, color: 'text-red-500' },
+  LectureActivated: { label: 'Ders Aktife Alindi', icon: <CheckCircle2 className="h-4 w-4" />, color: 'text-emerald-500' },
+  CourseSuspended: { label: 'Kurs Askiya Alindi', icon: <ShieldAlert className="h-4 w-4" />, color: 'text-red-500' },
+  CourseUnsuspended: { label: 'Aski Kaldirildi', icon: <ShieldCheck className="h-4 w-4" />, color: 'text-emerald-500' },
+};
+
+// ─── Modals ───
+
+function SuspendModal({ onClose, onConfirm, isPending }: { onClose: () => void; onConfirm: (reason: string) => void; isPending: boolean }) {
+  const [reason, setReason] = useState('');
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-2 mb-4">
+          <ShieldAlert className="h-5 w-5 text-red-500" />
+          <h3 className="text-lg font-semibold text-slate-800">Kursu Askiya Al</h3>
+        </div>
+        <p className="text-sm text-slate-500 mb-4">Bu kurs askiya alinacak ve ogrenciler erisemeyecek. Mentore bildirim gonderilecektir.</p>
+        <textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Askiya alma sebebi (zorunlu)..."
+          className="w-full border border-slate-300 rounded-lg p-3 text-sm resize-none h-24 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+        />
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={onClose} disabled={isPending}>Iptal</Button>
+          <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={() => onConfirm(reason)} disabled={!reason.trim() || isPending}>
+            {isPending ? 'Isleniyor...' : 'Askiya Al'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UnsuspendModal({ onClose, onConfirm, isPending }: { onClose: () => void; onConfirm: (note?: string) => void; isPending: boolean }) {
+  const [note, setNote] = useState('');
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-2 mb-4">
+          <ShieldCheck className="h-5 w-5 text-emerald-500" />
+          <h3 className="text-lg font-semibold text-slate-800">Askiyi Kaldir</h3>
+        </div>
+        <p className="text-sm text-slate-500 mb-4">Kurs tekrar yayina alinacak. Mentore bildirim gonderilecektir.</p>
+        <textarea
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Not (opsiyonel)..."
+          className="w-full border border-slate-300 rounded-lg p-3 text-sm resize-none h-24 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+        />
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={onClose} disabled={isPending}>Iptal</Button>
+          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => onConfirm(note || undefined)} disabled={isPending}>
+            {isPending ? 'Isleniyor...' : 'Askiyi Kaldir'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GeneralNoteModal({ onClose, onConfirm, isPending }: { onClose: () => void; onConfirm: (content: string) => void; isPending: boolean }) {
+  const [content, setContent] = useState('');
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-2 mb-4">
+          <MessageSquarePlus className="h-5 w-5 text-indigo-500" />
+          <h3 className="text-lg font-semibold text-slate-800">Kurs Hakkinda Yorum</h3>
+        </div>
+        <p className="text-sm text-slate-500 mb-4">Mentore genel bir yorum/uyari gonderin.</p>
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Yorumunuz (zorunlu)..."
+          className="w-full border border-slate-300 rounded-lg p-3 text-sm resize-none h-24 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+        />
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={onClose} disabled={isPending}>Iptal</Button>
+          <Button className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={() => onConfirm(content)} disabled={!content.trim() || isPending}>
+            {isPending ? 'Gonderiliyor...' : 'Gonder'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FlagLectureModal({
+  lectureName,
+  onClose,
+  onConfirm,
+  isPending,
+}: { lectureName: string; onClose: () => void; onConfirm: (flag: string, content: string) => void; isPending: boolean }) {
+  const [flag, setFlag] = useState('');
+  const [content, setContent] = useState('');
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-2 mb-4">
+          <Flag className="h-5 w-5 text-amber-500" />
+          <h3 className="text-lg font-semibold text-slate-800">Ders Isaretle</h3>
+        </div>
+        <p className="text-sm text-slate-500 mb-4">
+          <span className="font-medium text-slate-700">&quot;{lectureName}&quot;</span> dersini isaretle ve mentore gonder.
+        </p>
+        <div className="space-y-2 mb-4">
+          {FLAG_OPTIONS.map((opt) => (
+            <label
+              key={opt.value}
+              className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                flag === opt.value ? 'border-amber-400 bg-amber-50' : 'border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              <input
+                type="radio"
+                name="flag"
+                value={opt.value}
+                checked={flag === opt.value}
+                onChange={() => setFlag(opt.value)}
+                className="accent-amber-500"
+              />
+              <span className="text-sm font-medium text-slate-700">{opt.label}</span>
+            </label>
+          ))}
+        </div>
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Yorum (zorunlu)..."
+          className="w-full border border-slate-300 rounded-lg p-3 text-sm resize-none h-24 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+        />
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={onClose} disabled={isPending}>Iptal</Button>
+          <Button className="bg-amber-600 hover:bg-amber-700 text-white" onClick={() => onConfirm(flag, content)} disabled={!flag || !content.trim() || isPending}>
+            {isPending ? 'Gonderiliyor...' : 'Isaretle'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ToggleLectureModal({
+  lectureName,
+  isActive,
+  onClose,
+  onConfirm,
+  isPending,
+}: { lectureName: string; isActive: boolean; onClose: () => void; onConfirm: (reason?: string) => void; isPending: boolean }) {
+  const [reason, setReason] = useState('');
+  const action = isActive ? 'Pasife Al' : 'Aktife Al';
+  const description = isActive
+    ? 'Bu ders pasife alinacak ve ogrenciler erisemeyecek.'
+    : 'Bu ders tekrar aktif olacak ve ogrenciler erisebilecek.';
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-2 mb-4">
+          {isActive ? <ToggleLeft className="h-5 w-5 text-red-500" /> : <ToggleRight className="h-5 w-5 text-emerald-500" />}
+          <h3 className="text-lg font-semibold text-slate-800">{action}: {lectureName}</h3>
+        </div>
+        <p className="text-sm text-slate-500 mb-4">{description}</p>
+        <textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder={isActive ? 'Pasife alma sebebi (zorunlu)...' : 'Not (opsiyonel)...'}
+          className="w-full border border-slate-300 rounded-lg p-3 text-sm resize-none h-24 focus:ring-2 focus:ring-slate-400 focus:border-transparent"
+        />
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={onClose} disabled={isPending}>Iptal</Button>
+          <Button
+            className={isActive ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}
+            onClick={() => onConfirm(reason || undefined)}
+            disabled={(isActive && !reason.trim()) || isPending}
+          >
+            {isPending ? 'Isleniyor...' : action}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VideoModal({ videoUrl, title, onClose }: { videoUrl: string; title: string; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="w-full max-w-4xl mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-white font-semibold text-sm truncate">{title}</h3>
+          <button onClick={onClose} className="text-white/60 hover:text-white transition-colors p-1">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <video controls autoPlay className="w-full rounded-lg bg-black max-h-[75vh]" src={videoUrl}>
+          Tarayiciniz video desteklemiyor.
+        </video>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Page ───
+
 export default function AdminCourseDetailPage() {
   const { courseId } = useParams<{ courseId: string }>();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+
+  // Modal states
+  const [showSuspendModal, setShowSuspendModal] = useState(false);
+  const [showUnsuspendModal, setShowUnsuspendModal] = useState(false);
+  const [showNoteModal, setShowNoteModal] = useState(false);
+  const [flagTarget, setFlagTarget] = useState<{ lectureId: string; name: string } | null>(null);
+  const [toggleTarget, setToggleTarget] = useState<{ lectureId: string; name: string; isActive: boolean } | null>(null);
+  const [videoTarget, setVideoTarget] = useState<{ url: string; title: string } | null>(null);
 
   const { data: course, isLoading, error } = useQuery({
     queryKey: ['admin-course-detail', courseId],
     queryFn: () => adminApi.getEducationCourseDetail(courseId),
     enabled: !!courseId,
+  });
+
+  const { data: adminNotes } = useQuery({
+    queryKey: ['admin-course-notes', courseId],
+    queryFn: () => adminApi.getCourseAdminNotes(courseId),
+    enabled: !!courseId,
+  });
+
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ['admin-course-detail', courseId] });
+    queryClient.invalidateQueries({ queryKey: ['admin-course-notes', courseId] });
+  };
+
+  const suspendMutation = useMutation({
+    mutationFn: (reason: string) => adminApi.suspendCourse(courseId, reason),
+    onSuccess: () => { toast.success('Kurs askiya alindi'); setShowSuspendModal(false); invalidate(); },
+    onError: () => toast.error('Kurs askiya alinamadi'),
+  });
+
+  const unsuspendMutation = useMutation({
+    mutationFn: (note?: string) => adminApi.unsuspendCourse(courseId, note),
+    onSuccess: () => { toast.success('Kurs tekrar yayinda'); setShowUnsuspendModal(false); invalidate(); },
+    onError: () => toast.error('Aski kaldirilamadi'),
+  });
+
+  const noteMutation = useMutation({
+    mutationFn: (data: { lectureId?: string; flag?: string; content: string }) => adminApi.addCourseAdminNote(courseId, data),
+    onSuccess: () => { toast.success('Yorum eklendi'); setShowNoteModal(false); setFlagTarget(null); invalidate(); },
+    onError: () => toast.error('Yorum eklenemedi'),
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: (data: { lectureId: string; isActive: boolean; reason?: string }) =>
+      adminApi.toggleLectureActive(courseId, data.lectureId, data.isActive, data.reason),
+    onSuccess: () => { toast.success('Ders durumu guncellendi'); setToggleTarget(null); invalidate(); },
+    onError: () => toast.error('Ders durumu guncellenemedi'),
   });
 
   const toggleSection = (sectionId: string) => {
@@ -90,8 +371,22 @@ export default function AdminCourseDetailPage() {
     );
   }
 
+  const isSuspended = course.status === 'Suspended';
+  const isPublished = course.status === 'Published';
+
   return (
     <div className="container mx-auto px-4 py-10 max-w-6xl">
+      {/* Suspended Banner */}
+      {isSuspended && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center gap-3">
+          <ShieldAlert className="h-5 w-5 text-red-500 shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-red-700">Bu kurs askida</p>
+            <p className="text-xs text-red-500">Ogrenciler bu kursa eriseemiyor. Askiyi kaldirmak icin asagidaki butonu kullanin.</p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
@@ -111,6 +406,39 @@ export default function AdminCourseDetailPage() {
             Mentor: <span className="font-medium text-slate-700">{course.mentorName}</span>
             {course.mentorEmail && <span className="text-slate-400 ml-1">({course.mentorEmail})</span>}
           </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowNoteModal(true)}
+            className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+          >
+            <MessageSquarePlus className="h-4 w-4 mr-1.5" />
+            Yorum Ekle
+          </Button>
+          {isPublished && (
+            <Button
+              size="sm"
+              onClick={() => setShowSuspendModal(true)}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              <ShieldAlert className="h-4 w-4 mr-1.5" />
+              Askiya Al
+            </Button>
+          )}
+          {isSuspended && (
+            <Button
+              size="sm"
+              onClick={() => setShowUnsuspendModal(true)}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              <ShieldCheck className="h-4 w-4 mr-1.5" />
+              Askiyi Kaldir
+            </Button>
+          )}
         </div>
       </div>
 
@@ -156,7 +484,6 @@ export default function AdminCourseDetailPage() {
 
       {/* Course Info */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Left: Details */}
         <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-6">
           <h2 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-slate-400" />
@@ -202,7 +529,6 @@ export default function AdminCourseDetailPage() {
           )}
         </div>
 
-        {/* Right: Cover image */}
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           {course.coverImageUrl ? (
             <img
@@ -222,7 +548,7 @@ export default function AdminCourseDetailPage() {
         </div>
       </div>
 
-      {/* Curriculum */}
+      {/* Curriculum - Interactive */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 mb-8">
         <h2 className="text-lg font-semibold text-slate-800 mb-4">
           Mufredat ({course.sections?.length || 0} bolum, {course.totalLectures} ders)
@@ -248,22 +574,70 @@ export default function AdminCourseDetailPage() {
               </button>
               {expandedSections.has(section.id) && section.lectures && (
                 <div className="divide-y divide-slate-50">
-                  {section.lectures.map((lecture: any) => (
-                    <div key={lecture.id} className="flex items-center justify-between px-6 py-2.5">
-                      <div className="flex items-center gap-2">
-                        <Video className="h-3.5 w-3.5 text-slate-400" />
-                        <span className="text-sm text-slate-600">{lecture.title}</span>
-                        {lecture.isPreview && (
-                          <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded font-medium">
-                            Onizleme
+                  {section.lectures.map((lecture: any) => {
+                    const isInactive = lecture.isActive === false;
+                    return (
+                      <div
+                        key={lecture.id}
+                        className={`flex items-center justify-between px-6 py-3 ${
+                          isInactive ? 'bg-red-50/50' : ''
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <Video className={`h-3.5 w-3.5 shrink-0 ${isInactive ? 'text-red-400' : 'text-slate-400'}`} />
+                          <span className={`text-sm truncate ${isInactive ? 'text-red-500 line-through' : 'text-slate-600'}`}>
+                            {lecture.title}
                           </span>
-                        )}
+                          {lecture.isPreview && (
+                            <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded font-medium shrink-0">
+                              Onizleme
+                            </span>
+                          )}
+                          {isInactive && (
+                            <span className="text-[10px] px-1.5 py-0.5 bg-red-100 text-red-600 rounded font-medium shrink-0">
+                              Pasif
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0 ml-3">
+                          {/* Play Video */}
+                          {lecture.videoUrl && (
+                            <button
+                              onClick={() => setVideoTarget({ url: lecture.videoUrl, title: lecture.title })}
+                              className="p-1.5 rounded-md hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 transition-colors"
+                              title="Videoyu Izle"
+                            >
+                              <Play className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                          {/* Flag */}
+                          <button
+                            onClick={() => setFlagTarget({ lectureId: lecture.id, name: lecture.title })}
+                            className="p-1.5 rounded-md hover:bg-amber-50 text-amber-500 hover:text-amber-700 transition-colors"
+                            title="Isaretle"
+                          >
+                            <Flag className="h-3.5 w-3.5" />
+                          </button>
+                          {/* Toggle Active */}
+                          <button
+                            onClick={() => setToggleTarget({ lectureId: lecture.id, name: lecture.title, isActive: lecture.isActive !== false })}
+                            className={`p-1.5 rounded-md transition-colors ${
+                              isInactive
+                                ? 'hover:bg-emerald-50 text-emerald-500 hover:text-emerald-700'
+                                : 'hover:bg-red-50 text-red-400 hover:text-red-600'
+                            }`}
+                            title={isInactive ? 'Aktife Al' : 'Pasife Al'}
+                          >
+                            {isInactive ? <ToggleRight className="h-3.5 w-3.5" /> : <ToggleLeft className="h-3.5 w-3.5" />}
+                          </button>
+                          {/* Duration */}
+                          <span className="text-xs text-slate-400 w-12 text-right">
+                            {lecture.durationSec ? formatDuration(lecture.durationSec) : '-'}
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-xs text-slate-400">
-                        {lecture.durationSec ? formatDuration(lecture.durationSec) : '-'}
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -272,6 +646,48 @@ export default function AdminCourseDetailPage() {
             <p className="text-sm text-slate-400 text-center py-4">Henuz mufredat eklenmemis.</p>
           )}
         </div>
+      </div>
+
+      {/* Admin Notes / Moderation History */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6 mb-8">
+        <h2 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+          <FileText className="h-5 w-5 text-slate-400" />
+          Moderasyon Gecmisi ({adminNotes?.length || 0})
+        </h2>
+        {adminNotes && adminNotes.length > 0 ? (
+          <div className="space-y-3 max-h-96 overflow-y-auto">
+            {adminNotes.map((note: CourseAdminNoteDto) => {
+              const config = NOTE_TYPE_CONFIG[note.noteType] || NOTE_TYPE_CONFIG.General;
+              const flagInfo = note.flag ? FLAG_OPTIONS.find((f) => f.value === note.flag) : null;
+              return (
+                <div key={note.id} className="flex gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100">
+                  <div className={`mt-0.5 shrink-0 ${config.color}`}>{config.icon}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-semibold text-slate-700">{config.label}</span>
+                      {flagInfo && (
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${flagInfo.color}`}>
+                          {flagInfo.label}
+                        </span>
+                      )}
+                      {note.lectureTitle && (
+                        <span className="text-[10px] px-1.5 py-0.5 bg-slate-200 text-slate-600 rounded">
+                          {note.lectureTitle}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-slate-600 mt-1">{note.content}</p>
+                    <p className="text-[11px] text-slate-400 mt-1.5">
+                      {note.adminName} - {formatDateTime(note.createdAt)}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-sm text-slate-400 text-center py-8">Henuz moderasyon notu yok.</p>
+        )}
       </div>
 
       {/* Enrollments Table */}
@@ -320,6 +736,59 @@ export default function AdminCourseDetailPage() {
           <p className="text-sm text-slate-400 text-center py-8">Henuz kayitli ogrenci yok.</p>
         )}
       </div>
+
+      {/* Modals */}
+      {showSuspendModal && (
+        <SuspendModal
+          onClose={() => setShowSuspendModal(false)}
+          onConfirm={(reason) => suspendMutation.mutate(reason)}
+          isPending={suspendMutation.isPending}
+        />
+      )}
+      {showUnsuspendModal && (
+        <UnsuspendModal
+          onClose={() => setShowUnsuspendModal(false)}
+          onConfirm={(note) => unsuspendMutation.mutate(note)}
+          isPending={unsuspendMutation.isPending}
+        />
+      )}
+      {showNoteModal && (
+        <GeneralNoteModal
+          onClose={() => setShowNoteModal(false)}
+          onConfirm={(content) => noteMutation.mutate({ content })}
+          isPending={noteMutation.isPending}
+        />
+      )}
+      {flagTarget && (
+        <FlagLectureModal
+          lectureName={flagTarget.name}
+          onClose={() => setFlagTarget(null)}
+          onConfirm={(flag, content) => noteMutation.mutate({ lectureId: flagTarget.lectureId, flag, content })}
+          isPending={noteMutation.isPending}
+        />
+      )}
+      {toggleTarget && (
+        <ToggleLectureModal
+          lectureName={toggleTarget.name}
+          isActive={toggleTarget.isActive}
+          onClose={() => setToggleTarget(null)}
+          onConfirm={(reason) =>
+            toggleMutation.mutate({
+              lectureId: toggleTarget.lectureId,
+              isActive: !toggleTarget.isActive,
+              reason,
+            })
+          }
+          isPending={toggleMutation.isPending}
+        />
+      )}
+      {videoTarget && (
+        <VideoModal
+          videoUrl={videoTarget.url}
+          title={videoTarget.title}
+          onClose={() => setVideoTarget(null)}
+        />
+      )}
     </div>
   );
 }

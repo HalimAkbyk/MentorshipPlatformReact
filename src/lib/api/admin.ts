@@ -685,6 +685,20 @@ export interface CourseReviewDetailDto {
   reviewRounds: ReviewRoundDto[];
 }
 
+// Course Admin Note Types
+export interface CourseAdminNoteDto {
+  id: string;
+  courseId?: string;
+  lectureId: string | null;
+  adminUserId: string;
+  adminName: string;
+  noteType: string;
+  flag: string | null;
+  content: string;
+  lectureTitle: string | null;
+  createdAt: string;
+}
+
 export const adminApi = {
   // Dashboard
   getDashboard: async (): Promise<AdminDashboardDto> => {
@@ -1271,4 +1285,23 @@ export const adminApi = {
     }[];
   }): Promise<void> =>
     apiClient.post(`/admin/course-reviews/${courseId}`, data),
+
+  // ---------------------------------------------------------------------------
+  // Course Content Moderation
+  // ---------------------------------------------------------------------------
+
+  suspendCourse: (courseId: string, reason: string): Promise<void> =>
+    apiClient.post(`/admin/education/courses/${courseId}/suspend`, { reason }),
+
+  unsuspendCourse: (courseId: string, note?: string): Promise<void> =>
+    apiClient.post(`/admin/education/courses/${courseId}/unsuspend`, { note }),
+
+  toggleLectureActive: (courseId: string, lectureId: string, isActive: boolean, reason?: string): Promise<void> =>
+    apiClient.post(`/admin/education/courses/${courseId}/lectures/${lectureId}/toggle-active`, { isActive, reason }),
+
+  addCourseAdminNote: (courseId: string, data: { lectureId?: string; flag?: string; content: string }): Promise<void> =>
+    apiClient.post(`/admin/education/courses/${courseId}/notes`, data),
+
+  getCourseAdminNotes: (courseId: string): Promise<CourseAdminNoteDto[]> =>
+    apiClient.get(`/admin/education/courses/${courseId}/notes`),
 };

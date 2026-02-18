@@ -54,11 +54,9 @@ export default function CurriculumSidebar({
     });
   };
 
-  const totalLectures = sections.reduce((sum, s) => sum + s.lectures.length, 0);
-  const completedLectures = sections.reduce(
-    (sum, s) => sum + s.lectures.filter((l) => l.isCompleted).length,
-    0
-  );
+  const activeLectures = sections.flatMap(s => s.lectures).filter((l: any) => !('isActive' in l) || l.isActive !== false);
+  const totalLectures = activeLectures.length;
+  const completedLectures = activeLectures.filter((l) => l.isCompleted).length;
   const progressPercent = totalLectures > 0 ? Math.round((completedLectures / totalLectures) * 100) : 0;
 
   return (
@@ -89,8 +87,9 @@ export default function CurriculumSidebar({
       <div className="flex-1 overflow-y-auto">
         {sections.map((section, sectionIndex) => {
           const isExpanded = expandedSections.has(section.id);
-          const sectionCompletedCount = section.lectures.filter((l) => l.isCompleted).length;
-          const allCompleted = sectionCompletedCount === section.lectures.length && section.lectures.length > 0;
+          const sectionActiveLectures = section.lectures.filter((l: any) => !('isActive' in l) || l.isActive !== false);
+          const sectionCompletedCount = sectionActiveLectures.filter((l) => l.isCompleted).length;
+          const allCompleted = sectionCompletedCount === sectionActiveLectures.length && sectionActiveLectures.length > 0;
 
           return (
             <div key={section.id} className="border-b border-white/[0.04] last:border-b-0">
@@ -120,7 +119,7 @@ export default function CurriculumSidebar({
                     <CheckCircle className="w-4 h-4 text-emerald-500" />
                   )}
                   <span className="text-xs text-gray-500 font-semibold tabular-nums">
-                    {sectionCompletedCount}/{section.lectures.length}
+                    {sectionCompletedCount}/{sectionActiveLectures.length}
                   </span>
                 </div>
               </button>
@@ -131,26 +130,32 @@ export default function CurriculumSidebar({
                   {section.lectures.map((lecture, lectureIndex) => {
                     const isCurrent = lecture.id === currentLectureId;
                     const isVideoType = lecture.type === LectureType.Video || lecture.type === 'Video';
+                    const isInactive = 'isActive' in lecture && lecture.isActive === false;
 
                     return (
                       <button
                         key={lecture.id}
-                        onClick={() => onSelectLecture(lecture.id)}
+                        onClick={() => !isInactive && onSelectLecture(lecture.id)}
+                        disabled={isInactive}
                         className={cn(
                           'w-full flex items-center gap-3 pl-10 pr-5 py-2.5 text-left transition-all duration-150 group/lecture relative',
-                          isCurrent
+                          isInactive
+                            ? 'opacity-50 cursor-not-allowed'
+                            : isCurrent
                             ? 'bg-primary-600/10'
                             : 'hover:bg-white/[0.03]'
                         )}
                       >
                         {/* Active indicator */}
-                        {isCurrent && (
+                        {isCurrent && !isInactive && (
                           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-7 rounded-r-full bg-primary-500" />
                         )}
 
                         {/* Status Icon */}
                         <div className="shrink-0 w-5 h-5 flex items-center justify-center">
-                          {lecture.isCompleted ? (
+                          {isInactive ? (
+                            <Lock className="w-[18px] h-[18px] text-gray-600" />
+                          ) : lecture.isCompleted ? (
                             <CheckCircle className="w-[18px] h-[18px] text-emerald-500" />
                           ) : isCurrent ? (
                             <div className="w-[18px] h-[18px] rounded-full border-2 border-primary-500 flex items-center justify-center">
@@ -166,7 +171,9 @@ export default function CurriculumSidebar({
                           <p
                             className={cn(
                               'text-[13px] truncate leading-snug transition-colors',
-                              isCurrent
+                              isInactive
+                                ? 'text-gray-600 line-through'
+                                : isCurrent
                                 ? 'text-primary-300 font-semibold'
                                 : 'text-gray-300 group-hover/lecture:text-gray-200'
                             )}
@@ -174,18 +181,22 @@ export default function CurriculumSidebar({
                             {lecture.title}
                           </p>
                           <div className="flex items-center gap-1.5 mt-1">
-                            {isVideoType ? (
+                            {isInactive ? (
+                              <span className="text-[11px] text-gray-600 font-medium">Pasif</span>
+                            ) : isVideoType ? (
                               <Play className="w-3 h-3 text-gray-500" />
                             ) : (
                               <FileText className="w-3 h-3 text-gray-500" />
                             )}
-                            <span className="text-[11px] text-gray-500 font-medium">
-                              {lecture.durationSec > 0
-                                ? formatLectureDuration(lecture.durationSec)
-                                : lecture.type === LectureType.Text || lecture.type === 'Text'
-                                ? 'Metin'
-                                : '--:--'}
-                            </span>
+                            {!isInactive && (
+                              <span className="text-[11px] text-gray-500 font-medium">
+                                {lecture.durationSec > 0
+                                  ? formatLectureDuration(lecture.durationSec)
+                                  : lecture.type === LectureType.Text || lecture.type === 'Text'
+                                  ? 'Metin'
+                                  : '--:--'}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </button>

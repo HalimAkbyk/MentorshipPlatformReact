@@ -378,6 +378,7 @@ export interface CoursePlayerSectionLectureDto {
   title: string;
   durationSec: number;
   isCompleted: boolean;
+  isActive: boolean;
   type: LectureType;
 }
 

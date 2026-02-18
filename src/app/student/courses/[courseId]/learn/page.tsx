@@ -273,12 +273,10 @@ function CoursePlayerContent() {
   const isVideo = lectureType === LectureType.Video || lectureType === 'Video';
   const isText = lectureType === LectureType.Text || lectureType === 'Text';
 
-  // Progress calculation
-  const totalLectures = sections.reduce((sum, s) => sum + s.lectures.length, 0);
-  const completedLectures = sections.reduce(
-    (sum, s) => sum + s.lectures.filter((l) => l.isCompleted).length,
-    0
-  );
+  // Progress calculation (exclude inactive lectures)
+  const allActiveLectures = sections.flatMap(s => s.lectures).filter((l: any) => !('isActive' in l) || l.isActive !== false);
+  const totalLectures = allActiveLectures.length;
+  const completedLectures = allActiveLectures.filter((l) => l.isCompleted).length;
   const progressPercent = totalLectures > 0 ? Math.round((completedLectures / totalLectures) * 100) : 0;
 
   return (

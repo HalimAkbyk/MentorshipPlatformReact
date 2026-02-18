@@ -28,6 +28,8 @@ const statusMap: Record<string, StatusConfig> = {
   PendingPayment: { label: 'Odeme Bekleniyor', dotColor: 'bg-amber-500', bgColor: 'bg-amber-50', textColor: 'text-amber-700' },
   Draft: { label: 'Taslak', dotColor: 'bg-amber-500', bgColor: 'bg-amber-50', textColor: 'text-amber-700' },
   PendingApproval: { label: 'Onay Bekliyor', dotColor: 'bg-amber-500', bgColor: 'bg-amber-50', textColor: 'text-amber-700' },
+  PendingReview: { label: 'Inceleme Bekliyor', dotColor: 'bg-amber-500', bgColor: 'bg-amber-50', textColor: 'text-amber-700' },
+  RevisionRequested: { label: 'Revizyon Istendi', dotColor: 'bg-orange-500', bgColor: 'bg-orange-50', textColor: 'text-orange-700' },
 
   // Red - cancelled / negative
   Cancelled: { label: 'Iptal Edildi', dotColor: 'bg-red-500', bgColor: 'bg-red-50', textColor: 'text-red-700' },

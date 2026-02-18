@@ -42,6 +42,7 @@ export enum CourseStatus {
   RevisionRequested = 'RevisionRequested',
   Rejected = 'Rejected',
   Published = 'Published',
+  Suspended = 'Suspended',
   Archived = 'Archived',
 }
 
