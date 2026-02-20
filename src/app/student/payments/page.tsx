@@ -314,6 +314,14 @@ export default function StudentPaymentsPage() {
                         </div>
                       )}
 
+                      {/* Refund note (e.g. NoShow → full refund eligible) */}
+                      {showRefund && order.refundNote && refundOrderId !== order.orderId && (
+                        <div className="mx-4 px-3 py-2 border border-t-0 rounded-b-lg bg-green-50/70 flex items-center gap-2">
+                          <Info className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
+                          <span className="text-xs text-green-700">{order.refundNote}</span>
+                        </div>
+                      )}
+
                       {/* Refund Request Form */}
                       {refundOrderId === order.orderId && (
                         <div className="ml-4 mr-4 p-3 border border-t-0 rounded-b-lg bg-red-50/50 space-y-2">
@@ -321,7 +329,13 @@ export default function StudentPaymentsPage() {
                             <AlertCircle className="w-4 h-4" />
                             <span className="font-medium">İade talebi oluştur</span>
                           </div>
-                          {order.refundPercentage < 1 && order.refundPercentage > 0 && (
+                          {order.refundNote && (
+                            <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 px-2 py-1.5 rounded">
+                              <Info className="w-3.5 h-3.5 flex-shrink-0" />
+                              <span>{order.refundNote}</span>
+                            </div>
+                          )}
+                          {!order.refundNote && order.refundPercentage < 1 && order.refundPercentage > 0 && (
                             <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 px-2 py-1.5 rounded">
                               <Info className="w-3.5 h-3.5 flex-shrink-0" />
                               <span>Bu sipariş için %{Math.round(order.refundPercentage * 100)} oranında iade uygulanacaktır.</span>

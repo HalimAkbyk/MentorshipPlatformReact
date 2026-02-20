@@ -4,7 +4,8 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Calendar, Clock, User, MapPin, AlertCircle, Video, MessageSquare, CheckCircle, HelpCircle, RefreshCw, X, Mail } from 'lucide-react';
+import Link from 'next/link';
+import { Calendar, Clock, User, MapPin, AlertCircle, Video, MessageSquare, CheckCircle, HelpCircle, RefreshCw, X, Mail, Info, RotateCcw } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../../components/ui/avatar';
@@ -391,6 +392,32 @@ export default function BookingDetailPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-red-800">{booking.cancellationReason}</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* NoShow — refund info */}
+            {booking.status === BookingStatus.NoShow && (
+              <Card className="border-amber-200 bg-amber-50">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <Info className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-semibold text-amber-900 mb-1">
+                        Mentor derse katılmadı
+                      </p>
+                      <p className="text-sm text-amber-800 mb-3">
+                        Mentor bu derse katılım sağlamadığı için tam iade hakkınız bulunmaktadır.
+                        Ödeme geçmişi sayfasından iade talebinizi oluşturabilirsiniz.
+                      </p>
+                      <Link href="/student/payments">
+                        <Button size="sm" variant="outline" className="border-amber-300 text-amber-800 hover:bg-amber-100">
+                          <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+                          Ödeme Geçmişi &amp; İade Talebi
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             )}

@@ -27,6 +27,7 @@ export interface StudentPaymentDto {
   refundedAmount: number | null;
   refundPercentage: number;              // 0 = no refund, 0.5 = 50%, 1 = 100%
   refundIneligibleReason: string | null; // null = eligible, string = reason why not
+  refundNote: string | null;             // helpful info (e.g. "Mentor didn't show up")
 }
 
 export interface PaginatedPayments {
