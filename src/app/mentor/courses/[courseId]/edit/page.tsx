@@ -18,6 +18,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import VideoPlayer from '@/components/courses/video-player';
 import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
 import { CoverImageEditor } from '@/components/ui/cover-image-editor';
@@ -1319,14 +1320,7 @@ function LectureRow({
               >✕</button>
             </div>
             <div className="p-4">
-              <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                <video
-                  src={videoUrl}
-                  controls
-                  autoPlay
-                  className="w-full h-full"
-                />
-              </div>
+              <VideoPlayer src={videoUrl} />
             </div>
           </div>
         </div>

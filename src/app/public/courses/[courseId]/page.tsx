@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getCoverImageStyle } from '@/components/ui/cover-image-editor';
 import { useParams, useRouter } from 'next/navigation';
 import {
@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils/cn';
 import { CourseLevel, LectureType } from '@/lib/types/enums';
 import { toast } from 'sonner';
 import type { PreviewLectureDto } from '@/lib/types/models';
+import VideoPlayer from '@/components/courses/video-player';
 import { paymentsApi } from '@/lib/api/payments';
 import { IyzicoCheckoutForm } from '@/components/payment/IyzicoCheckoutForm';
 import { useAuthStore } from '@/lib/stores/auth-store';
@@ -79,8 +80,6 @@ export default function CourseDetailPage() {
   const [checkoutFormHtml, setCheckoutFormHtml] = useState('');
   const [showCheckoutForm, setShowCheckoutForm] = useState(false);
   const [pendingEnrollmentId, setPendingEnrollmentId] = useState<string | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-
   const handlePreviewClick = useCallback(async (lectureId: string) => {
     try {
       const data = await previewMutation.mutateAsync({ courseId, lectureId });
@@ -93,10 +92,6 @@ export default function CourseDetailPage() {
 
   const closePreview = useCallback(() => {
     setPreviewOpen(false);
-    // Pause video when closing
-    if (videoRef.current) {
-      videoRef.current.pause();
-    }
     setTimeout(() => setPreviewData(null), 300);
   }, []);
 
@@ -645,13 +640,8 @@ export default function CourseDetailPage() {
                 </div>
               </div>
             ) : previewData?.videoUrl ? (
-              <video
-                ref={videoRef}
+              <VideoPlayer
                 src={previewData.videoUrl}
-                controls
-                autoPlay
-                className="w-full aspect-video"
-                controlsList="nodownload"
               />
             ) : previewData?.textContent ? (
               <div className="p-6 max-h-[70vh] overflow-y-auto bg-white">
