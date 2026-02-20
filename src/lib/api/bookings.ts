@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 import type { Booking, BookingDetail } from '@/lib/types/models';
 import type { BookingStatus } from '@/lib/types/enums';
+import type { PaginatedResponse } from '@/lib/types/api';
 
 export interface QuestionResponseData {
   questionId: string;
@@ -21,8 +22,8 @@ export const bookingsApi = {
     return apiClient.post('/bookings', data);
   },
 
-  list: async (status?: BookingStatus): Promise<Booking[]> => {
-    return apiClient.get<Booking[]>('/bookings/me', { status });
+  list: async (status?: BookingStatus, page = 1, pageSize = 15): Promise<PaginatedResponse<Booking>> => {
+    return apiClient.get('/bookings/me', { status, page, pageSize });
   },
 
   getById: async (id: string): Promise<BookingDetail> => {

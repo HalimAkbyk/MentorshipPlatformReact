@@ -20,8 +20,8 @@ export const classesApi = {
     return apiClient.get<GroupClassDetail>(`/classes/${classId}`);
   },
 
-  getMyClasses: async (status?: string): Promise<GroupClass[]> => {
-    return apiClient.get<GroupClass[]>('/classes/my', status ? { status } : undefined);
+  getMyClasses: async (status?: string, page = 1, pageSize = 15): Promise<PaginatedResponse<GroupClass>> => {
+    return apiClient.get('/classes/my', { ...(status ? { status } : {}), page, pageSize });
   },
 
   enroll: async (classId: string): Promise<{ enrollmentId: string }> => {
@@ -36,8 +36,8 @@ export const classesApi = {
     return apiClient.post(`/classes/${classId}/complete`);
   },
 
-  getMyEnrollments: async (): Promise<MyEnrollment[]> => {
-    return apiClient.get<MyEnrollment[]>('/classes/enrollments/my');
+  getMyEnrollments: async (page = 1, pageSize = 15): Promise<PaginatedResponse<MyEnrollment>> => {
+    return apiClient.get('/classes/enrollments/my', { page, pageSize });
   },
 
   cancelEnrollment: async (enrollmentId: string, reason: string): Promise<void> => {

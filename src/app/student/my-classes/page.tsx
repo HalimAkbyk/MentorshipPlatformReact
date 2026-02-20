@@ -18,9 +18,12 @@ import {
   Video,
 } from 'lucide-react';
 import Link from 'next/link';
+import { Pagination } from '@/components/ui/pagination';
 
 export default function MyClassesPage() {
-  const { data: enrollments, isLoading } = useMyEnrollments();
+  const [page, setPage] = useState(1);
+  const { data: enrollmentsData, isLoading } = useMyEnrollments(page);
+  const enrollments = enrollmentsData?.items;
   const cancelMutation = useCancelEnrollment();
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState('');
@@ -101,118 +104,127 @@ export default function MyClassesPage() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
         </div>
       ) : enrollments && enrollments.length > 0 ? (
-        <div className="space-y-4">
-          {enrollments.map((enrollment) => {
-            const refundInfo = getRefundInfo(enrollment.startAt);
-            return (
-              <Card key={enrollment.enrollmentId}>
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold">{enrollment.classTitle}</span>
-                        {getStatusBadge(enrollment.enrollmentStatus)}
-                        <Badge variant="outline" className="text-xs">{enrollment.category}</Badge>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <Avatar className="w-6 h-6">
-                          <AvatarImage src={enrollment.mentorAvatar ?? undefined} />
-                          <AvatarFallback className="text-xs">
-                            {enrollment.mentorName.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm text-gray-600">{enrollment.mentorName}</span>
-                      </div>
-
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5" />
-                          {formatDateTime(enrollment.startAt)}
+        <>
+          <div className="space-y-4">
+            {enrollments.map((enrollment) => {
+              const refundInfo = getRefundInfo(enrollment.startAt);
+              return (
+                <Card key={enrollment.enrollmentId}>
+                  <CardContent className="pt-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold">{enrollment.classTitle}</span>
+                          {getStatusBadge(enrollment.enrollmentStatus)}
+                          <Badge variant="outline" className="text-xs">{enrollment.category}</Badge>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          {formatTime(enrollment.startAt)} - {formatTime(enrollment.endAt)}
+
+                        <div className="flex items-center gap-2">
+                          <Avatar className="w-6 h-6">
+                            <AvatarImage src={enrollment.mentorAvatar ?? undefined} />
+                            <AvatarFallback className="text-xs">
+                              {enrollment.mentorName.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm text-gray-600">{enrollment.mentorName}</span>
+                        </div>
+
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {formatDateTime(enrollment.startAt)}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" />
+                            {formatTime(enrollment.startAt)} - {formatTime(enrollment.endAt)}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <div className="text-sm font-semibold">
+                          {formatCurrency(enrollment.pricePerSeat, enrollment.currency)}
                         </div>
                       </div>
                     </div>
 
-                    <div className="text-right shrink-0">
-                      <div className="text-sm font-semibold">
-                        {formatCurrency(enrollment.pricePerSeat, enrollment.currency)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions for confirmed enrollments */}
-                  {enrollment.enrollmentStatus === 'Confirmed' && enrollment.classStatus !== 'Cancelled' && (
-                    <div className="mt-4 pt-3 border-t flex items-center gap-2">
-                      {canJoin(enrollment) && (
-                        <Link href={`/student/group-classroom/${enrollment.classId}`}>
-                          <Button size="sm">
-                            <Video className="w-4 h-4 mr-1" />
-                            Derse Katıl
-                          </Button>
-                        </Link>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-red-600 border-red-200 hover:bg-red-50"
-                        onClick={() =>
-                          setCancellingId(
-                            cancellingId === enrollment.enrollmentId ? null : enrollment.enrollmentId
-                          )
-                        }
-                      >
-                        <XCircle className="w-4 h-4 mr-1" />
-                        İptal Et
-                      </Button>
-                      <span className={`text-xs ${refundInfo.color}`}>{refundInfo.text}</span>
-                    </div>
-                  )}
-
-                  {/* Cancel Form */}
-                  {cancellingId === enrollment.enrollmentId && (
-                    <div className="mt-3 p-3 rounded-lg bg-red-50 border border-red-200 space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-red-700">
-                        <AlertCircle className="w-4 h-4" />
-                        <span className="font-medium">
-                          İptal politikası: {refundInfo.text}
-                        </span>
-                      </div>
-                      <Input
-                        placeholder="İptal sebebi..."
-                        value={cancelReason}
-                        onChange={(e) => setCancelReason(e.target.value)}
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          disabled={!cancelReason.trim() || cancelMutation.isPending}
-                          onClick={() => handleCancel(enrollment.enrollmentId)}
-                        >
-                          İptal Et
-                        </Button>
+                    {/* Actions for confirmed enrollments */}
+                    {enrollment.enrollmentStatus === 'Confirmed' && enrollment.classStatus !== 'Cancelled' && (
+                      <div className="mt-4 pt-3 border-t flex items-center gap-2">
+                        {canJoin(enrollment) && (
+                          <Link href={`/student/group-classroom/${enrollment.classId}`}>
+                            <Button size="sm">
+                              <Video className="w-4 h-4 mr-1" />
+                              Derse Katıl
+                            </Button>
+                          </Link>
+                        )}
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => {
-                            setCancellingId(null);
-                            setCancelReason('');
-                          }}
+                          className="text-red-600 border-red-200 hover:bg-red-50"
+                          onClick={() =>
+                            setCancellingId(
+                              cancellingId === enrollment.enrollmentId ? null : enrollment.enrollmentId
+                            )
+                          }
                         >
-                          Vazgeç
+                          <XCircle className="w-4 h-4 mr-1" />
+                          İptal Et
                         </Button>
+                        <span className={`text-xs ${refundInfo.color}`}>{refundInfo.text}</span>
                       </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                    )}
+
+                    {/* Cancel Form */}
+                    {cancellingId === enrollment.enrollmentId && (
+                      <div className="mt-3 p-3 rounded-lg bg-red-50 border border-red-200 space-y-2">
+                        <div className="flex items-center gap-2 text-sm text-red-700">
+                          <AlertCircle className="w-4 h-4" />
+                          <span className="font-medium">
+                            İptal politikası: {refundInfo.text}
+                          </span>
+                        </div>
+                        <Input
+                          placeholder="İptal sebebi..."
+                          value={cancelReason}
+                          onChange={(e) => setCancelReason(e.target.value)}
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            disabled={!cancelReason.trim() || cancelMutation.isPending}
+                            onClick={() => handleCancel(enrollment.enrollmentId)}
+                          >
+                            İptal Et
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setCancellingId(null);
+                              setCancelReason('');
+                            }}
+                          >
+                            Vazgeç
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+          <Pagination
+            page={page}
+            totalPages={enrollmentsData?.totalPages ?? 1}
+            totalCount={enrollmentsData?.totalCount ?? 0}
+            onPageChange={setPage}
+            itemLabel="kayit"
+          />
+        </>
       ) : (
         <Card>
           <CardContent className="py-12 text-center">

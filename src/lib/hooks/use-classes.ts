@@ -22,17 +22,17 @@ export function useGroupClass(classId: string) {
   });
 }
 
-export function useMyGroupClasses(status?: string) {
+export function useMyGroupClasses(status?: string, page = 1, pageSize = 15) {
   return useQuery({
-    queryKey: ['my-classes', status],
-    queryFn: () => classesApi.getMyClasses(status),
+    queryKey: ['my-classes', status, page, pageSize],
+    queryFn: () => classesApi.getMyClasses(status, page, pageSize),
   });
 }
 
-export function useMyEnrollments() {
+export function useMyEnrollments(page = 1, pageSize = 15) {
   return useQuery({
-    queryKey: ['my-enrollments'],
-    queryFn: () => classesApi.getMyEnrollments(),
+    queryKey: ['my-enrollments', page, pageSize],
+    queryFn: () => classesApi.getMyEnrollments(page, pageSize),
   });
 }
 

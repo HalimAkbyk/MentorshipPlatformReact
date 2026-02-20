@@ -23,6 +23,7 @@ import {
 import { CourseStatus } from '@/lib/types/enums';
 import { ROUTES } from '@/lib/constants/routes';
 import type { MentorCourseDto } from '@/lib/types/models';
+import { Pagination } from '@/components/ui/pagination';
 
 // ==================== HELPERS ====================
 
@@ -62,8 +63,10 @@ export default function MentorCoursesPage() {
   const router = useRouter();
   const confirm = useConfirm();
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
+  const [page, setPage] = useState(1);
 
-  const { data: courses, isLoading } = useMyCourses();
+  const { data: coursesData, isLoading } = useMyCourses(page);
+  const courses = coursesData?.items;
   const publishMutation = usePublishCourse();
   const archiveMutation = useArchiveCourse();
   const deleteMutation = useDeleteCourse();
@@ -163,7 +166,7 @@ export default function MentorCoursesPage() {
           {tabs.map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => { setActiveTab(tab.key); setPage(1); }}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.key
                   ? 'bg-primary-600 text-white'
@@ -212,6 +215,15 @@ export default function MentorCoursesPage() {
               />
             ))}
           </div>
+        )}
+        {courses && courses.length > 0 && (
+          <Pagination
+            page={page}
+            totalPages={coursesData?.totalPages ?? 1}
+            totalCount={coursesData?.totalCount ?? 0}
+            onPageChange={setPage}
+            itemLabel="kurs"
+          />
         )}
       </div>
     </div>

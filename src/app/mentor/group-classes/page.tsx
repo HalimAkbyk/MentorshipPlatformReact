@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { FeatureGate } from '@/components/feature-gate';
+import { Pagination } from '@/components/ui/pagination';
 
 const STATUS_TABS = [
   { label: 'Aktif', value: 'Published' },
@@ -30,11 +31,13 @@ const STATUS_TABS = [
 
 function MentorGroupClassesContent() {
   const [statusFilter, setStatusFilter] = useState('Published');
+  const [page, setPage] = useState(1);
   const [showCreate, setShowCreate] = useState(false);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState('');
 
-  const { data: classes, isLoading } = useMyGroupClasses(statusFilter || undefined);
+  const { data: classesData, isLoading } = useMyGroupClasses(statusFilter || undefined, page);
+  const classes = classesData?.items;
   const cancelMutation = useCancelGroupClass();
   const completeMutation = useCompleteGroupClass();
 
@@ -111,7 +114,7 @@ function MentorGroupClassesContent() {
             key={tab.value}
             variant={statusFilter === tab.value ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setStatusFilter(tab.value)}
+            onClick={() => { setStatusFilter(tab.value); setPage(1); }}
           >
             {tab.label}
           </Button>
@@ -124,6 +127,7 @@ function MentorGroupClassesContent() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
         </div>
       ) : classes && classes.length > 0 ? (
+        <>
         <div className="space-y-4">
           {classes.map((gc) => (
             <Card key={gc.id}>
@@ -240,6 +244,14 @@ function MentorGroupClassesContent() {
             </Card>
           ))}
         </div>
+        <Pagination
+          page={page}
+          totalPages={classesData?.totalPages ?? 1}
+          totalCount={classesData?.totalCount ?? 0}
+          onPageChange={setPage}
+          itemLabel="ders"
+        />
+        </>
       ) : (
         <Card>
           <CardContent className="py-12 text-center">

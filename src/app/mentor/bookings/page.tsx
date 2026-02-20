@@ -15,6 +15,7 @@ import { formatDate, formatTime } from '../../../lib/utils/format';
 import { BookingStatus } from '../../../lib/types/enums';
 import type { Booking } from '../../../lib/types/models';
 import { cn } from '../../../lib/utils/cn';
+import { Pagination } from '../../../components/ui/pagination';
 
 const statusFilters = [
   { value: 'all', label: 'Tümü' },
@@ -25,10 +26,13 @@ const statusFilters = [
 
 export default function MentorBookingsPage() {
   const [selectedStatus, setSelectedStatus] = useState<'all' | BookingStatus>('all');
+  const [page, setPage] = useState(1);
   
-  const { data: bookings, isLoading } = useBookings(
-    selectedStatus === 'all' ? undefined : selectedStatus
+  const { data, isLoading } = useBookings(
+    selectedStatus === 'all' ? undefined : selectedStatus,
+    page
   );
+  const bookings = data?.items;
 
   const isSessionLive = (booking: Booking): boolean => {
     const now = new Date();
@@ -59,7 +63,7 @@ export default function MentorBookingsPage() {
           {statusFilters.map((filter) => (
             <button
               key={filter.value}
-              onClick={() => setSelectedStatus(filter.value as 'all' | BookingStatus)}
+              onClick={() => { setSelectedStatus(filter.value as 'all' | BookingStatus); setPage(1); }}
               className={cn(
                 'px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
                 selectedStatus === filter.value
@@ -90,6 +94,7 @@ export default function MentorBookingsPage() {
             ))}
           </div>
         ) : bookings && bookings.length > 0 ? (
+          <>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {bookings.map((booking) => {
               const isLive = isSessionLive(booking);
@@ -182,6 +187,14 @@ export default function MentorBookingsPage() {
               );
             })}
           </div>
+          <Pagination
+            page={page}
+            totalPages={data?.totalPages ?? 1}
+            totalCount={data?.totalCount ?? 0}
+            onPageChange={setPage}
+            itemLabel="seans"
+          />
+          </>
         ) : (
           <Card className="p-8 text-center">
             <Calendar className="w-16 h-16 mx-auto mb-4 text-gray-400" />

@@ -11,6 +11,7 @@ import type {
   VideoUploadUrlResponse,
   PreviewLectureDto,
 } from '../types/models';
+import type { PaginatedResponse } from '../types/api';
 
 // ===== Request types =====
 
@@ -54,8 +55,8 @@ export interface GetPublicCoursesParams {
 
 export const coursesApi = {
   // === Mentor Course CRUD ===
-  getMyCourses: async (): Promise<MentorCourseDto[]> => {
-    return apiClient.get<MentorCourseDto[]>('/courses/me');
+  getMyCourses: async (page = 1, pageSize = 15): Promise<PaginatedResponse<MentorCourseDto>> => {
+    return apiClient.get('/courses/me', { page, pageSize });
   },
 
   getCourseForEdit: async (id: string): Promise<CourseEditDto> => {
@@ -238,8 +239,8 @@ export const coursesApi = {
     return apiClient.post(`/course-enrollments/${courseId}`);
   },
 
-  getEnrolledCourses: async (): Promise<EnrolledCourseDto[]> => {
-    return apiClient.get<EnrolledCourseDto[]>('/course-enrollments/my');
+  getEnrolledCourses: async (page = 1, pageSize = 15): Promise<PaginatedResponse<EnrolledCourseDto>> => {
+    return apiClient.get('/course-enrollments/my', { page, pageSize });
   },
 
   getCoursePlayer: async (courseId: string, lectureId?: string): Promise<CoursePlayerDto> => {

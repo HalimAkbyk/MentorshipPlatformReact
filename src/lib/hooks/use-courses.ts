@@ -3,10 +3,10 @@ import { coursesApi, CreateCourseData, UpdateCourseData, GetPublicCoursesParams 
 
 // ===== Mentor Queries =====
 
-export function useMyCourses() {
+export function useMyCourses(page = 1, pageSize = 15) {
   return useQuery({
-    queryKey: ['courses', 'mine'],
-    queryFn: () => coursesApi.getMyCourses(),
+    queryKey: ['courses', 'mine', page, pageSize],
+    queryFn: () => coursesApi.getMyCourses(page, pageSize),
   });
 }
 
@@ -287,10 +287,10 @@ export function useEnrollInCourse() {
   });
 }
 
-export function useEnrolledCourses() {
+export function useEnrolledCourses(page = 1, pageSize = 15) {
   return useQuery({
-    queryKey: ['courses', 'enrolled'],
-    queryFn: () => coursesApi.getEnrolledCourses(),
+    queryKey: ['courses', 'enrolled', page, pageSize],
+    queryFn: () => coursesApi.getEnrolledCourses(page, pageSize),
   });
 }
 
