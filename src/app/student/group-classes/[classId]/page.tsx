@@ -21,6 +21,7 @@ import {
   Info,
 } from 'lucide-react';
 import Link from 'next/link';
+import { IyzicoCheckoutForm } from '@/components/payment/IyzicoCheckoutForm';
 
 export default function GroupClassDetailPage() {
   const params = useParams();
@@ -121,20 +122,10 @@ export default function GroupClassDetailPage() {
   // Iyzico checkout overlay
   if (checkoutHtml) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Ödeme</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              dangerouslySetInnerHTML={{ __html: checkoutHtml }}
-              id="iyzipay-checkout-form"
-              className="min-h-[400px]"
-            />
-          </CardContent>
-        </Card>
-      </div>
+      <IyzicoCheckoutForm
+        checkoutFormContent={checkoutHtml}
+        onClose={() => setCheckoutHtml(null)}
+      />
     );
   }
 
