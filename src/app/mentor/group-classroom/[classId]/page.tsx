@@ -285,7 +285,11 @@ export default function MentorGroupClassroomPage() {
     clearLocalContainerVideos();
     setRemoteTiles(prev => { prev.forEach(t => t.audioEls?.forEach(el => { try { el.remove(); } catch {} })); return []; });
     setIsScreenSharing(false);
-  }, []);
+    // End the VideoSession so students see room as inactive
+    if (roomName) {
+      videoApi.endSession(roomName).catch(() => {});
+    }
+  }, [roomName]);
 
   useEffect(() => { return () => { fullDisconnect(); }; }, [fullDisconnect]);
 

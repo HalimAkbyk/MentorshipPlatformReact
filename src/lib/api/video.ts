@@ -33,4 +33,8 @@ export const videoApi = {
   getRoomStatus: async (roomName: string): Promise<RoomStatusResponse> => {
     return apiClient.get<RoomStatusResponse>(`/video/room/${roomName}/status`);
   },
+
+  endSession: async (roomName: string): Promise<void> => {
+    return apiClient.post(`/video/room/${roomName}/end`);
+  },
 };

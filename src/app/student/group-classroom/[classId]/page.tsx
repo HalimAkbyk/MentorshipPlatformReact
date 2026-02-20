@@ -444,6 +444,17 @@ export default function StudentGroupClassroomPage() {
     return () => clearInterval(interval);
   }, [waitingForHost, isConnected, isConnecting, checkRoomStatus]);
 
+  // ─── Re-attach local preview when component mounts after connection ───
+  useEffect(() => {
+    if (isConnected && rawVideoTrackRef.current && localVideoRef.current) {
+      // Check if the local video container is empty (no video element attached yet)
+      const existingVideo = localVideoRef.current.querySelector('video');
+      if (!existingVideo) {
+        attachLocalPreview(rawVideoTrackRef.current);
+      }
+    }
+  }, [isConnected, attachLocalPreview]);
+
   // ─── Toggle Functions ───
   const toggleVideo = () => {
     const r = roomRef.current; if (!r) return;
