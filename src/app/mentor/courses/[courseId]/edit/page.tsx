@@ -1302,17 +1302,34 @@ function LectureRow({
       </div>
 
       {/* Video Preview Modal */}
+      {/* Video Preview Dialog */}
       {showVideoPreview && videoUrl && (
-        <Modal onClose={() => { setShowVideoPreview(false); setVideoUrl(null); }} title={`Video Önizleme: ${lecture.title}`}>
-          <div className="aspect-video bg-black rounded-lg overflow-hidden">
-            <video
-              src={videoUrl}
-              controls
-              autoPlay
-              className="w-full h-full"
-            />
+        <div className="fixed inset-0 z-50">
+          <button
+            aria-label="Close"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => { setShowVideoPreview(false); setVideoUrl(null); }}
+          />
+          <div className="relative mx-auto mt-12 w-[92vw] max-w-4xl rounded-2xl bg-white shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b">
+              <span className="text-base font-semibold truncate">Video Önizleme: {lecture.title}</span>
+              <button
+                onClick={() => { setShowVideoPreview(false); setVideoUrl(null); }}
+                className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+              >✕</button>
+            </div>
+            <div className="p-4">
+              <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                <video
+                  src={videoUrl}
+                  controls
+                  autoPlay
+                  className="w-full h-full"
+                />
+              </div>
+            </div>
           </div>
-        </Modal>
+        </div>
       )}
     </>
   );
