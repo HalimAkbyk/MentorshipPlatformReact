@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Bell, Check, CheckCheck, Loader2, AlertTriangle, BookOpen, PlayCircle, MessageSquare, Info, ChevronRight } from 'lucide-react';
+import { Bell, Check, CheckCheck, Loader2, AlertTriangle, BookOpen, PlayCircle, MessageSquare, Info, ChevronRight, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
 import {
   useNotifications,
   useNotificationCount,
@@ -38,6 +38,10 @@ export function NotificationIcon({ type }: { type: string }) {
       return <BookOpen className="h-4 w-4 text-indigo-500" />;
     case 'Message':
       return <MessageSquare className="h-4 w-4 text-blue-500" />;
+    case 'RefundApproved':
+      return <CheckCircle className="h-4 w-4 text-green-500" />;
+    case 'RefundRejected':
+      return <XCircle className="h-4 w-4 text-red-500" />;
     default:
       return <Info className="h-4 w-4 text-slate-400" />;
   }
@@ -50,6 +54,8 @@ export function getNavigationUrl(notif: UserNotificationDto): string | null {
       return `/mentor/courses/${notif.referenceId}/edit`;
     case 'Booking':
       return `/student/bookings/${notif.referenceId}`;
+    case 'Order':
+      return '/student/payments';
     default:
       return null;
   }
