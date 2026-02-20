@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Bell, Check, CheckCheck, Loader2, AlertTriangle, BookOpen, PlayCircle, MessageSquare, Info } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { Bell, Check, CheckCheck, Loader2, AlertTriangle, BookOpen, PlayCircle, MessageSquare, Info, ChevronRight } from 'lucide-react';
 import {
   useNotifications,
   useNotificationCount,
@@ -10,6 +11,8 @@ import {
   useMarkAllNotificationsRead,
 } from '@/lib/hooks/use-notifications';
 import type { UserNotificationDto } from '@/lib/api/notifications';
+
+const DROPDOWN_MAX_ITEMS = 15;
 
 function timeAgo(dateStr: string): string {
   const now = new Date();
@@ -25,7 +28,7 @@ function timeAgo(dateStr: string): string {
   return date.toLocaleDateString('tr-TR');
 }
 
-function NotificationIcon({ type }: { type: string }) {
+export function NotificationIcon({ type }: { type: string }) {
   switch (type) {
     case 'CourseModeration':
       return <AlertTriangle className="h-4 w-4 text-amber-500" />;
@@ -40,7 +43,7 @@ function NotificationIcon({ type }: { type: string }) {
   }
 }
 
-function getNavigationUrl(notif: UserNotificationDto): string | null {
+export function getNavigationUrl(notif: UserNotificationDto): string | null {
   if (!notif.referenceType || !notif.referenceId) return null;
   switch (notif.referenceType) {
     case 'Course':
@@ -52,16 +55,27 @@ function getNavigationUrl(notif: UserNotificationDto): string | null {
   }
 }
 
+export { timeAgo };
+
+function useNotificationsPageUrl(): string {
+  const pathname = usePathname();
+  if (pathname.startsWith('/student')) return '/student/notifications';
+  if (pathname.startsWith('/admin')) return '/admin/notifications';
+  return '/mentor/notifications';
+}
+
 export function UserNotificationsDropdown() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const notificationsPageUrl = useNotificationsPageUrl();
 
   const { data: countData } = useNotificationCount();
   const unreadCount = countData?.count ?? 0;
 
-  const { data: notificationsData, isLoading } = useNotifications(1, 20);
+  const { data: notificationsData, isLoading } = useNotifications(1, DROPDOWN_MAX_ITEMS);
   const notifications = notificationsData?.items ?? [];
+  const totalCount = notificationsData?.totalCount ?? 0;
 
   const markReadMutation = useMarkNotificationRead();
   const markAllReadMutation = useMarkAllNotificationsRead();
@@ -171,14 +185,17 @@ export function UserNotificationsDropdown() {
             )}
           </div>
 
-          {/* Footer */}
-          {notifications.length > 0 && (
-            <div className="border-t border-navy-100 px-4 py-2.5 text-center">
-              <span className="text-xs text-navy-300">
-                Son {notifications.length} bildirim gosteriliyor
-              </span>
-            </div>
-          )}
+          {/* Footer - Bildirimleri Gor link */}
+          <div className="border-t border-navy-100 px-4 py-2.5">
+            <Link
+              href={notificationsPageUrl}
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors"
+            >
+              Bildirimleri Gor
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
       )}
     </div>
