@@ -272,6 +272,7 @@ export const coursesApi = {
           title: l.title,
           durationSec: l.durationSec ?? 0,
           isCompleted: l.isCompleted ?? false,
+          isActive: l.isActive ?? true,
           type: l.type,
         })),
       })),

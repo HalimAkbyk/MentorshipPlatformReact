@@ -1202,8 +1202,8 @@ function LectureRow({
 
           {/* Actions */}
           <div className="flex items-center gap-1">
-            {/* Watch Video button for inactive/flagged lectures */}
-            {lecture.type === LectureType.Video && lecture.videoKey && (isInactive || hasFlaggedNote) && (
+            {/* Watch Video button for all video lectures with uploaded video */}
+            {lecture.type === LectureType.Video && lecture.videoKey && (
               <Button
                 size="sm"
                 variant="outline"
