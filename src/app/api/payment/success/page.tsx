@@ -11,12 +11,30 @@ function PaymentSuccessContent() {
   const type = searchParams.get('type');
   const courseId = searchParams.get('courseId');
 
-  const isCourse = type === 'course' || !!courseId;
-  const redirectUrl = isCourse && courseId
-    ? `/student/courses/${courseId}/learn`
-    : isCourse
-    ? '/student/courses'
-    : '/student/bookings';
+  // Determine redirect URL and message based on order type
+  let redirectUrl: string;
+  let successMessage: string;
+  let buttonLabel: string;
+
+  switch (type) {
+    case 'Course':
+    case 'course':
+      redirectUrl = courseId ? `/student/courses/${courseId}/learn` : '/student/courses';
+      successMessage = 'Kurs satın alımınız tamamlandı. Yönlendiriliyorsunuz...';
+      buttonLabel = 'Kursa Git';
+      break;
+    case 'GroupClass':
+      redirectUrl = '/student/my-classes';
+      successMessage = 'Grup dersine kaydınız tamamlandı. Yönlendiriliyorsunuz...';
+      buttonLabel = 'Derslerim';
+      break;
+    case 'Booking':
+    default:
+      redirectUrl = '/student/bookings';
+      successMessage = 'Rezervasyonunuz onaylandı. Yönlendiriliyorsunuz...';
+      buttonLabel = 'Rezervasyonlarım';
+      break;
+  }
 
   useEffect(() => {
     setTimeout(() => {
@@ -31,13 +49,9 @@ function PaymentSuccessContent() {
           <Check className="w-10 h-10 text-green-600" />
         </div>
         <h1 className="text-2xl font-bold mb-2">Ödeme Başarılı!</h1>
-        <p className="text-gray-600 mb-4">
-          {isCourse
-            ? 'Kurs satın alımınız tamamlandı. Yönlendiriliyorsunuz...'
-            : 'Rezervasyonunuz onaylandı. Yönlendiriliyorsunuz...'}
-        </p>
+        <p className="text-gray-600 mb-4">{successMessage}</p>
         <Button onClick={() => router.push(redirectUrl)}>
-          {isCourse ? 'Kursa Git' : 'Rezervasyonlarım'}
+          {buttonLabel}
         </Button>
       </div>
     </div>

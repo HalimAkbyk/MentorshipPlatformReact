@@ -41,11 +41,11 @@ export async function POST(request: NextRequest) {
     if (backendResponse.ok && result.isSuccess !== false) {
       // Build success URL with order type info for proper redirect
       const successUrl = new URL('/api/payment/success', request.url);
-      if (result.orderType === 'Course') {
-        successUrl.searchParams.set('type', 'course');
-        if (result.courseId) {
-          successUrl.searchParams.set('courseId', result.courseId);
-        }
+      if (result.orderType) {
+        successUrl.searchParams.set('type', result.orderType);
+      }
+      if (result.courseId) {
+        successUrl.searchParams.set('courseId', result.courseId);
       }
       return NextResponse.redirect(successUrl, 303);
     } else {
