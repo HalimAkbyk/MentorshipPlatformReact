@@ -79,7 +79,21 @@ export default function GroupClassDetailPage() {
         toast.error('Ödeme formu yüklenemedi');
       }
     } catch (err: any) {
-      toast.error(err?.response?.data?.errors?.[0] || 'Kayıt oluşturulamadı');
+      const errData = err?.response?.data;
+      let message = 'Kayıt oluşturulamadı';
+      if (errData?.errors) {
+        if (Array.isArray(errData.errors) && errData.errors.length > 0) {
+          message = errData.errors[0];
+        } else if (typeof errData.errors === 'object') {
+          const firstField = Object.values(errData.errors)[0];
+          if (Array.isArray(firstField) && firstField.length > 0) {
+            message = firstField[0] as string;
+          }
+        }
+      } else if (errData?.message) {
+        message = errData.message;
+      }
+      toast.error(message);
     } finally {
       setEnrolling(false);
     }
