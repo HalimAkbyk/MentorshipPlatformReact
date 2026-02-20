@@ -27,6 +27,10 @@ export function SocialLoginButtons({ mode, onSuccess, onError, disabled }: Socia
       onError?.('Google girişi başarısız oldu');
       setLoadingProvider(null);
     },
+    onNonOAuthError: () => {
+      // Fires when user closes popup without selecting account
+      setLoadingProvider(null);
+    },
     flow: 'implicit',
   });
 
