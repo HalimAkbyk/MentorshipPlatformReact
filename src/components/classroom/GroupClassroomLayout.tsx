@@ -89,13 +89,18 @@ export function GroupClassroomLayout({
               <span className="text-xs">✋</span>
             </div>
           )}
-          {!tile.cameraVideoEl && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
-              <Avatar className="w-12 h-12">
-                <AvatarFallback className="bg-gray-700 text-white text-lg">
+          {(!tile.cameraVideoEl || !tile.isVideoEnabled) && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 z-[5]">
+              <Avatar className="w-16 h-16 mb-2">
+                <AvatarFallback className="bg-gray-700 text-white text-2xl">
                   {tile.displayName.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
+              <span className="text-gray-400 text-sm">{tile.displayName}</span>
+              <div className="flex items-center gap-1 mt-1 text-gray-500">
+                <VideoOff className="w-3.5 h-3.5" />
+                <span className="text-xs">Kamera kapalı</span>
+              </div>
             </div>
           )}
         </div>

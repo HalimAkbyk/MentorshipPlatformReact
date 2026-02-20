@@ -265,6 +265,10 @@ export default function StudentGroupClassroomPage() {
     setRemoteTiles(prev => prev.map(t => t.identity === identity ? { ...t, isAudioEnabled: enabled } : t));
   };
 
+  const setRemoteVideoEnabled = (identity: string, enabled: boolean) => {
+    setRemoteTiles(prev => prev.map(t => t.identity === identity ? { ...t, isVideoEnabled: enabled } : t));
+  };
+
   // ─── Pipeline helpers ───
   const stopProcessedPipeline = () => {
     try { vbRef.current?.stop(); } catch {}
@@ -312,6 +316,14 @@ export default function StudentGroupClassroomPage() {
             r.localParticipant.audioTracks.forEach((pub: any) => { pub.track.disable(); });
             setIsAudioEnabled(false);
             toast.warning('Mentor mikrofonunuzu kapattı');
+          }
+        }
+      } else if (msg.type === 'UNMUTE_PARTICIPANT') {
+        if (msg.targetIdentity === localIdentityRef.current) {
+          const r = roomRef.current; if (r) {
+            r.localParticipant.audioTracks.forEach((pub: any) => { pub.track.enable(); });
+            setIsAudioEnabled(true);
+            toast.success('Mentor mikrofonunuzu açtı');
           }
         }
       } else if (msg.type === 'KICK_PARTICIPANT') {
@@ -389,8 +401,14 @@ export default function StudentGroupClassroomPage() {
         p.tracks.forEach((pub: any) => { if (pub.isSubscribed && pub.track) attachRemoteTrack(pub.track, p); });
         p.on('trackSubscribed', (track: any) => attachRemoteTrack(track, p));
         p.on('trackUnsubscribed', (track: any) => detachRemoteTrack(track, p));
-        p.on('trackDisabled', (track: any) => { if (track.kind === 'audio') setRemoteAudioEnabled(p.identity, false); });
-        p.on('trackEnabled', (track: any) => { if (track.kind === 'audio') setRemoteAudioEnabled(p.identity, true); });
+        p.on('trackDisabled', (track: any) => {
+          if (track.kind === 'audio') setRemoteAudioEnabled(p.identity, false);
+          if (track.kind === 'video') setRemoteVideoEnabled(p.identity, false);
+        });
+        p.on('trackEnabled', (track: any) => {
+          if (track.kind === 'audio') setRemoteAudioEnabled(p.identity, true);
+          if (track.kind === 'video') setRemoteVideoEnabled(p.identity, true);
+        });
       };
 
       newRoom.participants.forEach(handleParticipant);

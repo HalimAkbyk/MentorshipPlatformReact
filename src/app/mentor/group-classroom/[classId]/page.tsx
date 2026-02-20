@@ -267,6 +267,10 @@ export default function MentorGroupClassroomPage() {
     setRemoteTiles(prev => prev.map(t => t.identity === identity ? { ...t, isAudioEnabled: enabled } : t));
   };
 
+  const setRemoteVideoEnabled = (identity: string, enabled: boolean) => {
+    setRemoteTiles(prev => prev.map(t => t.identity === identity ? { ...t, isVideoEnabled: enabled } : t));
+  };
+
   // ─── Pipeline helpers ───
   const stopProcessedPipeline = () => {
     try { vbRef.current?.stop(); } catch {}
@@ -380,8 +384,14 @@ export default function MentorGroupClassroomPage() {
         p.tracks.forEach((pub: any) => { if (pub.isSubscribed && pub.track) attachRemoteTrack(pub.track, p); });
         p.on('trackSubscribed', (track: any) => attachRemoteTrack(track, p));
         p.on('trackUnsubscribed', (track: any) => detachRemoteTrack(track, p));
-        p.on('trackDisabled', (track: any) => { if (track.kind === 'audio') setRemoteAudioEnabled(p.identity, false); });
-        p.on('trackEnabled', (track: any) => { if (track.kind === 'audio') setRemoteAudioEnabled(p.identity, true); });
+        p.on('trackDisabled', (track: any) => {
+          if (track.kind === 'audio') setRemoteAudioEnabled(p.identity, false);
+          if (track.kind === 'video') setRemoteVideoEnabled(p.identity, false);
+        });
+        p.on('trackEnabled', (track: any) => {
+          if (track.kind === 'audio') setRemoteAudioEnabled(p.identity, true);
+          if (track.kind === 'video') setRemoteVideoEnabled(p.identity, true);
+        });
       };
 
       newRoom.participants.forEach(handleParticipant);
