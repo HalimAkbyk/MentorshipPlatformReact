@@ -1,10 +1,10 @@
 'use client';
 
 import { RefObject, useMemo } from 'react';
-import { Users, Video, VideoOff, MicOff } from 'lucide-react';
+import { Users, Video, VideoOff, MicOff, Monitor } from 'lucide-react';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { RemoteVideoMount } from './RemoteVideoMount';
-import { RemoteTile } from './types';
+import { RemoteTile, ScreenShareState } from './types';
 
 interface GroupClassroomLayoutProps {
   localVideoRef: RefObject<HTMLDivElement>;
@@ -13,6 +13,8 @@ interface GroupClassroomLayoutProps {
   isMentor: boolean;
   localLabel: string;
   remoteTiles: RemoteTile[];
+  screenShareState?: ScreenShareState;
+  localScreenPreviewRef?: RefObject<HTMLDivElement>;
 }
 
 export function GroupClassroomLayout({
@@ -22,8 +24,11 @@ export function GroupClassroomLayout({
   isMentor,
   localLabel,
   remoteTiles,
+  screenShareState,
+  localScreenPreviewRef,
 }: GroupClassroomLayoutProps) {
   const totalParticipants = 1 + remoteTiles.length; // local + remotes
+  const isScreenShareActive = screenShareState?.active ?? false;
 
   const gridClass = useMemo(() => {
     if (totalParticipants <= 1) return 'grid-cols-1 max-w-2xl mx-auto';
@@ -34,6 +39,93 @@ export function GroupClassroomLayout({
     return 'grid-cols-3 md:grid-cols-4';
   }, [totalParticipants]);
 
+  // ─── Screen Share Layout (Presenter + sidebar) ───
+  if (isScreenShareActive) {
+    return (
+      <div className="flex gap-3 w-full h-full">
+        {/* Main area: Screen share */}
+        <div className="flex-1 min-w-0">
+          <div className="relative bg-gray-800 rounded-lg overflow-hidden w-full h-full">
+            {screenShareState?.isLocal ? (
+              // Local screen share preview
+              <div ref={localScreenPreviewRef} className="w-full h-full" />
+            ) : screenShareState?.screenVideoEl ? (
+              // Remote screen share
+              <RemoteVideoMount videoEl={screenShareState.screenVideoEl} objectFit="contain" />
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-400">
+                <Monitor className="w-12 h-12" />
+              </div>
+            )}
+            <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1.5 z-10">
+              <Monitor className="w-3 h-3" />
+              {screenShareState?.isLocal
+                ? 'Ekranınız paylaşılıyor'
+                : screenShareState?.sharerIdentity
+                  ? `${remoteTiles.find(t => t.identity === screenShareState.sharerIdentity)?.displayName ?? 'Katılımcı'} ekranını paylaşıyor`
+                  : 'Ekran paylaşımı'}
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar: participant thumbnails */}
+        <div className="w-48 shrink-0 flex flex-col gap-2 overflow-y-auto">
+          {/* Local */}
+          <div className="relative bg-gray-800 rounded-lg overflow-hidden aspect-video shrink-0">
+            <div className="absolute inset-0">
+              <div ref={localVideoRef} className="w-full h-full" />
+            </div>
+            <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded z-10">
+              {localLabel}
+            </div>
+            {!isVideoEnabled && isRoomActive && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-800 z-[5]">
+                <Avatar className="w-10 h-10">
+                  <AvatarFallback className="bg-gray-700 text-white text-lg">
+                    {isMentor ? 'M' : 'S'}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+            )}
+          </div>
+
+          {/* Remote participants */}
+          {remoteTiles.map(tile => (
+            <div key={tile.identity} className="relative bg-gray-800 rounded-lg overflow-hidden aspect-video shrink-0">
+              <div className="absolute inset-0">
+                <RemoteVideoMount videoEl={tile.cameraVideoEl} objectFit="cover" />
+              </div>
+              <div className="absolute bottom-1 left-1 flex items-center gap-1 z-10">
+                <div className="bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                  {tile.displayName}
+                </div>
+                {!tile.isAudioEnabled && (
+                  <div className="bg-red-600/80 rounded p-0.5">
+                    <MicOff className="w-2.5 h-2.5 text-white" />
+                  </div>
+                )}
+              </div>
+              {tile.isHandRaised && (
+                <div className="absolute top-1 right-1 text-xs">✋</div>
+              )}
+              {(!tile.cameraVideoEl || !tile.isVideoEnabled) && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 z-[5]">
+                  <Avatar className="w-8 h-8">
+                    <AvatarFallback className="bg-gray-700 text-white text-sm">
+                      {tile.displayName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-gray-500 text-[10px] mt-1">{tile.displayName}</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Standard Grid Layout (no screen share) ───
   return (
     <div className={`grid ${gridClass} gap-3 w-full h-full auto-rows-fr`}>
       {/* Local Video */}

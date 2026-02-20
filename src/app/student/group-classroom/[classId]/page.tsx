@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import {
-  Video, VideoOff, Mic, MicOff, Hand,
+  Video, VideoOff, Mic, MicOff, Hand, Monitor, MonitorOff,
   MessageSquare, Users, PhoneOff, Settings, X, Image as ImageIcon,
   Clock, RefreshCw, AlertTriangle,
 } from 'lucide-react';
@@ -16,8 +16,8 @@ import {
 import { GroupClassroomLayout } from '@/components/classroom/GroupClassroomLayout';
 import { ParticipantsPanel } from '@/components/classroom/ParticipantsPanel';
 import {
-  RemoteTile, ChatMessage, BgMode,
-  VIRTUAL_BACKGROUNDS, parseIdentity,
+  RemoteTile, ChatMessage, BgMode, ScreenShareState,
+  VIRTUAL_BACKGROUNDS, parseIdentity, isScreenShareTrack,
 } from '@/components/classroom/types';
 
 // ─── Virtual Background Processor ───────────────────────────
@@ -127,6 +127,7 @@ export default function StudentGroupClassroomPage() {
   // State
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isHandRaised, setIsHandRaised] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isParticipantsOpen, setIsParticipantsOpen] = useState(false);
@@ -139,6 +140,9 @@ export default function StudentGroupClassroomPage() {
   const [waitingForHost, setWaitingForHost] = useState(true);
   const [checkingRoom, setCheckingRoom] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [screenShareState, setScreenShareState] = useState<ScreenShareState>({
+    active: false, sharerIdentity: null, screenVideoEl: null, isLocal: false,
+  });
 
   // Mentor absence tracking
   const [mentorAbsent, setMentorAbsent] = useState(false);
@@ -161,6 +165,9 @@ export default function StudentGroupClassroomPage() {
   const rawAudioTrackRef = useRef<any>(null);
   const dataTrackRef = useRef<any>(null);
   const processedVideoTrackRef = useRef<any>(null);
+  const screenTwilioTrackRef = useRef<any>(null);
+  const screenMediaTrackRef = useRef<MediaStreamTrack | null>(null);
+  const localScreenPreviewRef = useRef<HTMLDivElement>(null);
   const vbRef = useRef<VirtualBackgroundProcessor | null>(null);
   const vbModeRef = useRef<BgMode>({ type: 'none' });
   const isChatOpenRef = useRef(isChatOpen);
@@ -277,6 +284,20 @@ export default function StudentGroupClassroomPage() {
     setRemoteTiles(prev => prev.map(t => t.identity === identity ? { ...t, isVideoEnabled: enabled } : t));
   };
 
+  const setRemoteScreenVideoEl = (identity: string, el: HTMLVideoElement | null) => {
+    setRemoteTiles(prev => prev.map(t => t.identity === identity ? { ...t, screenVideoEl: el } : t));
+  };
+
+  const attachScreenPreview = (mediaStreamTrack: MediaStreamTrack) => {
+    if (!localScreenPreviewRef.current) return;
+    localScreenPreviewRef.current.innerHTML = '';
+    const vid = document.createElement('video');
+    vid.srcObject = new MediaStream([mediaStreamTrack]);
+    vid.autoplay = true; vid.muted = true; vid.playsInline = true;
+    vid.style.width = '100%'; vid.style.height = '100%'; vid.style.objectFit = 'contain';
+    localScreenPreviewRef.current.appendChild(vid);
+  };
+
   // ─── Pipeline helpers ───
   const stopProcessedPipeline = () => {
     try { vbRef.current?.stop(); } catch {}
@@ -291,8 +312,13 @@ export default function StudentGroupClassroomPage() {
     try { rawAudioTrackRef.current?.stop?.(); } catch {}
     rawVideoTrackRef.current = null; rawAudioTrackRef.current = null; dataTrackRef.current = null;
     stopProcessedPipeline();
+    try { screenTwilioTrackRef.current?.stop?.(); } catch {} screenTwilioTrackRef.current = null;
+    screenMediaTrackRef.current = null;
+    if (localScreenPreviewRef.current) localScreenPreviewRef.current.innerHTML = '';
     clearLocalContainerVideos();
     setRemoteTiles(prev => { prev.forEach(t => t.audioEls?.forEach(el => { try { el.remove(); } catch {} })); return []; });
+    setIsScreenSharing(false);
+    setScreenShareState({ active: false, sharerIdentity: null, screenVideoEl: null, isLocal: false });
   }, []);
 
   useEffect(() => { return () => { fullDisconnect(); }; }, [fullDisconnect]);
@@ -338,9 +364,31 @@ export default function StudentGroupClassroomPage() {
 
   // Helper to check if a participant identity belongs to mentor
   const isMentorIdentity = useCallback((identity: string): boolean => {
-    // Mentor is tracked by mentorIdentityRef (first non-self participant, or detected from group class data)
     return mentorIdentityRef.current === identity;
   }, []);
+
+  // Re-attach local camera when layout changes (screen share starts/stops)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const activeVideoTrack = processedVideoTrackRef.current || rawVideoTrackRef.current;
+      if (activeVideoTrack && localVideoRef.current) {
+        attachLocalPreview(activeVideoTrack);
+      }
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [screenShareState.active, screenShareState.isLocal, screenShareState.sharerIdentity, attachLocalPreview]);
+
+  // Attach screen preview after layout mounts with screen share container
+  useEffect(() => {
+    if (screenShareState.active && screenShareState.isLocal && screenMediaTrackRef.current) {
+      const timer = setTimeout(() => {
+        if (screenMediaTrackRef.current) {
+          attachScreenPreview(screenMediaTrackRef.current);
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [screenShareState.active, screenShareState.isLocal]);
 
   // ─── Data track ───
   const sendDataTrackMessage = (msg: any) => {
@@ -385,6 +433,15 @@ export default function StudentGroupClassroomPage() {
           fullDisconnect();
           router.push('/student/my-classes');
         }
+      } else if (msg.type === 'SCREEN_SHARE') {
+        if (!msg.sharing) {
+          setScreenShareState(prev => {
+            if (prev.sharerIdentity === participant.identity) {
+              return { active: false, sharerIdentity: null, screenVideoEl: null, isLocal: false };
+            }
+            return prev;
+          });
+        }
       }
     } catch (error) { console.error('Data message parse error:', error); }
   };
@@ -396,8 +453,27 @@ export default function StudentGroupClassroomPage() {
     if (track.kind === 'video') {
       const video = track.attach() as HTMLVideoElement;
       video.playsInline = true; video.autoplay = true;
-      video.style.width = '100%'; video.style.height = '100%'; video.style.objectFit = 'cover';
-      setRemoteCameraVideoEl(identity, video);
+      if (isScreenShareTrack(track)) {
+        video.style.width = '100%'; video.style.height = '100%'; video.style.objectFit = 'contain';
+        setRemoteScreenVideoEl(identity, video);
+        // Auto-stop local share if remote share arrives (last sharer wins)
+        if (screenTwilioTrackRef.current) {
+          const r = roomRef.current;
+          if (r) {
+            try { r.localParticipant.unpublishTrack(screenTwilioTrackRef.current); } catch {}
+            try { screenTwilioTrackRef.current.stop?.(); } catch {}
+            sendDataTrackMessage({ type: 'SCREEN_SHARE', sharing: false, sharerIdentity: r.localParticipant.identity });
+          }
+          screenTwilioTrackRef.current = null; screenMediaTrackRef.current = null;
+          setIsScreenSharing(false);
+          if (localScreenPreviewRef.current) localScreenPreviewRef.current.innerHTML = '';
+          toast.info('Diğer kullanıcı ekran paylaşımını devraldı');
+        }
+        setScreenShareState({ active: true, sharerIdentity: identity, screenVideoEl: video, isLocal: false });
+      } else {
+        video.style.width = '100%'; video.style.height = '100%'; video.style.objectFit = 'cover';
+        setRemoteCameraVideoEl(identity, video);
+      }
     } else if (track.kind === 'audio') {
       const audioEl = track.attach() as HTMLMediaElement;
       audioEl.style.display = 'none'; document.body.appendChild(audioEl);
@@ -410,7 +486,19 @@ export default function StudentGroupClassroomPage() {
   const detachRemoteTrack = (track: any, participant: any) => {
     const identity = participant.identity as string;
     try { const els = track.detach?.() ?? []; els.forEach((el: any) => { try { el.remove(); } catch {} }); } catch {}
-    if (track.kind === 'video') setRemoteCameraVideoEl(identity, null);
+    if (track.kind === 'video') {
+      if (isScreenShareTrack(track)) {
+        setRemoteScreenVideoEl(identity, null);
+        setScreenShareState(prev => {
+          if (prev.sharerIdentity === identity) {
+            return { active: false, sharerIdentity: null, screenVideoEl: null, isLocal: false };
+          }
+          return prev;
+        });
+      } else {
+        setRemoteCameraVideoEl(identity, null);
+      }
+    }
   };
 
   // ─── Connect to Room ───
@@ -563,7 +651,10 @@ export default function StudentGroupClassroomPage() {
   // ─── Toggle Functions ───
   const toggleVideo = () => {
     const r = roomRef.current; if (!r) return;
-    r.localParticipant.videoTracks.forEach((pub: any) => { isVideoEnabled ? pub.track.disable() : pub.track.enable(); });
+    r.localParticipant.videoTracks.forEach((pub: any) => {
+      if (pub.trackName === 'screen-share') return;
+      isVideoEnabled ? pub.track.disable() : pub.track.enable();
+    });
     setIsVideoEnabled(!isVideoEnabled);
   };
 
@@ -578,6 +669,52 @@ export default function StudentGroupClassroomPage() {
     setIsHandRaised(newVal);
     sendDataTrackMessage({ type: 'HAND_RAISE', raised: newVal, timestamp: Date.now() });
     toast.info(newVal ? 'Elinizi kaldırdınız ✋' : 'Elinizi indirdiniz');
+  };
+
+  const toggleScreenShare = async () => {
+    const r = roomRef.current; if (!r) return;
+    if (isScreenSharing) {
+      // STOP local screen share
+      if (screenTwilioTrackRef.current) {
+        try { r.localParticipant.unpublishTrack(screenTwilioTrackRef.current); } catch {}
+        try { screenTwilioTrackRef.current.stop?.(); } catch {}
+        screenTwilioTrackRef.current = null;
+      }
+      sendDataTrackMessage({ type: 'SCREEN_SHARE', sharing: false, sharerIdentity: r.localParticipant.identity });
+      screenMediaTrackRef.current = null; setIsScreenSharing(false);
+      if (localScreenPreviewRef.current) localScreenPreviewRef.current.innerHTML = '';
+      setScreenShareState(prev => {
+        if (prev.isLocal) return { active: false, sharerIdentity: null, screenVideoEl: null, isLocal: false };
+        return prev;
+      });
+      toast.info('Ekran paylaşımı durduruldu'); return;
+    }
+    // START local screen share
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      const mediaTrack = stream.getVideoTracks()[0];
+      const { LocalVideoTrack } = await import('twilio-video');
+      const screenTrack = new LocalVideoTrack(mediaTrack, { name: 'screen-share' });
+      screenTwilioTrackRef.current = screenTrack;
+      await r.localParticipant.publishTrack(screenTrack);
+      sendDataTrackMessage({ type: 'SCREEN_SHARE', sharing: true, sharerIdentity: r.localParticipant.identity });
+      setIsScreenSharing(true); screenMediaTrackRef.current = mediaTrack;
+      setScreenShareState({ active: true, sharerIdentity: null, screenVideoEl: null, isLocal: true });
+      toast.success('Ekran paylaşımı başladı');
+      // Handle browser "Stop Sharing" button
+      mediaTrack.onended = () => {
+        try { r.localParticipant.unpublishTrack(screenTrack); } catch {}
+        try { screenTrack.stop?.(); } catch {}
+        sendDataTrackMessage({ type: 'SCREEN_SHARE', sharing: false, sharerIdentity: r.localParticipant.identity });
+        screenTwilioTrackRef.current = null; screenMediaTrackRef.current = null; setIsScreenSharing(false);
+        if (localScreenPreviewRef.current) localScreenPreviewRef.current.innerHTML = '';
+        setScreenShareState(prev => {
+          if (prev.isLocal) return { active: false, sharerIdentity: null, screenVideoEl: null, isLocal: false };
+          return prev;
+        });
+        toast.info('Ekran paylaşımı durduruldu');
+      };
+    } catch (e) { toast.error('Ekran paylaşılamadı'); }
   };
 
   // ─── Device / Background changes ───
@@ -746,6 +883,8 @@ export default function StudentGroupClassroomPage() {
             isMentor={false}
             localLabel="Sen"
             remoteTiles={remoteTiles}
+            screenShareState={screenShareState}
+            localScreenPreviewRef={localScreenPreviewRef}
           />
         </div>
 
@@ -790,6 +929,9 @@ export default function StudentGroupClassroomPage() {
           </Button>
           <Button variant={isVideoEnabled ? 'secondary' : 'destructive'} size="lg" onClick={toggleVideo} className="rounded-full w-14 h-14 px-0">
             {isVideoEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+          </Button>
+          <Button variant={isScreenSharing ? 'default' : 'secondary'} size="lg" onClick={toggleScreenShare} className="rounded-full w-14 h-14 px-0">
+            {isScreenSharing ? <MonitorOff className="w-5 h-5" /> : <Monitor className="w-5 h-5" />}
           </Button>
           <Button variant={isHandRaised ? 'default' : 'secondary'} size="lg" onClick={toggleHandRaise} className={`rounded-full w-14 h-14 px-0 ${isHandRaised ? 'bg-yellow-600 hover:bg-yellow-700' : ''}`}>
             <Hand className="w-5 h-5" />

@@ -16,8 +16,8 @@ import {
 import { GroupClassroomLayout } from '@/components/classroom/GroupClassroomLayout';
 import { ParticipantsPanel } from '@/components/classroom/ParticipantsPanel';
 import {
-  RemoteTile, ChatMessage, BgMode,
-  VIRTUAL_BACKGROUNDS, parseIdentity,
+  RemoteTile, ChatMessage, BgMode, ScreenShareState,
+  VIRTUAL_BACKGROUNDS, parseIdentity, isScreenShareTrack,
 } from '@/components/classroom/types';
 
 // ─── Virtual Background Processor ───────────────────────────
@@ -140,6 +140,9 @@ export default function MentorGroupClassroomPage() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showEndClassDialog, setShowEndClassDialog] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [screenShareState, setScreenShareState] = useState<ScreenShareState>({
+    active: false, sharerIdentity: null, screenVideoEl: null, isLocal: false,
+  });
 
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
@@ -160,6 +163,7 @@ export default function MentorGroupClassroomPage() {
   const processedVideoTrackRef = useRef<any>(null);
   const screenTwilioTrackRef = useRef<any>(null);
   const screenMediaTrackRef = useRef<MediaStreamTrack | null>(null);
+  const localScreenPreviewRef = useRef<HTMLDivElement>(null);
   const vbRef = useRef<VirtualBackgroundProcessor | null>(null);
   const vbModeRef = useRef<BgMode>({ type: 'none' });
   const isChatOpenRef = useRef(isChatOpen);
@@ -271,6 +275,20 @@ export default function MentorGroupClassroomPage() {
     setRemoteTiles(prev => prev.map(t => t.identity === identity ? { ...t, isVideoEnabled: enabled } : t));
   };
 
+  const setRemoteScreenVideoEl = (identity: string, el: HTMLVideoElement | null) => {
+    setRemoteTiles(prev => prev.map(t => t.identity === identity ? { ...t, screenVideoEl: el } : t));
+  };
+
+  const attachScreenPreview = (mediaStreamTrack: MediaStreamTrack) => {
+    if (!localScreenPreviewRef.current) return;
+    localScreenPreviewRef.current.innerHTML = '';
+    const vid = document.createElement('video');
+    vid.srcObject = new MediaStream([mediaStreamTrack]);
+    vid.autoplay = true; vid.muted = true; vid.playsInline = true;
+    vid.style.width = '100%'; vid.style.height = '100%'; vid.style.objectFit = 'contain';
+    localScreenPreviewRef.current.appendChild(vid);
+  };
+
   // ─── Pipeline helpers ───
   const stopProcessedPipeline = () => {
     try { vbRef.current?.stop(); } catch {}
@@ -286,9 +304,12 @@ export default function MentorGroupClassroomPage() {
     rawVideoTrackRef.current = null; rawAudioTrackRef.current = null; dataTrackRef.current = null;
     stopProcessedPipeline();
     try { screenTwilioTrackRef.current?.stop?.(); } catch {} screenTwilioTrackRef.current = null;
+    screenMediaTrackRef.current = null;
+    if (localScreenPreviewRef.current) localScreenPreviewRef.current.innerHTML = '';
     clearLocalContainerVideos();
     setRemoteTiles(prev => { prev.forEach(t => t.audioEls?.forEach(el => { try { el.remove(); } catch {} })); return []; });
     setIsScreenSharing(false);
+    setScreenShareState({ active: false, sharerIdentity: null, screenVideoEl: null, isLocal: false });
     // End the VideoSession so students see room as inactive
     if (roomName) {
       videoApi.endSession(roomName).catch(() => {});
@@ -296,6 +317,29 @@ export default function MentorGroupClassroomPage() {
   }, [roomName]);
 
   useEffect(() => { return () => { fullDisconnect(); }; }, [fullDisconnect]);
+
+  // Re-attach local camera when layout changes (screen share starts/stops)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const activeVideoTrack = processedVideoTrackRef.current || rawVideoTrackRef.current;
+      if (activeVideoTrack && localVideoRef.current) {
+        attachLocalPreview(activeVideoTrack);
+      }
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [screenShareState.active, screenShareState.isLocal, screenShareState.sharerIdentity, attachLocalPreview]);
+
+  // Attach screen preview after layout mounts with screen share container
+  useEffect(() => {
+    if (screenShareState.active && screenShareState.isLocal && screenMediaTrackRef.current) {
+      const timer = setTimeout(() => {
+        if (screenMediaTrackRef.current) {
+          attachScreenPreview(screenMediaTrackRef.current);
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [screenShareState.active, screenShareState.isLocal]);
 
   // ─── Data track message handling ───
   const sendDataTrackMessage = (msg: any) => {
@@ -317,6 +361,15 @@ export default function MentorGroupClassroomPage() {
       } else if (msg.type === 'CHAT_MESSAGE') {
         setMessages(prev => [...prev, { text: msg.text, sender: displayName, time: new Date(msg.timestamp).toLocaleTimeString() }]);
         if (!isChatOpenRef.current) setUnreadCount(prev => prev + 1);
+      } else if (msg.type === 'SCREEN_SHARE') {
+        if (!msg.sharing) {
+          setScreenShareState(prev => {
+            if (prev.sharerIdentity === participant.identity) {
+              return { active: false, sharerIdentity: null, screenVideoEl: null, isLocal: false };
+            }
+            return prev;
+          });
+        }
       }
     } catch (error) { console.error('Data message parse error:', error); }
   };
@@ -328,8 +381,27 @@ export default function MentorGroupClassroomPage() {
     if (track.kind === 'video') {
       const video = track.attach() as HTMLVideoElement;
       video.playsInline = true; video.autoplay = true;
-      video.style.width = '100%'; video.style.height = '100%'; video.style.objectFit = 'cover';
-      setRemoteCameraVideoEl(identity, video);
+      if (isScreenShareTrack(track)) {
+        video.style.width = '100%'; video.style.height = '100%'; video.style.objectFit = 'contain';
+        setRemoteScreenVideoEl(identity, video);
+        // Auto-stop local share if remote share arrives (last sharer wins)
+        if (screenTwilioTrackRef.current) {
+          const r = roomRef.current;
+          if (r) {
+            try { r.localParticipant.unpublishTrack(screenTwilioTrackRef.current); } catch {}
+            try { screenTwilioTrackRef.current.stop?.(); } catch {}
+            sendDataTrackMessage({ type: 'SCREEN_SHARE', sharing: false, sharerIdentity: r.localParticipant.identity });
+          }
+          screenTwilioTrackRef.current = null; screenMediaTrackRef.current = null;
+          setIsScreenSharing(false);
+          if (localScreenPreviewRef.current) localScreenPreviewRef.current.innerHTML = '';
+          toast.info('Diğer kullanıcı ekran paylaşımını devraldı');
+        }
+        setScreenShareState({ active: true, sharerIdentity: identity, screenVideoEl: video, isLocal: false });
+      } else {
+        video.style.width = '100%'; video.style.height = '100%'; video.style.objectFit = 'cover';
+        setRemoteCameraVideoEl(identity, video);
+      }
     } else if (track.kind === 'audio') {
       const audioEl = track.attach() as HTMLMediaElement;
       audioEl.style.display = 'none'; document.body.appendChild(audioEl);
@@ -342,7 +414,19 @@ export default function MentorGroupClassroomPage() {
   const detachRemoteTrack = (track: any, participant: any) => {
     const identity = participant.identity as string;
     try { const els = track.detach?.() ?? []; els.forEach((el: any) => { try { el.remove(); } catch {} }); } catch {}
-    if (track.kind === 'video') setRemoteCameraVideoEl(identity, null);
+    if (track.kind === 'video') {
+      if (isScreenShareTrack(track)) {
+        setRemoteScreenVideoEl(identity, null);
+        setScreenShareState(prev => {
+          if (prev.sharerIdentity === identity) {
+            return { active: false, sharerIdentity: null, screenVideoEl: null, isLocal: false };
+          }
+          return prev;
+        });
+      } else {
+        setRemoteCameraVideoEl(identity, null);
+      }
+    }
   };
 
   // ─── Activate Room ───
@@ -428,14 +512,22 @@ export default function MentorGroupClassroomPage() {
   const toggleScreenShare = async () => {
     const r = roomRef.current; if (!r) return;
     if (isScreenSharing) {
+      // STOP local screen share
       if (screenTwilioTrackRef.current) {
         try { r.localParticipant.unpublishTrack(screenTwilioTrackRef.current); } catch {}
         try { screenTwilioTrackRef.current.stop?.(); } catch {}
         screenTwilioTrackRef.current = null;
       }
+      sendDataTrackMessage({ type: 'SCREEN_SHARE', sharing: false, sharerIdentity: r.localParticipant.identity });
       screenMediaTrackRef.current = null; setIsScreenSharing(false);
+      if (localScreenPreviewRef.current) localScreenPreviewRef.current.innerHTML = '';
+      setScreenShareState(prev => {
+        if (prev.isLocal) return { active: false, sharerIdentity: null, screenVideoEl: null, isLocal: false };
+        return prev;
+      });
       toast.info('Ekran paylaşımı durduruldu'); return;
     }
+    // START local screen share
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
       const mediaTrack = stream.getVideoTracks()[0];
@@ -443,12 +535,21 @@ export default function MentorGroupClassroomPage() {
       const screenTrack = new LocalVideoTrack(mediaTrack, { name: 'screen-share' });
       screenTwilioTrackRef.current = screenTrack;
       await r.localParticipant.publishTrack(screenTrack);
+      sendDataTrackMessage({ type: 'SCREEN_SHARE', sharing: true, sharerIdentity: r.localParticipant.identity });
       setIsScreenSharing(true); screenMediaTrackRef.current = mediaTrack;
+      setScreenShareState({ active: true, sharerIdentity: null, screenVideoEl: null, isLocal: true });
       toast.success('Ekran paylaşımı başladı');
+      // Handle browser "Stop Sharing" button
       mediaTrack.onended = () => {
         try { r.localParticipant.unpublishTrack(screenTrack); } catch {}
         try { screenTrack.stop?.(); } catch {}
+        sendDataTrackMessage({ type: 'SCREEN_SHARE', sharing: false, sharerIdentity: r.localParticipant.identity });
         screenTwilioTrackRef.current = null; screenMediaTrackRef.current = null; setIsScreenSharing(false);
+        if (localScreenPreviewRef.current) localScreenPreviewRef.current.innerHTML = '';
+        setScreenShareState(prev => {
+          if (prev.isLocal) return { active: false, sharerIdentity: null, screenVideoEl: null, isLocal: false };
+          return prev;
+        });
         toast.info('Ekran paylaşımı durduruldu');
       };
     } catch (e) { toast.error('Ekran paylaşılamadı'); }
@@ -629,6 +730,8 @@ export default function MentorGroupClassroomPage() {
             isMentor={true}
             localLabel="Siz (Mentor)"
             remoteTiles={remoteTiles}
+            screenShareState={screenShareState}
+            localScreenPreviewRef={localScreenPreviewRef}
           />
         </div>
 
