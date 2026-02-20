@@ -140,6 +140,7 @@ export interface GroupClass {
   pricePerSeat: number;
   currency: string;
   status: ClassStatus;
+  currentUserEnrollmentStatus?: string;
 }
 
 export interface GroupClassDetail extends GroupClass {

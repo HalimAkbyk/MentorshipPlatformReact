@@ -133,7 +133,9 @@ export default function GroupClassDetailPage() {
   const isOwnClass = groupClass.mentorUserId === user?.id;
   const isExpired = groupClass.status === 'Expired' || new Date(groupClass.endAt) < new Date();
   const isStarted = new Date(groupClass.startAt) < new Date();
-  const canEnroll = !isFull && !isExpired && !isStarted && !isOwnClass;
+  const enrollmentStatus = groupClass.currentUserEnrollmentStatus;
+  const isEnrolled = enrollmentStatus === 'Confirmed' || enrollmentStatus === 'Attended';
+  const isPendingPayment = enrollmentStatus === 'PendingPayment';
   const platformFee = groupClass.pricePerSeat * 0.07;
   const totalPrice = groupClass.pricePerSeat + platformFee;
   const duration = getDurationMinutes(groupClass.startAt, groupClass.endAt);
@@ -238,6 +240,26 @@ export default function GroupClassDetailPage() {
                     </Button>
                   </Link>
                 </div>
+              ) : isEnrolled ? (
+                <div className="border-t pt-3 space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 rounded-lg p-3">
+                    <CheckCircle className="w-4 h-4 shrink-0" />
+                    <span>Bu derse kayıtlısınız</span>
+                  </div>
+                  {!isExpired && isStarted ? (
+                    <Link href={`/student/group-classroom/${groupClass.id}`} className="block">
+                      <Button className="w-full" size="lg">
+                        Derse Katıl
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Link href="/student/my-classes" className="block">
+                      <Button className="w-full" variant="outline">
+                        Derslerime Git
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               ) : (
                 <>
                   <div className="border-t pt-3 space-y-1 text-sm">
@@ -274,6 +296,8 @@ export default function GroupClassDetailPage() {
                         <CreditCard className="w-4 h-4 mr-2" />
                         {enrolling
                           ? 'İşleniyor...'
+                          : isPendingPayment
+                          ? 'Ödemeyi Tamamla'
                           : isFull
                           ? 'Kontenjan Dolu'
                           : 'Kayıt Ol ve Öde'}

@@ -164,6 +164,12 @@ function ExploreClassesContent() {
                           <Settings className="w-3.5 h-3.5 mr-1" />
                           Yönet
                         </Button>
+                      ) : gc.currentUserEnrollmentStatus === 'Confirmed' || gc.currentUserEnrollmentStatus === 'Attended' ? (
+                        <Badge className="bg-green-100 text-green-700">Kayıtlı ✓</Badge>
+                      ) : gc.currentUserEnrollmentStatus === 'PendingPayment' ? (
+                        <Button size="sm" variant="outline" className="text-amber-600 border-amber-200">
+                          Ödeme Bekliyor
+                        </Button>
                       ) : (
                         <Button size="sm" disabled={gc.enrolledCount >= gc.capacity}>
                           {gc.enrolledCount >= gc.capacity ? 'Dolu' : 'Katıl'}
