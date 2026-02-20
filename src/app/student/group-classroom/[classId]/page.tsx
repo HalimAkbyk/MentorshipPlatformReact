@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import {
   Video, VideoOff, Mic, MicOff, Hand,
   MessageSquare, Users, PhoneOff, Settings, X, Image as ImageIcon,
-  Clock, RefreshCw,
+  Clock, RefreshCw, AlertTriangle,
 } from 'lucide-react';
 
 import { GroupClassroomLayout } from '@/components/classroom/GroupClassroomLayout';
@@ -140,6 +140,10 @@ export default function StudentGroupClassroomPage() {
   const [checkingRoom, setCheckingRoom] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // Mentor absence tracking
+  const [mentorAbsent, setMentorAbsent] = useState(false);
+  const [mentorAbsenceCountdown, setMentorAbsenceCountdown] = useState(0); // seconds remaining
+
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedAudioDevice, setSelectedAudioDevice] = useState('');
@@ -161,8 +165,12 @@ export default function StudentGroupClassroomPage() {
   const vbModeRef = useRef<BgMode>({ type: 'none' });
   const isChatOpenRef = useRef(isChatOpen);
   const localIdentityRef = useRef('');
+  const mentorIdentityRef = useRef<string | null>(null);
+  const mentorAbsenceTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mentorAbsenceStartRef = useRef<number | null>(null);
 
   const roomName = `group-class-${classId}`;
+  const MENTOR_ABSENCE_TIMEOUT_SEC = 600; // 10 minutes
 
   // Keep ref in sync
   useEffect(() => { isChatOpenRef.current = isChatOpen; }, [isChatOpen]);
@@ -289,6 +297,51 @@ export default function StudentGroupClassroomPage() {
 
   useEffect(() => { return () => { fullDisconnect(); }; }, [fullDisconnect]);
 
+  // ─── Mentor Absence Timeout ───
+  const clearMentorAbsenceTimer = useCallback(() => {
+    if (mentorAbsenceTimerRef.current) {
+      clearInterval(mentorAbsenceTimerRef.current);
+      mentorAbsenceTimerRef.current = null;
+    }
+    mentorAbsenceStartRef.current = null;
+    setMentorAbsent(false);
+    setMentorAbsenceCountdown(0);
+  }, []);
+
+  const startMentorAbsenceTimer = useCallback(() => {
+    // Don't start if already running
+    if (mentorAbsenceTimerRef.current) return;
+    setMentorAbsent(true);
+    mentorAbsenceStartRef.current = Date.now();
+    setMentorAbsenceCountdown(MENTOR_ABSENCE_TIMEOUT_SEC);
+
+    mentorAbsenceTimerRef.current = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - (mentorAbsenceStartRef.current || Date.now())) / 1000);
+      const remaining = MENTOR_ABSENCE_TIMEOUT_SEC - elapsed;
+
+      if (remaining <= 0) {
+        // Time's up — kick everyone out
+        clearMentorAbsenceTimer();
+        toast.error('Mentor 10 dakika içinde geri dönmedi. Oturum kapatılıyor...');
+        fullDisconnect();
+        setTimeout(() => router.push('/student/my-classes'), 1500);
+      } else {
+        setMentorAbsenceCountdown(remaining);
+      }
+    }, 1000);
+  }, [fullDisconnect, clearMentorAbsenceTimer, router]);
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => { clearMentorAbsenceTimer(); };
+  }, [clearMentorAbsenceTimer]);
+
+  // Helper to check if a participant identity belongs to mentor
+  const isMentorIdentity = useCallback((identity: string): boolean => {
+    // Mentor is tracked by mentorIdentityRef (first non-self participant, or detected from group class data)
+    return mentorIdentityRef.current === identity;
+  }, []);
+
   // ─── Data track ───
   const sendDataTrackMessage = (msg: any) => {
     const r = roomRef.current; if (!r) return;
@@ -411,19 +464,53 @@ export default function StudentGroupClassroomPage() {
         });
       };
 
-      newRoom.participants.forEach(handleParticipant);
-      newRoom.on('participantConnected', (p: any) => {
-        const { displayName } = parseIdentity(p.identity);
-        toast.success(`${displayName} derse katıldı`);
+      // Detect mentor identity — mentor is host, typically first participant or from groupClass data
+      // The mentor's identity format is "userId|displayName"
+      // We detect mentor by checking if their userId matches the groupClass mentorUserId
+      const mentorUserId = groupClass?.mentorUserId || groupClass?.mentor?.userId;
+      newRoom.participants.forEach((p: any) => {
+        const { userId } = parseIdentity(p.identity);
+        if (mentorUserId && userId === mentorUserId) {
+          mentorIdentityRef.current = p.identity;
+        }
         handleParticipant(p);
       });
+
+      // If we couldn't detect mentor from groupClass data, use first existing participant as fallback
+      if (!mentorIdentityRef.current && newRoom.participants.size > 0) {
+        const firstParticipant = Array.from(newRoom.participants.values())[0] as any;
+        mentorIdentityRef.current = firstParticipant.identity;
+      }
+
+      newRoom.on('participantConnected', (p: any) => {
+        const { displayName, userId } = parseIdentity(p.identity);
+        toast.success(`${displayName} derse katıldı`);
+        handleParticipant(p);
+
+        // Check if reconnecting mentor
+        if (mentorIdentityRef.current === p.identity ||
+            (mentorUserId && userId === mentorUserId)) {
+          mentorIdentityRef.current = p.identity;
+          clearMentorAbsenceTimer();
+          toast.success('Mentor geri döndü!');
+        }
+      });
+
       newRoom.on('participantDisconnected', (p: any) => {
         const { displayName } = parseIdentity(p.identity);
         toast.info(`${displayName} dersten ayrıldı`);
         removeRemoteTile(p.identity);
+
+        // If it's the mentor who disconnected, start absence timer
+        if (p.identity === mentorIdentityRef.current) {
+          toast.warning('Mentor odadan ayrıldı. 10 dakika içinde geri dönmezse oturum kapatılacak.');
+          startMentorAbsenceTimer();
+        }
       });
+
       newRoom.on('disconnected', (_room: any, error: any) => {
         fullDisconnect();
+        clearMentorAbsenceTimer();
         if (error) {
           // Room was completed by mentor → kicked or room closed
           toast.info('Ders sonlandırıldı');
@@ -441,7 +528,7 @@ export default function StudentGroupClassroomPage() {
       toast.error('Bağlantı hatası: ' + (e?.message ?? ''));
       setWaitingForHost(true);
     } finally { setIsConnecting(false); }
-  }, [classId, roomName, isConnecting, attachLocalPreview, fullDisconnect]);
+  }, [classId, roomName, isConnecting, attachLocalPreview, fullDisconnect, groupClass, startMentorAbsenceTimer, clearMentorAbsenceTimer]);
 
   // ─── Check Room Status ───
   const checkRoomStatus = useCallback(async () => {
@@ -574,7 +661,7 @@ export default function StudentGroupClassroomPage() {
   };
 
   // ─── Leave ───
-  const handleLeave = () => { fullDisconnect(); router.push('/student/my-classes'); };
+  const handleLeave = () => { clearMentorAbsenceTimer(); fullDisconnect(); router.push('/student/my-classes'); };
 
   const formatDuration = (s: number) => {
     const m = Math.floor(s / 60); const sec = s % 60;
@@ -629,6 +716,25 @@ export default function StudentGroupClassroomPage() {
           <div className="text-white font-mono text-lg">{formatDuration(duration)}</div>
         </div>
       </div>
+
+      {/* Mentor Absence Banner */}
+      {mentorAbsent && isConnected && (
+        <div className="bg-amber-600/90 px-6 py-2.5 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-white shrink-0" />
+            <div className="text-white text-sm">
+              <span className="font-medium">Mentor odadan ayrıldı.</span>
+              {' '}
+              <span className="text-amber-100">
+                {Math.floor(mentorAbsenceCountdown / 60)}:{(mentorAbsenceCountdown % 60).toString().padStart(2, '0')} içinde geri dönmezse oturum kapatılacak.
+              </span>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleLeave} className="text-white border-white/50 hover:bg-amber-700 shrink-0">
+            Şimdi Ayrıl
+          </Button>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden min-h-0">
