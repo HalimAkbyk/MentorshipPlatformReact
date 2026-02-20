@@ -70,6 +70,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Video Kurslar', href: '/admin/courses' },
       { label: 'Kurs Incelemeleri', href: '/admin/course-reviews', badgeKey: 'pendingCourseReviews' },
       { label: 'Sinav Modulu', href: '/admin/exams' },
+      { label: 'Oturum Raporlari', href: '/admin/reports/sessions' },
     ],
   },
   {

@@ -260,6 +260,33 @@ export interface AdminGroupClassDto {
   createdAt: string;
 }
 
+// Session Report Types
+export interface SessionParticipantDto {
+  userId: string;
+  displayName: string;
+  role: 'Mentor' | 'Student';
+  joinedAt: string;
+  leftAt: string | null;
+  durationSec: number;
+  durationFormatted: string;
+}
+
+export interface SessionReportDto {
+  sessionId: string;
+  resourceType: 'Booking' | 'GroupClass';
+  resourceId: string;
+  roomName: string;
+  sessionStatus: 'Scheduled' | 'Live' | 'Ended';
+  sessionCreatedAt: string;
+  title: string;
+  mentorName: string;
+  scheduledStart: string | null;
+  scheduledEnd: string | null;
+  participantCount: number;
+  totalDurationSec: number;
+  participants: SessionParticipantDto[];
+}
+
 export interface AdminCourseDto {
   id: string;
   title: string;
@@ -967,6 +994,18 @@ export const adminApi = {
 
   getEducationExamDetail: (id: string): Promise<any> =>
     apiClient.get(`/admin/education/exams/${id}`),
+
+  // Education - Session Reports
+  getSessionReports: (params: {
+    page?: number;
+    pageSize?: number;
+    type?: string;
+    search?: string;
+    status?: string;
+    from?: string;
+    to?: string;
+  }): Promise<PagedResult<SessionReportDto>> =>
+    apiClient.get('/admin/education/session-reports', params),
 
   // Finance - Orders
   getOrders: (params: {
