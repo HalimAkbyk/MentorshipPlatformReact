@@ -404,9 +404,17 @@ export default function StudentGroupClassroomPage() {
         toast.info(`${displayName} dersten ayrıldı`);
         removeRemoteTile(p.identity);
       });
-      newRoom.on('disconnected', () => {
-        toast.info('Ders sonlandırıldı');
+      newRoom.on('disconnected', (_room: any, error: any) => {
         fullDisconnect();
+        if (error) {
+          // Room was completed by mentor → kicked or room closed
+          toast.info('Ders sonlandırıldı');
+          router.push('/student/my-classes');
+        } else {
+          // Mentor may have temporarily left → go back to waiting state
+          toast.info('Bağlantı kesildi. Mentor tekrar bağlanırsa otomatik katılacaksınız.');
+          setWaitingForHost(true);
+        }
       });
 
       toast.success('Derse katıldınız!');

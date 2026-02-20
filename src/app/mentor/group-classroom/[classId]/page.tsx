@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import {
   Video, VideoOff, Mic, MicOff, Monitor, MonitorOff,
   MessageSquare, Users, PhoneOff, Settings, X, Image as ImageIcon,
+  AlertTriangle, LogOut,
 } from 'lucide-react';
 
 import { GroupClassroomLayout } from '@/components/classroom/GroupClassroomLayout';
@@ -137,6 +138,8 @@ export default function MentorGroupClassroomPage() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isRoomActive, setIsRoomActive] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showEndClassDialog, setShowEndClassDialog] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
 
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
@@ -535,10 +538,29 @@ export default function MentorGroupClassroomPage() {
     setNewMessage('');
   };
 
-  // ─── End Class ───
-  const handleEndClass = async () => {
+  // ─── End / Leave Class ───
+  const handleEndClassClick = () => {
+    setShowEndClassDialog(true);
+  };
+
+  const confirmEndClass = async () => {
+    setIsCompleting(true);
     fullDisconnect();
-    try { await completeMutation.mutateAsync(classId); toast.success('Ders tamamlandı'); } catch {}
+    try {
+      await completeMutation.mutateAsync(classId);
+      toast.success('Ders tamamlandı');
+    } catch {
+      toast.error('Ders tamamlanamadı');
+    } finally {
+      setIsCompleting(false);
+      setShowEndClassDialog(false);
+    }
+    router.push('/mentor/group-classes');
+  };
+
+  const handleLeaveRoom = () => {
+    fullDisconnect();
+    toast.info('Odadan ayrıldınız. Ders tamamlanmadı, tekrar katılabilirsiniz.');
     router.push('/mentor/group-classes');
   };
 
@@ -567,9 +589,14 @@ export default function MentorGroupClassroomPage() {
             </>
           )}
           {isRoomActive ? (
-            <Button variant="destructive" size="sm" onClick={handleEndClass}>
-              <PhoneOff className="w-4 h-4 mr-2" /> Dersi Bitir
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleLeaveRoom} className="text-gray-300 border-gray-600 hover:bg-gray-700">
+                <LogOut className="w-4 h-4 mr-2" /> Odadan Ayrıl
+              </Button>
+              <Button variant="destructive" size="sm" onClick={handleEndClassClick}>
+                <PhoneOff className="w-4 h-4 mr-2" /> Dersi Bitir
+              </Button>
+            </div>
           ) : (
             <Button onClick={activateRoom} disabled={isConnecting} size="sm">
               <Video className="w-4 h-4 mr-2" /> {isConnecting ? 'Aktifleştiriliyor...' : 'Odayı Aktifleştir'}
@@ -700,6 +727,58 @@ export default function MentorGroupClassroomPage() {
                     </button>
                   ))}
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* End Class Confirmation Dialog */}
+      {showEndClassDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-800 rounded-xl shadow-2xl max-w-md w-full border border-gray-700">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-6 h-6 text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Dersi Bitir</h3>
+                  <p className="text-sm text-gray-400">Bu işlem geri alınamaz</p>
+                </div>
+              </div>
+              <p className="text-gray-300 text-sm mb-2">
+                Dersi tamamlamak istediğinize emin misiniz?
+              </p>
+              <ul className="text-gray-400 text-sm space-y-1 mb-6 ml-4 list-disc">
+                <li>Tüm öğrenciler odadan çıkarılacak</li>
+                <li>Ders &quot;Tamamlandı&quot; olarak işaretlenecek</li>
+                <li>Bu işlem geri alınamaz</li>
+              </ul>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700"
+                  onClick={() => setShowEndClassDialog(false)}
+                  disabled={isCompleting}
+                >
+                  Vazgeç
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex-1"
+                  onClick={confirmEndClass}
+                  disabled={isCompleting}
+                >
+                  {isCompleting ? (
+                    <span className="flex items-center gap-2">
+                      <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                      Tamamlanıyor...
+                    </span>
+                  ) : (
+                    'Evet, Dersi Bitir'
+                  )}
+                </Button>
               </div>
             </div>
           </div>
