@@ -109,7 +109,8 @@ export function useSignalR() {
 
       // Real-time notification count updates (replaces polling)
       onNotificationCountUpdated((payload: NotificationCountPayload) => {
-        queryClient.setQueryData(['user-notification-count'], payload.unreadCount);
+        // Cache expects { count: number } shape (matching notificationsApi.getUnreadCount response)
+        queryClient.setQueryData(['user-notification-count'], { count: payload.unreadCount });
         queryClient.invalidateQueries({ queryKey: ['user-notifications'] });
       });
     };
