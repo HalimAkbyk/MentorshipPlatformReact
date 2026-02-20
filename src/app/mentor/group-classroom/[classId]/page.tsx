@@ -24,18 +24,29 @@ export default function MentorGroupClassroomPage() {
   const { data: groupClass } = useGroupClass(classId);
   const completeMutation = useCompleteGroupClass();
 
-  const [room, setRoom] = useState<any>(null);
-  const [participantCount, setParticipantCount] = useState(0);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isRoomActive, setIsRoomActive] = useState(false);
+  const [participantCount, setParticipantCount] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   const localVideoRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const participantsRef = useRef<Map<string, HTMLDivElement>>(new Map());
   const roomRef = useRef<any>(null);
+  const rawVideoTrackRef = useRef<any>(null);
+  const rawAudioTrackRef = useRef<any>(null);
+  const joinAttemptRef = useRef(0);
 
   const roomName = `group-class-${classId}`;
+
+  // Duration timer (only when room is active)
+  useEffect(() => {
+    if (!isRoomActive) return;
+    const interval = setInterval(() => setDuration(prev => prev + 1), 1000);
+    return () => clearInterval(interval);
+  }, [isRoomActive]);
 
   // Calculate grid columns based on total participants
   const getGridClass = useCallback((total: number) => {
@@ -47,113 +58,51 @@ export default function MentorGroupClassroomPage() {
     return 'grid-cols-3 md:grid-cols-4';
   }, []);
 
-  // Get token and connect
+  // ─── Local preview helpers ───
+  const clearLocalContainerVideos = () => {
+    if (!localVideoRef.current) return;
+    localVideoRef.current.querySelectorAll('video').forEach(v => v.remove());
+  };
+
+  const attachLocalPreview = useCallback((videoTrack: any) => {
+    if (!localVideoRef.current || !videoTrack) return;
+    clearLocalContainerVideos();
+    const el = videoTrack.attach() as HTMLVideoElement;
+    el.style.width = '100%';
+    el.style.height = '100%';
+    el.style.objectFit = 'cover';
+    el.muted = true;
+    el.playsInline = true;
+    el.autoplay = true;
+    localVideoRef.current.appendChild(el);
+  }, []);
+
+  // ─── Full disconnect ───
+  const fullDisconnect = useCallback(() => {
+    try { roomRef.current?.disconnect(); } catch {}
+    roomRef.current = null;
+    setIsRoomActive(false);
+    try { rawVideoTrackRef.current?.stop?.(); } catch {}
+    try { rawAudioTrackRef.current?.stop?.(); } catch {}
+    rawVideoTrackRef.current = null;
+    rawAudioTrackRef.current = null;
+    clearLocalContainerVideos();
+    // Clean up remote participant containers
+    participantsRef.current.forEach((container) => {
+      try { container.remove(); } catch {}
+    });
+    participantsRef.current.clear();
+  }, []);
+
+  // Cleanup on unmount
   useEffect(() => {
-    const connect = async () => {
-      try {
-        setLoading(true);
-
-        // Create session first
-        await videoApi.createSession('GroupClass', classId);
-
-        // Get token
-        const tokenResult = await videoApi.getToken({
-          roomName,
-          isHost: true,
-        });
-
-        // Dynamic import Twilio Video
-        const TwilioVideo = await import('twilio-video');
-
-        const twilioRoom = await TwilioVideo.connect(tokenResult.token, {
-          name: roomName,
-          audio: true,
-          video: { width: 640, height: 480 },
-          dominantSpeaker: true,
-        });
-
-        roomRef.current = twilioRoom;
-        setRoom(twilioRoom);
-
-        // Attach local video
-        twilioRoom.localParticipant.videoTracks.forEach((pub: any) => {
-          if (pub.track && localVideoRef.current) {
-            localVideoRef.current.innerHTML = '';
-            const el = pub.track.attach();
-            el.style.width = '100%';
-            el.style.height = '100%';
-            el.style.objectFit = 'cover';
-            localVideoRef.current.appendChild(el);
-          }
-        });
-
-        // Handle trackPublished for late track attachment
-        twilioRoom.localParticipant.on('trackPublished', (pub: any) => {
-          if (pub.track?.kind === 'video' && localVideoRef.current) {
-            localVideoRef.current.innerHTML = '';
-            const el = pub.track.attach();
-            el.style.width = '100%';
-            el.style.height = '100%';
-            el.style.objectFit = 'cover';
-            localVideoRef.current.appendChild(el);
-          }
-        });
-
-        // Handle existing and new participants
-        const updateCount = () => {
-          setParticipantCount(twilioRoom.participants.size + 1);
-        };
-
-        twilioRoom.participants.forEach((p: any) => handleParticipantConnected(p));
-        twilioRoom.on('participantConnected', (p: any) => {
-          handleParticipantConnected(p);
-          updateCount();
-          toast.success(`${p.identity?.split('|')[1] || 'Katılımcı'} derse katıldı`);
-        });
-        twilioRoom.on('participantDisconnected', (p: any) => {
-          handleParticipantDisconnected(p);
-          updateCount();
-        });
-
-        updateCount();
-        setLoading(false);
-      } catch (err: any) {
-        console.error('Video connection error:', err);
-        toast.error('Video bağlantısı kurulamadı');
-        setLoading(false);
-      }
-    };
-
-    connect();
-
     return () => {
-      if (roomRef.current) {
-        roomRef.current.disconnect();
-      }
+      fullDisconnect();
     };
-  }, [classId]);
+  }, [fullDisconnect]);
 
-  const handleParticipantConnected = useCallback((participant: any) => {
-    participant.on('trackSubscribed', (track: any) => {
-      attachRemoteTrack(track, participant);
-    });
-
-    participant.tracks.forEach((pub: any) => {
-      if (pub.isSubscribed && pub.track) {
-        attachRemoteTrack(pub.track, participant);
-      }
-    });
-  }, []);
-
-  const handleParticipantDisconnected = useCallback((participant: any) => {
-    const container = participantsRef.current.get(participant.sid);
-    if (container) {
-      container.remove();
-      participantsRef.current.delete(participant.sid);
-    }
-  }, []);
-
-  const attachRemoteTrack = (track: any, participant: any) => {
+  // ─── Remote track attachment ───
+  const attachRemoteTrack = useCallback((track: any, participant: any) => {
     if (!gridRef.current) return;
     if (track.kind === 'video') {
       let container = participantsRef.current.get(participant.sid);
@@ -167,20 +116,133 @@ export default function MentorGroupClassroomPage() {
         gridRef.current!.appendChild(container);
         participantsRef.current.set(participant.sid, container);
       }
-      const el = track.attach();
+      const el = track.attach() as HTMLVideoElement;
       el.style.width = '100%';
       el.style.height = '100%';
       el.style.objectFit = 'cover';
+      el.playsInline = true;
+      el.autoplay = true;
       container.insertBefore(el, container.firstChild);
     } else if (track.kind === 'audio') {
-      const el = track.attach();
+      const el = track.attach() as HTMLMediaElement;
+      el.style.display = 'none';
       document.body.appendChild(el);
+    }
+  }, []);
+
+  // ─── Participant handlers ───
+  const handleParticipantConnected = useCallback((participant: any) => {
+    const displayName = participant.identity?.split('|')[1] || 'Katılımcı';
+    toast.success(`${displayName} derse katıldı`);
+
+    participant.tracks.forEach((pub: any) => {
+      if (pub.isSubscribed && pub.track) {
+        attachRemoteTrack(pub.track, participant);
+      }
+    });
+    participant.on('trackSubscribed', (track: any) => {
+      attachRemoteTrack(track, participant);
+    });
+    participant.on('trackUnsubscribed', (track: any) => {
+      try {
+        const els = track.detach?.() ?? [];
+        els.forEach((el: any) => { try { el.remove(); } catch {} });
+      } catch {}
+    });
+  }, [attachRemoteTrack]);
+
+  const handleParticipantDisconnected = useCallback((participant: any) => {
+    const displayName = participant.identity?.split('|')[1] || 'Katılımcı';
+    toast.info(`${displayName} dersten ayrıldı`);
+    const container = participantsRef.current.get(participant.sid);
+    if (container) {
+      container.remove();
+      participantsRef.current.delete(participant.sid);
+    }
+  }, []);
+
+  // ─── Activate Room (Mentor is Host) ───
+  const activateRoom = async () => {
+    const attemptId = ++joinAttemptRef.current;
+    if (isConnecting) return;
+    try {
+      setIsConnecting(true);
+      fullDisconnect();
+      console.log('🎬 Mentor activating group class room:', classId);
+
+      // Create session first (sets up Twilio room on backend)
+      await videoApi.createSession('GroupClass', classId);
+
+      // Get token with isHost=true → this marks session as Live on backend
+      const tokenResult = await videoApi.getToken({
+        roomName,
+        isHost: true,
+      });
+
+      // Dynamic import Twilio Video
+      const TwilioVideo = (await import('twilio-video')).default;
+      const { createLocalTracks } = await import('twilio-video');
+
+      // Create local tracks properly (like 1-1 classroom)
+      const localTracks = await createLocalTracks({
+        audio: true,
+        video: { width: 640, height: 480 },
+      });
+
+      const audioTrack = localTracks.find((t: any) => t.kind === 'audio');
+      const videoTrack = localTracks.find((t: any) => t.kind === 'video');
+
+      // Connect to Twilio room with pre-created tracks
+      const twilioRoom = await TwilioVideo.connect(tokenResult.token, {
+        name: roomName,
+        tracks: localTracks,
+        dominantSpeaker: true,
+      });
+
+      if (joinAttemptRef.current !== attemptId) {
+        try { twilioRoom.disconnect(); } catch {}
+        localTracks.forEach((t: any) => { try { t.stop?.(); } catch {} });
+        return;
+      }
+
+      roomRef.current = twilioRoom;
+      rawAudioTrackRef.current = audioTrack;
+      rawVideoTrackRef.current = videoTrack;
+      setIsRoomActive(true);
+
+      // Attach local video preview
+      attachLocalPreview(videoTrack);
+
+      // Handle existing and new participants
+      const updateCount = () => {
+        setParticipantCount(twilioRoom.participants.size + 1);
+      };
+
+      twilioRoom.participants.forEach((p: any) => handleParticipantConnected(p));
+      twilioRoom.on('participantConnected', (p: any) => {
+        handleParticipantConnected(p);
+        updateCount();
+      });
+      twilioRoom.on('participantDisconnected', (p: any) => {
+        handleParticipantDisconnected(p);
+        updateCount();
+      });
+
+      updateCount();
+      toast.success('Oda aktif! Öğrenciler artık katılabilir.');
+    } catch (e: any) {
+      console.error('❌ Room activation error:', e);
+      toast.error('Oda aktifleştirilemedi: ' + (e?.message ?? ''));
+    } finally {
+      setIsConnecting(false);
     }
   };
 
+  // ─── Toggle Functions ───
   const toggleVideo = () => {
-    if (!roomRef.current) return;
-    roomRef.current.localParticipant.videoTracks.forEach((pub: any) => {
+    const r = roomRef.current;
+    if (!r) return;
+    r.localParticipant.videoTracks.forEach((pub: any) => {
       if (isVideoEnabled) pub.track.disable();
       else pub.track.enable();
     });
@@ -188,16 +250,18 @@ export default function MentorGroupClassroomPage() {
   };
 
   const toggleAudio = () => {
-    if (!roomRef.current) return;
-    roomRef.current.localParticipant.audioTracks.forEach((pub: any) => {
+    const r = roomRef.current;
+    if (!r) return;
+    r.localParticipant.audioTracks.forEach((pub: any) => {
       if (isAudioEnabled) pub.track.disable();
       else pub.track.enable();
     });
     setIsAudioEnabled(!isAudioEnabled);
   };
 
+  // ─── End Class ───
   const handleEndClass = async () => {
-    if (roomRef.current) roomRef.current.disconnect();
+    fullDisconnect();
     try {
       await completeMutation.mutateAsync(classId);
       toast.success('Ders tamamlandı');
@@ -207,16 +271,11 @@ export default function MentorGroupClassroomPage() {
     router.push('/mentor/group-classes');
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center text-white">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4" />
-          <p>Ders odası hazırlanıyor...</p>
-        </div>
-      </div>
-    );
-  }
+  const formatDuration = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  };
 
   const totalParticipants = participantCount;
 
@@ -226,11 +285,33 @@ export default function MentorGroupClassroomPage() {
       <div className="bg-gray-800 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h1 className="text-white font-semibold">{groupClass?.title || 'Grup Dersi'}</h1>
-          <Badge className="bg-green-600 text-white text-xs">Canlı</Badge>
+          {isRoomActive && (
+            <Badge className="bg-green-600 text-white text-xs animate-pulse">Canlı</Badge>
+          )}
+          {isConnecting && (
+            <span className="text-yellow-400 text-sm">Aktifleştiriliyor...</span>
+          )}
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-300">
-          <Users className="w-4 h-4" />
-          <span>{totalParticipants} katılımcı</span>
+        <div className="flex items-center gap-4">
+          {isRoomActive && (
+            <>
+              <div className="text-white font-mono text-sm">{formatDuration(duration)}</div>
+              <div className="flex items-center gap-2 text-sm text-gray-300">
+                <Users className="w-4 h-4" />
+                <span>{totalParticipants} katılımcı</span>
+              </div>
+            </>
+          )}
+          {isRoomActive ? (
+            <Button variant="destructive" size="sm" onClick={handleEndClass}>
+              <PhoneOff className="w-4 h-4 mr-2" /> Dersi Bitir
+            </Button>
+          ) : (
+            <Button onClick={activateRoom} disabled={isConnecting} size="sm">
+              <Video className="w-4 h-4 mr-2" />
+              {isConnecting ? 'Aktifleştiriliyor...' : 'Odayı Aktifleştir'}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -243,9 +324,18 @@ export default function MentorGroupClassroomPage() {
             <div className="absolute bottom-2 left-2 text-white text-xs bg-black/50 px-2 py-1 rounded z-10">
               Sen (Mentor)
             </div>
-            {!isVideoEnabled && (
+            {!isVideoEnabled && isRoomActive && (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
                 <VideoOff className="w-10 h-10 text-gray-500" />
+              </div>
+            )}
+            {!isRoomActive && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-90">
+                <div className="text-center text-white">
+                  <Video className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p className="text-sm font-medium mb-1">Oda Aktif Değil</p>
+                  <p className="text-xs text-gray-400">Odayı aktifleştirin</p>
+                </div>
               </div>
             )}
           </div>
@@ -256,35 +346,37 @@ export default function MentorGroupClassroomPage() {
       </div>
 
       {/* Controls */}
-      <div className="bg-gray-800 border-t border-gray-700 px-4 py-4 flex items-center justify-center gap-4">
-        <Button
-          variant={isAudioEnabled ? 'secondary' : 'destructive'}
-          size="lg"
-          className="rounded-full w-12 h-12 p-0"
-          onClick={toggleAudio}
-          title={isAudioEnabled ? 'Mikrofonu Kapat' : 'Mikrofonu Aç'}
-        >
-          {isAudioEnabled ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
-        </Button>
-        <Button
-          variant={isVideoEnabled ? 'secondary' : 'destructive'}
-          size="lg"
-          className="rounded-full w-12 h-12 p-0"
-          onClick={toggleVideo}
-          title={isVideoEnabled ? 'Kamerayı Kapat' : 'Kamerayı Aç'}
-        >
-          {isVideoEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
-        </Button>
-        <Button
-          variant="destructive"
-          size="lg"
-          className="rounded-full px-6"
-          onClick={handleEndClass}
-        >
-          <PhoneOff className="w-5 h-5 mr-2" />
-          Dersi Bitir
-        </Button>
-      </div>
+      {isRoomActive && (
+        <div className="bg-gray-800 border-t border-gray-700 px-4 py-4 flex items-center justify-center gap-4">
+          <Button
+            variant={isAudioEnabled ? 'secondary' : 'destructive'}
+            size="lg"
+            className="rounded-full w-12 h-12 p-0"
+            onClick={toggleAudio}
+            title={isAudioEnabled ? 'Mikrofonu Kapat' : 'Mikrofonu Aç'}
+          >
+            {isAudioEnabled ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+          </Button>
+          <Button
+            variant={isVideoEnabled ? 'secondary' : 'destructive'}
+            size="lg"
+            className="rounded-full w-12 h-12 p-0"
+            onClick={toggleVideo}
+            title={isVideoEnabled ? 'Kamerayı Kapat' : 'Kamerayı Aç'}
+          >
+            {isVideoEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+          </Button>
+          <Button
+            variant="destructive"
+            size="lg"
+            className="rounded-full px-6"
+            onClick={handleEndClass}
+          >
+            <PhoneOff className="w-5 h-5 mr-2" />
+            Dersi Bitir
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

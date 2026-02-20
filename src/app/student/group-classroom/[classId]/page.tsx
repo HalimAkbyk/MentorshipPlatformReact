@@ -25,20 +25,31 @@ export default function StudentGroupClassroomPage() {
 
   const { data: groupClass } = useGroupClass(classId);
 
-  const [room, setRoom] = useState<any>(null);
-  const [participantCount, setParticipantCount] = useState(0);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
-  const [loading, setLoading] = useState(true);
-  const [waitingForHost, setWaitingForHost] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [waitingForHost, setWaitingForHost] = useState(true);
   const [checkingRoom, setCheckingRoom] = useState(false);
+  const [participantCount, setParticipantCount] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   const localVideoRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const participantsRef = useRef<Map<string, HTMLDivElement>>(new Map());
   const roomRef = useRef<any>(null);
+  const rawVideoTrackRef = useRef<any>(null);
+  const rawAudioTrackRef = useRef<any>(null);
+  const joinAttemptRef = useRef(0);
 
   const roomName = `group-class-${classId}`;
+
+  // Duration timer (only when connected)
+  useEffect(() => {
+    if (!isConnected) return;
+    const interval = setInterval(() => setDuration(prev => prev + 1), 1000);
+    return () => clearInterval(interval);
+  }, [isConnected]);
 
   // Calculate grid columns based on total participants
   const getGridClass = useCallback((total: number) => {
@@ -50,70 +61,154 @@ export default function StudentGroupClassroomPage() {
     return 'grid-cols-3 md:grid-cols-4';
   }, []);
 
-  // Check if mentor has started the room
-  const checkRoomStatus = useCallback(async () => {
-    try {
-      setCheckingRoom(true);
-      const status = await videoApi.getRoomStatus(roomName);
-      if (status.isActive && status.hostConnected) {
-        setWaitingForHost(false);
-        connectToRoom();
-      } else {
-        setWaitingForHost(true);
-        setLoading(false);
+  // ─── Local preview helpers ───
+  const clearLocalContainerVideos = () => {
+    if (!localVideoRef.current) return;
+    localVideoRef.current.querySelectorAll('video').forEach(v => v.remove());
+  };
+
+  const attachLocalPreview = useCallback((videoTrack: any) => {
+    if (!localVideoRef.current || !videoTrack) return;
+    clearLocalContainerVideos();
+    const el = videoTrack.attach() as HTMLVideoElement;
+    el.style.width = '100%';
+    el.style.height = '100%';
+    el.style.objectFit = 'cover';
+    el.muted = true;
+    el.playsInline = true;
+    el.autoplay = true;
+    localVideoRef.current.appendChild(el);
+  }, []);
+
+  // ─── Full disconnect ───
+  const fullDisconnect = useCallback(() => {
+    try { roomRef.current?.disconnect(); } catch {}
+    roomRef.current = null;
+    setIsConnected(false);
+    try { rawVideoTrackRef.current?.stop?.(); } catch {}
+    try { rawAudioTrackRef.current?.stop?.(); } catch {}
+    rawVideoTrackRef.current = null;
+    rawAudioTrackRef.current = null;
+    clearLocalContainerVideos();
+    // Clean up remote participant containers
+    participantsRef.current.forEach((container) => {
+      try { container.remove(); } catch {}
+    });
+    participantsRef.current.clear();
+  }, []);
+
+  // ─── Remote track attachment ───
+  const attachRemoteTrack = useCallback((track: any, participant: any) => {
+    if (!gridRef.current) return;
+    if (track.kind === 'video') {
+      let container = participantsRef.current.get(participant.sid);
+      if (!container) {
+        container = document.createElement('div');
+        container.className = 'relative aspect-video bg-gray-800 rounded-lg overflow-hidden';
+        const nameLabel = document.createElement('div');
+        nameLabel.className = 'absolute bottom-2 left-2 text-white text-xs bg-black/50 px-2 py-1 rounded z-10';
+        nameLabel.textContent = participant.identity?.split('|')[1] || 'Katılımcı';
+        container.appendChild(nameLabel);
+        gridRef.current!.appendChild(container);
+        participantsRef.current.set(participant.sid, container);
       }
-    } catch {
-      setWaitingForHost(true);
-      setLoading(false);
-    } finally {
-      setCheckingRoom(false);
+      const el = track.attach() as HTMLVideoElement;
+      el.style.width = '100%';
+      el.style.height = '100%';
+      el.style.objectFit = 'cover';
+      el.playsInline = true;
+      el.autoplay = true;
+      container.insertBefore(el, container.firstChild);
+    } else if (track.kind === 'audio') {
+      const el = track.attach() as HTMLMediaElement;
+      el.style.display = 'none';
+      document.body.appendChild(el);
     }
-  }, [roomName]);
+  }, []);
 
-  const connectToRoom = async () => {
+  // ─── Participant handlers ───
+  const handleParticipantConnected = useCallback((participant: any) => {
+    const displayName = participant.identity?.split('|')[1] || 'Katılımcı';
+    toast.success(`${displayName} derse katıldı`);
+
+    participant.tracks.forEach((pub: any) => {
+      if (pub.isSubscribed && pub.track) {
+        attachRemoteTrack(pub.track, participant);
+      }
+    });
+    participant.on('trackSubscribed', (track: any) => {
+      attachRemoteTrack(track, participant);
+    });
+    participant.on('trackUnsubscribed', (track: any) => {
+      try {
+        const els = track.detach?.() ?? [];
+        els.forEach((el: any) => { try { el.remove(); } catch {} });
+      } catch {}
+    });
+  }, [attachRemoteTrack]);
+
+  const handleParticipantDisconnected = useCallback((participant: any) => {
+    const displayName = participant.identity?.split('|')[1] || 'Katılımcı';
+    toast.info(`${displayName} dersten ayrıldı`);
+    const container = participantsRef.current.get(participant.sid);
+    if (container) {
+      container.remove();
+      participantsRef.current.delete(participant.sid);
+    }
+  }, []);
+
+  // ─── Connect to Room ───
+  const connectToRoom = useCallback(async () => {
+    const attemptId = ++joinAttemptRef.current;
+    if (isConnecting) return;
     try {
-      setLoading(true);
+      setIsConnecting(true);
       setWaitingForHost(false);
+      console.log('🎬 Student joining group class room:', classId);
 
+      // Get token (isHost=false for student)
       const tokenResult = await videoApi.getToken({
         roomName,
         isHost: false,
       });
 
-      const TwilioVideo = await import('twilio-video');
+      // Dynamic import Twilio Video
+      const TwilioVideo = (await import('twilio-video')).default;
+      const { createLocalTracks } = await import('twilio-video');
 
-      const twilioRoom = await TwilioVideo.connect(tokenResult.token, {
-        name: roomName,
+      // Create local tracks properly (like 1-1 classroom)
+      const localTracks = await createLocalTracks({
         audio: true,
         video: { width: 640, height: 480 },
       });
 
+      const audioTrack = localTracks.find((t: any) => t.kind === 'audio');
+      const videoTrack = localTracks.find((t: any) => t.kind === 'video');
+
+      if (joinAttemptRef.current !== attemptId) {
+        localTracks.forEach((t: any) => { try { t.stop?.(); } catch {} });
+        return;
+      }
+
+      // Connect to Twilio room with pre-created tracks
+      const twilioRoom = await TwilioVideo.connect(tokenResult.token, {
+        name: roomName,
+        tracks: localTracks,
+      });
+
+      if (joinAttemptRef.current !== attemptId) {
+        try { twilioRoom.disconnect(); } catch {}
+        localTracks.forEach((t: any) => { try { t.stop?.(); } catch {} });
+        return;
+      }
+
       roomRef.current = twilioRoom;
-      setRoom(twilioRoom);
+      rawAudioTrackRef.current = audioTrack;
+      rawVideoTrackRef.current = videoTrack;
+      setIsConnected(true);
 
-      // Attach local video
-      twilioRoom.localParticipant.videoTracks.forEach((pub: any) => {
-        if (pub.track && localVideoRef.current) {
-          localVideoRef.current.innerHTML = '';
-          const el = pub.track.attach();
-          el.style.width = '100%';
-          el.style.height = '100%';
-          el.style.objectFit = 'cover';
-          localVideoRef.current.appendChild(el);
-        }
-      });
-
-      // Also handle local audio tracks being published after connect
-      twilioRoom.localParticipant.on('trackPublished', (pub: any) => {
-        if (pub.track?.kind === 'video' && localVideoRef.current) {
-          localVideoRef.current.innerHTML = '';
-          const el = pub.track.attach();
-          el.style.width = '100%';
-          el.style.height = '100%';
-          el.style.objectFit = 'cover';
-          localVideoRef.current.appendChild(el);
-        }
-      });
+      // Attach local video preview
+      attachLocalPreview(videoTrack);
 
       // Handle existing and new participants
       const updateCount = () => {
@@ -130,82 +225,67 @@ export default function StudentGroupClassroomPage() {
         updateCount();
       });
 
-      updateCount();
-      setLoading(false);
-    } catch (err: any) {
-      console.error('Video connection error:', err);
-      toast.error('Video bağlantısı kurulamadı');
-      setLoading(false);
-    }
-  };
+      // If mentor disconnects / room ends
+      twilioRoom.on('disconnected', () => {
+        toast.info('Ders sonlandırıldı');
+        fullDisconnect();
+      });
 
+      updateCount();
+      toast.success('Derse katıldınız!');
+    } catch (e: any) {
+      console.error('❌ Room join error:', e);
+      toast.error('Bağlantı hatası: ' + (e?.message ?? ''));
+      // If connection fails, go back to waiting
+      setWaitingForHost(true);
+    } finally {
+      setIsConnecting(false);
+    }
+  }, [classId, roomName, isConnecting, attachLocalPreview, handleParticipantConnected, handleParticipantDisconnected, fullDisconnect]);
+
+  // ─── Check Room Status ───
+  const checkRoomStatus = useCallback(async () => {
+    try {
+      setCheckingRoom(true);
+      const status = await videoApi.getRoomStatus(roomName);
+      console.log('📡 Room status:', status);
+      if (status.isActive && status.hostConnected) {
+        // Room is live, connect!
+        connectToRoom();
+      } else {
+        setWaitingForHost(true);
+      }
+    } catch {
+      setWaitingForHost(true);
+    } finally {
+      setCheckingRoom(false);
+    }
+  }, [roomName, connectToRoom]);
+
+  // Initial room status check
   useEffect(() => {
     checkRoomStatus();
 
     return () => {
-      if (roomRef.current) {
-        roomRef.current.disconnect();
-      }
+      fullDisconnect();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classId]);
 
   // Auto-retry check every 5s while waiting
   useEffect(() => {
-    if (!waitingForHost) return;
+    if (!waitingForHost || isConnected || isConnecting) return;
     const interval = setInterval(() => {
       checkRoomStatus();
     }, 5000);
     return () => clearInterval(interval);
-  }, [waitingForHost, checkRoomStatus]);
+  }, [waitingForHost, isConnected, isConnecting, checkRoomStatus]);
 
-  const handleParticipantConnected = useCallback((participant: any) => {
-    participant.on('trackSubscribed', (track: any) => {
-      attachRemoteTrack(track, participant);
-    });
-
-    participant.tracks.forEach((pub: any) => {
-      if (pub.isSubscribed && pub.track) {
-        attachRemoteTrack(pub.track, participant);
-      }
-    });
-  }, []);
-
-  const handleParticipantDisconnected = useCallback((participant: any) => {
-    const container = participantsRef.current.get(participant.sid);
-    if (container) {
-      container.remove();
-      participantsRef.current.delete(participant.sid);
-    }
-  }, []);
-
-  const attachRemoteTrack = (track: any, participant: any) => {
-    if (!gridRef.current) return;
-    if (track.kind === 'video') {
-      let container = participantsRef.current.get(participant.sid);
-      if (!container) {
-        container = document.createElement('div');
-        container.className = 'relative aspect-video bg-gray-800 rounded-lg overflow-hidden';
-        const nameLabel = document.createElement('div');
-        nameLabel.className = 'absolute bottom-2 left-2 text-white text-xs bg-black/50 px-2 py-1 rounded z-10';
-        nameLabel.textContent = participant.identity?.split('|')[1] || 'Katılımcı';
-        container.appendChild(nameLabel);
-        gridRef.current!.appendChild(container);
-        participantsRef.current.set(participant.sid, container);
-      }
-      const el = track.attach();
-      el.style.width = '100%';
-      el.style.height = '100%';
-      el.style.objectFit = 'cover';
-      container.insertBefore(el, container.firstChild);
-    } else if (track.kind === 'audio') {
-      const el = track.attach();
-      document.body.appendChild(el);
-    }
-  };
-
+  // ─── Toggle Functions ───
   const toggleVideo = () => {
-    if (!roomRef.current) return;
-    roomRef.current.localParticipant.videoTracks.forEach((pub: any) => {
+    const r = roomRef.current;
+    if (!r) return;
+    r.localParticipant.videoTracks.forEach((pub: any) => {
       if (isVideoEnabled) pub.track.disable();
       else pub.track.enable();
     });
@@ -213,21 +293,29 @@ export default function StudentGroupClassroomPage() {
   };
 
   const toggleAudio = () => {
-    if (!roomRef.current) return;
-    roomRef.current.localParticipant.audioTracks.forEach((pub: any) => {
+    const r = roomRef.current;
+    if (!r) return;
+    r.localParticipant.audioTracks.forEach((pub: any) => {
       if (isAudioEnabled) pub.track.disable();
       else pub.track.enable();
     });
     setIsAudioEnabled(!isAudioEnabled);
   };
 
+  // ─── Leave Room ───
   const handleLeave = () => {
-    if (roomRef.current) roomRef.current.disconnect();
+    fullDisconnect();
     router.push('/student/my-classes');
   };
 
-  // Waiting for host screen
-  if (waitingForHost) {
+  const formatDuration = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  };
+
+  // ─── Waiting for host screen ───
+  if (waitingForHost && !isConnected && !isConnecting) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center text-white max-w-md">
@@ -253,7 +341,8 @@ export default function StudentGroupClassroomPage() {
     );
   }
 
-  if (loading) {
+  // ─── Connecting screen ───
+  if (isConnecting && !isConnected) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center text-white">
@@ -274,9 +363,12 @@ export default function StudentGroupClassroomPage() {
           <h1 className="text-white font-semibold">{groupClass?.title || 'Grup Dersi'}</h1>
           <Badge className="bg-green-600 text-white text-xs">Canlı</Badge>
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-300">
-          <Users className="w-4 h-4" />
-          <span>{totalParticipants} katılımcı</span>
+        <div className="flex items-center gap-4">
+          <div className="text-white font-mono text-sm">{formatDuration(duration)}</div>
+          <div className="flex items-center gap-2 text-sm text-gray-300">
+            <Users className="w-4 h-4" />
+            <span>{totalParticipants} katılımcı</span>
+          </div>
         </div>
       </div>
 
