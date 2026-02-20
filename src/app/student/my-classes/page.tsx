@@ -82,9 +82,10 @@ export default function MyClassesPage() {
   };
 
   const canJoin = (enrollment: typeof enrollments extends (infer T)[] | undefined ? T : never) => {
-    return enrollment.enrollmentStatus === 'Confirmed' &&
-           enrollment.classStatus === 'Published' &&
-           new Date(enrollment.endAt) > new Date();
+    const isActiveEnrollment = enrollment.enrollmentStatus === 'Confirmed' || enrollment.enrollmentStatus === 'Attended';
+    const isClassActive = enrollment.classStatus === 'Published';
+    const isNotExpired = new Date(enrollment.endAt) > new Date();
+    return isActiveEnrollment && isClassActive && isNotExpired;
   };
 
   return (
@@ -148,8 +149,8 @@ export default function MyClassesPage() {
                       </div>
                     </div>
 
-                    {/* Actions for confirmed enrollments */}
-                    {enrollment.enrollmentStatus === 'Confirmed' && enrollment.classStatus !== 'Cancelled' && (
+                    {/* Actions for active enrollments */}
+                    {(enrollment.enrollmentStatus === 'Confirmed' || enrollment.enrollmentStatus === 'Attended') && enrollment.classStatus !== 'Cancelled' && (
                       <div className="mt-4 pt-3 border-t flex items-center gap-2">
                         {canJoin(enrollment) && (
                           <Link href={`/student/group-classroom/${enrollment.classId}`}>
@@ -159,20 +160,24 @@ export default function MyClassesPage() {
                             </Button>
                           </Link>
                         )}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-red-600 border-red-200 hover:bg-red-50"
-                          onClick={() =>
-                            setCancellingId(
-                              cancellingId === enrollment.enrollmentId ? null : enrollment.enrollmentId
-                            )
-                          }
-                        >
-                          <XCircle className="w-4 h-4 mr-1" />
-                          İptal Et
-                        </Button>
-                        <span className={`text-xs ${refundInfo.color}`}>{refundInfo.text}</span>
+                        {enrollment.enrollmentStatus === 'Confirmed' && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-red-600 border-red-200 hover:bg-red-50"
+                              onClick={() =>
+                                setCancellingId(
+                                  cancellingId === enrollment.enrollmentId ? null : enrollment.enrollmentId
+                                )
+                              }
+                            >
+                              <XCircle className="w-4 h-4 mr-1" />
+                              İptal Et
+                            </Button>
+                            <span className={`text-xs ${refundInfo.color}`}>{refundInfo.text}</span>
+                          </>
+                        )}
                       </div>
                     )}
 
