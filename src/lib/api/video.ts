@@ -11,6 +11,13 @@ export interface VideoTokenResponse {
   expiresInSeconds: number;
 }
 
+export interface RoomStatusResponse {
+  roomName: string;
+  isActive: boolean;
+  hostConnected: boolean;
+  participantCount: number;
+}
+
 export const videoApi = {
   getToken: async (data: VideoTokenRequest): Promise<VideoTokenResponse> => {
     return apiClient.post<VideoTokenResponse>('/video/token', data);
@@ -21,5 +28,9 @@ export const videoApi = {
       resourceType,
       resourceId,
     });
+  },
+
+  getRoomStatus: async (roomName: string): Promise<RoomStatusResponse> => {
+    return apiClient.get<RoomStatusResponse>(`/video/room/${roomName}/status`);
   },
 };

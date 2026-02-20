@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { useGroupClass, useCompleteGroupClass } from '@/lib/hooks/use-classes';
 import { videoApi } from '@/lib/api/video';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import {
@@ -15,7 +14,6 @@ import {
   MicOff,
   PhoneOff,
   Users,
-  Monitor,
 } from 'lucide-react';
 
 export default function MentorGroupClassroomPage() {
@@ -26,17 +24,28 @@ export default function MentorGroupClassroomPage() {
   const { data: groupClass } = useGroupClass(classId);
   const completeMutation = useCompleteGroupClass();
 
-  const [token, setToken] = useState<string | null>(null);
   const [room, setRoom] = useState<any>(null);
-  const [participants, setParticipants] = useState<any[]>([]);
+  const [participantCount, setParticipantCount] = useState(0);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
 
   const localVideoRef = useRef<HTMLDivElement>(null);
-  const remoteVideosRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const participantsRef = useRef<Map<string, HTMLDivElement>>(new Map());
+  const roomRef = useRef<any>(null);
 
   const roomName = `group-class-${classId}`;
+
+  // Calculate grid columns based on total participants
+  const getGridClass = useCallback((total: number) => {
+    if (total <= 1) return 'grid-cols-1 max-w-2xl mx-auto';
+    if (total === 2) return 'grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto';
+    if (total <= 4) return 'grid-cols-2 max-w-5xl mx-auto';
+    if (total <= 6) return 'grid-cols-2 md:grid-cols-3';
+    if (total <= 9) return 'grid-cols-3';
+    return 'grid-cols-3 md:grid-cols-4';
+  }, []);
 
   // Get token and connect
   useEffect(() => {
@@ -52,7 +61,6 @@ export default function MentorGroupClassroomPage() {
           roomName,
           isHost: true,
         });
-        setToken(tokenResult.token);
 
         // Dynamic import Twilio Video
         const TwilioVideo = await import('twilio-video');
@@ -64,6 +72,7 @@ export default function MentorGroupClassroomPage() {
           dominantSpeaker: true,
         });
 
+        roomRef.current = twilioRoom;
         setRoom(twilioRoom);
 
         // Attach local video
@@ -74,18 +83,39 @@ export default function MentorGroupClassroomPage() {
             el.style.width = '100%';
             el.style.height = '100%';
             el.style.objectFit = 'cover';
-            el.style.borderRadius = '8px';
             localVideoRef.current.appendChild(el);
           }
         });
 
-        // Handle existing participants
+        // Handle trackPublished for late track attachment
+        twilioRoom.localParticipant.on('trackPublished', (pub: any) => {
+          if (pub.track?.kind === 'video' && localVideoRef.current) {
+            localVideoRef.current.innerHTML = '';
+            const el = pub.track.attach();
+            el.style.width = '100%';
+            el.style.height = '100%';
+            el.style.objectFit = 'cover';
+            localVideoRef.current.appendChild(el);
+          }
+        });
+
+        // Handle existing and new participants
+        const updateCount = () => {
+          setParticipantCount(twilioRoom.participants.size + 1);
+        };
+
         twilioRoom.participants.forEach((p: any) => handleParticipantConnected(p));
+        twilioRoom.on('participantConnected', (p: any) => {
+          handleParticipantConnected(p);
+          updateCount();
+          toast.success(`${p.identity?.split('|')[1] || 'Katılımcı'} derse katıldı`);
+        });
+        twilioRoom.on('participantDisconnected', (p: any) => {
+          handleParticipantDisconnected(p);
+          updateCount();
+        });
 
-        // Handle new participants
-        twilioRoom.on('participantConnected', handleParticipantConnected);
-        twilioRoom.on('participantDisconnected', handleParticipantDisconnected);
-
+        updateCount();
         setLoading(false);
       } catch (err: any) {
         console.error('Video connection error:', err);
@@ -97,19 +127,15 @@ export default function MentorGroupClassroomPage() {
     connect();
 
     return () => {
-      if (room) {
-        room.disconnect();
+      if (roomRef.current) {
+        roomRef.current.disconnect();
       }
     };
   }, [classId]);
 
   const handleParticipantConnected = useCallback((participant: any) => {
-    setParticipants(prev => [...prev, participant]);
-
     participant.on('trackSubscribed', (track: any) => {
-      if (track.kind === 'video' || track.kind === 'audio') {
-        attachRemoteTrack(track, participant);
-      }
+      attachRemoteTrack(track, participant);
     });
 
     participant.tracks.forEach((pub: any) => {
@@ -120,25 +146,26 @@ export default function MentorGroupClassroomPage() {
   }, []);
 
   const handleParticipantDisconnected = useCallback((participant: any) => {
-    setParticipants(prev => prev.filter(p => p.sid !== participant.sid));
-    // Remove video element
-    const el = document.getElementById(`participant-${participant.sid}`);
-    if (el) el.remove();
+    const container = participantsRef.current.get(participant.sid);
+    if (container) {
+      container.remove();
+      participantsRef.current.delete(participant.sid);
+    }
   }, []);
 
   const attachRemoteTrack = (track: any, participant: any) => {
-    if (!remoteVideosRef.current) return;
+    if (!gridRef.current) return;
     if (track.kind === 'video') {
-      let container = document.getElementById(`participant-${participant.sid}`);
+      let container = participantsRef.current.get(participant.sid);
       if (!container) {
         container = document.createElement('div');
-        container.id = `participant-${participant.sid}`;
-        container.className = 'relative aspect-video bg-gray-900 rounded-lg overflow-hidden';
+        container.className = 'relative aspect-video bg-gray-800 rounded-lg overflow-hidden';
         const nameLabel = document.createElement('div');
-        nameLabel.className = 'absolute bottom-2 left-2 text-white text-xs bg-black/50 px-2 py-1 rounded';
+        nameLabel.className = 'absolute bottom-2 left-2 text-white text-xs bg-black/50 px-2 py-1 rounded z-10';
         nameLabel.textContent = participant.identity?.split('|')[1] || 'Katılımcı';
         container.appendChild(nameLabel);
-        remoteVideosRef.current!.appendChild(container);
+        gridRef.current!.appendChild(container);
+        participantsRef.current.set(participant.sid, container);
       }
       const el = track.attach();
       el.style.width = '100%';
@@ -152,8 +179,8 @@ export default function MentorGroupClassroomPage() {
   };
 
   const toggleVideo = () => {
-    if (!room) return;
-    room.localParticipant.videoTracks.forEach((pub: any) => {
+    if (!roomRef.current) return;
+    roomRef.current.localParticipant.videoTracks.forEach((pub: any) => {
       if (isVideoEnabled) pub.track.disable();
       else pub.track.enable();
     });
@@ -161,8 +188,8 @@ export default function MentorGroupClassroomPage() {
   };
 
   const toggleAudio = () => {
-    if (!room) return;
-    room.localParticipant.audioTracks.forEach((pub: any) => {
+    if (!roomRef.current) return;
+    roomRef.current.localParticipant.audioTracks.forEach((pub: any) => {
       if (isAudioEnabled) pub.track.disable();
       else pub.track.enable();
     });
@@ -170,7 +197,7 @@ export default function MentorGroupClassroomPage() {
   };
 
   const handleEndClass = async () => {
-    if (room) room.disconnect();
+    if (roomRef.current) roomRef.current.disconnect();
     try {
       await completeMutation.mutateAsync(classId);
       toast.success('Ders tamamlandı');
@@ -191,6 +218,8 @@ export default function MentorGroupClassroomPage() {
     );
   }
 
+  const totalParticipants = participantCount;
+
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col">
       {/* Header */}
@@ -201,23 +230,28 @@ export default function MentorGroupClassroomPage() {
         </div>
         <div className="flex items-center gap-2 text-sm text-gray-300">
           <Users className="w-4 h-4" />
-          <span>{participants.length} katılımcı</span>
+          <span>{totalParticipants} katılımcı</span>
         </div>
       </div>
 
       {/* Video Grid */}
-      <div className="flex-1 p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[calc(100vh-160px)] overflow-y-auto">
-          {/* Local Video */}
+      <div className="flex-1 p-4 flex items-center">
+        <div className={`grid ${getGridClass(totalParticipants)} gap-3 w-full`}>
+          {/* Local Video (Mentor) */}
           <div className="relative aspect-video bg-gray-800 rounded-lg overflow-hidden">
             <div ref={localVideoRef} className="w-full h-full" />
-            <div className="absolute bottom-2 left-2 text-white text-xs bg-black/50 px-2 py-1 rounded">
+            <div className="absolute bottom-2 left-2 text-white text-xs bg-black/50 px-2 py-1 rounded z-10">
               Sen (Mentor)
             </div>
+            {!isVideoEnabled && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+                <VideoOff className="w-10 h-10 text-gray-500" />
+              </div>
+            )}
           </div>
 
-          {/* Remote Videos */}
-          <div ref={remoteVideosRef} className="contents" />
+          {/* Remote Videos - appended dynamically */}
+          <div ref={gridRef} className="contents" />
         </div>
       </div>
 
@@ -228,6 +262,7 @@ export default function MentorGroupClassroomPage() {
           size="lg"
           className="rounded-full w-12 h-12 p-0"
           onClick={toggleAudio}
+          title={isAudioEnabled ? 'Mikrofonu Kapat' : 'Mikrofonu Aç'}
         >
           {isAudioEnabled ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
         </Button>
@@ -236,6 +271,7 @@ export default function MentorGroupClassroomPage() {
           size="lg"
           className="rounded-full w-12 h-12 p-0"
           onClick={toggleVideo}
+          title={isVideoEnabled ? 'Kamerayı Kapat' : 'Kamerayı Aç'}
         >
           {isVideoEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
         </Button>
