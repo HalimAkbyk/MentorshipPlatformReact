@@ -106,14 +106,22 @@ export default function BookingsPage() {
                           variant={
                             booking.status === BookingStatus.Completed
                               ? 'success'
-                              : booking.status === BookingStatus.Cancelled
+                              : booking.status === BookingStatus.Cancelled ||
+                                booking.status === BookingStatus.Expired ||
+                                booking.status === BookingStatus.NoShow
                               ? 'destructive'
+                              : booking.status === BookingStatus.Disputed
+                              ? 'outline'
                               : 'default'
                           }
                         >
+                          {booking.status === BookingStatus.PendingPayment && 'Ödeme Bekliyor'}
                           {booking.status === BookingStatus.Confirmed && 'Onaylandı'}
                           {booking.status === BookingStatus.Completed && 'Tamamlandı'}
                           {booking.status === BookingStatus.Cancelled && 'İptal'}
+                          {booking.status === BookingStatus.NoShow && 'Katılmadı'}
+                          {booking.status === BookingStatus.Disputed && 'İtiraz'}
+                          {booking.status === BookingStatus.Expired && 'Süresi Doldu'}
                         </Badge>
                       </div>
                     </CardHeader>

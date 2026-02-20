@@ -128,17 +128,24 @@ export default function MentorBookingsPage() {
                         )}
                         <Badge
                           variant={
-                            booking.status === BookingStatus.Confirmed
-                              ? 'default'
-                              : booking.status === BookingStatus.Completed
+                            booking.status === BookingStatus.Completed
+                              ? 'success'
+                              : booking.status === BookingStatus.Cancelled ||
+                                booking.status === BookingStatus.Expired ||
+                                booking.status === BookingStatus.NoShow
+                              ? 'destructive'
+                              : booking.status === BookingStatus.Disputed
                               ? 'outline'
-                              : 'destructive'
+                              : 'default'
                           }
                         >
+                          {booking.status === BookingStatus.PendingPayment && 'Ödeme Bekliyor'}
                           {booking.status === BookingStatus.Confirmed && 'Onaylandı'}
                           {booking.status === BookingStatus.Completed && 'Tamamlandı'}
                           {booking.status === BookingStatus.Cancelled && 'İptal Edildi'}
-                          {booking.status === BookingStatus.PendingPayment && 'Ödeme Bekliyor'}
+                          {booking.status === BookingStatus.NoShow && 'Katılmadı'}
+                          {booking.status === BookingStatus.Disputed && 'İtiraz'}
+                          {booking.status === BookingStatus.Expired && 'Süresi Doldu'}
                         </Badge>
                       </div>
                     </div>
