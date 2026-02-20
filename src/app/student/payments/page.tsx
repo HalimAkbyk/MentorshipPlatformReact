@@ -16,6 +16,7 @@ import {
   CheckCircle,
   XCircle,
   Clock,
+  Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -92,12 +93,7 @@ export default function StudentPaymentsPage() {
   };
 
   const canRequestRefund = (order: StudentPaymentDto): boolean => {
-    if (order.status !== 'Paid' && order.status !== 'PartiallyRefunded') return false;
-    // Check if there's already a pending refund request
-    const hasPending = refundRequests?.some(
-      (r) => r.orderId === order.orderId && r.status === 'Pending'
-    );
-    return !hasPending;
+    return order.refundPercentage > 0 && !order.refundIneligibleReason;
   };
 
   const getRefundStatusBadge = (status: string) => {
@@ -310,6 +306,14 @@ export default function StudentPaymentsPage() {
                         </div>
                       </div>
 
+                      {/* Refund ineligibility info */}
+                      {!showRefund && order.refundIneligibleReason && (
+                        <div className="mx-4 px-3 py-2 border border-t-0 rounded-b-lg bg-amber-50/70 flex items-center gap-2">
+                          <Info className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                          <span className="text-xs text-amber-700">{order.refundIneligibleReason}</span>
+                        </div>
+                      )}
+
                       {/* Refund Request Form */}
                       {refundOrderId === order.orderId && (
                         <div className="ml-4 mr-4 p-3 border border-t-0 rounded-b-lg bg-red-50/50 space-y-2">
@@ -317,6 +321,12 @@ export default function StudentPaymentsPage() {
                             <AlertCircle className="w-4 h-4" />
                             <span className="font-medium">İade talebi oluştur</span>
                           </div>
+                          {order.refundPercentage < 1 && order.refundPercentage > 0 && (
+                            <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 px-2 py-1.5 rounded">
+                              <Info className="w-3.5 h-3.5 flex-shrink-0" />
+                              <span>Bu sipariş için %{Math.round(order.refundPercentage * 100)} oranında iade uygulanacaktır.</span>
+                            </div>
+                          )}
                           <Input
                             placeholder="İade sebebinizi yazın..."
                             value={refundReason}
