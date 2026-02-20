@@ -66,7 +66,18 @@ export function CreateClassDialog({ open, onClose }: CreateClassDialogProps) {
       });
       onClose();
     } catch (err: any) {
-      toast.error(err?.response?.data?.errors?.[0] || 'Grup dersi oluşturulamadı');
+      const errData = err?.response?.data;
+      let message = 'Grup dersi oluşturulamadı';
+      if (errData?.errors) {
+        // FluentValidation format: { errors: { "FieldName": ["message1", ...] } }
+        const firstField = Object.values(errData.errors)[0];
+        if (Array.isArray(firstField) && firstField.length > 0) {
+          message = firstField[0] as string;
+        }
+      } else if (errData?.message) {
+        message = errData.message;
+      }
+      toast.error(message);
     }
   };
 
@@ -122,7 +133,7 @@ export function CreateClassDialog({ open, onClose }: CreateClassDialogProps) {
                 type="date"
                 value={form.date}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
-                min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                min={new Date().toISOString().split('T')[0]}
               />
             </div>
 
