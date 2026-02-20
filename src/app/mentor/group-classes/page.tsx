@@ -29,6 +29,10 @@ const STATUS_TABS = [
   { label: 'Tümü', value: '' },
 ];
 
+function isClassExpired(gc: { status: string; endAt: string }): boolean {
+  return gc.status === 'Expired' || (gc.status === 'Published' && new Date(gc.endAt) < new Date());
+}
+
 function MentorGroupClassesContent() {
   const [statusFilter, setStatusFilter] = useState('Published');
   const [page, setPage] = useState(1);
@@ -65,7 +69,11 @@ function MentorGroupClassesContent() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, gc?: { endAt: string }) => {
+    // Check for expired class (client-side fallback)
+    if (status === 'Expired' || (status === 'Published' && gc && isClassExpired({ status, endAt: gc.endAt }))) {
+      return <Badge className="bg-orange-100 text-orange-700">Süresi Doldu</Badge>;
+    }
     switch (status) {
       case 'Published':
         return <Badge className="bg-green-100 text-green-700">Aktif</Badge>;
@@ -136,7 +144,7 @@ function MentorGroupClassesContent() {
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-lg">{gc.title}</span>
-                      {getStatusBadge(gc.status)}
+                      {getStatusBadge(gc.status, gc)}
                       <Badge variant="outline" className="text-xs">
                         {gc.category}
                       </Badge>
@@ -176,7 +184,7 @@ function MentorGroupClassesContent() {
                 </div>
 
                 {/* Actions */}
-                {gc.status === 'Published' && (
+                {gc.status === 'Published' && !isClassExpired(gc) && (
                   <div className="mt-4 pt-4 border-t flex items-center gap-2">
                     <Link href={`/mentor/group-classroom/${gc.id}`}>
                       <Button size="sm" variant="default">

@@ -126,6 +126,9 @@ export default function GroupClassDetailPage() {
 
   const isFull = groupClass.enrolledCount >= groupClass.capacity;
   const isOwnClass = groupClass.mentorUserId === user?.id;
+  const isExpired = groupClass.status === 'Expired' || new Date(groupClass.endAt) < new Date();
+  const isStarted = new Date(groupClass.startAt) < new Date();
+  const canEnroll = !isFull && !isExpired && !isStarted && !isOwnClass;
   const platformFee = groupClass.pricePerSeat * 0.07;
   const totalPrice = groupClass.pricePerSeat + platformFee;
   const duration = getDurationMinutes(groupClass.startAt, groupClass.endAt);
@@ -153,7 +156,9 @@ export default function GroupClassDetailPage() {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Badge variant="outline">{groupClass.category}</Badge>
-              {isFull && <Badge className="bg-red-100 text-red-700">Dolu</Badge>}
+              {isExpired && <Badge className="bg-orange-100 text-orange-700">Süresi Doldu</Badge>}
+              {!isExpired && isStarted && <Badge className="bg-amber-100 text-amber-700">Ders Başladı</Badge>}
+              {isFull && !isExpired && <Badge className="bg-red-100 text-red-700">Dolu</Badge>}
             </div>
             <h1 className="text-3xl font-bold font-heading">{groupClass.title}</h1>
           </div>
@@ -245,28 +250,40 @@ export default function GroupClassDetailPage() {
                     </div>
                   </div>
 
-                  <Button
-                    className="w-full"
-                    size="lg"
-                    disabled={isFull || enrolling}
-                    onClick={handleEnrollAndPay}
-                  >
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    {enrolling
-                      ? 'İşleniyor...'
-                      : isFull
-                      ? 'Kontenjan Dolu'
-                      : 'Kayıt Ol ve Öde'}
-                  </Button>
+                  {isExpired ? (
+                    <div className="text-center p-3 bg-orange-50 rounded-lg text-sm text-orange-700">
+                      Bu dersin süresi dolmuştur. Kayıt yapılamaz.
+                    </div>
+                  ) : isStarted ? (
+                    <div className="text-center p-3 bg-amber-50 rounded-lg text-sm text-amber-700">
+                      Bu ders başlamıştır. Yeni kayıt kabul edilmemektedir.
+                    </div>
+                  ) : (
+                    <>
+                      <Button
+                        className="w-full"
+                        size="lg"
+                        disabled={isFull || enrolling}
+                        onClick={handleEnrollAndPay}
+                      >
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        {enrolling
+                          ? 'İşleniyor...'
+                          : isFull
+                          ? 'Kontenjan Dolu'
+                          : 'Kayıt Ol ve Öde'}
+                      </Button>
 
-                  <div className="text-xs text-gray-500 text-center space-y-1">
-                    <p>
-                      <CheckCircle className="w-3 h-3 inline mr-1" />
-                      24 saatten önce iptal: %100 iade
-                    </p>
-                    <p>2-24 saat arası: %50 iade</p>
-                    <p>2 saatten az: İade yok</p>
-                  </div>
+                      <div className="text-xs text-gray-500 text-center space-y-1">
+                        <p>
+                          <CheckCircle className="w-3 h-3 inline mr-1" />
+                          24 saatten önce iptal: %100 iade
+                        </p>
+                        <p>2-24 saat arası: %50 iade</p>
+                        <p>2 saatten az: İade yok</p>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
             </CardContent>
