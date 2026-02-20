@@ -2,11 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Bell, Check, CheckCheck, Loader2, AlertTriangle, UserCheck, RefreshCw, CreditCard, PlayCircle } from 'lucide-react';
+import { Bell, Check, CheckCheck, Loader2, AlertTriangle, UserCheck, RefreshCw, CreditCard, PlayCircle, ChevronRight } from 'lucide-react';
 import { adminApi } from '@/lib/api/admin';
 
-interface AdminNotificationItem {
+export interface AdminNotificationItem {
   id: string;
   type: string;
   title: string;
@@ -17,7 +18,7 @@ interface AdminNotificationItem {
   createdAt: string;
 }
 
-function timeAgo(dateStr: string): string {
+export function adminTimeAgo(dateStr: string): string {
   const now = new Date();
   const date = new Date(dateStr);
   const diffMs = now.getTime() - date.getTime();
@@ -31,7 +32,7 @@ function timeAgo(dateStr: string): string {
   return date.toLocaleDateString('tr-TR');
 }
 
-function NotificationIcon({ type }: { type: string }) {
+export function AdminNotificationIcon({ type }: { type: string }) {
   switch (type) {
     case 'MentorVerification':
       return <UserCheck className="h-4 w-4 text-indigo-500" />;
@@ -48,7 +49,7 @@ function NotificationIcon({ type }: { type: string }) {
   }
 }
 
-function getAdminNavUrl(notif: AdminNotificationItem): string | null {
+export function getAdminNavUrl(notif: AdminNotificationItem): string | null {
   if (!notif.referenceType) return null;
   switch (notif.referenceType) {
     case 'MentorVerification':
@@ -174,7 +175,7 @@ export function AdminNotificationsDropdown() {
                     } ${!notif.isRead ? 'bg-indigo-50/50' : ''}`}
                   >
                     <div className="mt-0.5 shrink-0">
-                      <NotificationIcon type={notif.type} />
+                      <AdminNotificationIcon type={notif.type} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className={`text-sm ${notif.isRead ? 'text-slate-600' : 'text-slate-800 font-medium'}`}>
@@ -183,7 +184,7 @@ export function AdminNotificationsDropdown() {
                       <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">
                         {notif.message}
                       </p>
-                      <p className="text-[10px] text-slate-300 mt-1">{timeAgo(notif.createdAt)}</p>
+                      <p className="text-[10px] text-slate-300 mt-1">{adminTimeAgo(notif.createdAt)}</p>
                     </div>
                     {!notif.isRead && (
                       <button
@@ -204,13 +205,16 @@ export function AdminNotificationsDropdown() {
           </div>
 
           {/* Footer */}
-          {notifications.length > 0 && (
-            <div className="border-t border-slate-100 px-4 py-2.5 text-center">
-              <span className="text-xs text-slate-400">
-                Son {notifications.length} bildirim gosteriliyor
-              </span>
-            </div>
-          )}
+          <div className="border-t border-slate-100 px-4 py-2.5">
+            <Link
+              href="/admin/notifications"
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+            >
+              Tum Bildirimleri Gor
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
       )}
     </div>
