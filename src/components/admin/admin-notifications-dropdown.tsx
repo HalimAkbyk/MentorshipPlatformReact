@@ -57,6 +57,10 @@ function getAdminNavUrl(notif: AdminNotificationItem): string | null {
       return '/admin/course-reviews';
     case 'RefundRequest':
       return '/admin/refunds';
+    case 'Dispute':
+      return '/admin/refunds';
+    case 'PaymentFailed':
+      return '/admin/refunds';
     default:
       return null;
   }
