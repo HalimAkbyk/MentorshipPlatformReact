@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
@@ -11,8 +11,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
+  Search,
+  Loader2,
 } from 'lucide-react';
-import { adminApi, type AdminRefundRequestDto } from '@/lib/api/admin';
+import { adminApi, type AdminRefundRequestDto, type AdminOrderDto } from '@/lib/api/admin';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -35,6 +37,62 @@ export default function AdminRefundsPage() {
     reason: '',
     isGoodwill: false,
   });
+
+  // Order search for initiate refund
+  const [orderSearch, setOrderSearch] = useState('');
+  const [orderResults, setOrderResults] = useState<AdminOrderDto[]>([]);
+  const [orderSearching, setOrderSearching] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<AdminOrderDto | null>(null);
+  const [showOrderDropdown, setShowOrderDropdown] = useState(false);
+  const orderSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowOrderDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  // Debounced order search
+  const handleOrderSearch = (value: string) => {
+    setOrderSearch(value);
+    setSelectedOrder(null);
+    setInitiateForm((f) => ({ ...f, orderId: '' }));
+    if (orderSearchTimer.current) clearTimeout(orderSearchTimer.current);
+    if (!value.trim() || value.length < 2) {
+      setOrderResults([]);
+      setShowOrderDropdown(false);
+      return;
+    }
+    orderSearchTimer.current = setTimeout(async () => {
+      setOrderSearching(true);
+      try {
+        const result = await adminApi.getOrders({ search: value, pageSize: 8, status: 'Paid' });
+        setOrderResults(result.items ?? []);
+        setShowOrderDropdown(true);
+      } catch {
+        setOrderResults([]);
+      } finally {
+        setOrderSearching(false);
+      }
+    }, 400);
+  };
+
+  const selectOrder = (order: AdminOrderDto) => {
+    setSelectedOrder(order);
+    setInitiateForm((f) => ({
+      ...f,
+      orderId: order.id,
+      amount: (order.amountTotal - order.refundedAmount).toFixed(2),
+    }));
+    setOrderSearch(`${order.buyerName} — ${order.id.slice(0, 8)}...`);
+    setShowOrderDropdown(false);
+  };
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['admin', 'refund-requests', statusFilter, page],
@@ -78,6 +136,9 @@ export default function AdminRefundsPage() {
       toast.success('İade başlatıldı');
       setShowInitiateModal(false);
       setInitiateForm({ orderId: '', amount: '', reason: '', isGoodwill: false });
+      setOrderSearch('');
+      setSelectedOrder(null);
+      setOrderResults([]);
       await qc.invalidateQueries({ queryKey: ['admin', 'refund-requests'] });
     },
     onError: (e: any) => toast.error(e?.response?.data?.errors?.[0] || 'Hata oluştu'),
@@ -160,13 +221,70 @@ export default function AdminRefundsPage() {
             <CardDescription>Admin tarafından doğrudan iade işlemini başlatır</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div>
-              <label className="text-sm font-medium">Siparis ID</label>
-              <Input
-                placeholder="Order GUID..."
-                value={initiateForm.orderId}
-                onChange={(e) => setInitiateForm({ ...initiateForm, orderId: e.target.value })}
-              />
+            <div ref={dropdownRef} className="relative">
+              <label className="text-sm font-medium">Sipariş Ara</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Müşteri adı, e-posta veya sipariş ID..."
+                  className="pl-10"
+                  value={orderSearch}
+                  onChange={(e) => handleOrderSearch(e.target.value)}
+                  onFocus={() => orderResults.length > 0 && setShowOrderDropdown(true)}
+                />
+                {orderSearching && (
+                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 animate-spin" />
+                )}
+              </div>
+              {showOrderDropdown && orderResults.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {orderResults.map((order) => (
+                    <button
+                      key={order.id}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b last:border-b-0 transition-colors"
+                      onClick={() => selectOrder(order)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="font-medium text-sm">{order.buyerName}</span>
+                          <span className="text-xs text-gray-500 ml-2">{order.buyerEmail}</span>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          {order.type === 'Booking' ? 'Ders' : order.type === 'Course' ? 'Kurs' : order.type}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs font-mono text-gray-400">{order.id.slice(0, 8)}...</span>
+                        <span className="text-xs font-semibold text-primary-600">
+                          {formatCurrency(order.amountTotal, order.currency)}
+                        </span>
+                        {order.refundedAmount > 0 && (
+                          <span className="text-xs text-red-500">
+                            (iade: {formatCurrency(order.refundedAmount, order.currency)})
+                          </span>
+                        )}
+                        <span className="text-xs text-gray-400">{formatDate(order.createdAt, 'd MMM yyyy')}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {showOrderDropdown && orderResults.length === 0 && !orderSearching && orderSearch.length >= 2 && (
+                <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg px-3 py-4 text-center text-sm text-gray-500">
+                  Sipariş bulunamadı
+                </div>
+              )}
+              {selectedOrder && (
+                <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg text-sm flex items-center justify-between">
+                  <div>
+                    <span className="font-medium">{selectedOrder.buyerName}</span>
+                    <span className="text-xs text-gray-500 ml-2 font-mono">{selectedOrder.id.slice(0, 8)}...</span>
+                  </div>
+                  <span className="font-semibold text-green-700">
+                    {formatCurrency(selectedOrder.amountTotal, selectedOrder.currency)}
+                  </span>
+                </div>
+              )}
             </div>
             <div>
               <label className="text-sm font-medium">İade Tutarı (TRY)</label>
@@ -177,6 +295,11 @@ export default function AdminRefundsPage() {
                 value={initiateForm.amount}
                 onChange={(e) => setInitiateForm({ ...initiateForm, amount: e.target.value })}
               />
+              {selectedOrder && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Maks iade: {formatCurrency(selectedOrder.amountTotal - selectedOrder.refundedAmount, selectedOrder.currency)}
+                </p>
+              )}
             </div>
             <div>
               <label className="text-sm font-medium">Sebep</label>
@@ -204,8 +327,14 @@ export default function AdminRefundsPage() {
               >
                 İadeyi Başlat
               </Button>
-              <Button variant="outline" onClick={() => setShowInitiateModal(false)}>
-                Iptal
+              <Button variant="outline" onClick={() => {
+                setShowInitiateModal(false);
+                setOrderSearch('');
+                setSelectedOrder(null);
+                setOrderResults([]);
+                setInitiateForm({ orderId: '', amount: '', reason: '', isGoodwill: false });
+              }}>
+                İptal
               </Button>
             </div>
           </CardContent>

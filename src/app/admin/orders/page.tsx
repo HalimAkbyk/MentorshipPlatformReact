@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   ShoppingCart,
   Search,
@@ -340,7 +341,17 @@ export default function AdminOrdersPage() {
       label: 'Siparis ID',
       className: 'whitespace-nowrap',
       render: (item) => (
-        <span className="font-mono text-xs text-gray-700">{item.id.slice(0, 8)}</span>
+        <button
+          className="font-mono text-xs text-gray-700 hover:text-primary-600 cursor-pointer"
+          title="Tıklayarak tam ID kopyala"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigator.clipboard.writeText(item.id);
+            toast.success('Sipariş ID kopyalandı');
+          }}
+        >
+          {item.id.slice(0, 8)}…
+        </button>
       ),
     },
     {
