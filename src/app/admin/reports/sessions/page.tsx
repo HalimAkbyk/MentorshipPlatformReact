@@ -454,8 +454,36 @@ export default function AdminSessionReportsPage() {
 }
 
 // ---------------------------------------------------------------------------
-// Participant Card
+// Participant Card (segment-based)
 // ---------------------------------------------------------------------------
+
+function calcSegmentBar(
+  segJoinedAt: string,
+  segLeftAt: string | null,
+  sessionStart: string | null,
+  sessionEnd: string | null
+) {
+  let barLeft = 0;
+  let barWidth = 100;
+
+  if (sessionStart && sessionEnd) {
+    const sStart = new Date(sessionStart).getTime();
+    const sEnd = new Date(sessionEnd).getTime();
+    const totalSpan = sEnd - sStart;
+
+    if (totalSpan > 0) {
+      const joinTime = new Date(segJoinedAt).getTime();
+      const leaveTime = segLeftAt ? new Date(segLeftAt).getTime() : Date.now();
+
+      barLeft = Math.max(0, Math.min(100, ((joinTime - sStart) / totalSpan) * 100));
+      barWidth = Math.max(
+        2,
+        Math.min(100 - barLeft, ((leaveTime - joinTime) / totalSpan) * 100)
+      );
+    }
+  }
+  return { barLeft, barWidth };
+}
 
 function ParticipantCard({
   participant,
@@ -466,31 +494,12 @@ function ParticipantCard({
   sessionStart: string | null;
   sessionEnd: string | null;
 }) {
-  // Timeline bar calculation
-  let barLeft = 0;
-  let barWidth = 100;
-
-  if (sessionStart && sessionEnd) {
-    const sStart = new Date(sessionStart).getTime();
-    const sEnd = new Date(sessionEnd).getTime();
-    const totalSpan = sEnd - sStart;
-
-    if (totalSpan > 0) {
-      const joinTime = new Date(participant.joinedAt).getTime();
-      const leaveTime = participant.leftAt
-        ? new Date(participant.leftAt).getTime()
-        : Date.now();
-
-      barLeft = Math.max(0, Math.min(100, ((joinTime - sStart) / totalSpan) * 100));
-      barWidth = Math.max(
-        2,
-        Math.min(100 - barLeft, ((leaveTime - joinTime) / totalSpan) * 100)
-      );
-    }
-  }
+  const segments = participant.segments ?? [];
+  const hasMultipleSegments = segments.length > 1;
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4">
+      {/* Header: user info + total duration */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <div
@@ -503,52 +512,112 @@ function ParticipantCard({
           </div>
           <div>
             <p className="text-sm font-medium text-gray-900">{participant.displayName}</p>
-            <Badge
-              variant="secondary"
-              className={cn(
-                'text-[10px]',
-                participant.role === 'Mentor'
-                  ? 'bg-blue-50 text-blue-600'
-                  : 'bg-purple-50 text-purple-600'
+            <div className="flex items-center gap-1.5">
+              <Badge
+                variant="secondary"
+                className={cn(
+                  'text-[10px]',
+                  participant.role === 'Mentor'
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'bg-purple-50 text-purple-600'
+                )}
+              >
+                {participant.role === 'Mentor' ? 'Mentor' : 'Ogrenci'}
+              </Badge>
+              {hasMultipleSegments && (
+                <span className="text-[10px] text-gray-400">
+                  {segments.length} giris
+                </span>
               )}
-            >
-              {participant.role === 'Mentor' ? 'Mentor' : 'Ogrenci'}
-            </Badge>
+            </div>
           </div>
         </div>
         <div className="text-right">
           <p className="text-sm font-semibold text-gray-900">
-            {participant.durationFormatted !== '00:00'
-              ? participant.durationFormatted
-              : formatTimeDiff(participant.joinedAt, participant.leftAt)}
+            {formatDuration(participant.durationSec)}
           </p>
-          <p className="text-xs text-gray-500">sure</p>
+          <p className="text-xs text-gray-500">toplam sure</p>
         </div>
       </div>
 
-      {/* Time details */}
-      <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-3">
-        <div className="flex items-center gap-1.5">
-          <Calendar className="w-3 h-3 text-green-500" />
-          <span>Giris: {formatDateTime(participant.joinedAt)}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Calendar className="w-3 h-3 text-red-500" />
-          <span>Cikis: {participant.leftAt ? formatDateTime(participant.leftAt) : 'Aktif'}</span>
-        </div>
+      {/* Segments */}
+      <div className="space-y-2">
+        {segments.length > 0 ? (
+          segments.map((seg, idx) => {
+            const { barLeft, barWidth } = calcSegmentBar(
+              seg.joinedAt,
+              seg.leftAt,
+              sessionStart,
+              sessionEnd
+            );
+            return (
+              <div key={seg.segmentId} className={cn(
+                'rounded-md p-2',
+                hasMultipleSegments ? 'bg-gray-50 border border-gray-100' : ''
+              )}>
+                {hasMultipleSegments && (
+                  <p className="text-[10px] font-medium text-gray-400 mb-1">
+                    {idx + 1}. Giris
+                  </p>
+                )}
+                <div className="grid grid-cols-3 gap-2 text-xs text-gray-600 mb-2">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-green-500 flex-shrink-0" />
+                    <span className="truncate">Giris: {formatDateTime(seg.joinedAt)}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-red-500 flex-shrink-0" />
+                    <span className="truncate">
+                      Cikis: {seg.leftAt ? formatDateTime(seg.leftAt) : 'Aktif'}
+                    </span>
+                  </div>
+                  <div className="text-right font-medium">
+                    {formatDuration(seg.durationSec)}
+                  </div>
+                </div>
+                {/* Timeline bar */}
+                <div className="relative h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className={cn(
+                      'absolute h-full rounded-full',
+                      participant.role === 'Mentor' ? 'bg-blue-400' : 'bg-purple-400',
+                      !seg.leftAt && 'animate-pulse'
+                    )}
+                    style={{ left: `${barLeft}%`, width: `${barWidth}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          /* Fallback for old data without segments */
+          <div>
+            <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-2">
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-3 h-3 text-green-500" />
+                <span>Giris: {formatDateTime(participant.joinedAt)}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-3 h-3 text-red-500" />
+                <span>
+                  Cikis: {participant.leftAt ? formatDateTime(participant.leftAt) : 'Aktif'}
+                </span>
+              </div>
+            </div>
+            <div className="relative h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className={cn(
+                  'absolute h-full rounded-full',
+                  participant.role === 'Mentor' ? 'bg-blue-400' : 'bg-purple-400'
+                )}
+                style={{ width: '100%' }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Timeline bar */}
-      <div className="relative h-2 bg-gray-100 rounded-full overflow-hidden">
-        <div
-          className={cn(
-            'absolute h-full rounded-full',
-            participant.role === 'Mentor' ? 'bg-blue-400' : 'bg-purple-400',
-            !participant.leftAt && 'animate-pulse'
-          )}
-          style={{ left: `${barLeft}%`, width: `${barWidth}%` }}
-        />
-      </div>
+      {/* Bottom timeline labels */}
       <div className="flex justify-between text-[10px] text-gray-400 mt-1">
         <span>Baslangic</span>
         <span>Bitis</span>

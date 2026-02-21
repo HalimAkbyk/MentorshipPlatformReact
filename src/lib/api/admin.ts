@@ -261,6 +261,13 @@ export interface AdminGroupClassDto {
 }
 
 // Session Report Types
+export interface ParticipantSegment {
+  segmentId: string;
+  joinedAt: string;
+  leftAt: string | null;
+  durationSec: number;
+}
+
 export interface SessionParticipantDto {
   userId: string;
   displayName: string;
@@ -269,6 +276,8 @@ export interface SessionParticipantDto {
   leftAt: string | null;
   durationSec: number;
   durationFormatted: string;
+  segmentCount: number;
+  segments: ParticipantSegment[];
 }
 
 export interface SessionReportDto {
@@ -670,6 +679,8 @@ export interface AuditParticipantDto {
   joinedAt: string | null;
   leftAt: string | null;
   totalDurationSec: number;
+  segmentCount: number;
+  segments: ParticipantSegment[];
 }
 
 export interface AuditUserSummaryDto {
@@ -699,6 +710,8 @@ export interface UserSessionDto {
   leftAt: string | null;
   durationSec: number;
   role: string;
+  segmentCount: number;
+  segments: ParticipantSegment[];
 }
 
 export interface SystemHealthInfoDto {

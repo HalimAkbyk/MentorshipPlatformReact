@@ -336,52 +336,94 @@ function SessionsTab() {
                   Katilimcilar ({detail.participants.length})
                 </h4>
                 <div className="space-y-3">
-                  {detail.participants.map((p) => (
-                    <div key={p.userId} className="bg-white border border-gray-200 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={cn(
-                              'w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium',
-                              p.role === 'Mentor' ? 'bg-blue-600' : 'bg-purple-600'
-                            )}
-                          >
-                            {p.displayName.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">{p.displayName}</p>
-                            <Badge
-                              variant="secondary"
+                  {detail.participants.map((p) => {
+                    const segments = p.segments ?? [];
+                    const hasMultiple = segments.length > 1;
+                    return (
+                      <div key={p.userId} className="bg-white border border-gray-200 rounded-lg p-4">
+                        {/* User header */}
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <div
                               className={cn(
-                                'text-[10px]',
-                                p.role === 'Mentor'
-                                  ? 'bg-blue-50 text-blue-600'
-                                  : 'bg-purple-50 text-purple-600'
+                                'w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium',
+                                p.role === 'Mentor' ? 'bg-blue-600' : 'bg-purple-600'
                               )}
                             >
-                              {localizeRole(p.role)}
-                            </Badge>
+                              {p.displayName.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">{p.displayName}</p>
+                              <div className="flex items-center gap-1.5">
+                                <Badge
+                                  variant="secondary"
+                                  className={cn(
+                                    'text-[10px]',
+                                    p.role === 'Mentor'
+                                      ? 'bg-blue-50 text-blue-600'
+                                      : 'bg-purple-50 text-purple-600'
+                                  )}
+                                >
+                                  {localizeRole(p.role)}
+                                </Badge>
+                                {hasMultiple && (
+                                  <span className="text-[10px] text-gray-400">{segments.length} giris</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-semibold text-gray-900">
+                              {formatDuration(p.totalDurationSec)}
+                            </p>
+                            <p className="text-xs text-gray-500">toplam sure</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm font-semibold text-gray-900">
-                            {formatDuration(p.totalDurationSec)}
-                          </p>
-                          <p className="text-xs text-gray-500">sure</p>
-                        </div>
+                        {/* Segments */}
+                        {segments.length > 0 ? (
+                          <div className="space-y-1.5">
+                            {segments.map((seg, idx) => (
+                              <div
+                                key={seg.segmentId}
+                                className={cn(
+                                  'rounded-md p-2',
+                                  hasMultiple ? 'bg-gray-50 border border-gray-100' : ''
+                                )}
+                              >
+                                {hasMultiple && (
+                                  <p className="text-[10px] font-medium text-gray-400 mb-1">{idx + 1}. Giris</p>
+                                )}
+                                <div className="grid grid-cols-3 gap-2 text-xs text-gray-600">
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="w-3 h-3 text-green-500 flex-shrink-0" />
+                                    <span className="truncate">Giris: {formatDate(seg.joinedAt)}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="w-3 h-3 text-red-500 flex-shrink-0" />
+                                    <span className="truncate">Cikis: {seg.leftAt ? formatDate(seg.leftAt) : 'Aktif'}</span>
+                                  </div>
+                                  <div className="text-right font-medium">
+                                    {formatDuration(seg.durationSec)}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="w-3 h-3 text-green-500" />
+                              <span>Giris: {formatDate(p.joinedAt)}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="w-3 h-3 text-red-500" />
+                              <span>Cikis: {p.leftAt ? formatDate(p.leftAt) : 'Aktif'}</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="w-3 h-3 text-green-500" />
-                          <span>Giris: {formatDate(p.joinedAt)}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="w-3 h-3 text-red-500" />
-                          <span>Cikis: {p.leftAt ? formatDate(p.leftAt) : 'Aktif'}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -606,37 +648,75 @@ function UsersTab() {
                   Katildigi Oturumlar ({userDetail.sessions.length})
                 </h4>
                 <div className="space-y-2">
-                  {userDetail.sessions.map((s, idx) => (
-                    <div key={`${s.entityId}-${idx}`} className="bg-white border border-gray-200 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            variant="secondary"
-                            className={cn(
-                              'text-[10px]',
-                              s.entityType === 'Booking'
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-purple-100 text-purple-700'
+                  {userDetail.sessions.map((s, idx) => {
+                    const segments = s.segments ?? [];
+                    const hasMultiple = segments.length > 1;
+                    return (
+                      <div key={`${s.entityId}-${idx}`} className="bg-white border border-gray-200 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant="secondary"
+                              className={cn(
+                                'text-[10px]',
+                                s.entityType === 'Booking'
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : 'bg-purple-100 text-purple-700'
+                              )}
+                            >
+                              {s.entityType === 'Booking' ? '1:1' : 'Grup'}
+                            </Badge>
+                            <span className="text-sm font-medium text-gray-900">{s.title || 'Isimsiz'}</span>
+                            {hasMultiple && (
+                              <span className="text-[10px] text-gray-400">{segments.length} giris</span>
                             )}
-                          >
-                            {s.entityType === 'Booking' ? '1:1' : 'Grup'}
-                          </Badge>
-                          <span className="text-sm font-medium text-gray-900">{s.title || 'Isimsiz'}</span>
+                          </div>
+                          <span className="text-sm font-semibold">{formatDuration(s.durationSec)}</span>
                         </div>
-                        <span className="text-sm font-semibold">{formatDuration(s.durationSec)}</span>
+                        {segments.length > 0 ? (
+                          <div className="space-y-1.5">
+                            {segments.map((seg, segIdx) => (
+                              <div
+                                key={seg.segmentId}
+                                className={cn(
+                                  'rounded-md p-1.5',
+                                  hasMultiple ? 'bg-gray-50 border border-gray-100' : ''
+                                )}
+                              >
+                                {hasMultiple && (
+                                  <p className="text-[10px] font-medium text-gray-400 mb-0.5">{segIdx + 1}. Giris</p>
+                                )}
+                                <div className="grid grid-cols-3 gap-2 text-xs text-gray-500">
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="w-3 h-3 text-green-500 flex-shrink-0" />
+                                    <span className="truncate">Giris: {formatDate(seg.joinedAt)}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="w-3 h-3 text-red-500 flex-shrink-0" />
+                                    <span className="truncate">Cikis: {seg.leftAt ? formatDate(seg.leftAt) : 'Aktif'}</span>
+                                  </div>
+                                  <div className="text-right font-medium">
+                                    {formatDuration(seg.durationSec)}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3 text-green-500" />
+                              Giris: {formatDate(s.joinedAt)}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3 text-red-500" />
+                              Cikis: {s.leftAt ? formatDate(s.leftAt) : 'Aktif'}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-green-500" />
-                          Giris: {formatDate(s.joinedAt)}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-red-500" />
-                          Cikis: {s.leftAt ? formatDate(s.leftAt) : 'Aktif'}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
