@@ -867,7 +867,7 @@ export default function StudentGroupClassroomPage() {
               </span>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={handleLeave} className="text-white border-white/50 hover:bg-amber-700 shrink-0">
+          <Button variant="outline" size="sm" onClick={handleLeave} className="text-white bg-transparent border-white/50 hover:bg-amber-700 shrink-0">
             Şimdi Ayrıl
           </Button>
         </div>
