@@ -296,7 +296,7 @@ export default function MentorGroupClassroomPage() {
     vbModeRef.current = { type: 'none' };
   };
 
-  const fullDisconnect = useCallback(() => {
+  const fullDisconnect = useCallback((options?: { endSession?: boolean }) => {
     try { roomRef.current?.disconnect(); } catch {}
     roomRef.current = null; setIsRoomActive(false);
     try { rawVideoTrackRef.current?.stop?.(); } catch {}
@@ -310,13 +310,13 @@ export default function MentorGroupClassroomPage() {
     setRemoteTiles(prev => { prev.forEach(t => t.audioEls?.forEach(el => { try { el.remove(); } catch {} })); return []; });
     setIsScreenSharing(false);
     setScreenShareState({ active: false, sharerIdentity: null, screenVideoEl: null, isLocal: false });
-    // End the VideoSession so students see room as inactive
-    if (roomName) {
+    // End the VideoSession so students see room as inactive (only when explicitly requested)
+    if (options?.endSession && roomName) {
       videoApi.endSession(roomName).catch(() => {});
     }
   }, [roomName]);
 
-  useEffect(() => { return () => { fullDisconnect(); }; }, [fullDisconnect]);
+  useEffect(() => { return () => { fullDisconnect({ endSession: true }); }; }, [fullDisconnect]);
 
   // Re-attach local camera when layout changes (screen share starts/stops)
   useEffect(() => {
@@ -660,7 +660,7 @@ export default function MentorGroupClassroomPage() {
 
   const confirmEndClass = async () => {
     setIsCompleting(true);
-    fullDisconnect();
+    fullDisconnect({ endSession: true });
     try {
       await completeMutation.mutateAsync(classId);
       toast.success('Ders tamamlandı');
@@ -674,7 +674,7 @@ export default function MentorGroupClassroomPage() {
   };
 
   const handleLeaveRoom = () => {
-    fullDisconnect();
+    fullDisconnect({ endSession: true });
     toast.info('Odadan ayrıldınız. Ders tamamlanmadı, tekrar katılabilirsiniz.');
     router.push('/mentor/group-classes');
   };
