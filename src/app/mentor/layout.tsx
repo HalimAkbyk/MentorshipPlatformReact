@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { useAuthStore } from '@/lib/stores/auth-store';
@@ -13,7 +13,11 @@ export default function MentorLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated, user, isLoading } = useAuthStore();
+
+  // Classroom sayfalarında Header/Footer gösterme (tam ekran deneyim)
+  const isClassroomPage = pathname.includes('/classroom/') || pathname.includes('/group-classroom/');
 
   useEffect(() => {
     if (!isLoading) {
@@ -32,6 +36,11 @@ export default function MentorLayout({
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
       </div>
     );
+  }
+
+  // Classroom pages: no Header/Footer, full viewport
+  if (isClassroomPage) {
+    return <>{children}</>;
   }
 
   return (

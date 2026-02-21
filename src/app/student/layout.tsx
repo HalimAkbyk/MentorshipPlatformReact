@@ -16,8 +16,9 @@ export default function StudentLayout({
   const pathname = usePathname();
   const { isAuthenticated, user, isLoading } = useAuthStore();
 
-  // Kurs player sayfasında Header/Footer gösterme (tam ekran deneyim)
+  // Kurs player ve classroom sayfalarında Header/Footer gösterme (tam ekran deneyim)
   const isPlayerPage = pathname.includes('/courses/') && pathname.endsWith('/learn');
+  const isClassroomPage = pathname.includes('/classroom/') || pathname.includes('/group-classroom/');
 
   useEffect(() => {
     if (!isLoading) {
@@ -37,8 +38,8 @@ export default function StudentLayout({
     );
   }
 
-  // Player page: no Header/Footer, full viewport
-  if (isPlayerPage) {
+  // Player/Classroom pages: no Header/Footer, full viewport
+  if (isPlayerPage || isClassroomPage) {
     return <>{children}</>;
   }
 
