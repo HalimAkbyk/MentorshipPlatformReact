@@ -14,6 +14,7 @@ import {
   Shield,
   Settings,
   BarChart3,
+  ClipboardList,
   Wrench,
   ChevronDown,
   ChevronLeft,
@@ -70,7 +71,6 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Video Kurslar', href: '/admin/courses' },
       { label: 'Kurs Incelemeleri', href: '/admin/course-reviews', badgeKey: 'pendingCourseReviews' },
       { label: 'Sinav Modulu', href: '/admin/exams' },
-      { label: 'Oturum Raporlari', href: '/admin/reports/sessions' },
     ],
   },
   {
@@ -140,11 +140,19 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    id: 'reports',
+    label: 'Raporlar',
+    icon: ClipboardList,
+    items: [
+      { label: 'Oturum Raporlari', href: '/admin/reports/sessions' },
+      { label: 'Islem Gecmisi', href: '/admin/reports/audit-log' },
+    ],
+  },
+  {
     id: 'system',
     label: 'Sistem',
     icon: Wrench,
     items: [
-      { label: 'Islem Gecmisi', href: '/admin/system/audit-log' },
       { label: 'Sistem Sagligi', href: '/admin/system/health' },
       { label: 'Arka Plan Isleri', href: '/admin/system/jobs' },
       { label: 'Ozellik Bayraklari', href: '/admin/system/feature-flags' },

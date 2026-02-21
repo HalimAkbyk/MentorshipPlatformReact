@@ -626,6 +626,81 @@ export interface AuditLogDto {
   createdAt: string;
 }
 
+export interface AuditSessionSummaryDto {
+  entityId: string;
+  entityType: string;
+  title: string;
+  mentorName: string;
+  studentName: string | null;
+  scheduledDate: string | null;
+  status: string;
+  totalEvents: number;
+  participantCount: number;
+  lastEventAt: string;
+}
+
+export interface AuditSessionDetailDto {
+  entityId: string;
+  entityType: string;
+  title: string;
+  mentorName: string;
+  studentName: string | null;
+  scheduledDate: string | null;
+  status: string;
+  events: AuditEventDto[];
+  participants: AuditParticipantDto[];
+}
+
+export interface AuditEventDto {
+  id: string;
+  entityType: string;
+  action: string;
+  description: string | null;
+  oldValue: string | null;
+  newValue: string | null;
+  performedByName: string | null;
+  performedByRole: string | null;
+  createdAt: string;
+}
+
+export interface AuditParticipantDto {
+  userId: string;
+  displayName: string;
+  role: string;
+  joinedAt: string | null;
+  leftAt: string | null;
+  totalDurationSec: number;
+}
+
+export interface AuditUserSummaryDto {
+  userId: string;
+  displayName: string;
+  role: string;
+  totalActions: number;
+  lastActionAt: string;
+  sessionCount: number;
+  totalSessionDurationSec: number;
+}
+
+export interface AuditUserDetailDto {
+  userId: string;
+  displayName: string;
+  role: string;
+  sessions: UserSessionDto[];
+  recentActions: AuditEventDto[];
+  totalActions: number;
+}
+
+export interface UserSessionDto {
+  entityId: string;
+  entityType: string;
+  title: string;
+  joinedAt: string;
+  leftAt: string | null;
+  durationSec: number;
+  role: string;
+}
+
 export interface SystemHealthInfoDto {
   status: string;
   databaseStatus: string;
@@ -1223,6 +1298,27 @@ export const adminApi = {
     dateTo?: string;
   }): Promise<PagedResult<AuditLogDto>> =>
     apiClient.get('/admin/system/audit-log', params),
+
+  getAuditSessions: (params: {
+    page?: number;
+    pageSize?: number;
+    type?: string;
+    search?: string;
+  }): Promise<PagedResult<AuditSessionSummaryDto>> =>
+    apiClient.get('/admin/system/audit-log/sessions', params),
+
+  getAuditSessionDetail: (entityId: string, entityType?: string): Promise<AuditSessionDetailDto> =>
+    apiClient.get(`/admin/system/audit-log/sessions/${entityId}`, { entityType: entityType || 'Booking' }),
+
+  getAuditUsers: (params: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+  }): Promise<PagedResult<AuditUserSummaryDto>> =>
+    apiClient.get('/admin/system/audit-log/users', params),
+
+  getAuditUserDetail: (userId: string): Promise<AuditUserDetailDto> =>
+    apiClient.get(`/admin/system/audit-log/users/${userId}`),
 
   getSystemHealthInfo: (): Promise<SystemHealthInfoDto> =>
     apiClient.get('/admin/system/health'),
