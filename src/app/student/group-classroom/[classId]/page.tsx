@@ -838,9 +838,9 @@ export default function StudentGroupClassroomPage() {
   }
 
   return (
-    <div className="h-screen bg-gray-900 flex flex-col">
+    <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 px-6 py-3 flex items-center justify-between shrink-0">
+      <div className="bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center justify-between shrink-0">
         <div className="flex items-center space-x-4">
           <h1 className="text-white font-semibold">{groupClass?.title || 'Grup Dersi'}</h1>
           <Badge variant="destructive" className="animate-pulse">CANLI</Badge>
@@ -875,7 +875,7 @@ export default function StudentGroupClassroomPage() {
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden min-h-0">
-        <div className="flex-1 p-4 min-h-0">
+        <div className="flex-1 p-2 min-h-0">
           <GroupClassroomLayout
             localVideoRef={localVideoRef}
             isVideoEnabled={isVideoEnabled}
@@ -922,36 +922,36 @@ export default function StudentGroupClassroomPage() {
       </div>
 
       {/* Controls */}
-      <div className="bg-gray-800 border-t border-gray-700 px-6 py-3 shrink-0">
-        <div className="flex items-center justify-center gap-3">
-          <Button variant={isAudioEnabled ? 'secondary' : 'destructive'} size="lg" onClick={toggleAudio} className="rounded-full w-14 h-14 px-0">
-            {isAudioEnabled ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+      <div className="bg-gray-800 border-t border-gray-700 px-4 py-2 shrink-0">
+        <div className="flex items-center justify-center gap-2">
+          <Button variant={isAudioEnabled ? 'secondary' : 'destructive'} size="sm" onClick={toggleAudio} className="rounded-full w-11 h-11 px-0">
+            {isAudioEnabled ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
           </Button>
-          <Button variant={isVideoEnabled ? 'secondary' : 'destructive'} size="lg" onClick={toggleVideo} className="rounded-full w-14 h-14 px-0">
-            {isVideoEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+          <Button variant={isVideoEnabled ? 'secondary' : 'destructive'} size="sm" onClick={toggleVideo} className="rounded-full w-11 h-11 px-0">
+            {isVideoEnabled ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
           </Button>
-          <Button variant={isScreenSharing ? 'default' : 'secondary'} size="lg" onClick={toggleScreenShare} className="rounded-full w-14 h-14 px-0">
-            {isScreenSharing ? <MonitorOff className="w-5 h-5" /> : <Monitor className="w-5 h-5" />}
+          <Button variant={isScreenSharing ? 'default' : 'secondary'} size="sm" onClick={toggleScreenShare} className="rounded-full w-11 h-11 px-0">
+            {isScreenSharing ? <MonitorOff className="w-4 h-4" /> : <Monitor className="w-4 h-4" />}
           </Button>
-          <Button variant={isHandRaised ? 'default' : 'secondary'} size="lg" onClick={toggleHandRaise} className={`rounded-full w-14 h-14 px-0 ${isHandRaised ? 'bg-yellow-600 hover:bg-yellow-700' : ''}`}>
-            <Hand className="w-5 h-5" />
+          <Button variant={isHandRaised ? 'default' : 'secondary'} size="sm" onClick={toggleHandRaise} className={`rounded-full w-11 h-11 px-0 ${isHandRaised ? 'bg-yellow-600 hover:bg-yellow-700' : ''}`}>
+            <Hand className="w-4 h-4" />
           </Button>
-          <Button variant={isChatOpen ? 'default' : 'secondary'} size="lg" onClick={() => { setIsChatOpen(!isChatOpen); if (!isChatOpen) setIsParticipantsOpen(false); }} className="rounded-full w-14 h-14 px-0 relative">
-            <MessageSquare className="w-5 h-5" />
+          <Button variant={isChatOpen ? 'default' : 'secondary'} size="sm" onClick={() => { setIsChatOpen(!isChatOpen); if (!isChatOpen) setIsParticipantsOpen(false); }} className="rounded-full w-11 h-11 px-0 relative">
+            <MessageSquare className="w-4 h-4" />
             {!isChatOpen && unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
           </Button>
-          <Button variant={isParticipantsOpen ? 'default' : 'secondary'} size="lg" onClick={() => { setIsParticipantsOpen(!isParticipantsOpen); if (!isParticipantsOpen) setIsChatOpen(false); }} className="rounded-full w-14 h-14 px-0">
-            <Users className="w-5 h-5" />
+          <Button variant={isParticipantsOpen ? 'default' : 'secondary'} size="sm" onClick={() => { setIsParticipantsOpen(!isParticipantsOpen); if (!isParticipantsOpen) setIsChatOpen(false); }} className="rounded-full w-11 h-11 px-0">
+            <Users className="w-4 h-4" />
           </Button>
-          <Button variant={isSettingsOpen ? 'default' : 'secondary'} size="lg" onClick={() => setIsSettingsOpen(!isSettingsOpen)} className="rounded-full w-14 h-14 px-0">
-            <Settings className="w-5 h-5" />
+          <Button variant={isSettingsOpen ? 'default' : 'secondary'} size="sm" onClick={() => setIsSettingsOpen(!isSettingsOpen)} className="rounded-full w-11 h-11 px-0">
+            <Settings className="w-4 h-4" />
           </Button>
-          <Button variant="destructive" size="lg" onClick={handleLeave} className="rounded-full px-6">
-            <PhoneOff className="w-5 h-5 mr-2" /> Ayrıl
+          <Button variant="destructive" size="sm" onClick={handleLeave} className="rounded-full px-4">
+            <PhoneOff className="w-4 h-4 mr-1" /> Ayrıl
           </Button>
         </div>
       </div>

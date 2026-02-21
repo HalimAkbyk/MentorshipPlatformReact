@@ -83,7 +83,7 @@ function NormalLayout({
   }, [remoteTiles.length]);
 
   return (
-    <div className="grid grid-cols-2 gap-4 h-full">
+    <div className="grid grid-cols-2 gap-2 h-full">
       {/* Local Video */}
       <Card className="bg-gray-800 border-gray-700 relative overflow-hidden">
         <CardContent className="p-0 h-full">

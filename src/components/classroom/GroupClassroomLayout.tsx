@@ -127,11 +127,11 @@ export function GroupClassroomLayout({
 
   // ─── Standard Grid Layout (no screen share) ───
   return (
-    <div className={`grid ${gridClass} gap-3 w-full h-full auto-rows-fr`}>
+    <div className={`grid ${gridClass} gap-2 w-full h-full auto-rows-[minmax(0,1fr)]`}>
       {/* Local Video */}
-      <div className="relative bg-gray-800 rounded-lg overflow-hidden aspect-video">
+      <div className="relative bg-gray-800 rounded-lg overflow-hidden min-h-0">
         <div className="absolute inset-0">
-          <div ref={localVideoRef} className="w-full h-full" />
+          <div ref={localVideoRef} className="w-full h-full [&>video]:object-cover" />
         </div>
         <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded z-10">
           {localLabel}
@@ -160,7 +160,7 @@ export function GroupClassroomLayout({
       {remoteTiles.map(tile => (
         <div
           key={tile.identity}
-          className="relative bg-gray-800 rounded-lg overflow-hidden aspect-video"
+          className="relative bg-gray-800 rounded-lg overflow-hidden min-h-0"
         >
           <div className="absolute inset-0">
             <RemoteVideoMount videoEl={tile.cameraVideoEl} objectFit="cover" />
@@ -200,7 +200,7 @@ export function GroupClassroomLayout({
 
       {/* Empty state when room active but no participants */}
       {remoteTiles.length === 0 && isRoomActive && (
-        <div className="relative bg-gray-800 rounded-lg overflow-hidden aspect-video flex items-center justify-center">
+        <div className="relative bg-gray-800 rounded-lg overflow-hidden min-h-0 flex items-center justify-center">
           <div className="text-center text-gray-400">
             <Users className="w-12 h-12 mx-auto mb-3" />
             <p className="text-sm">{isMentor ? 'Öğrenci bekleniyor...' : 'Katılımcı bekleniyor...'}</p>
