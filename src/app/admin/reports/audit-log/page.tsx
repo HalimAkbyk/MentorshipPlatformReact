@@ -344,14 +344,22 @@ function SessionsTab() {
                         {/* User header */}
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-3">
-                            <div
-                              className={cn(
-                                'w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium',
-                                p.role === 'Mentor' ? 'bg-blue-600' : 'bg-purple-600'
-                              )}
-                            >
-                              {p.displayName.charAt(0).toUpperCase()}
-                            </div>
+                            {p.avatarUrl ? (
+                              <img
+                                src={p.avatarUrl}
+                                alt={p.displayName}
+                                className="w-8 h-8 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div
+                                className={cn(
+                                  'w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium',
+                                  p.role === 'Mentor' ? 'bg-blue-600' : 'bg-purple-600'
+                                )}
+                              >
+                                {p.displayName.charAt(0).toUpperCase()}
+                              </div>
+                            )}
                             <div>
                               <p className="text-sm font-medium text-gray-900">{p.displayName}</p>
                               <div className="flex items-center gap-1.5">
@@ -393,16 +401,16 @@ function SessionsTab() {
                                 {hasMultiple && (
                                   <p className="text-[10px] font-medium text-gray-400 mb-1">{idx + 1}. Giris</p>
                                 )}
-                                <div className="grid grid-cols-3 gap-2 text-xs text-gray-600">
-                                  <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-4 text-xs text-gray-600">
+                                  <div className="flex items-center gap-1 whitespace-nowrap">
                                     <Calendar className="w-3 h-3 text-green-500 flex-shrink-0" />
-                                    <span className="truncate">Giris: {formatDate(seg.joinedAt)}</span>
+                                    <span>Giris: {formatDate(seg.joinedAt)}</span>
                                   </div>
-                                  <div className="flex items-center gap-1">
+                                  <div className="flex items-center gap-1 whitespace-nowrap">
                                     <Calendar className="w-3 h-3 text-red-500 flex-shrink-0" />
-                                    <span className="truncate">Cikis: {seg.leftAt ? formatDate(seg.leftAt) : 'Aktif'}</span>
+                                    <span>Cikis: {seg.leftAt ? formatDate(seg.leftAt) : 'Aktif'}</span>
                                   </div>
-                                  <div className="text-right font-medium">
+                                  <div className="ml-auto font-medium whitespace-nowrap">
                                     {formatDuration(seg.durationSec)}
                                   </div>
                                 </div>
@@ -410,12 +418,12 @@ function SessionsTab() {
                             ))}
                           </div>
                         ) : (
-                          <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                            <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-4 text-xs text-gray-600">
+                            <div className="flex items-center gap-1.5 whitespace-nowrap">
                               <Calendar className="w-3 h-3 text-green-500" />
                               <span>Giris: {formatDate(p.joinedAt)}</span>
                             </div>
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1.5 whitespace-nowrap">
                               <Calendar className="w-3 h-3 text-red-500" />
                               <span>Cikis: {p.leftAt ? formatDate(p.leftAt) : 'Aktif'}</span>
                             </div>
@@ -686,16 +694,16 @@ function UsersTab() {
                                 {hasMultiple && (
                                   <p className="text-[10px] font-medium text-gray-400 mb-0.5">{segIdx + 1}. Giris</p>
                                 )}
-                                <div className="grid grid-cols-3 gap-2 text-xs text-gray-500">
-                                  <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-4 text-xs text-gray-500">
+                                  <div className="flex items-center gap-1 whitespace-nowrap">
                                     <Calendar className="w-3 h-3 text-green-500 flex-shrink-0" />
-                                    <span className="truncate">Giris: {formatDate(seg.joinedAt)}</span>
+                                    <span>Giris: {formatDate(seg.joinedAt)}</span>
                                   </div>
-                                  <div className="flex items-center gap-1">
+                                  <div className="flex items-center gap-1 whitespace-nowrap">
                                     <Calendar className="w-3 h-3 text-red-500 flex-shrink-0" />
-                                    <span className="truncate">Cikis: {seg.leftAt ? formatDate(seg.leftAt) : 'Aktif'}</span>
+                                    <span>Cikis: {seg.leftAt ? formatDate(seg.leftAt) : 'Aktif'}</span>
                                   </div>
-                                  <div className="text-right font-medium">
+                                  <div className="ml-auto font-medium whitespace-nowrap">
                                     {formatDuration(seg.durationSec)}
                                   </div>
                                 </div>
@@ -703,14 +711,14 @@ function UsersTab() {
                             ))}
                           </div>
                         ) : (
-                          <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
-                            <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-4 text-xs text-gray-500">
+                            <div className="flex items-center gap-1 whitespace-nowrap">
                               <Calendar className="w-3 h-3 text-green-500" />
-                              Giris: {formatDate(s.joinedAt)}
+                              <span>Giris: {formatDate(s.joinedAt)}</span>
                             </div>
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1 whitespace-nowrap">
                               <Calendar className="w-3 h-3 text-red-500" />
-                              Cikis: {s.leftAt ? formatDate(s.leftAt) : 'Aktif'}
+                              <span>Cikis: {s.leftAt ? formatDate(s.leftAt) : 'Aktif'}</span>
                             </div>
                           </div>
                         )}

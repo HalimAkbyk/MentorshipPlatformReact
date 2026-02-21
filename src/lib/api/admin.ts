@@ -271,6 +271,7 @@ export interface ParticipantSegment {
 export interface SessionParticipantDto {
   userId: string;
   displayName: string;
+  avatarUrl: string | null;
   role: 'Mentor' | 'Student';
   joinedAt: string;
   leftAt: string | null;
@@ -675,6 +676,7 @@ export interface AuditEventDto {
 export interface AuditParticipantDto {
   userId: string;
   displayName: string;
+  avatarUrl: string | null;
   role: string;
   joinedAt: string | null;
   leftAt: string | null;

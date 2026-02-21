@@ -502,14 +502,22 @@ function ParticipantCard({
       {/* Header: user info + total duration */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div
-            className={cn(
-              'w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium',
-              participant.role === 'Mentor' ? 'bg-blue-600' : 'bg-purple-600'
-            )}
-          >
-            {participant.displayName.charAt(0).toUpperCase()}
-          </div>
+          {participant.avatarUrl ? (
+            <img
+              src={participant.avatarUrl}
+              alt={participant.displayName}
+              className="w-8 h-8 rounded-full object-cover"
+            />
+          ) : (
+            <div
+              className={cn(
+                'w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium',
+                participant.role === 'Mentor' ? 'bg-blue-600' : 'bg-purple-600'
+              )}
+            >
+              {participant.displayName.charAt(0).toUpperCase()}
+            </div>
+          )}
           <div>
             <p className="text-sm font-medium text-gray-900">{participant.displayName}</p>
             <div className="flex items-center gap-1.5">
@@ -560,18 +568,16 @@ function ParticipantCard({
                     {idx + 1}. Giris
                   </p>
                 )}
-                <div className="grid grid-cols-3 gap-2 text-xs text-gray-600 mb-2">
-                  <div className="flex items-center gap-1">
+                <div className="flex items-center gap-4 text-xs text-gray-600 mb-2">
+                  <div className="flex items-center gap-1 whitespace-nowrap">
                     <Calendar className="w-3 h-3 text-green-500 flex-shrink-0" />
-                    <span className="truncate">Giris: {formatDateTime(seg.joinedAt)}</span>
+                    <span>Giris: {formatDateTime(seg.joinedAt)}</span>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 whitespace-nowrap">
                     <Calendar className="w-3 h-3 text-red-500 flex-shrink-0" />
-                    <span className="truncate">
-                      Cikis: {seg.leftAt ? formatDateTime(seg.leftAt) : 'Aktif'}
-                    </span>
+                    <span>Cikis: {seg.leftAt ? formatDateTime(seg.leftAt) : 'Aktif'}</span>
                   </div>
-                  <div className="text-right font-medium">
+                  <div className="ml-auto font-medium whitespace-nowrap">
                     {formatDuration(seg.durationSec)}
                   </div>
                 </div>
@@ -592,16 +598,14 @@ function ParticipantCard({
         ) : (
           /* Fallback for old data without segments */
           <div>
-            <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-2">
-              <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-4 text-xs text-gray-600 mb-2">
+              <div className="flex items-center gap-1.5 whitespace-nowrap">
                 <Calendar className="w-3 h-3 text-green-500" />
                 <span>Giris: {formatDateTime(participant.joinedAt)}</span>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 whitespace-nowrap">
                 <Calendar className="w-3 h-3 text-red-500" />
-                <span>
-                  Cikis: {participant.leftAt ? formatDateTime(participant.leftAt) : 'Aktif'}
-                </span>
+                <span>Cikis: {participant.leftAt ? formatDateTime(participant.leftAt) : 'Aktif'}</span>
               </div>
             </div>
             <div className="relative h-1.5 bg-gray-100 rounded-full overflow-hidden">
