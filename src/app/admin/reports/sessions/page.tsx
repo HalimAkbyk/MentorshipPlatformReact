@@ -13,6 +13,7 @@ import {
   UserCheck,
   Timer,
   Calendar,
+  ChevronDown,
 } from 'lucide-react';
 
 import {
@@ -494,13 +495,18 @@ function ParticipantCard({
   sessionStart: string | null;
   sessionEnd: string | null;
 }) {
+  const [expanded, setExpanded] = useState(false);
   const segments = participant.segments ?? [];
   const hasMultipleSegments = segments.length > 1;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4">
-      {/* Header: user info + total duration */}
-      <div className="flex items-center justify-between mb-3">
+    <div className="bg-white border border-gray-200 rounded-lg">
+      {/* Header: user info + total duration — clickable to toggle */}
+      <button
+        type="button"
+        onClick={() => setExpanded((prev) => !prev)}
+        className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors rounded-lg"
+      >
         <div className="flex items-center gap-3">
           {participant.avatarUrl ? (
             <img
@@ -540,92 +546,102 @@ function ParticipantCard({
             </div>
           </div>
         </div>
-        <div className="text-right">
-          <p className="text-sm font-semibold text-gray-900">
-            {formatDuration(participant.durationSec)}
-          </p>
-          <p className="text-xs text-gray-500">toplam sure</p>
-        </div>
-      </div>
-
-      {/* Segments */}
-      <div className="space-y-2">
-        {segments.length > 0 ? (
-          segments.map((seg, idx) => {
-            const { barLeft, barWidth } = calcSegmentBar(
-              seg.joinedAt,
-              seg.leftAt,
-              sessionStart,
-              sessionEnd
-            );
-            return (
-              <div key={seg.segmentId} className={cn(
-                'rounded-md p-2',
-                hasMultipleSegments ? 'bg-gray-50 border border-gray-100' : ''
-              )}>
-                {hasMultipleSegments && (
-                  <p className="text-[10px] font-medium text-gray-400 mb-1">
-                    {idx + 1}. Giris
-                  </p>
-                )}
-                <div className="flex items-center gap-4 text-xs text-gray-600 mb-2">
-                  <div className="flex items-center gap-1 whitespace-nowrap">
-                    <Calendar className="w-3 h-3 text-green-500 flex-shrink-0" />
-                    <span>Giris: {formatDateTime(seg.joinedAt)}</span>
-                  </div>
-                  <div className="flex items-center gap-1 whitespace-nowrap">
-                    <Calendar className="w-3 h-3 text-red-500 flex-shrink-0" />
-                    <span>Cikis: {seg.leftAt ? formatDateTime(seg.leftAt) : 'Aktif'}</span>
-                  </div>
-                  <div className="ml-auto font-medium whitespace-nowrap">
-                    {formatDuration(seg.durationSec)}
-                  </div>
-                </div>
-                {/* Timeline bar */}
-                <div className="relative h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className={cn(
-                      'absolute h-full rounded-full',
-                      participant.role === 'Mentor' ? 'bg-blue-400' : 'bg-purple-400',
-                      !seg.leftAt && 'animate-pulse'
-                    )}
-                    style={{ left: `${barLeft}%`, width: `${barWidth}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })
-        ) : (
-          /* Fallback for old data without segments */
-          <div>
-            <div className="flex items-center gap-4 text-xs text-gray-600 mb-2">
-              <div className="flex items-center gap-1.5 whitespace-nowrap">
-                <Calendar className="w-3 h-3 text-green-500" />
-                <span>Giris: {formatDateTime(participant.joinedAt)}</span>
-              </div>
-              <div className="flex items-center gap-1.5 whitespace-nowrap">
-                <Calendar className="w-3 h-3 text-red-500" />
-                <span>Cikis: {participant.leftAt ? formatDateTime(participant.leftAt) : 'Aktif'}</span>
-              </div>
-            </div>
-            <div className="relative h-1.5 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className={cn(
-                  'absolute h-full rounded-full',
-                  participant.role === 'Mentor' ? 'bg-blue-400' : 'bg-purple-400'
-                )}
-                style={{ width: '100%' }}
-              />
-            </div>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-sm font-semibold text-gray-900">
+              {formatDuration(participant.durationSec)}
+            </p>
+            <p className="text-xs text-gray-500">toplam sure</p>
           </div>
-        )}
-      </div>
+          <ChevronDown
+            className={cn(
+              'w-4 h-4 text-gray-400 transition-transform duration-200',
+              expanded && 'rotate-180'
+            )}
+          />
+        </div>
+      </button>
 
-      {/* Bottom timeline labels */}
-      <div className="flex justify-between text-[10px] text-gray-400 mt-1">
-        <span>Baslangic</span>
-        <span>Bitis</span>
-      </div>
+      {/* Collapsible Segments */}
+      {expanded && (
+        <div className="px-4 pb-4 space-y-2">
+          {segments.length > 0 ? (
+            segments.map((seg, idx) => {
+              const { barLeft, barWidth } = calcSegmentBar(
+                seg.joinedAt,
+                seg.leftAt,
+                sessionStart,
+                sessionEnd
+              );
+              return (
+                <div key={seg.segmentId} className={cn(
+                  'rounded-md p-2',
+                  hasMultipleSegments ? 'bg-gray-50 border border-gray-100' : ''
+                )}>
+                  {hasMultipleSegments && (
+                    <p className="text-[10px] font-medium text-gray-400 mb-1">
+                      {idx + 1}. Giris
+                    </p>
+                  )}
+                  <div className="flex items-center gap-4 text-xs text-gray-600 mb-2">
+                    <div className="flex items-center gap-1 whitespace-nowrap">
+                      <Calendar className="w-3 h-3 text-green-500 flex-shrink-0" />
+                      <span>Giris: {formatDateTime(seg.joinedAt)}</span>
+                    </div>
+                    <div className="flex items-center gap-1 whitespace-nowrap">
+                      <Calendar className="w-3 h-3 text-red-500 flex-shrink-0" />
+                      <span>Cikis: {seg.leftAt ? formatDateTime(seg.leftAt) : 'Aktif'}</span>
+                    </div>
+                    <div className="ml-auto font-medium whitespace-nowrap">
+                      {formatDuration(seg.durationSec)}
+                    </div>
+                  </div>
+                  {/* Timeline bar */}
+                  <div className="relative h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={cn(
+                        'absolute h-full rounded-full',
+                        participant.role === 'Mentor' ? 'bg-blue-400' : 'bg-purple-400',
+                        !seg.leftAt && 'animate-pulse'
+                      )}
+                      style={{ left: `${barLeft}%`, width: `${barWidth}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            /* Fallback for old data without segments */
+            <div>
+              <div className="flex items-center gap-4 text-xs text-gray-600 mb-2">
+                <div className="flex items-center gap-1.5 whitespace-nowrap">
+                  <Calendar className="w-3 h-3 text-green-500" />
+                  <span>Giris: {formatDateTime(participant.joinedAt)}</span>
+                </div>
+                <div className="flex items-center gap-1.5 whitespace-nowrap">
+                  <Calendar className="w-3 h-3 text-red-500" />
+                  <span>Cikis: {participant.leftAt ? formatDateTime(participant.leftAt) : 'Aktif'}</span>
+                </div>
+              </div>
+              <div className="relative h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className={cn(
+                    'absolute h-full rounded-full',
+                    participant.role === 'Mentor' ? 'bg-blue-400' : 'bg-purple-400'
+                  )}
+                  style={{ width: '100%' }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Bottom timeline labels */}
+          <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+            <span>Baslangic</span>
+            <span>Bitis</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
