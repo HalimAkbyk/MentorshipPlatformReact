@@ -122,6 +122,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: Settings,
     items: [
       { label: 'Genel Ayarlar', href: '/admin/settings/general' },
+      { label: 'E-posta Ayarlari', href: '/admin/settings/email' },
       { label: 'Kategoriler', href: '/admin/settings/categories' },
       { label: 'Komisyon Oranlari', href: '/admin/settings/fees' },
       { label: 'Avatar Yonetimi', href: '/admin/settings/avatars' },

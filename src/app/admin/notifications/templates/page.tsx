@@ -1,15 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   FileText,
-  Plus,
   Pencil,
-  Trash2,
   Calendar,
   Info,
+  Eye,
+  X,
+  Copy,
+  ToggleLeft,
+  ToggleRight,
+  Loader2,
+  Code2,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 
 import {
   adminApi,
@@ -17,12 +23,16 @@ import {
 } from '@/lib/api/admin';
 import { DataTable, type Column } from '@/components/admin/data-table';
 import { StatusBadge } from '@/components/admin/status-badge';
-import { DetailDrawer } from '@/components/admin/detail-drawer';
-import { ConfirmActionModal } from '@/components/admin/confirm-action-modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils/cn';
 import { toast } from 'sonner';
+
+// Dynamic import for code editor (SSR-incompatible)
+const CodeEditor = dynamic(
+  () => import('@uiw/react-textarea-code-editor').then((mod) => mod.default),
+  { ssr: false, loading: () => <div className="h-64 bg-gray-100 rounded-lg animate-pulse" /> }
+);
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -61,57 +71,81 @@ function ChannelBadge({ channel }: { channel: string }) {
   );
 }
 
-const KNOWN_TEMPLATES = [
-  'welcome',
-  'booking_confirmation',
-  'booking_reminder',
-  'booking_cancelled',
-  'verification_approved',
-  'unread_message',
-];
+function parseVariables(variables: string | null): string[] {
+  if (!variables) return [];
+  try {
+    const parsed = JSON.parse(variables);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return variables
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean);
+  }
+}
 
 // ---------------------------------------------------------------------------
-// Template Form in Drawer
+// Template Editor Modal
 // ---------------------------------------------------------------------------
 
-interface TemplateFormState {
-  key: string;
+interface EditorState {
   name: string;
   subject: string;
   body: string;
   variables: string;
-  channel: string;
 }
 
-const emptyForm: TemplateFormState = {
-  key: '',
-  name: '',
-  subject: '',
-  body: '',
-  variables: '',
-  channel: 'Email',
-};
-
-function TemplateForm({
-  initialValues,
-  isEdit,
+function TemplateEditorModal({
+  template,
+  onClose,
   onSave,
   isSaving,
 }: {
-  initialValues: TemplateFormState;
-  isEdit: boolean;
-  onSave: (data: TemplateFormState) => void;
+  template: NotificationTemplateDto;
+  onClose: () => void;
+  onSave: (data: EditorState) => void;
   isSaving: boolean;
 }) {
-  const [form, setForm] = useState<TemplateFormState>(initialValues);
+  const [form, setForm] = useState<EditorState>({
+    name: template.name,
+    subject: template.subject,
+    body: template.body,
+    variables: template.variables || '',
+  });
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState('');
+  const [previewSubject, setPreviewSubject] = useState('');
+  const [loadingPreview, setLoadingPreview] = useState(false);
 
-  const handleChange = (field: keyof TemplateFormState, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+  const variablesList = parseVariables(template.variables);
+
+  const handleInsertVariable = (varName: string) => {
+    const textarea = document.getElementById('body-editor') as HTMLTextAreaElement | null;
+    const toInsert = `{{${varName}}}`;
+    setForm((prev) => ({ ...prev, body: prev.body + toInsert }));
+  };
+
+  const handleInsertVariableToSubject = (varName: string) => {
+    setForm((prev) => ({ ...prev, subject: prev.subject + `{{${varName}}}` }));
+  };
+
+  const handlePreview = async () => {
+    setLoadingPreview(true);
+    try {
+      const result = await adminApi.previewTemplate(template.id);
+      setPreviewSubject(result.subject);
+      setPreviewHtml(result.body);
+      setShowPreview(true);
+    } catch {
+      toast.error('Onizleme yuklenemedi');
+    } finally {
+      setLoadingPreview(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.key.trim() || !form.name.trim() || !form.subject.trim() || !form.body.trim()) {
+    if (!form.name.trim() || !form.subject.trim() || !form.body.trim()) {
       toast.error('Lutfen zorunlu alanlari doldurun.');
       return;
     }
@@ -119,110 +153,198 @@ function TemplateForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Key */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Anahtar (Key) <span className="text-red-500">*</span>
-        </label>
-        <Input
-          value={form.key}
-          onChange={(e) => handleChange('key', e.target.value)}
-          placeholder="ornek: booking_confirmation"
-          disabled={isEdit || isSaving}
-          className={isEdit ? 'bg-gray-100' : ''}
-        />
-        {isEdit && (
-          <p className="text-xs text-gray-400 mt-1">Anahtar duzenlenemez.</p>
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto p-4 pt-8">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl my-4">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Sablonu Duzenle</h2>
+            <span className="text-xs font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-600">
+              {template.key}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePreview}
+              disabled={loadingPreview}
+            >
+              {loadingPreview ? (
+                <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+              ) : (
+                <Eye className="h-3.5 w-3.5 mr-1" />
+              )}
+              Onizle
+            </Button>
+            <button
+              onClick={onClose}
+              className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X className="h-5 w-5 text-gray-500" />
+            </button>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Sablon Adi <span className="text-red-500">*</span>
+              </label>
+              <Input
+                value={form.name}
+                onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+                placeholder="Sablon adi"
+                disabled={isSaving}
+              />
+            </div>
+
+            {/* Subject */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                E-posta Konusu <span className="text-red-500">*</span>
+              </label>
+              <Input
+                value={form.subject}
+                onChange={(e) => setForm((prev) => ({ ...prev, subject: e.target.value }))}
+                placeholder="E-posta konusu"
+                disabled={isSaving}
+              />
+              {variablesList.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  <span className="text-xs text-gray-400">Konu icin:</span>
+                  {variablesList.map((v) => (
+                    <button
+                      key={`sub-${v}`}
+                      type="button"
+                      onClick={() => handleInsertVariableToSubject(v)}
+                      className="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors cursor-pointer"
+                    >
+                      {`{{${v}}}`}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Variables Reference */}
+            {variablesList.length > 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Info className="h-4 w-4 text-blue-500" />
+                  <span className="text-xs font-medium text-blue-800">
+                    Kullanilabilir Degiskenler
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {variablesList.map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => handleInsertVariable(v)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer"
+                      title={`Tikla: {{${v}}} ekle`}
+                    >
+                      <Copy className="h-3 w-3" />
+                      {`{{${v}}}`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Body - Code Editor */}
+            <div>
+              <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
+                <Code2 className="h-4 w-4" />
+                HTML Icerik <span className="text-red-500">*</span>
+              </label>
+              <div className="border border-gray-300 rounded-lg overflow-hidden">
+                <CodeEditor
+                  id="body-editor"
+                  value={form.body}
+                  language="html"
+                  placeholder="HTML e-posta icerigi..."
+                  onChange={(e) => setForm((prev) => ({ ...prev, body: e.target.value }))}
+                  disabled={isSaving}
+                  padding={16}
+                  style={{
+                    fontSize: 13,
+                    fontFamily: '"Fira Code", "Fira Mono", monospace',
+                    minHeight: 300,
+                    maxHeight: 500,
+                    overflow: 'auto',
+                    backgroundColor: '#f9fafb',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Variables (editable) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Degiskenler (JSON)
+              </label>
+              <Input
+                value={form.variables}
+                onChange={(e) => setForm((prev) => ({ ...prev, variables: e.target.value }))}
+                placeholder='["displayName", "bookingDate"]'
+                disabled={isSaving}
+                className="font-mono text-xs"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                JSON dizi formatinda degisken isimleri.
+              </p>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
+              Vazgec
+            </Button>
+            <Button type="submit" disabled={isSaving}>
+              {isSaving ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : null}
+              {isSaving ? 'Kaydediliyor...' : 'Kaydet'}
+            </Button>
+          </div>
+        </form>
+
+        {/* Preview Modal */}
+        {showPreview && (
+          <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col">
+              <div className="flex items-center justify-between px-6 py-4 border-b">
+                <div>
+                  <h3 className="font-semibold text-gray-900">E-posta Onizleme</h3>
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    <strong>Konu:</strong> {previewSubject}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className="p-1.5 hover:bg-gray-100 rounded-lg"
+                >
+                  <X className="h-5 w-5 text-gray-500" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-auto p-1">
+                <iframe
+                  srcDoc={previewHtml}
+                  className="w-full h-full min-h-[400px] border-0"
+                  title="Email Preview"
+                  sandbox="allow-same-origin"
+                />
+              </div>
+            </div>
+          </div>
         )}
       </div>
-
-      {/* Name */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Ad <span className="text-red-500">*</span>
-        </label>
-        <Input
-          value={form.name}
-          onChange={(e) => handleChange('name', e.target.value)}
-          placeholder="Sablon adi"
-          disabled={isSaving}
-        />
-      </div>
-
-      {/* Subject */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Konu <span className="text-red-500">*</span>
-        </label>
-        <Input
-          value={form.subject}
-          onChange={(e) => handleChange('subject', e.target.value)}
-          placeholder="E-posta konusu"
-          disabled={isSaving}
-        />
-      </div>
-
-      {/* Body */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Icerik <span className="text-red-500">*</span>
-        </label>
-        <textarea
-          value={form.body}
-          onChange={(e) => handleChange('body', e.target.value)}
-          placeholder="Sablon icerigi..."
-          rows={8}
-          disabled={isSaving}
-          className={cn(
-            'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700',
-            'placeholder:text-gray-400 resize-y',
-            'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500',
-            'disabled:opacity-50 disabled:bg-gray-50',
-            'min-h-[200px]'
-          )}
-        />
-      </div>
-
-      {/* Variables */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Degiskenler
-        </label>
-        <Input
-          value={form.variables}
-          onChange={(e) => handleChange('variables', e.target.value)}
-          placeholder="ornek: userName, bookingDate, mentorName"
-          disabled={isSaving}
-        />
-        <p className="text-xs text-gray-400 mt-1">
-          Virgul ile ayrilmis degisken isimleri. Icerik icinde {'{'}{'{'} degiskenAdi {'}'}{'}'}
-          seklinde kullanilir.
-        </p>
-      </div>
-
-      {/* Channel */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Kanal</label>
-        <select
-          value={form.channel}
-          onChange={(e) => handleChange('channel', e.target.value)}
-          disabled={isSaving}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-        >
-          <option value="Email">E-posta</option>
-          <option value="InApp">Uygulama Ici</option>
-          <option value="SMS">SMS</option>
-        </select>
-      </div>
-
-      {/* Submit */}
-      <div className="pt-2">
-        <Button type="submit" disabled={isSaving} className="w-full">
-          {isSaving ? 'Kaydediliyor...' : isEdit ? 'Guncelle' : 'Olustur'}
-        </Button>
-      </div>
-    </form>
+    </div>
   );
 }
 
@@ -233,13 +355,8 @@ function TemplateForm({
 export default function AdminNotificationTemplatesPage() {
   const queryClient = useQueryClient();
 
-  // Drawer state
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  // State
   const [editingTemplate, setEditingTemplate] = useState<NotificationTemplateDto | null>(null);
-
-  // Delete modal state
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [deletingTemplate, setDeletingTemplate] = useState<NotificationTemplateDto | null>(null);
 
   // Query: Templates list
   const { data: templates = [], isLoading } = useQuery({
@@ -247,29 +364,20 @@ export default function AdminNotificationTemplatesPage() {
     queryFn: () => adminApi.getNotificationTemplates(),
   });
 
-  // Mutation: Create
-  const createMutation = useMutation({
-    mutationFn: (data: { key: string; name: string; subject: string; body: string; variables?: string; channel?: string }) =>
-      adminApi.createNotificationTemplate(data),
-    onSuccess: () => {
-      toast.success('Sablon basariyla olusturuldu.');
-      queryClient.invalidateQueries({ queryKey: ['admin', 'notification-templates'] });
-      setDrawerOpen(false);
-      setEditingTemplate(null);
-    },
-    onError: () => {
-      toast.error('Sablon olusturulurken hata olustu.');
-    },
-  });
-
   // Mutation: Update
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { name: string; subject: string; body: string; variables?: string } }) =>
-      adminApi.updateNotificationTemplate(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { name: string; subject: string; body: string; variables?: string };
+    }) => adminApi.updateNotificationTemplate(id, data),
     onSuccess: () => {
       toast.success('Sablon basariyla guncellendi.');
-      queryClient.invalidateQueries({ queryKey: ['admin', 'notification-templates'] });
-      setDrawerOpen(false);
+      queryClient.invalidateQueries({
+        queryKey: ['admin', 'notification-templates'],
+      });
       setEditingTemplate(null);
     },
     onError: () => {
@@ -277,56 +385,37 @@ export default function AdminNotificationTemplatesPage() {
     },
   });
 
-  // Mutation: Delete
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => adminApi.deleteNotificationTemplate(id),
-    onSuccess: () => {
-      toast.success('Sablon basariyla silindi.');
-      queryClient.invalidateQueries({ queryKey: ['admin', 'notification-templates'] });
-      setDeleteModalOpen(false);
-      setDeletingTemplate(null);
+  // Mutation: Toggle Active
+  const toggleMutation = useMutation({
+    mutationFn: (id: string) => adminApi.toggleTemplateActive(id),
+    onSuccess: (data) => {
+      const status = data?.isActive ? 'aktif' : 'pasif';
+      toast.success(`Sablon ${status} yapildi.`);
+      queryClient.invalidateQueries({
+        queryKey: ['admin', 'notification-templates'],
+      });
     },
     onError: () => {
-      toast.error('Sablon silinirken hata olustu.');
+      toast.error('Durum degistirilemedi.');
     },
   });
 
-  const handleSave = (formData: TemplateFormState) => {
-    if (editingTemplate) {
-      updateMutation.mutate({
-        id: editingTemplate.id,
-        data: {
-          name: formData.name,
-          subject: formData.subject,
-          body: formData.body,
-          variables: formData.variables || undefined,
-        },
-      });
-    } else {
-      createMutation.mutate({
-        key: formData.key,
+  const handleSave = (formData: EditorState) => {
+    if (!editingTemplate) return;
+    updateMutation.mutate({
+      id: editingTemplate.id,
+      data: {
         name: formData.name,
         subject: formData.subject,
         body: formData.body,
         variables: formData.variables || undefined,
-        channel: formData.channel || undefined,
-      });
-    }
+      },
+    });
   };
 
-  const handleOpenNew = () => {
-    setEditingTemplate(null);
-    setDrawerOpen(true);
-  };
-
-  const handleOpenEdit = (template: NotificationTemplateDto) => {
-    setEditingTemplate(template);
-    setDrawerOpen(true);
-  };
-
-  const handleOpenDelete = (template: NotificationTemplateDto) => {
-    setDeletingTemplate(template);
-    setDeleteModalOpen(true);
+  const handleToggle = (e: React.MouseEvent, template: NotificationTemplateDto) => {
+    e.stopPropagation();
+    toggleMutation.mutate(template.id);
   };
 
   // Columns
@@ -351,7 +440,9 @@ export default function AdminNotificationTemplatesPage() {
       key: 'subject',
       label: 'Konu',
       render: (item) => (
-        <span className="text-sm text-gray-600">{item.subject}</span>
+        <span className="text-sm text-gray-600 truncate max-w-[200px] block">
+          {item.subject}
+        </span>
       ),
     },
     {
@@ -363,7 +454,26 @@ export default function AdminNotificationTemplatesPage() {
       key: 'isActive',
       label: 'Durum',
       render: (item) => (
-        <StatusBadge status={item.isActive ? 'Active' : 'Inactive'} size="sm" />
+        <button
+          onClick={(e) => handleToggle(e, item)}
+          disabled={toggleMutation.isPending}
+          className="flex items-center gap-1.5 cursor-pointer"
+          title={item.isActive ? 'Pasif yap' : 'Aktif yap'}
+        >
+          {item.isActive ? (
+            <ToggleRight className="h-6 w-6 text-green-600" />
+          ) : (
+            <ToggleLeft className="h-6 w-6 text-gray-400" />
+          )}
+          <span
+            className={cn(
+              'text-xs font-medium',
+              item.isActive ? 'text-green-700' : 'text-gray-500'
+            )}
+          >
+            {item.isActive ? 'Aktif' : 'Pasif'}
+          </span>
+        </button>
       ),
     },
     {
@@ -381,79 +491,45 @@ export default function AdminNotificationTemplatesPage() {
       key: 'actions',
       label: 'Islemler',
       render: (item) => (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleOpenEdit(item);
-            }}
-          >
-            <Pencil className="h-3.5 w-3.5 mr-1" />
-            Duzenle
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleOpenDelete(item);
-            }}
-            className="border-red-200 text-red-600 hover:bg-red-50"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            setEditingTemplate(item);
+          }}
+        >
+          <Pencil className="h-3.5 w-3.5 mr-1" />
+          Duzenle
+        </Button>
       ),
     },
   ];
 
-  const drawerInitialValues: TemplateFormState = editingTemplate
-    ? {
-        key: editingTemplate.key,
-        name: editingTemplate.name,
-        subject: editingTemplate.subject,
-        body: editingTemplate.body,
-        variables: editingTemplate.variables || '',
-        channel: editingTemplate.channel,
-      }
-    : emptyForm;
-
   return (
     <div className="container mx-auto px-4 py-10 max-w-7xl">
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <FileText className="h-6 w-6 text-primary-600" />
-            <h1 className="text-2xl font-bold text-gray-900">Bildirim Sablonlari</h1>
-          </div>
-          <p className="text-sm text-gray-500">
-            E-posta ve bildirim sablonlarini yonetin
-          </p>
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-1">
+          <FileText className="h-6 w-6 text-primary-600" />
+          <h1 className="text-2xl font-bold text-gray-900">E-posta Sablonlari</h1>
         </div>
-        <Button onClick={handleOpenNew} className="bg-green-600 hover:bg-green-700 text-white">
-          <Plus className="h-4 w-4 mr-1.5" />
-          Yeni Sablon
-        </Button>
+        <p className="text-sm text-gray-500">
+          E-posta sablonlarini duzenleyin ve aktif/pasif yapin. Sablonlar silinmez, yalnizca
+          devre disi birakilabilir.
+        </p>
       </div>
 
-      {/* Known Templates Info */}
+      {/* Info Banner */}
       <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
         <Info className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
-        <div>
-          <p className="text-sm font-medium text-blue-800">Bilinen Sablonlar</p>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {KNOWN_TEMPLATES.map((key) => (
-              <span
-                key={key}
-                className="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-blue-100 text-blue-700"
-              >
-                {key}
-              </span>
-            ))}
-          </div>
+        <div className="text-sm text-blue-800">
+          <p className="font-medium mb-1">Degisken Kullanimi</p>
+          <p>
+            Sablon icinde <code className="bg-blue-100 px-1 rounded">{'{{degiskenAdi}}'}</code>{' '}
+            seklinde degisken kullanabilirsiniz. E-posta gonderilirken bu degiskenler
+            gercek degerlerle otomatik olarak degistirilir.
+          </p>
         </div>
       </div>
 
@@ -463,42 +539,21 @@ export default function AdminNotificationTemplatesPage() {
         data={templates}
         isLoading={isLoading}
         getRowId={(item) => item.id}
-        onRowClick={handleOpenEdit}
-        emptyMessage="Bildirim sablonu bulunamadi."
+        onRowClick={(item) => setEditingTemplate(item)}
+        emptyMessage="E-posta sablonu bulunamadi."
         emptyIcon={<FileText className="h-12 w-12" />}
       />
 
-      {/* Add/Edit Drawer */}
-      <DetailDrawer
-        open={drawerOpen}
-        onClose={() => { setDrawerOpen(false); setEditingTemplate(null); }}
-        title={editingTemplate ? 'Sablonu Duzenle' : 'Yeni Sablon Olustur'}
-        width="lg"
-      >
-        <TemplateForm
-          key={editingTemplate?.id || 'new'}
-          initialValues={drawerInitialValues}
-          isEdit={!!editingTemplate}
+      {/* Editor Modal */}
+      {editingTemplate && (
+        <TemplateEditorModal
+          key={editingTemplate.id}
+          template={editingTemplate}
+          onClose={() => setEditingTemplate(null)}
           onSave={handleSave}
-          isSaving={createMutation.isPending || updateMutation.isPending}
+          isSaving={updateMutation.isPending}
         />
-      </DetailDrawer>
-
-      {/* Delete Confirmation Modal */}
-      <ConfirmActionModal
-        open={deleteModalOpen}
-        onClose={() => { setDeleteModalOpen(false); setDeletingTemplate(null); }}
-        onConfirm={() => {
-          if (deletingTemplate) {
-            deleteMutation.mutate(deletingTemplate.id);
-          }
-        }}
-        title="Sablonu Sil"
-        description={`"${deletingTemplate?.name}" sablonunu silmek istediginize emin misiniz? Bu islem geri alinamaz.`}
-        confirmLabel="Sil"
-        variant="danger"
-        isLoading={deleteMutation.isPending}
-      />
+      )}
     </div>
   );
 }

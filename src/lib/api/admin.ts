@@ -1074,6 +1074,15 @@ export const adminApi = {
   deleteNotificationTemplate: (id: string): Promise<void> =>
     apiClient.delete(`/admin/notifications/templates/${id}`),
 
+  toggleTemplateActive: (id: string): Promise<NotificationTemplateDto> =>
+    apiClient.post(`/admin/notifications/templates/${id}/toggle-active`),
+
+  previewTemplate: (id: string): Promise<{ subject: string; body: string }> =>
+    apiClient.post(`/admin/notifications/templates/${id}/preview`),
+
+  sendTestEmail: (email: string): Promise<{ success: boolean }> =>
+    apiClient.post('/admin/settings/email/test', { email }),
+
   // Bulk Notifications
   getNotificationHistory: (params: {
     page?: number;
