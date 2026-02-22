@@ -103,7 +103,7 @@ export default function GroupClassDetailPage() {
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-16 flex justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600" />
       </div>
     );
   }
@@ -202,7 +202,7 @@ export default function GroupClassDetailPage() {
           <Card className="sticky top-4">
             <CardContent className="pt-6 space-y-4">
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary-700">
+                <div className="text-3xl font-bold text-teal-700">
                   {formatCurrency(groupClass.pricePerSeat, groupClass.currency)}
                 </div>
                 <div className="text-xs text-gray-500">kişi başı</div>

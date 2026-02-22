@@ -132,7 +132,7 @@ export default function CourseEditPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-12 h-12 animate-spin text-primary-600" />
+        <Loader2 className="w-12 h-12 animate-spin text-teal-600" />
       </div>
     );
   }
@@ -294,7 +294,7 @@ export default function CourseEditPage() {
               <textarea
                 value={mentorNotes}
                 onChange={(e) => setMentorNotes(e.target.value)}
-                className="w-full border rounded-lg p-3 text-sm min-h-[100px] focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full border rounded-lg p-3 text-sm min-h-[100px] focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                 placeholder="Yaptığınız değişiklikleri veya videoları neden değiştirmediğinizi açıklayın..."
               />
             </div>
@@ -540,7 +540,7 @@ function CourseSettingsForm({
           <div>
             <label className="block text-sm font-medium mb-1">Detaylı Açıklama</label>
             <textarea
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[100px]"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-h-[100px]"
               {...form.register('description')}
             />
           </div>
@@ -554,7 +554,7 @@ function CourseSettingsForm({
             <div>
               <label className="block text-sm font-medium mb-1">Seviye</label>
               <select
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 h-10 bg-white"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 h-10 bg-white"
                 {...form.register('level')}
               >
                 {LEVELS.map((lvl) => (
@@ -569,7 +569,7 @@ function CourseSettingsForm({
             <div>
               <label className="block text-sm font-medium mb-1">Kategori</label>
               <select
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 h-10 bg-white"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 h-10 bg-white"
                 {...form.register('category')}
               >
                 {CATEGORIES.map((cat) => (
@@ -580,7 +580,7 @@ function CourseSettingsForm({
             <div>
               <label className="block text-sm font-medium mb-1">Dil</label>
               <select
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 h-10 bg-white"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 h-10 bg-white"
                 {...form.register('language')}
               >
                 <option value="tr">Türkçe</option>
@@ -690,7 +690,7 @@ function DynamicStringList({
         <button
           type="button"
           onClick={onAppend}
-          className="mt-2 text-sm text-primary-600 hover:text-primary-800 flex items-center gap-1"
+          className="mt-2 text-sm text-teal-600 hover:text-teal-800 flex items-center gap-1"
         >
           <Plus className="w-3.5 h-3.5" />
           Ekle
@@ -1067,7 +1067,7 @@ function SectionCard({
           <div className="p-3 border-t">
             <button
               onClick={onAddLecture}
-              className="text-sm text-primary-600 hover:text-primary-800 flex items-center gap-1"
+              className="text-sm text-teal-600 hover:text-teal-800 flex items-center gap-1"
             >
               <Plus className="w-3.5 h-3.5" />
               Ders Ekle
@@ -1442,13 +1442,13 @@ function VideoUploadWidget({
       {uploading ? (
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm">
-            <Loader2 className="w-4 h-4 animate-spin text-primary-600" />
+            <Loader2 className="w-4 h-4 animate-spin text-teal-600" />
             <span className="truncate text-gray-700">{fileName}</span>
             <span className="text-gray-400 flex-shrink-0">{progress}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+              className="bg-teal-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -1457,7 +1457,7 @@ function VideoUploadWidget({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-400 hover:bg-primary-50 transition-colors text-sm text-gray-600"
+          className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-teal-400 hover:bg-teal-50 transition-colors text-sm text-gray-600"
         >
           <Upload className="w-4 h-4" />
           Video dosyası seçin
@@ -1538,7 +1538,7 @@ function AddLectureModal({
                 type="radio"
                 value={LectureType.Video}
                 {...form.register('type')}
-                className="text-primary-600"
+                className="text-teal-600"
               />
               <Video className="w-4 h-4 text-blue-500" />
               <span className="text-sm">Video</span>
@@ -1548,7 +1548,7 @@ function AddLectureModal({
                 type="radio"
                 value={LectureType.Text}
                 {...form.register('type')}
-                className="text-primary-600"
+                className="text-teal-600"
               />
               <FileText className="w-4 h-4 text-green-500" />
               <span className="text-sm">Metin</span>
@@ -1662,7 +1662,7 @@ function EditLectureModal({
         <div>
           <label className="block text-sm font-medium mb-1">Açıklama</label>
           <textarea
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[80px]"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-h-[80px]"
             placeholder="Ders hakkında kısa bir açıklama"
             {...form.register('description')}
           />
@@ -1673,7 +1673,7 @@ function EditLectureModal({
           <div>
             <label className="block text-sm font-medium mb-1">Metin İçeriği</label>
             <textarea
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[200px] font-mono"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-h-[200px] font-mono"
               placeholder="Ders metin içeriğini buraya yazın..."
               {...form.register('textContent')}
             />

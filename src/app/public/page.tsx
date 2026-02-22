@@ -1,13 +1,12 @@
 'use client';
 
 import HeroCarousel from '@/components/sections/HeroCarousel';
+import ProductsSection from '@/components/sections/ProductsSection';
 import CourseStrip from '@/components/sections/CourseStrip';
 import MentorCarouselSection from '@/components/sections/MentorCarouselSection';
 import PromoBanner from '@/components/sections/PromoBanner';
-import StatsSection from '@/components/sections/StatsSection';
 import HowItWorks from '@/components/sections/HowItWorks';
 import TestimonialCarousel from '@/components/sections/TestimonialCarousel';
-import BecomeMentor from '@/components/sections/BecomeMentor';
 import CmsModuleRenderer from '@/components/sections/CmsModuleRenderer';
 import { useTopRatedMentors, useNewestMentors, useActiveModules } from '@/lib/hooks/use-homepage';
 
@@ -17,10 +16,9 @@ export default function HomePage() {
   const { data: newestMentors = [], isLoading: loadingNewest } = useNewestMentors(12);
 
   // ── CMS-driven layout ──
-  // If there are active CMS modules, render them in sort order
   if (!modulesLoading && modules.length > 0) {
     return (
-      <div className="min-h-screen bg-[var(--bg-primary)]">
+      <div className="min-h-screen">
         {modules.map((mod) => (
           <CmsModuleRenderer key={mod.id} module={mod} />
         ))}
@@ -28,17 +26,16 @@ export default function HomePage() {
     );
   }
 
-  // ── Fallback: hardcoded layout ──
-  // Shown when no CMS modules exist or while loading
+  // ── Fallback: Figma design layout ──
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)]">
-      {/* 1. Hero Section */}
+    <div className="min-h-screen">
+      {/* 1. Hero */}
       <HeroCarousel />
 
-      {/* 2. Popular Courses */}
-      <CourseStrip />
+      {/* 2. Products (3 Learning Paths) */}
+      <ProductsSection />
 
-      {/* 3. Top Rated Mentors */}
+      {/* 3. Featured Mentors */}
       <MentorCarouselSection
         title="En Yuksek Puanli Mentorler"
         icon="⭐"
@@ -47,10 +44,13 @@ export default function HomePage() {
         viewAllHref="/public/mentors"
       />
 
-      {/* 4. Promo Banner */}
-      <PromoBanner />
+      {/* 4. How It Works */}
+      <HowItWorks />
 
-      {/* 5. Newest Mentors */}
+      {/* 5. Popular Courses */}
+      <CourseStrip />
+
+      {/* 6. Newest Mentors */}
       <MentorCarouselSection
         title="Yeni Katilan Mentorler"
         icon="🆕"
@@ -59,17 +59,11 @@ export default function HomePage() {
         viewAllHref="/public/mentors"
       />
 
-      {/* 6. How It Works */}
-      <HowItWorks />
-
-      {/* 7. Stats */}
-      <StatsSection />
-
-      {/* 8. Testimonials */}
+      {/* 7. Testimonials */}
       <TestimonialCarousel />
 
-      {/* 9. Become Mentor CTA */}
-      <BecomeMentor />
+      {/* 8. Final CTA */}
+      <PromoBanner />
     </div>
   );
 }

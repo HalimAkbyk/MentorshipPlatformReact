@@ -74,7 +74,7 @@ export default function CurriculumSidebar({
         {/* Progress bar */}
         <div className="w-full h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-primary-600 to-primary-400 transition-all duration-700 ease-out"
+            className="h-full rounded-full bg-gradient-to-r from-teal-600 to-teal-400 transition-all duration-700 ease-out"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -142,13 +142,13 @@ export default function CurriculumSidebar({
                           isInactive
                             ? 'opacity-50 cursor-not-allowed'
                             : isCurrent
-                            ? 'bg-primary-600/10'
+                            ? 'bg-teal-600/10'
                             : 'hover:bg-white/[0.03]'
                         )}
                       >
                         {/* Active indicator */}
                         {isCurrent && !isInactive && (
-                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-7 rounded-r-full bg-primary-500" />
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-7 rounded-r-full bg-teal-500" />
                         )}
 
                         {/* Status Icon */}
@@ -158,8 +158,8 @@ export default function CurriculumSidebar({
                           ) : lecture.isCompleted ? (
                             <CheckCircle className="w-[18px] h-[18px] text-emerald-500" />
                           ) : isCurrent ? (
-                            <div className="w-[18px] h-[18px] rounded-full border-2 border-primary-500 flex items-center justify-center">
-                              <div className="w-1.5 h-1.5 rounded-full bg-primary-500" />
+                            <div className="w-[18px] h-[18px] rounded-full border-2 border-teal-500 flex items-center justify-center">
+                              <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
                             </div>
                           ) : (
                             <Circle className="w-[18px] h-[18px] text-gray-700" />
@@ -174,7 +174,7 @@ export default function CurriculumSidebar({
                               isInactive
                                 ? 'text-gray-600 line-through'
                                 : isCurrent
-                                ? 'text-primary-300 font-semibold'
+                                ? 'text-teal-300 font-semibold'
                                 : 'text-gray-300 group-hover/lecture:text-gray-200'
                             )}
                           >

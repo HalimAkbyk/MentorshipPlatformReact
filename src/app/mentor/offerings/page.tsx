@@ -150,7 +150,7 @@ export default function MentorOfferingsPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600" />
       </div>
     );
   }
@@ -360,7 +360,7 @@ export default function MentorOfferingsPage() {
                           </p>
                           <button
                             onClick={() => setScheduleOffering(offering)}
-                            className="text-primary-600 hover:text-primary-800 text-sm mt-1 flex items-center gap-1"
+                            className="text-teal-600 hover:text-teal-800 text-sm mt-1 flex items-center gap-1"
                           >
                             <Calendar className="w-3 h-3" />
                             {offering.availabilityTemplateId ? 'Programı Düzenle' : 'Özel Program Tanımla'}
@@ -584,7 +584,7 @@ function OfferingFormModal({
         <div>
           <label className="block text-sm font-medium mb-1">Kısa Açıklama</label>
           <textarea
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
             rows={2}
             placeholder="Paketi kısa bir şekilde tanıtın"
             {...form.register('description')}
@@ -595,7 +595,7 @@ function OfferingFormModal({
         <div>
           <label className="block text-sm font-medium mb-1">Detaylı Açıklama</label>
           <textarea
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
             rows={4}
             placeholder="Paketin içeriğini, kazanımları, hedef kitleyi detaylı anlatın"
             {...form.register('detailedDescription')}
@@ -948,7 +948,7 @@ function ScheduleEditorModal({
     >
       {isLoading ? (
         <div className="flex justify-center py-8">
-          <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+          <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
         </div>
       ) : (
         <div className="space-y-4">
@@ -959,7 +959,7 @@ function ScheduleEditorModal({
               onClick={() => setUseCustom(false)}
               className={`flex-1 p-3 rounded-lg border-2 text-left transition-all ${
                 !useCustom
-                  ? 'border-primary-500 bg-primary-50'
+                  ? 'border-teal-500 bg-teal-50'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >

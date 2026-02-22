@@ -117,7 +117,7 @@ export default function EarningsPage() {
   const getTypeBadge = (type: string) => {
     switch (type) {
       case 'Booking':
-        return <Badge variant="outline" className="text-xs border-primary-300 text-primary-700">Ders</Badge>;
+        return <Badge variant="outline" className="text-xs border-teal-300 text-teal-700">Ders</Badge>;
       case 'Course':
         return <Badge variant="outline" className="text-xs border-purple-300 text-purple-700">Kurs</Badge>;
       case 'Refund':
@@ -348,7 +348,7 @@ export default function EarningsPage() {
         <CardContent>
           {txLoading ? (
             <div className="py-12 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600" />
             </div>
           ) : transactions && transactions.items.length > 0 ? (
             <>
@@ -490,7 +490,7 @@ export default function EarningsPage() {
                 value={payoutNote}
                 onChange={(e) => setPayoutNote(e.target.value)}
                 placeholder="Odeme ile ilgili not ekleyin..."
-                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
                 rows={2}
               />
             </div>

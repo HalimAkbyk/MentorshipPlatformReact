@@ -98,12 +98,12 @@ function CmsCategoriesSection({ moduleTitle }: { moduleTitle: string }) {
             <button
               key={cat}
               onClick={() => router.push(`/public/mentors?category=${encodeURIComponent(cat)}`)}
-              className="flex flex-col items-center gap-3 p-6 bg-white rounded-xl border border-gray-100 hover:border-primary-300 hover:shadow-md transition-all group cursor-pointer"
+              className="flex flex-col items-center gap-3 p-6 bg-white rounded-xl border border-gray-100 hover:border-teal-300 hover:shadow-md transition-all group cursor-pointer"
             >
               <span className="text-3xl">
                 {CATEGORY_ICONS[cat] || '\uD83D\uDCD6'}
               </span>
-              <span className="text-sm font-medium text-gray-700 group-hover:text-primary-600 transition-colors">
+              <span className="text-sm font-medium text-gray-700 group-hover:text-teal-600 transition-colors">
                 {cat}
               </span>
             </button>

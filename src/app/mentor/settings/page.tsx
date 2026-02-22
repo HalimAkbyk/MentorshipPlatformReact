@@ -156,7 +156,7 @@ export default function MentorSettingsPage() {
                   {tabs.map((tab) => (
                     <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                       className={cn('w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors',
-                        activeTab === tab.id ? 'bg-primary-50 text-primary-700' : 'text-gray-700 hover:bg-gray-50')}>
+                        activeTab === tab.id ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50')}>
                       <tab.icon className="w-5 h-5" /><span>{tab.name}</span>
                     </button>
                   ))}
@@ -175,9 +175,9 @@ export default function MentorSettingsPage() {
                   <CardContent className="space-y-6">
                     <div className="flex items-center space-x-6">
                       <div className="relative">
-                        <Avatar className="w-24 h-24 border-4 border-primary-100">
+                        <Avatar className="w-24 h-24 border-4 border-teal-100">
                           <AvatarImage src={user?.avatarUrl} />
-                          <AvatarFallback className="text-3xl bg-primary-50 text-primary-700">{user?.displayName?.charAt(0)?.toUpperCase() || '?'}</AvatarFallback>
+                          <AvatarFallback className="text-3xl bg-teal-50 text-teal-700">{user?.displayName?.charAt(0)?.toUpperCase() || '?'}</AvatarFallback>
                         </Avatar>
                         {isUploadingAvatar && (
                           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full">
@@ -204,10 +204,10 @@ export default function MentorSettingsPage() {
                             return (
                               <button key={preset.id} onClick={() => handlePresetSelect(preset.url)} disabled={isUploadingAvatar} title={preset.label}
                                 className={cn('relative group rounded-full transition-all duration-200',
-                                  isActive ? 'ring-3 ring-primary-500 ring-offset-2 scale-110' : 'hover:ring-2 hover:ring-primary-300 hover:ring-offset-1 hover:scale-105',
+                                  isActive ? 'ring-3 ring-teal-500 ring-offset-2 scale-110' : 'hover:ring-2 hover:ring-teal-300 hover:ring-offset-1 hover:scale-105',
                                   isUploadingAvatar && 'opacity-50 cursor-not-allowed')}>
                                 <Avatar className="w-14 h-14"><AvatarImage src={preset.url} /><AvatarFallback>{preset.label.charAt(0)}</AvatarFallback></Avatar>
-                                {isActive && (<div className="absolute -bottom-1 -right-1 bg-primary-500 rounded-full p-0.5"><Check className="w-3 h-3 text-white" /></div>)}
+                                {isActive && (<div className="absolute -bottom-1 -right-1 bg-teal-500 rounded-full p-0.5"><Check className="w-3 h-3 text-white" /></div>)}
                               </button>
                             );
                           })}

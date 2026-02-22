@@ -52,7 +52,7 @@ export function BookingInfoHeader({ conversation, bookingDetailHref }: BookingIn
       <div className="flex items-center gap-3">
         <Avatar className="w-10 h-10 shrink-0">
           <AvatarImage src={conversation.otherUserAvatar ?? undefined} />
-          <AvatarFallback className="bg-primary-100 text-primary-600 text-sm">
+          <AvatarFallback className="bg-teal-100 text-teal-600 text-sm">
             {conversation.otherUserName.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
@@ -74,7 +74,7 @@ export function BookingInfoHeader({ conversation, bookingDetailHref }: BookingIn
           {formatTimeOnly(conversation.bookingEndAt)}
         </span>
         <Link href={bookingDetailHref} className="ml-auto">
-          <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-primary-600 hover:text-primary-700">
+          <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-teal-600 hover:text-teal-700">
             <ExternalLink className="w-3 h-3 mr-1" />
             Detay Gör
           </Button>

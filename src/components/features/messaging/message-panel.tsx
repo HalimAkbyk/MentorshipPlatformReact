@@ -83,7 +83,7 @@ export function MessagePanel({ bookingId }: MessagePanelProps) {
       <Card className="mt-4">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-primary-600" />
+            <MessageSquare className="w-5 h-5 text-teal-600" />
             <CardTitle className="text-base">Mesajlar</CardTitle>
           </div>
         </CardHeader>

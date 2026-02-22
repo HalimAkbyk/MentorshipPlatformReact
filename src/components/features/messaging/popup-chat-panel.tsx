@@ -89,7 +89,7 @@ export function PopupChatPanel({ conversation, onBack }: PopupChatPanelProps) {
         </button>
         <Avatar className="w-7 h-7 shrink-0">
           <AvatarImage src={conversation.otherUserAvatar ?? undefined} />
-          <AvatarFallback className="text-[10px] bg-primary-100 text-primary-600">
+          <AvatarFallback className="text-[10px] bg-teal-100 text-teal-600">
             {conversation.otherUserName.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>

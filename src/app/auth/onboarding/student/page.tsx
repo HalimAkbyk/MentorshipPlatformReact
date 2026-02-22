@@ -94,7 +94,7 @@ useAuthStore.setState((s) => ({
   if (isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600" />
       </div>
     );
   }
@@ -105,7 +105,7 @@ useAuthStore.setState((s) => ({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-primary-600" />
+              <CheckCircle className="w-5 h-5 text-teal-600" />
               Öğrenci Onboarding
             </CardTitle>
             <CardDescription>

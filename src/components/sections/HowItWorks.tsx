@@ -1,131 +1,73 @@
 'use client';
 
-import { motion, type Variants } from 'framer-motion';
-import { Search, CalendarCheck, Video, Star } from 'lucide-react';
-
-/* ------------------------------------------------------------------ */
-/*  Animation variants                                                 */
-/* ------------------------------------------------------------------ */
-
-const containerVariants: Variants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.2 },
-  },
-};
-
-const stepVariants: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: 'easeOut' },
-  },
-};
-
-/* ------------------------------------------------------------------ */
-/*  Step data                                                          */
-/* ------------------------------------------------------------------ */
+import { Search, Calendar, Video, Rocket, Shield, TrendingUp } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 
 const steps = [
-  {
-    number: 1,
-    icon: Search,
-    title: 'Mentor Bul',
-    description: 'Üniversite ve bölüme göre filtrele, sana uygun mentörü keşfet',
-  },
-  {
-    number: 2,
-    icon: CalendarCheck,
-    title: 'Randevu Al',
-    description: 'Uygun saati seç, güvenli ödeme yap',
-  },
-  {
-    number: 3,
-    icon: Video,
-    title: 'Online Ders',
-    description: 'Video konferans ile birebir ders al',
-  },
-  {
-    number: 4,
-    icon: Star,
-    title: 'Değerlendir',
-    description: 'Deneyimini paylaş, mentor hakkında yorum yap',
-  },
+  { icon: Search, num: '01', title: 'Mentor/Ders Sec', desc: 'Alanina, deneyimine ve musaitlik durumuna gore filtrele.' },
+  { icon: Calendar, num: '02', title: 'Rezervasyon Yap', desc: 'Takvimden uygun zamani sec. Guvenli odeme ile hemen rezerve et.' },
+  { icon: Video, num: '03', title: 'Ogrenmeye Basla', desc: 'Canli gorusme, grup dersi veya video kursla ogrenmeye basla.' },
+  { icon: Rocket, num: '04', title: 'Ilerle & Basar', desc: 'Ilerleme takibi, geri bildirimler ve sertifikalarla hedeflerine ulas.' },
 ];
 
-/* ------------------------------------------------------------------ */
-/*  Component                                                          */
-/* ------------------------------------------------------------------ */
+const guarantees = [
+  { icon: Shield, title: 'Para Iade Garantisi', desc: 'Ilk seansinizdan memnun kalmazsaniz, %100 iade' },
+  { icon: TrendingUp, title: 'Basari Garantisi', desc: '3 ay duzenli katilimda %80+ memnuniyet garantisi' },
+];
 
 export default function HowItWorks() {
   return (
-    <section className="py-20 bg-[var(--bg-secondary)]">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="py-20 bg-white">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-16">
-          <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900">
-            Nasıl Çalışır?
-          </h2>
-          <p className="mt-4 text-gray-500 text-lg max-w-2xl mx-auto">
-            Dört basit adımda hedeflerine ulaşmaya başla
-          </p>
+        <div className="text-center max-w-3xl mx-auto mb-14">
+          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Nasil Calisir?</h2>
+          <p className="text-lg text-gray-600">4 basit adimda ogrenme yolculuguna basla</p>
         </div>
 
-        {/* Steps */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          className="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-6"
-        >
-          {/* Connecting line — horizontal on desktop */}
-          <div
-            className="hidden lg:block absolute top-16 left-[12.5%] right-[12.5%] h-0.5 border-t-2 border-dashed border-teal-200"
-            aria-hidden="true"
-          />
-
-          {/* Connecting line — vertical on mobile/tablet */}
-          <div
-            className="lg:hidden absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 border-l-2 border-dashed border-teal-200"
-            aria-hidden="true"
-          />
+        {/* Steps grid */}
+        <div className="grid md:grid-cols-4 gap-8 max-w-5xl mx-auto relative">
+          {/* Connecting line */}
+          <div className="hidden md:block absolute top-14 left-[12%] right-[12%] h-0.5 bg-gradient-to-r from-teal-200 via-green-200 to-emerald-200" />
 
           {steps.map((step) => {
             const Icon = step.icon;
             return (
-              <motion.div
-                key={step.number}
-                variants={stepVariants}
-                className="relative flex flex-col items-center text-center z-10"
-              >
-                {/* Step number circle */}
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-teal-500/25"
-                  style={{ background: 'var(--gradient-cta)' }}
-                >
-                  {step.number}
+              <div key={step.num} className="text-center relative">
+                <div className="relative mb-5 inline-block">
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-teal-500 to-green-600 flex items-center justify-center shadow-xl relative z-10">
+                    <Icon className="w-10 h-10 text-white" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-white border-[3px] border-green-100 flex items-center justify-center z-20 shadow-md">
+                    <span className="text-xs font-bold text-teal-600">{step.num}</span>
+                  </div>
                 </div>
-
-                {/* Icon container */}
-                <div className="mt-5 w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center">
-                  <Icon className="w-6 h-6 text-gray-900" />
-                </div>
-
-                {/* Title */}
-                <h3 className="mt-4 font-heading font-bold text-gray-900 text-lg">
-                  {step.title}
-                </h3>
-
-                {/* Description */}
-                <p className="mt-2 text-gray-500 text-sm max-w-[220px]">
-                  {step.description}
-                </p>
-              </motion.div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">{step.title}</h3>
+                <p className="text-sm text-gray-600">{step.desc}</p>
+              </div>
             );
           })}
-        </motion.div>
+        </div>
+
+        {/* Guarantee cards */}
+        <div className="max-w-3xl mx-auto mt-14 grid md:grid-cols-2 gap-4">
+          {guarantees.map((g) => {
+            const Icon = g.icon;
+            return (
+              <Card key={g.title} className="p-5 border-2 border-teal-200 bg-gradient-to-br from-white to-teal-50/30">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-green-500 flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 mb-1">{g.title}</h4>
+                    <p className="text-sm text-gray-600">{g.desc}</p>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

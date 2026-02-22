@@ -263,7 +263,7 @@ export default function MentorBookingDetailPage() {
 
         {/* Action Buttons */}
         {(isLive || canJoin) && (
-          <Card className="mb-6 bg-primary-50 border-primary-200">
+          <Card className="mb-6 bg-teal-50 border-teal-200">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -299,7 +299,7 @@ export default function MentorBookingDetailPage() {
             <CardContent>
               <div className="flex items-center space-x-4">
                 <Avatar className="w-16 h-16">
-                  <AvatarFallback className="bg-primary-100 text-primary-600 text-xl">
+                  <AvatarFallback className="bg-teal-100 text-teal-600 text-xl">
                     {booking.studentName?.charAt(0).toUpperCase() || 'O'}
                   </AvatarFallback>
                 </Avatar>
@@ -423,7 +423,7 @@ export default function MentorBookingDetailPage() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Toplam Ücret</span>
-                <span className="text-2xl font-bold text-primary-600">
+                <span className="text-2xl font-bold text-teal-600">
                   {formatCurrency(booking.price, booking.currency)}
                 </span>
               </div>
@@ -477,13 +477,13 @@ export default function MentorBookingDetailPage() {
                           onClick={() => setRescheduleDate(dateStr)}
                           className={`flex-shrink-0 flex flex-col items-center px-3 py-2 rounded-lg border text-xs transition-colors ${
                             isSelected
-                              ? 'bg-primary-600 text-white border-primary-600'
-                              : 'bg-white text-gray-700 border-gray-200 hover:border-primary-400 hover:bg-primary-50'
+                              ? 'bg-teal-600 text-white border-teal-600'
+                              : 'bg-white text-gray-700 border-gray-200 hover:border-teal-400 hover:bg-teal-50'
                           }`}
                         >
                           <span className="font-medium">{format(d, 'dd', { locale: tr })}</span>
-                          <span className={isSelected ? 'text-primary-100' : 'text-gray-500'}>{format(d, 'MMM', { locale: tr })}</span>
-                          <span className={`text-[10px] ${isSelected ? 'text-primary-100' : 'text-gray-400'}`}>{format(d, 'EEE', { locale: tr })}</span>
+                          <span className={isSelected ? 'text-teal-100' : 'text-gray-500'}>{format(d, 'MMM', { locale: tr })}</span>
+                          <span className={`text-[10px] ${isSelected ? 'text-teal-100' : 'text-gray-400'}`}>{format(d, 'EEE', { locale: tr })}</span>
                         </button>
                       );
                     })}
@@ -498,7 +498,7 @@ export default function MentorBookingDetailPage() {
                     </label>
                     {loadingSlots ? (
                       <div className="text-center py-4">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto" />
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-teal-600 mx-auto" />
                         <p className="text-sm text-gray-500 mt-2">Uygun saatler hesaplanıyor...</p>
                       </div>
                     ) : rescheduleSlots.length === 0 ? (
@@ -519,14 +519,14 @@ export default function MentorBookingDetailPage() {
                               onClick={() => setSelectedSlot(slot)}
                               className={`p-2 rounded-lg border-2 transition-all text-center ${
                                 isSelected
-                                  ? 'border-primary-600 bg-primary-50 shadow-sm'
-                                  : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'
+                                  ? 'border-teal-600 bg-teal-50 shadow-sm'
+                                  : 'border-gray-200 bg-white hover:border-teal-400 hover:bg-teal-50'
                               }`}
                             >
-                              <div className={`text-sm font-semibold ${isSelected ? 'text-primary-700' : 'text-gray-900'}`}>
+                              <div className={`text-sm font-semibold ${isSelected ? 'text-teal-700' : 'text-gray-900'}`}>
                                 {startTime}
                               </div>
-                              <div className={`text-[10px] ${isSelected ? 'text-primary-500' : 'text-gray-400'}`}>
+                              <div className={`text-[10px] ${isSelected ? 'text-teal-500' : 'text-gray-400'}`}>
                                 {endTime}
                               </div>
                             </button>
@@ -539,11 +539,11 @@ export default function MentorBookingDetailPage() {
 
                 {/* Selected slot summary */}
                 {selectedSlot && (
-                  <div className="bg-primary-50 border border-primary-200 rounded-lg p-3">
-                    <p className="text-sm font-medium text-primary-900">
+                  <div className="bg-teal-50 border border-teal-200 rounded-lg p-3">
+                    <p className="text-sm font-medium text-teal-900">
                       Seçilen: {format(new Date(selectedSlot.startAt), 'dd MMMM yyyy, HH:mm', { locale: tr })} - {format(new Date(selectedSlot.endAt), 'HH:mm')}
                     </p>
-                    <p className="text-xs text-primary-700 mt-1">
+                    <p className="text-xs text-teal-700 mt-1">
                       Öğrenci onayladıktan sonra seans saati güncellenecektir.
                     </p>
                   </div>

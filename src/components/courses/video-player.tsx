@@ -415,12 +415,12 @@ export default function VideoPlayer({
             />
             {/* Progress */}
             <div
-              className="absolute top-0 left-0 h-full bg-primary-500 rounded-full"
+              className="absolute top-0 left-0 h-full bg-teal-500 rounded-full"
               style={{ width: `${progressPercent}%` }}
             />
             {/* Scrubber dot */}
             <div
-              className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-primary-500 rounded-full opacity-0 group-hover/progress:opacity-100 transition-opacity shadow-lg"
+              className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-teal-500 rounded-full opacity-0 group-hover/progress:opacity-100 transition-opacity shadow-lg"
               style={{ left: `calc(${progressPercent}% - 7px)` }}
             />
           </div>
@@ -432,7 +432,7 @@ export default function VideoPlayer({
               {/* Play/Pause */}
               <button
                 onClick={togglePlay}
-                className="text-white hover:text-primary-400 transition-colors p-1"
+                className="text-white hover:text-teal-400 transition-colors p-1"
                 title={isPlaying ? 'Duraklat (K)' : 'Oynat (K)'}
               >
                 {isPlaying ? (
@@ -532,7 +532,7 @@ export default function VideoPlayer({
                   onClick={() => setShowSpeedMenu(!showSpeedMenu)}
                   className={`text-xs font-bold px-2 py-1 rounded transition-colors ${
                     playbackRate !== 1
-                      ? 'text-primary-400 bg-white/10'
+                      ? 'text-teal-400 bg-white/10'
                       : 'text-white/70 hover:text-white hover:bg-white/10'
                   }`}
                   title="Oynatma Hızı"
@@ -547,7 +547,7 @@ export default function VideoPlayer({
                         onClick={() => handleChangeRate(rate)}
                         className={`w-full px-3 py-1.5 text-xs text-left transition-colors ${
                           rate === playbackRate
-                            ? 'text-primary-400 bg-white/10 font-bold'
+                            ? 'text-teal-400 bg-white/10 font-bold'
                             : 'text-white/80 hover:bg-white/10 hover:text-white'
                         }`}
                       >

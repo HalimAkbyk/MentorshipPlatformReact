@@ -4,7 +4,11 @@ import { useState, useEffect } from 'react';
 import { getCoverImageStyle } from '@/components/ui/cover-image-editor';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Calendar, Star, CheckCircle, Video, Clock, HelpCircle, Tag, AlertTriangle } from 'lucide-react';
+import {
+  Calendar, Star, CheckCircle, Video, Clock, HelpCircle, Tag, AlertTriangle,
+  ArrowLeft, Users, Award, Shield, Globe, GraduationCap, Building2,
+  MessageSquare, Heart, Share2, TrendingUp, Play
+} from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../../components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../../components/ui/avatar';
@@ -47,8 +51,31 @@ export default function MentorProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-gradient-to-br from-teal-600 to-green-600 pt-8 pb-32">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="h-4 bg-white/20 rounded w-32 mb-6" />
+          </div>
+        </div>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative z-10 pb-12">
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6 animate-pulse">
+              <div className="bg-white rounded-xl p-6 shadow-xl">
+                <div className="flex gap-5">
+                  <div className="w-28 h-28 rounded-2xl bg-gray-200" />
+                  <div className="flex-1 space-y-3">
+                    <div className="h-6 bg-gray-200 rounded w-48" />
+                    <div className="h-4 bg-gray-200 rounded w-36" />
+                    <div className="h-4 bg-gray-200 rounded w-64" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="animate-pulse">
+              <div className="h-96 bg-white rounded-xl shadow-xl" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -68,7 +95,7 @@ export default function MentorProfilePage() {
               doğrulama belgelerinizi yükleyin. Admin onayı sonrasında profiliniz yayına alınacaktır.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button onClick={() => router.push('/auth/onboarding/mentor')}>
+              <Button className="bg-gradient-to-r from-teal-600 to-green-600 hover:from-teal-700 hover:to-green-700 text-white" onClick={() => router.push('/auth/onboarding/mentor')}>
                 Profili Tamamla
               </Button>
               <Button variant="outline" onClick={() => router.push('/mentor/dashboard')}>
@@ -94,7 +121,7 @@ export default function MentorProfilePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {!isAuthenticated && (
-              <Button onClick={() => router.push(`/auth/login?redirect=/public/mentors/${mentorId}`)}>
+              <Button className="bg-gradient-to-r from-teal-600 to-green-600 hover:from-teal-700 hover:to-green-700 text-white" onClick={() => router.push(`/auth/login?redirect=/public/mentors/${mentorId}`)}>
                 Giriş Yap
               </Button>
             )}
@@ -115,9 +142,15 @@ export default function MentorProfilePage() {
     router.push(`/student/bookings/new?mentorId=${mentorId}&offeringId=${offeringId}`);
   };
 
+  const tabs = [
+    { id: 'about' as const, label: 'Hakkında' },
+    { id: 'offerings' as const, label: 'Hizmetler' },
+    { id: 'reviews' as const, label: 'Yorumlar' },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Kendi profili ama henüz yayında değil uyarısı — duruma göre mesaj */}
+    <div className="bg-gray-50 min-h-screen">
+      {/* Kendi profili ama henüz yayında değil uyarısı */}
       {mentor.isOwnProfile && !mentor.isListed && (() => {
         const vs = mentor.verificationStatus;
         const bannerConfig = vs === 'PendingApproval'
@@ -137,7 +170,6 @@ export default function MentorProfilePage() {
               color: 'red' as const,
             }
           : {
-              // NoDocuments veya fallback
               title: 'Profiliniz henüz herkese açık değil.',
               desc: 'Bu sayfa yalnızca size gösteriliyor. Doğrulama belgelerinizi yükleyip admin onayı aldıktan sonra profiliniz yayına alınacaktır.',
               btnText: 'Belgeleri Yükle',
@@ -177,125 +209,141 @@ export default function MentorProfilePage() {
         );
       })()}
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <div className="mb-6">
-          <Link
-            href={ROUTES.MENTORS}
-            className="inline-flex items-center text-sm text-gray-500 hover:text-primary-600 transition-colors"
-          >
-            ← Mentörlere Dön
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-teal-600 to-green-600 pt-8 pb-32">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <Link href={ROUTES.MENTORS} className="inline-flex items-center gap-1 text-white/80 hover:text-white mb-6 text-sm transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Mentörlere Dön
           </Link>
         </div>
+      </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left Column - Profile Info */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader className="text-center">
-                <Avatar className="w-32 h-32 mx-auto mb-4">
-                  <AvatarImage src={mentor.avatarUrl} />
-                  <AvatarFallback className="text-3xl">
-                    {mentor.displayName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <CardTitle className="text-2xl">{mentor.displayName}</CardTitle>
-                <CardDescription>
-                  <div className="font-semibold text-gray-900">{mentor.university}</div>
-                  <div>{mentor.department}</div>
-                  {mentor.graduationYear && (
-                    <div className="text-sm">Mezuniyet: {mentor.graduationYear}</div>
-                  )}
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent>
-                {/* Rating */}
-                <div className="flex items-center justify-center mb-6 pb-6 border-b">
-                  <Star className="w-6 h-6 text-yellow-500 fill-current mr-2" />
-                  <span className="text-2xl font-bold">{mentor.ratingAvg.toFixed(1)}</span>
-                  <span className="text-gray-500 ml-2">({mentor.ratingCount} değerlendirme)</span>
+      {/* Main Content — pulled up over hero */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative z-10 pb-12">
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Left Column — Profile + Tabs */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Profile Card */}
+            <Card className="p-6 border-0 shadow-xl">
+              <div className="flex flex-col sm:flex-row gap-5">
+                <div className="relative flex-shrink-0">
+                  <Avatar className="w-28 h-28 rounded-2xl">
+                    <AvatarImage src={mentor.avatarUrl} className="object-cover" />
+                    <AvatarFallback className="text-3xl rounded-2xl bg-gradient-to-br from-teal-400 to-green-500 text-white">
+                      {mentor.displayName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                 </div>
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <h1 className="text-2xl font-bold text-gray-900">{mentor.displayName}</h1>
+                    {mentor.badges.some(b => b.isVerified) && (
+                      <span className="px-3 py-1 bg-gradient-to-r from-teal-500 to-green-500 text-white rounded-full text-xs flex items-center gap-1">
+                        <Award className="w-3 h-3" /> Doğrulanmış
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-teal-600 font-medium mb-1">{mentor.university}</p>
+                  <p className="text-sm text-gray-500 mb-3">{mentor.department}</p>
 
-                {/* Verification Badges */}
-                <div className="space-y-2">
-                  <h4 className="font-semibold mb-3">Doğrulamalar</h4>
-                  {mentor.badges.map((badge) => (
-                    <div
-                      key={badge.type}
-                      className="flex items-center justify-between text-sm"
-                    >
-                      <span>{verificationLabels[badge.type]}</span>
-                      {badge.isVerified ? (
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
+                  <div className="flex flex-wrap items-center gap-4 text-sm">
+                    <div className="flex items-center gap-1">
+                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <span className="font-semibold text-gray-900">{mentor.ratingAvg.toFixed(1)}</span>
+                      <span className="text-gray-500">({mentor.ratingCount} yorum)</span>
                     </div>
-                  ))}
+                    {mentor.graduationYear && (
+                      <div className="flex items-center gap-1 text-gray-600">
+                        <GraduationCap className="w-4 h-4" />
+                        Mezuniyet: {mentor.graduationYear}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
 
-          {/* Right Column - Details */}
-          <div className="lg:col-span-2">
+              {/* Verification Badges */}
+              <div className="mt-5 flex flex-wrap gap-2">
+                {mentor.badges.filter(b => b.isVerified).map((badge) => (
+                  <span key={badge.type} className="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-sm border border-teal-200 flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" />
+                    {verificationLabels[badge.type]}
+                  </span>
+                ))}
+              </div>
+            </Card>
+
             {/* Tabs */}
-            <div className="bg-white rounded-lg shadow-sm mb-6">
-              <div className="border-b">
-                <nav className="flex space-x-8 px-6">
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div className="flex border-b border-gray-200 overflow-x-auto">
+                {tabs.map(tab => (
                   <button
-                    onClick={() => setSelectedTab('about')}
-                    className={`py-4 border-b-2 font-medium text-sm ${
-                      selectedTab === 'about'
-                        ? 'border-primary-600 text-primary-600'
+                    key={tab.id}
+                    onClick={() => setSelectedTab(tab.id)}
+                    className={`px-5 py-3 text-sm whitespace-nowrap border-b-2 transition-all font-medium ${
+                      selectedTab === tab.id
+                        ? 'border-teal-600 text-teal-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700'
                     }`}
                   >
-                    Hakkında
+                    {tab.label}
                   </button>
-                  <button
-                    onClick={() => setSelectedTab('offerings')}
-                    className={`py-4 border-b-2 font-medium text-sm ${
-                      selectedTab === 'offerings'
-                        ? 'border-primary-600 text-primary-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                    }`}
-                  >
-                    Hizmetler
-                  </button>
-                  <button
-                    onClick={() => setSelectedTab('reviews')}
-                    className={`py-4 border-b-2 font-medium text-sm ${
-                      selectedTab === 'reviews'
-                        ? 'border-primary-600 text-primary-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                    }`}
-                  >
-                    Yorumlar
-                  </button>
-                </nav>
+                ))}
               </div>
 
               <div className="p-6">
+                {/* About Tab */}
                 {selectedTab === 'about' && (
                   <div>
                     {mentor.headline && (
-                      <h3 className="text-xl font-semibold mb-4">{mentor.headline}</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">{mentor.headline}</h3>
                     )}
-                    <p className="text-gray-700 whitespace-pre-wrap">{mentor.bio}</p>
+                    <p className="text-gray-600 leading-relaxed whitespace-pre-wrap mb-6">{mentor.bio}</p>
+
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Eğitim</h3>
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center">
+                        <GraduationCap className="w-5 h-5 text-teal-600" />
+                      </div>
+                      <div>
+                        <p className="text-gray-900 font-medium">{mentor.university}</p>
+                        <p className="text-sm text-gray-500">{mentor.department}</p>
+                        {mentor.graduationYear && (
+                          <p className="text-xs text-gray-400">Mezuniyet: {mentor.graduationYear}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Doğrulamalar */}
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Doğrulamalar</h3>
+                    <div className="space-y-2">
+                      {mentor.badges.map((badge) => (
+                        <div
+                          key={badge.type}
+                          className="flex items-center justify-between text-sm p-3 rounded-lg bg-gray-50"
+                        >
+                          <span className="text-gray-700">{verificationLabels[badge.type]}</span>
+                          {badge.isVerified ? (
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                          ) : (
+                            <span className="text-gray-400 text-xs">Bekliyor</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
+                {/* Offerings Tab */}
                 {selectedTab === 'offerings' && (
                   <div className="space-y-4">
                     {offeringsLoading ? (
                       <div className="flex items-center justify-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600" />
                       </div>
                     ) : enrichedOfferings.length > 0 ? (
                       enrichedOfferings.map((offering) => (
-                        <Card key={offering.id} className="overflow-hidden">
+                        <Card key={offering.id} className="overflow-hidden border border-gray-200 hover:border-teal-300 hover:shadow-lg transition-all">
                           {offering.coverImageUrl && (
                             <div className="h-40 bg-gray-200 overflow-hidden">
                               <img
@@ -321,13 +369,13 @@ export default function MentorProfilePage() {
                               </div>
                               <div className="flex items-center gap-2 ml-4">
                                 {offering.category && (
-                                  <Badge variant="outline">
+                                  <Badge variant="outline" className="border-teal-200 text-teal-700">
                                     <Tag className="w-3 h-3 mr-1" />
                                     {offering.category}
                                   </Badge>
                                 )}
                                 {offering.sessionType && (
-                                  <Badge variant="secondary">{offering.sessionType}</Badge>
+                                  <Badge className="bg-teal-50 text-teal-700 border border-teal-200">{offering.sessionType}</Badge>
                                 )}
                               </div>
                             </div>
@@ -341,27 +389,27 @@ export default function MentorProfilePage() {
 
                             <div className="flex flex-wrap items-center gap-3 mb-4 text-sm text-gray-600">
                               <span className="flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
+                                <Clock className="w-4 h-4 text-teal-600" />
                                 {offering.durationMin} dakika
                               </span>
                               <span className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                {offering.maxBookingDaysAhead} gun ilerisi
+                                <Calendar className="w-4 h-4 text-teal-600" />
+                                {offering.maxBookingDaysAhead} gün ilerisi
                               </span>
                               {offering.minNoticeHours > 0 && (
                                 <span className="text-xs text-gray-500">
-                                  (en az {offering.minNoticeHours} saat once)
+                                  (en az {offering.minNoticeHours} saat önce)
                                 </span>
                               )}
                             </div>
 
                             {offering.questions && offering.questions.length > 0 && (
-                              <div className="bg-blue-50 rounded-lg p-3 mb-4">
-                                <p className="text-xs font-medium text-blue-700 mb-2 flex items-center gap-1">
+                              <div className="bg-teal-50 border border-teal-200 rounded-lg p-3 mb-4">
+                                <p className="text-xs font-medium text-teal-700 mb-2 flex items-center gap-1">
                                   <HelpCircle className="w-3.5 h-3.5" />
-                                  Rezervasyon sirasinda cevaplamaniz gereken sorular:
+                                  Rezervasyon sırasında cevaplamanız gereken sorular:
                                 </p>
-                                <ul className="text-xs text-blue-600 space-y-1">
+                                <ul className="text-xs text-teal-600 space-y-1">
                                   {offering.questions.map(q => (
                                     <li key={q.id}>
                                       {q.questionText}
@@ -372,14 +420,15 @@ export default function MentorProfilePage() {
                               </div>
                             )}
 
-                            <div className="flex items-center justify-between pt-3 border-t">
-                              <div className="text-2xl font-bold text-primary-600">
+                            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                              <div className="text-2xl font-bold text-teal-600">
                                 {formatCurrency(offering.price)}
                               </div>
                               {isOwnProfile ? (
                                 <span className="text-sm text-gray-400 font-medium">Kendi profiliniz</span>
                               ) : (
-                                <Button onClick={() => handleBooking(offering.id)}>
+                                <Button className="bg-gradient-to-r from-teal-600 to-green-600 hover:from-teal-700 hover:to-green-700 text-white" onClick={() => handleBooking(offering.id)}>
+                                  <Calendar className="w-4 h-4 mr-2" />
                                   Randevu Al
                                 </Button>
                               )}
@@ -390,7 +439,7 @@ export default function MentorProfilePage() {
                     ) : mentor.offerings.length > 0 ? (
                       // Fallback to basic offerings from mentor detail
                       mentor.offerings.map((offering) => (
-                        <Card key={offering.id}>
+                        <Card key={offering.id} className="border border-gray-200 hover:border-teal-300 hover:shadow-lg transition-all">
                           <CardHeader>
                             <div className="flex items-start justify-between">
                               <div>
@@ -401,7 +450,7 @@ export default function MentorProfilePage() {
                                   </CardDescription>
                                 )}
                               </div>
-                              <Badge>
+                              <Badge className="bg-teal-50 text-teal-700 border border-teal-200">
                                 {offering.type === 'OneToOne' ? 'Bire Bir' : 'Grup'}
                               </Badge>
                             </div>
@@ -409,18 +458,19 @@ export default function MentorProfilePage() {
                           <CardContent>
                             <div className="flex items-center justify-between">
                               <div>
-                                <div className="text-sm text-gray-600 mb-1">
-                                  <Calendar className="w-4 h-4 inline mr-1" />
+                                <div className="text-sm text-gray-600 mb-1 flex items-center gap-1">
+                                  <Clock className="w-4 h-4 text-teal-600" />
                                   {offering.durationMin} dakika
                                 </div>
-                                <div className="text-2xl font-bold text-primary-600">
+                                <div className="text-2xl font-bold text-teal-600">
                                   {formatCurrency(offering.price)}
                                 </div>
                               </div>
                               {isOwnProfile ? (
                                 <span className="text-sm text-gray-400 font-medium">Kendi profiliniz</span>
                               ) : (
-                                <Button onClick={() => handleBooking(offering.id)}>
+                                <Button className="bg-gradient-to-r from-teal-600 to-green-600 hover:from-teal-700 hover:to-green-700 text-white" onClick={() => handleBooking(offering.id)}>
+                                  <Calendar className="w-4 h-4 mr-2" />
                                   Randevu Al
                                 </Button>
                               )}
@@ -434,16 +484,19 @@ export default function MentorProfilePage() {
 
                     {/* Available Slots Preview */}
                     {mentor.availableSlots.length > 0 && (
-                      <Card>
+                      <Card className="border border-gray-200">
                         <CardHeader>
-                          <CardTitle className="text-lg">Uygun Saatler</CardTitle>
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            <Calendar className="w-5 h-5 text-teal-600" />
+                            Uygun Saatler
+                          </CardTitle>
                         </CardHeader>
                         <CardContent>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                             {mentor.availableSlots.slice(0, 6).map((slot) => (
                               <div
                                 key={slot.id}
-                                className="text-sm p-2 border rounded hover:bg-gray-50"
+                                className="text-sm p-2.5 border border-teal-200 rounded-lg bg-teal-50 text-teal-700 hover:bg-teal-100 transition-colors text-center"
                               >
                                 {formatDate(slot.startAt, 'dd MMM, HH:mm')}
                               </div>
@@ -455,6 +508,7 @@ export default function MentorProfilePage() {
                   </div>
                 )}
 
+                {/* Reviews Tab */}
                 {selectedTab === 'reviews' && (
                   <div className="text-center text-gray-500 py-8">
                     Yorumlar yakında eklenecek
@@ -462,6 +516,115 @@ export default function MentorProfilePage() {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* Sidebar — Booking Card */}
+          <div className="space-y-6">
+            <Card className="p-6 border-0 shadow-xl sticky top-20">
+              <div className="text-center mb-5">
+                {enrichedOfferings.length > 0 ? (
+                  <>
+                    <div className="text-3xl font-bold text-gray-900 mb-1">
+                      {formatCurrency(Math.min(...enrichedOfferings.map(o => o.price)))}
+                    </div>
+                    <p className="text-sm text-gray-500">başlangıç fiyatı</p>
+                  </>
+                ) : mentor.offerings.length > 0 ? (
+                  <>
+                    <div className="text-3xl font-bold text-gray-900 mb-1">
+                      {formatCurrency(Math.min(...mentor.offerings.map(o => o.price)))}
+                    </div>
+                    <p className="text-sm text-gray-500">başlangıç fiyatı</p>
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-500">Fiyat bilgisi için hizmetlere bakın</p>
+                )}
+                <p className="text-xs text-gray-400 mt-1">Taksit seçeneği mevcuttur</p>
+              </div>
+
+              <div className="space-y-3 mb-5">
+                {!isOwnProfile && (
+                  <Button
+                    className="w-full bg-gradient-to-r from-teal-600 to-green-600 hover:from-teal-700 hover:to-green-700 text-white shadow-lg shadow-teal-500/25 py-5"
+                    onClick={() => {
+                      if (enrichedOfferings.length > 0) {
+                        handleBooking(enrichedOfferings[0].id);
+                      } else if (mentor.offerings.length > 0) {
+                        handleBooking(mentor.offerings[0].id);
+                      }
+                    }}
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Görüşme Planla
+                  </Button>
+                )}
+                <Button variant="outline" className="w-full border-2 border-teal-300 hover:bg-teal-50 py-5 text-teal-700">
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Mesaj Gönder
+                </Button>
+              </div>
+
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                  <span className="text-gray-600">Puan</span>
+                  <span className="text-gray-900 font-medium flex items-center gap-1">
+                    <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                    {mentor.ratingAvg.toFixed(1)} ({mentor.ratingCount})
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                  <span className="text-gray-600">Hizmetler</span>
+                  <span className="text-gray-900 font-medium">{enrichedOfferings.length || mentor.offerings.length} paket</span>
+                </div>
+                {mentor.graduationYear && (
+                  <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                    <span className="text-gray-600">Mezuniyet</span>
+                    <span className="text-gray-900 font-medium">{mentor.graduationYear}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-gray-600">Uygun Slot</span>
+                  <span className="text-gray-900 font-medium">{mentor.availableSlots.length} saat</span>
+                </div>
+              </div>
+
+              <div className="mt-5 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <Shield className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-amber-800 font-medium">Para iade garantisi</p>
+                    <p className="text-xs text-amber-600">İlk görüşmeden memnun kalmazsanız %100 iade</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-center gap-4">
+                <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-red-500 transition-colors">
+                  <Heart className="w-4 h-4" /> Kaydet
+                </button>
+                <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-teal-600 transition-colors">
+                  <Share2 className="w-4 h-4" /> Paylaş
+                </button>
+              </div>
+            </Card>
+
+            {/* Social Proof */}
+            <Card className="p-4 border border-gray-200">
+              <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                <TrendingUp className="w-4 h-4 text-teal-600" />
+                <span>Bu hafta birçok kişi görüşme planladı</span>
+              </div>
+              <div className="flex -space-x-2">
+                {['A', 'M', 'S', 'D', 'E'].map((letter, i) => (
+                  <div key={i} className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-400 to-green-500 border-2 border-white flex items-center justify-center text-white text-xs font-medium">
+                    {letter}
+                  </div>
+                ))}
+                <div className="w-7 h-7 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-gray-600 text-xs">
+                  +
+                </div>
+              </div>
+            </Card>
           </div>
         </div>
       </div>

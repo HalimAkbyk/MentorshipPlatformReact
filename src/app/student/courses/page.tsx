@@ -65,7 +65,7 @@ export default function StudentCoursesPage() {
                         style={getCoverImageStyle(course.coverImagePosition, course.coverImageTransform)}
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-primary-400 to-primary-700 flex items-center justify-center">
+                      <div className="w-full h-full bg-gradient-to-br from-teal-400 to-teal-700 flex items-center justify-center">
                         <GraduationCap className="w-12 h-12 text-white/50" />
                       </div>
                     )}
@@ -78,7 +78,7 @@ export default function StudentCoursesPage() {
                   </div>
 
                   <CardContent className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 group-hover:text-primary-600 transition-colors">
+                    <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 group-hover:text-teal-600 transition-colors">
                       {course.courseTitle}
                     </h3>
                     <p className="text-xs text-gray-500 mb-3">{course.mentorName}</p>
@@ -95,7 +95,7 @@ export default function StudentCoursesPage() {
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-primary-600 h-2 rounded-full transition-all duration-500"
+                          className="bg-teal-600 h-2 rounded-full transition-all duration-500"
                           style={{ width: `${course.completionPercentage}%` }}
                         />
                       </div>

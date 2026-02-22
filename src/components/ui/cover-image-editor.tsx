@@ -492,13 +492,13 @@ export function CoverImageEditor({
         /* Upload progress */
         <div className="rounded-lg border-2 border-gray-200 p-4 space-y-2">
           <div className="flex items-center gap-2 text-sm">
-            <Loader2 className="w-4 h-4 animate-spin text-primary-600" />
+            <Loader2 className="w-4 h-4 animate-spin text-teal-600" />
             <span className="text-gray-700">Yükleniyor...</span>
             <span className="text-gray-400 ml-auto">{progress}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+              className="bg-teal-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -512,8 +512,8 @@ export function CoverImageEditor({
           onClick={() => fileInputRef.current?.click()}
           className={`rounded-lg border-2 border-dashed p-6 text-center cursor-pointer transition-colors ${
             isDragging
-              ? 'border-primary-400 bg-primary-50'
-              : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
+              ? 'border-teal-400 bg-teal-50'
+              : 'border-gray-300 hover:border-teal-400 hover:bg-gray-50'
           }`}
         >
           <ImageIcon className="w-8 h-8 text-gray-300 mx-auto mb-2" />

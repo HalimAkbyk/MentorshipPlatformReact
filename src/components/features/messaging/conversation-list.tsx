@@ -49,7 +49,7 @@ function ConversationItem({
       <div className="flex items-start gap-3">
         <Avatar className="w-10 h-10 shrink-0 mt-0.5">
           <AvatarImage src={conversation.otherUserAvatar ?? undefined} />
-          <AvatarFallback className="bg-primary-100 text-primary-600 text-sm">
+          <AvatarFallback className="bg-teal-100 text-teal-600 text-sm">
             {conversation.otherUserName.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>

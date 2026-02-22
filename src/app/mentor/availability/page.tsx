@@ -277,7 +277,7 @@ export default function AvailabilityPage() {
   if (isCheckingApproval || templateLoading) {
     return (
       <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600" />
       </div>
     );
   }
@@ -364,9 +364,9 @@ export default function AvailabilityPage() {
                   const weekInfo = getWeekDateForDay(rule.dayOfWeek);
                   const dateStr = weekInfo.date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
                   return (
-                  <div key={rule.dayOfWeek} className={`flex items-start gap-4 p-3 rounded-lg border transition-colors ${rule.isActive ? 'bg-white border-primary-200' : 'bg-gray-50 border-gray-200'} ${weekInfo.isPast ? 'opacity-60' : ''}`}>
-                    <button onClick={() => toggleDay(rule.dayOfWeek)} className={`mt-1 w-28 text-left font-medium text-sm flex items-center gap-2 ${rule.isActive ? 'text-primary-700' : 'text-gray-400'}`}>
-                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${rule.isActive ? 'bg-primary-600 border-primary-600' : 'border-gray-300'}`}>
+                  <div key={rule.dayOfWeek} className={`flex items-start gap-4 p-3 rounded-lg border transition-colors ${rule.isActive ? 'bg-white border-teal-200' : 'bg-gray-50 border-gray-200'} ${weekInfo.isPast ? 'opacity-60' : ''}`}>
+                    <button onClick={() => toggleDay(rule.dayOfWeek)} className={`mt-1 w-28 text-left font-medium text-sm flex items-center gap-2 ${rule.isActive ? 'text-teal-700' : 'text-gray-400'}`}>
+                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${rule.isActive ? 'bg-teal-600 border-teal-600' : 'border-gray-300'}`}>
                         {rule.isActive && <span className="text-white text-[10px]">✓</span>}
                       </div>
                       <div className="flex flex-col leading-tight">
@@ -389,7 +389,7 @@ export default function AvailabilityPage() {
                               )}
                             </div>
                           ))}
-                          <button onClick={() => addBlock(rule.dayOfWeek)} className="text-xs text-primary-600 hover:text-primary-800 flex items-center gap-1">
+                          <button onClick={() => addBlock(rule.dayOfWeek)} className="text-xs text-teal-600 hover:text-teal-800 flex items-center gap-1">
                             <Plus className="w-3 h-3" /> Zaman aralığı ekle
                           </button>
                         </div>
@@ -471,7 +471,7 @@ export default function AvailabilityPage() {
               <CardContent className="pt-6">
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div>
-                    <div className="text-2xl font-bold text-primary-600">{slots?.filter((s: any) => !s.isBooked).length || 0}</div>
+                    <div className="text-2xl font-bold text-teal-600">{slots?.filter((s: any) => !s.isBooked).length || 0}</div>
                     <div className="text-xs text-gray-500">Müsait Slot</div>
                   </div>
                   <div>

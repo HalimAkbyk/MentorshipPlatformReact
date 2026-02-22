@@ -56,7 +56,7 @@ export default function BookingsPage() {
               className={cn(
                 'px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
                 selectedStatus === filter.value
-                  ? 'bg-primary-600 text-white'
+                  ? 'bg-teal-600 text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-50'
               )}
             >
@@ -136,7 +136,7 @@ export default function BookingsPage() {
                           {formatRelativeTime(booking.startAt)} ({booking.durationMin} dk)
                         </div>
                         <div className="pt-2 border-t">
-                          <span className="text-lg font-bold text-primary-600">
+                          <span className="text-lg font-bold text-teal-600">
                             {formatCurrency(booking.price)}
                           </span>
                         </div>

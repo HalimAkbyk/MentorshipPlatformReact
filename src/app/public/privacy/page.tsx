@@ -4,68 +4,68 @@ import { useStaticPage } from '@/lib/hooks/use-cms';
 
 function HardcodedPrivacy() {
   return (
-    <div className="prose prose-gray max-w-none space-y-8">
+    <div className="bg-white rounded-2xl border border-gray-200 p-8 space-y-8">
       <section>
-        <h2 className="text-2xl font-bold mb-4">1. Veri Sorumlusu</h2>
+        <h2 className="text-xl font-bold mb-3 text-gray-900">1. Veri Sorumlusu</h2>
         <p className="text-gray-600 leading-relaxed">
-          degisimmentorluk.com (&quot;Platform&quot;) olarak, 6698 sayili Kisisel Verilerin Korunmasi Kanunu (&quot;KVKK&quot;) kapsaminda veri sorumlusu sifatiyla kisisel verilerinizi islemekteyiz.
+          degisimmentorluk.com (&quot;Platform&quot;) olarak, 6698 sayılı Kişisel Verilerin Korunması Kanunu (&quot;KVKK&quot;) kapsamında veri sorumlusu sıfatıyla kişisel verilerinizi işlemekteyiz.
         </p>
       </section>
       <section>
-        <h2 className="text-2xl font-bold mb-4">2. Toplanan Veriler</h2>
-        <p className="text-gray-600 leading-relaxed mb-4">Platformumuzu kullanirken asagidaki kisisel veriler toplanabilir:</p>
+        <h2 className="text-xl font-bold mb-3 text-gray-900">2. Toplanan Veriler</h2>
+        <p className="text-gray-600 leading-relaxed mb-4">Platformumuzu kullanırken aşağıdaki kişisel veriler toplanabilir:</p>
         <ul className="list-disc list-inside space-y-2 text-gray-600">
           <li>Kimlik bilgileri (ad, soyad)</li>
-          <li>Iletisim bilgileri (e-posta, telefon)</li>
-          <li>Egitim bilgileri (universite, bolum, mezuniyet yili)</li>
-          <li>Odeme bilgileri (Iyzico uzerinden islenir, kart bilgileri saklanmaz)</li>
-          <li>Kullanim verileri (oturum bilgileri, tercihler)</li>
+          <li>İletişim bilgileri (e-posta, telefon)</li>
+          <li>Eğitim bilgileri (üniversite, bölüm, mezuniyet yılı)</li>
+          <li>Ödeme bilgileri (Iyzico üzerinden işlenir, kart bilgileri saklanmaz)</li>
+          <li>Kullanım verileri (oturum bilgileri, tercihler)</li>
         </ul>
       </section>
       <section>
-        <h2 className="text-2xl font-bold mb-4">3. Verilerin Islenmesi Amaci</h2>
+        <h2 className="text-xl font-bold mb-3 text-gray-900">3. Verilerin İşlenmesi Amacı</h2>
         <ul className="list-disc list-inside space-y-2 text-gray-600">
-          <li>Uyelik ve hesap yonetimi</li>
-          <li>Mentorluk hizmetinin sunulmasi</li>
-          <li>Odeme islemlerinin gerceklestirilmesi</li>
-          <li>Iletisim ve destek hizmetleri</li>
-          <li>Yasal yukumluluklerin yerine getirilmesi</li>
+          <li>Üyelik ve hesap yönetimi</li>
+          <li>Mentorluk hizmetinin sunulması</li>
+          <li>Ödeme işlemlerinin gerçekleştirilmesi</li>
+          <li>İletişim ve destek hizmetleri</li>
+          <li>Yasal yükümlülüklerin yerine getirilmesi</li>
         </ul>
       </section>
       <section>
-        <h2 className="text-2xl font-bold mb-4">4. Verilerin Aktarilmasi</h2>
+        <h2 className="text-xl font-bold mb-3 text-gray-900">4. Verilerin Aktarılması</h2>
         <p className="text-gray-600 leading-relaxed">
-          Kisisel verileriniz, hizmet saglayicilarimiz (odeme altyapisi, sunucu hizmeti) ile paylasabilir. Ucuncu taraflarla sadece yasal zorunluluk halinde paylasilir.
+          Kişisel verileriniz, hizmet sağlayıcılarımız (ödeme altyapısı, sunucu hizmeti) ile paylaşılabilir. Üçüncü taraflarla sadece yasal zorunluluk halinde paylaşılır.
         </p>
       </section>
       <section>
-        <h2 className="text-2xl font-bold mb-4">5. Cerezler (Cookies)</h2>
+        <h2 className="text-xl font-bold mb-3 text-gray-900">5. Çerezler (Cookies)</h2>
         <p className="text-gray-600 leading-relaxed">
-          Platformumuz, kullanici deneyimini iyilestirmek amaciyla cerezler kullanir. Tarayici ayarlarinizdan cerez tercihlerinizi yonetebilirsiniz.
+          Platformumuz, kullanıcı deneyimini iyileştirmek amacıyla çerezler kullanır. Tarayıcı ayarlarınızdan çerez tercihlerinizi yönetebilirsiniz.
         </p>
       </section>
       <section>
-        <h2 className="text-2xl font-bold mb-4">6. Veri Guvenligi</h2>
+        <h2 className="text-xl font-bold mb-3 text-gray-900">6. Veri Güvenliği</h2>
         <p className="text-gray-600 leading-relaxed">
-          SSL/TLS sifreleme, guvenli sunucu altyapisi ve erisim kontrolleri gibi teknik ve idari tedbirler uygulanmaktadir.
+          SSL/TLS şifreleme, güvenli sunucu altyapısı ve erişim kontrolleri gibi teknik ve idari tedbirler uygulanmaktadır.
         </p>
       </section>
       <section>
-        <h2 className="text-2xl font-bold mb-4">7. KVKK Kapsamindaki Haklariniz</h2>
+        <h2 className="text-xl font-bold mb-3 text-gray-900">7. KVKK Kapsamındaki Haklarınız</h2>
         <ul className="list-disc list-inside space-y-2 text-gray-600">
-          <li>Kisisel verilerinizin islenip islenmedigini ogrenme</li>
-          <li>Islenmisse buna iliskin bilgi talep etme</li>
-          <li>Eksik veya yanlis islenmisse duzeltilmesini isteme</li>
+          <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
+          <li>İşlenmişse buna ilişkin bilgi talep etme</li>
+          <li>Eksik veya yanlış işlenmişse düzeltilmesini isteme</li>
           <li>Silinmesini veya yok edilmesini isteme</li>
-          <li>Aleyhine bir sonuc cikmasi halinde itiraz etme</li>
+          <li>Aleyhine bir sonuç çıkması halinde itiraz etme</li>
         </ul>
       </section>
       <section>
-        <h2 className="text-2xl font-bold mb-4">8. Iletisim</h2>
+        <h2 className="text-xl font-bold mb-3 text-gray-900">8. İletişim</h2>
         <p className="text-gray-600 leading-relaxed">
-          KVKK kapsamindaki haklarinizi kullanmak icin{' '}
-          <a href="mailto:destek@degisimmentorluk.com" className="text-primary-600 hover:underline">destek@degisimmentorluk.com</a>
-          {' '}adresinden bize ulasabilirsiniz.
+          KVKK kapsamındaki haklarınızı kullanmak için{' '}
+          <a href="mailto:destek@degisimmentorluk.com" className="text-teal-600 hover:underline">destek@degisimmentorluk.com</a>
+          {' '}adresinden bize ulaşabilirsiniz.
         </p>
       </section>
     </div>
@@ -76,17 +76,23 @@ export default function PrivacyPage() {
   const { data: page, isLoading } = useStaticPage('gizlilik-politikasi');
 
   return (
-    <div className="min-h-screen py-16">
-      <div className="container mx-auto px-4 max-w-3xl">
-        <h1 className="text-4xl font-bold mb-8">{page?.title || 'Gizlilik Politikasi ve KVKK'}</h1>
-        <p className="text-sm text-gray-500 mb-8">Son guncelleme: Subat 2026</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero */}
+      <div className="bg-gradient-to-br from-teal-600 to-green-600 py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-4xl font-bold text-white mb-3">{page?.title || 'Gizlilik Politikası ve KVKK'}</h1>
+          <p className="text-teal-100">Son güncelleme: Şubat 2026</p>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 max-w-3xl py-12">
         {isLoading ? (
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-gray-200 rounded w-full" />
             <div className="h-4 bg-gray-200 rounded w-5/6" />
           </div>
         ) : page?.content ? (
-          <div className="prose prose-gray max-w-none" dangerouslySetInnerHTML={{ __html: page.content }} />
+          <div className="prose prose-gray max-w-none bg-white rounded-2xl border border-gray-200 p-8" dangerouslySetInnerHTML={{ __html: page.content }} />
         ) : (
           <HardcodedPrivacy />
         )}

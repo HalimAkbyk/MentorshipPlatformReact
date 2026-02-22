@@ -60,8 +60,8 @@ export default function NotificationsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-primary-50 rounded-xl">
-            <Bell className="h-6 w-6 text-primary-600" />
+          <div className="p-2.5 bg-teal-50 rounded-xl">
+            <Bell className="h-6 w-6 text-teal-600" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-900">Bildirimler</h1>
@@ -132,7 +132,7 @@ export default function NotificationsPage() {
                 onClick={() => handleNotificationClick(notif)}
                 className={`flex items-start gap-4 px-5 py-4 border-b border-gray-100 last:border-b-0 transition-colors ${
                   navUrl ? 'cursor-pointer hover:bg-gray-50' : ''
-                } ${!notif.isRead ? 'bg-primary-50/30' : ''}`}
+                } ${!notif.isRead ? 'bg-teal-50/30' : ''}`}
               >
                 <div className="mt-0.5 shrink-0 p-2 bg-gray-50 rounded-lg">
                   <NotificationIcon type={notif.type} />
@@ -160,7 +160,7 @@ export default function NotificationsPage() {
                       e.stopPropagation();
                       markReadMutation.mutate(notif.id);
                     }}
-                    className="shrink-0 p-1.5 text-gray-300 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                    className="shrink-0 p-1.5 text-gray-300 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
                     title="Okundu isaretle"
                   >
                     <Check className="h-4 w-4" />

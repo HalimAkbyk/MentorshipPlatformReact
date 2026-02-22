@@ -196,7 +196,7 @@ export function UserNotificationsDropdown() {
             <Link
               href={notificationsPageUrl}
               onClick={() => setOpen(false)}
-              className="flex items-center justify-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors"
+              className="flex items-center justify-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-700 transition-colors"
             >
               Bildirimleri Gor
               <ChevronRight className="h-3.5 w-3.5" />

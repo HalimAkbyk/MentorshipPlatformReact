@@ -67,7 +67,7 @@ export default function MentorBookingsPage() {
               className={cn(
                 'px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
                 selectedStatus === filter.value
-                  ? 'bg-primary-600 text-white'
+                  ? 'bg-teal-600 text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-50'
               )}
             >
@@ -106,7 +106,7 @@ export default function MentorBookingsPage() {
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
                         <Avatar>
-                          <AvatarFallback className="bg-primary-100 text-primary-600">
+                          <AvatarFallback className="bg-teal-100 text-teal-600">
                             Ö
                           </AvatarFallback>
                         </Avatar>

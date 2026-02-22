@@ -235,8 +235,8 @@ function CoursePlayerContent() {
       <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center">
         <div className="text-center">
           <div className="relative w-12 h-12 mx-auto mb-5">
-            <div className="absolute inset-0 rounded-full border-2 border-primary-800/30" />
-            <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary-400 animate-spin" />
+            <div className="absolute inset-0 rounded-full border-2 border-teal-800/30" />
+            <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-teal-400 animate-spin" />
           </div>
           <p className="text-gray-500 text-sm font-medium tracking-wide">Ders yükleniyor...</p>
         </div>
@@ -302,7 +302,7 @@ function CoursePlayerContent() {
             <div className="hidden sm:flex items-center gap-2.5 shrink-0">
               <div className="w-24 h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-400 transition-all duration-700"
+                  className="h-full rounded-full bg-gradient-to-r from-teal-500 to-teal-400 transition-all duration-700"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -385,7 +385,7 @@ function CoursePlayerContent() {
                       onClick={handleCompleteLecture}
                       disabled={completeLecture.isPending}
                       size="sm"
-                      className="bg-primary-600 hover:bg-primary-500 text-white rounded-full px-4 h-9 text-xs font-medium shadow-lg shadow-primary-900/20 transition-all duration-200"
+                      className="bg-teal-600 hover:bg-teal-500 text-white rounded-full px-4 h-9 text-xs font-medium shadow-lg shadow-teal-900/20 transition-all duration-200"
                     >
                       {completeLecture.isPending ? (
                         <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
@@ -400,7 +400,7 @@ function CoursePlayerContent() {
                         onClick={handleCompleteLecture}
                         disabled={completeLecture.isPending}
                         size="sm"
-                        className="bg-primary-600 hover:bg-primary-500 text-white rounded-full px-4 h-9 text-xs font-medium shadow-lg shadow-primary-900/20 transition-all duration-200"
+                        className="bg-teal-600 hover:bg-teal-500 text-white rounded-full px-4 h-9 text-xs font-medium shadow-lg shadow-teal-900/20 transition-all duration-200"
                       >
                         {completeLecture.isPending ? (
                           <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
@@ -477,8 +477,8 @@ export default function CoursePlayerPage() {
         <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center">
           <div className="text-center">
             <div className="relative w-12 h-12 mx-auto mb-5">
-              <div className="absolute inset-0 rounded-full border-2 border-primary-800/30" />
-              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary-400 animate-spin" />
+              <div className="absolute inset-0 rounded-full border-2 border-teal-800/30" />
+              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-teal-400 animate-spin" />
             </div>
             <p className="text-gray-500 text-sm font-medium tracking-wide">Ders yükleniyor...</p>
           </div>

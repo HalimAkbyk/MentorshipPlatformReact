@@ -115,7 +115,7 @@ export function ReviewModal({ bookingId, mentorName, onClose, onSubmit }: Review
                 id="comment"
                 rows={4}
                 placeholder="Deneyiminizi paylaşın..."
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                 {...register('comment')}
               />
               {errors.comment && (

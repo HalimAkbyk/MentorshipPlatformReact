@@ -152,13 +152,13 @@ export default function StudentExploreCoursesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 text-white">
+      <div className="bg-gradient-to-br from-teal-600 via-teal-700 to-teal-900 text-white">
         <div className="container mx-auto px-4 py-10 md:py-14">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-3xl md:text-4xl font-bold font-heading mb-3">
               Video Eğitimler
             </h1>
-            <p className="text-primary-100 text-base md:text-lg mb-8 max-w-2xl mx-auto">
+            <p className="text-teal-100 text-base md:text-lg mb-8 max-w-2xl mx-auto">
               Uzman eğitmenlerden video derslerle kendinizi geliştirin. İstediğiniz zaman, istediğiniz yerden öğrenin.
             </p>
 
@@ -171,7 +171,7 @@ export default function StudentExploreCoursesPage() {
                 placeholder="Kurs adı, konu veya eğitmen ara..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-12 pr-12 py-3.5 rounded-xl text-gray-900 bg-white shadow-xl focus:outline-none focus:ring-2 focus:ring-primary-300 text-sm md:text-base"
+                className="w-full pl-12 pr-12 py-3.5 rounded-xl text-gray-900 bg-white shadow-xl focus:outline-none focus:ring-2 focus:ring-teal-300 text-sm md:text-base"
               />
               {search && (
                 <button
@@ -197,7 +197,7 @@ export default function StudentExploreCoursesPage() {
                 className={cn(
                   'px-3.5 py-1.5 rounded-full text-sm font-medium transition-all border',
                   category === opt.value
-                    ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
+                    ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
                     : `${opt.color} border-transparent`
                 )}
               >
@@ -213,13 +213,13 @@ export default function StudentExploreCoursesPage() {
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
               'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-              showFilters ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50'
+              showFilters ? 'bg-teal-50 text-teal-700' : 'text-gray-600 hover:bg-gray-50'
             )}
           >
             <Filter className="w-4 h-4" />
             Filtreler
             {activeFilterCount > 0 && (
-              <span className="bg-primary-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+              <span className="bg-teal-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
                 {activeFilterCount}
               </span>
             )}
@@ -230,7 +230,7 @@ export default function StudentExploreCoursesPage() {
             <select
               value={level}
               onChange={(e) => { setLevel(e.target.value); setPage(1); }}
-              className="px-3 py-2 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-300"
+              className="px-3 py-2 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-300"
             >
               {levelOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -242,7 +242,7 @@ export default function StudentExploreCoursesPage() {
             <select
               value={priceRange}
               onChange={(e) => { setPriceRange(e.target.value); setPage(1); }}
-              className="px-3 py-2 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-300"
+              className="px-3 py-2 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-300"
             >
               {priceRangeOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -252,7 +252,7 @@ export default function StudentExploreCoursesPage() {
             <select
               value={sortBy}
               onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
-              className="px-3 py-2 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-300"
+              className="px-3 py-2 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-300"
             >
               {sortOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -265,7 +265,7 @@ export default function StudentExploreCoursesPage() {
             {activeFilterCount > 0 && (
               <button
                 onClick={clearAllFilters}
-                className="text-xs text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1"
+                className="text-xs text-teal-600 hover:text-teal-700 font-medium flex items-center gap-1"
               >
                 <X className="w-3 h-3" />
                 Temizle
@@ -404,7 +404,7 @@ export default function StudentExploreCoursesPage() {
                       style={getCoverImageStyle(course.coverImagePosition, course.coverImageTransform)}
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-primary-400 to-primary-700 flex items-center justify-center">
+                    <div className="w-full h-full bg-gradient-to-br from-teal-400 to-teal-700 flex items-center justify-center">
                       <BookOpen className="w-12 h-12 text-white/40" />
                     </div>
                   )}
@@ -423,12 +423,12 @@ export default function StudentExploreCoursesPage() {
                 <CardContent className="p-4">
                   {/* Category tag */}
                   {course.category && (
-                    <span className="text-[10px] uppercase tracking-wider font-semibold text-primary-600 mb-1 block">
+                    <span className="text-[10px] uppercase tracking-wider font-semibold text-teal-600 mb-1 block">
                       {categoryOptions.find(c => c.value === course.category)?.label || course.category}
                     </span>
                   )}
 
-                  <h3 className="font-semibold text-gray-900 mb-1.5 line-clamp-2 group-hover:text-primary-600 transition-colors text-sm leading-snug">
+                  <h3 className="font-semibold text-gray-900 mb-1.5 line-clamp-2 group-hover:text-teal-600 transition-colors text-sm leading-snug">
                     {course.title}
                   </h3>
 
@@ -443,8 +443,8 @@ export default function StudentExploreCoursesPage() {
                     {course.mentorAvatar ? (
                       <img src={course.mentorAvatar} alt="" className="w-5 h-5 rounded-full object-cover" />
                     ) : (
-                      <div className="w-5 h-5 rounded-full bg-primary-100 flex items-center justify-center">
-                        <span className="text-[10px] font-bold text-primary-600">
+                      <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center">
+                        <span className="text-[10px] font-bold text-teal-600">
                           {course.mentorName?.charAt(0)?.toUpperCase()}
                         </span>
                       </div>
@@ -541,7 +541,7 @@ export default function StudentExploreCoursesPage() {
                     className={cn(
                       'w-9 h-9 rounded-lg text-sm font-medium transition-colors',
                       page === item
-                        ? 'bg-primary-600 text-white shadow-sm'
+                        ? 'bg-teal-600 text-white shadow-sm'
                         : 'bg-white text-gray-700 hover:bg-gray-100 border'
                     )}
                   >
@@ -563,13 +563,13 @@ export default function StudentExploreCoursesPage() {
         )}
 
         {/* Bottom CTA */}
-        <div className="mt-12 bg-gradient-to-r from-primary-50 to-blue-50 rounded-2xl p-6 md:p-8 text-center border border-primary-100">
-          <GraduationCap className="w-10 h-10 text-primary-600 mx-auto mb-3" />
+        <div className="mt-12 bg-gradient-to-r from-teal-50 to-blue-50 rounded-2xl p-6 md:p-8 text-center border border-teal-100">
+          <GraduationCap className="w-10 h-10 text-teal-600 mx-auto mb-3" />
           <h3 className="text-lg font-bold font-heading text-gray-900 mb-2">Kayıtlı Kurslarını Görmek İster misin?</h3>
           <p className="text-sm text-gray-600 mb-4 max-w-md mx-auto">
             Daha önce satın aldığın kurslara kaldığı yerden devam edebilirsin.
           </p>
-          <Button onClick={() => router.push(ROUTES.STUDENT_COURSES)} variant="outline" className="border-primary-300">
+          <Button onClick={() => router.push(ROUTES.STUDENT_COURSES)} variant="outline" className="border-teal-300">
             Kurslarım
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>

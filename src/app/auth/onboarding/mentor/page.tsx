@@ -327,9 +327,9 @@ export default function MentorOnboardingPage() {
                     className={cn(
                       'w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all',
                       completedSteps.has(step.id)
-                        ? 'bg-primary-600 border-primary-600 text-white cursor-pointer hover:bg-primary-700'
+                        ? 'bg-teal-600 border-teal-600 text-white cursor-pointer hover:bg-teal-700'
                         : currentStep === step.id
-                        ? 'bg-white border-primary-600 text-primary-600'
+                        ? 'bg-white border-teal-600 text-teal-600'
                         : 'bg-white border-gray-300 text-gray-400',
                       (completedSteps.has(step.id) || step.id === 1) && 'cursor-pointer'
                     )}
@@ -346,7 +346,7 @@ export default function MentorOnboardingPage() {
                   <div
                     className={cn(
                       'flex-1 h-0.5 mx-4', 
-                      completedSteps.has(step.id) ? 'bg-primary-600' : 'bg-gray-300'
+                      completedSteps.has(step.id) ? 'bg-teal-600' : 'bg-gray-300'
                     )}
                   />
                 )}

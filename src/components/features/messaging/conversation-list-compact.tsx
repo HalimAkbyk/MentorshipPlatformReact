@@ -79,7 +79,7 @@ export function ConversationListCompact({ isOpen, onSelectConversation, onClose 
             <div className="flex items-center gap-3">
               <Avatar className="w-9 h-9 shrink-0">
                 <AvatarImage src={conv.otherUserAvatar ?? undefined} />
-                <AvatarFallback className="bg-primary-100 text-primary-600 text-xs">
+                <AvatarFallback className="bg-teal-100 text-teal-600 text-xs">
                   {conv.otherUserName.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -127,7 +127,7 @@ export function ConversationListCompact({ isOpen, onSelectConversation, onClose 
         <Link
           href={messagesHref}
           onClick={onClose}
-          className="text-xs text-primary-600 hover:text-primary-700 font-medium flex items-center justify-center gap-1"
+          className="text-xs text-teal-600 hover:text-teal-700 font-medium flex items-center justify-center gap-1"
         >
           Tüm Mesajları Gör
           <ChevronRight className="w-3 h-3" />

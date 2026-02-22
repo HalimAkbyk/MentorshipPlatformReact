@@ -149,7 +149,7 @@ export default function NewCoursePage() {
               <div>
                 <label className="block text-sm font-medium mb-1.5">Detaylı Açıklama</label>
                 <textarea
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[120px]"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-h-[120px]"
                   placeholder="Kursunuzun içeriğini, hedeflerini ve kazanımlarını detaylı anlatın"
                   {...form.register('description')}
                 />
@@ -182,7 +182,7 @@ export default function NewCoursePage() {
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Kategori</label>
                   <select
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 h-10 bg-white"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 h-10 bg-white"
                     {...form.register('category')}
                   >
                     {CATEGORIES.map((cat) => (
@@ -199,7 +199,7 @@ export default function NewCoursePage() {
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Seviye</label>
                   <select
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 h-10 bg-white"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 h-10 bg-white"
                     {...form.register('level')}
                   >
                     {LEVELS.map((lvl) => (
@@ -212,7 +212,7 @@ export default function NewCoursePage() {
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Dil</label>
                   <select
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 h-10 bg-white"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 h-10 bg-white"
                     {...form.register('language')}
                   >
                     <option value="tr">Türkçe</option>

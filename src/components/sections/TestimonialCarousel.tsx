@@ -1,86 +1,38 @@
 'use client';
 
-import { motion, type Variants } from 'framer-motion';
 import { Star } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useTestimonials } from '@/lib/hooks/use-homepage';
+import { Card } from '@/components/ui/card';
 import type { TestimonialDto } from '@/lib/api/homepage';
 
-/* ------------------------------------------------------------------ */
-/*  Animation variants                                                 */
-/* ------------------------------------------------------------------ */
-
-const containerVariants: Variants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.15 },
-  },
-};
-
-const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: 'easeOut' },
-  },
-};
-
-/* ------------------------------------------------------------------ */
-/*  Skeleton loader                                                    */
-/* ------------------------------------------------------------------ */
-
+/* ── Skeleton ── */
 function TestimonialSkeleton() {
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-lg animate-pulse">
-      <div className="h-10 w-10 bg-teal-200 rounded mb-4" />
-      <div className="space-y-2 mb-6">
+    <Card className="p-6 border-2 border-gray-100 animate-pulse">
+      <div className="flex gap-1 mb-3">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="w-4 h-4 bg-gray-200 rounded" />
+        ))}
+      </div>
+      <div className="space-y-2 mb-5">
         <div className="h-4 bg-gray-100 rounded w-full" />
         <div className="h-4 bg-gray-100 rounded w-5/6" />
         <div className="h-4 bg-gray-100 rounded w-4/6" />
       </div>
-      <div className="h-8 bg-teal-50 rounded-lg w-2/3 mb-6" />
       <div className="flex items-center gap-3">
-        <div className="w-16 h-16 rounded-full bg-gray-100" />
-        <div className="space-y-2">
+        <div className="w-10 h-10 rounded-full bg-gray-200" />
+        <div className="space-y-1">
           <div className="h-4 bg-gray-100 rounded w-24" />
           <div className="h-3 bg-gray-100 rounded w-32" />
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Star rating                                                        */
-/* ------------------------------------------------------------------ */
-
-function StarRating({ rating }: { rating: number }) {
-  return (
-    <div className="flex gap-0.5">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Star
-          key={i}
-          className="w-4 h-4"
-          fill={i < rating ? '#FBBF24' : 'none'}
-          stroke={i < rating ? '#FBBF24' : '#D1D5DB'}
-          strokeWidth={1.5}
-        />
-      ))}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Testimonial card                                                   */
-/* ------------------------------------------------------------------ */
-
+/* ── Testimonial Card (Figma) ── */
 function TestimonialCard({ testimonial }: { testimonial: TestimonialDto }) {
-  const diff =
-    testimonial.scoreBefore != null && testimonial.scoreAfter != null
-      ? testimonial.scoreAfter - testimonial.scoreBefore
-      : null;
-
   const initials = testimonial.studentName
     .split(' ')
     .map((n) => n[0])
@@ -89,105 +41,72 @@ function TestimonialCard({ testimonial }: { testimonial: TestimonialDto }) {
     .slice(0, 2);
 
   return (
-    <motion.div
-      variants={cardVariants}
-      className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-    >
-      {/* Decorative quote mark */}
-      <div className="text-6xl font-serif text-teal-100 leading-none select-none mb-2">
-        &ldquo;
+    <Card className="p-6 border-2 border-gray-100 hover:border-teal-200 hover:shadow-lg transition-all">
+      {/* Star rating */}
+      <div className="flex gap-1 mb-3">
+        {[...Array(testimonial.rating)].map((_, j) => (
+          <Star key={j} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+        ))}
+        {[...Array(5 - testimonial.rating)].map((_, j) => (
+          <Star key={`empty-${j}`} className="w-4 h-4 text-gray-200" />
+        ))}
       </div>
 
       {/* Quote */}
-      <p className="text-gray-600 italic text-sm leading-relaxed mb-6">
-        {testimonial.quote}
+      <p className="text-gray-700 mb-5 text-sm leading-relaxed italic">
+        &ldquo;{testimonial.quote}&rdquo;
       </p>
 
-      {/* Score improvement badge */}
-      {diff != null && (
-        <div className="inline-flex items-center gap-1.5 bg-teal-50 border border-teal-200 text-teal-700 text-sm font-medium rounded-lg px-3 py-1.5 mb-6">
-          <span>TYT: {testimonial.scoreBefore} &rarr; {testimonial.scoreAfter}</span>
-          <span className="font-bold">(+{diff})</span>
+      {/* Score improvement */}
+      {testimonial.scoreBefore != null && testimonial.scoreAfter != null && (
+        <div className="inline-flex items-center gap-1.5 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-medium rounded-lg px-3 py-1.5 mb-4">
+          TYT: {testimonial.scoreBefore} &rarr; {testimonial.scoreAfter}
+          <span className="font-bold">(+{testimonial.scoreAfter - testimonial.scoreBefore})</span>
         </div>
       )}
 
-      {/* Student info */}
-      <div className="flex items-center gap-3 mb-3">
-        <Avatar className="w-16 h-16 border-[3px] border-teal-300">
+      {/* Author */}
+      <div className="flex items-center gap-3">
+        <Avatar className="w-10 h-10">
           {testimonial.studentAvatar ? (
-            <AvatarImage
-              src={testimonial.studentAvatar}
-              alt={testimonial.studentName}
-            />
+            <AvatarImage src={testimonial.studentAvatar} alt={testimonial.studentName} />
           ) : null}
-          <AvatarFallback className="bg-gray-100 text-gray-900 font-semibold text-sm">
+          <AvatarFallback className="bg-gradient-to-br from-teal-400 to-green-500 text-white text-sm">
             {initials}
           </AvatarFallback>
         </Avatar>
-
-        <div className="min-w-0">
-          <p className="font-heading font-bold text-gray-900 text-sm truncate">
-            {testimonial.studentName}
-          </p>
-          <p className="text-xs text-gray-500 truncate">
-            {testimonial.university}
-          </p>
+        <div>
+          <div className="text-sm font-medium text-gray-900">{testimonial.studentName}</div>
+          <div className="text-xs text-gray-500">{testimonial.university}</div>
         </div>
       </div>
 
-      {/* Star rating */}
-      <div className="mb-2">
-        <StarRating rating={testimonial.rating} />
-      </div>
-
-      {/* Mentor attribution */}
-      <p className="text-xs text-gray-500">
+      {/* Mentor */}
+      <p className="text-xs text-gray-500 mt-2">
         Mentor: {testimonial.mentorName}
       </p>
-    </motion.div>
+    </Card>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Main component                                                     */
-/* ------------------------------------------------------------------ */
-
+/* ── Main Component ── */
 export default function TestimonialCarousel() {
   const { data: testimonials, isLoading } = useTestimonials();
 
   return (
-    <section className="py-20 bg-teal-50/30">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900">
-            Öğrencilerimiz Ne Diyor?
-          </h2>
-          <p className="mt-4 text-gray-500 text-lg max-w-2xl mx-auto">
-            Binlerce öğrenci mentorluk hizmeti ile hedeflerine ulaştı
-          </p>
+    <section className="py-20 bg-white">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-14">
+          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Basari Hikayeleri</h2>
+          <p className="text-lg text-gray-600">Binlerce ogrenci kariyerlerine bizimle yon veriyor</p>
         </div>
 
-        {/* Grid */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <TestimonialSkeleton key={i} />
-            ))}
-          </div>
-        ) : (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-          >
-            {testimonials?.map((t) => (
-              <TestimonialCard key={t.id} testimonial={t} />
-            ))}
-          </motion.div>
-        )}
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {isLoading
+            ? Array.from({ length: 3 }).map((_, i) => <TestimonialSkeleton key={i} />)
+            : testimonials?.map((t) => <TestimonialCard key={t.id} testimonial={t} />)
+          }
+        </div>
       </div>
     </section>
   );

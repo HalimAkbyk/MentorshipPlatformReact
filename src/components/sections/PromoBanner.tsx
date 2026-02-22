@@ -1,106 +1,46 @@
 'use client';
 
-import { motion, type Variants } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-
-/* ------------------------------------------------------------------ */
-/*  Animation variants                                                 */
-/* ------------------------------------------------------------------ */
-
-const fadeInLeft: Variants = {
-  hidden: { opacity: 0, x: -30 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.6, ease: 'easeOut' },
-  },
-};
-
-const fadeInRight: Variants = {
-  hidden: { opacity: 0, x: 30 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.6, delay: 0.2, ease: 'easeOut' },
-  },
-};
-
-/* ------------------------------------------------------------------ */
-/*  Main component                                                     */
-/* ------------------------------------------------------------------ */
+import { Button } from '@/components/ui/button';
 
 export default function PromoBanner() {
   return (
-    <section className="py-16 md:py-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          className="relative overflow-hidden rounded-3xl p-8 md:p-12"
-          style={{ background: 'var(--gradient-promo)' }}
-        >
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            {/* Left content */}
-            <motion.div variants={fadeInLeft} className="space-y-5">
-              {/* Badge */}
-              <span className="inline-block bg-white/20 text-white rounded-full px-4 py-1 text-sm font-medium backdrop-blur-sm">
-                Özel Teklif
-              </span>
-
-              {/* Headline */}
-              <h2 className="font-heading text-3xl md:text-4xl font-extrabold text-white leading-tight">
-                İlk Dersin Ücretsiz!
-              </h2>
-
-              {/* Subtitle */}
-              <p className="text-white/90 text-lg max-w-md">
-                Hemen kayıt ol ve ilk mentorluk seansını ücretsiz dene.
-              </p>
-
-              {/* CTA */}
-              <Link href="/auth/signup">
-                <button className="inline-flex items-center gap-2 bg-white text-gray-900 hover:bg-teal-50 rounded-xl px-8 py-4 font-semibold text-base transition-all duration-200 hover:scale-[1.03] hover:shadow-lg active:scale-[0.98] mt-2">
-                  Ücretsiz Dene
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </Link>
-            </motion.div>
-
-            {/* Right decorative shapes */}
-            <motion.div
-              variants={fadeInRight}
-              className="hidden lg:flex items-center justify-center relative h-64"
-              aria-hidden="true"
-            >
-              {/* Large circle */}
-              <div className="absolute w-48 h-48 rounded-full bg-white/10" />
-
-              {/* Medium circle offset */}
-              <div className="absolute -top-4 right-12 w-32 h-32 rounded-full bg-white/[0.07]" />
-
-              {/* Small circle */}
-              <div className="absolute bottom-4 right-4 w-20 h-20 rounded-full bg-white/15" />
-
-              {/* Tiny accent circle */}
-              <div className="absolute top-8 left-8 w-12 h-12 rounded-full bg-white/20" />
-
-              {/* Ring */}
-              <div className="absolute bottom-8 left-16 w-28 h-28 rounded-full border-2 border-white/15" />
-            </motion.div>
+    <section className="py-20 bg-gradient-to-br from-teal-600 via-green-600 to-emerald-600 relative overflow-hidden">
+      <div className="absolute inset-0 bg-grid-pattern opacity-10" />
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full mb-6">
+            <Sparkles className="w-4 h-4 text-yellow-300" />
+            <span className="text-sm text-white">Ilk seans ucretsiz! Para iade garantisi</span>
           </div>
-
-          {/* Background decorative circles (visible on all sizes) */}
-          <div
-            className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-white/[0.06]"
-            aria-hidden="true"
-          />
-          <div
-            className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-white/[0.05]"
-            aria-hidden="true"
-          />
-        </motion.div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-5">
+            Kariyerinde Sicrama Yapmaya Hazir misin?
+          </h2>
+          <p className="text-lg text-white/90 mb-8">
+            Bugun basla ve hayalindeki kariyere ulasmak icin gerekli rehberligi al.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/auth/signup">
+              <Button
+                size="lg"
+                className="bg-white text-teal-600 hover:bg-gray-100 shadow-xl group px-8 w-full sm:w-auto"
+              >
+                Ucretsiz Denemeyi Baslat
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+            <Link href="/public/mentors">
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-2 border-white text-white hover:bg-white/10 px-8 w-full sm:w-auto"
+              >
+                Mentorleri Incele
+              </Button>
+            </Link>
+          </div>
+        </div>
       </div>
     </section>
   );

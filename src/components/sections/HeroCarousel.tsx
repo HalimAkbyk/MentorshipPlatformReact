@@ -1,61 +1,19 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import {
-  Search,
-  ChevronRight,
-  GraduationCap,
-  Star,
-  Users,
-  CheckCircle2,
-  BookOpen,
-  Video,
-  CalendarCheck,
-  Sparkles,
-  type LucideIcon,
-} from 'lucide-react';
-import { AnimatePresence } from 'framer-motion';
+import { ArrowRight, Play, TrendingUp, Users, Award, Check } from 'lucide-react';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { UserRole } from '@/lib/types/enums';
+import { Button } from '@/components/ui/button';
 
-/* ------------------------------------------------------------------ */
-/*  Animation variants                                                 */
-/* ------------------------------------------------------------------ */
-
-const fadeInLeft = {
-  hidden: { opacity: 0, x: -40 },
-  visible: { opacity: 1, x: 0 },
-};
-
-const scaleInRight = {
-  hidden: { opacity: 0, scale: 0.88, x: 30 },
-  visible: { opacity: 1, scale: 1, x: 0 },
-};
-
-const stagger = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.12 },
-  },
-};
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-};
-
-/* ------------------------------------------------------------------ */
-/*  Helper: auth-aware CTA                                             */
-/* ------------------------------------------------------------------ */
-
+/* Auth-aware CTA */
 function useCta() {
   const { user, isAuthenticated } = useAuthStore();
 
   if (!isAuthenticated || !user) {
-    return { label: 'Paketleri İncele', href: '/public/courses' };
+    return { label: 'Ucretsiz Deneme Baslat', href: '/public/mentors' };
   }
 
   const roles = user.roles ?? [];
@@ -67,306 +25,180 @@ function useCta() {
     return { label: 'Panelime Git', href: '/student/dashboard' };
   }
 
-  return { label: 'Paketleri İncele', href: '/public/courses' };
+  return { label: 'Ucretsiz Deneme Baslat', href: '/public/mentors' };
 }
 
-/* ------------------------------------------------------------------ */
-/*  Animated "How It Works" steps (right column)                       */
-/* ------------------------------------------------------------------ */
+/* Animation variants */
+const fadeInLeft = {
+  hidden: { opacity: 0, x: -40 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: 'easeOut' } },
+};
 
-interface HowStep {
-  num: number;
-  icon: LucideIcon;
-  title: string;
-  desc: string;
-  products: string[];
-  gradient: string;
-  iconBg: string;
-}
+const fadeInRight = {
+  hidden: { opacity: 0, x: 40 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.7, delay: 0.3, ease: 'easeOut' } },
+};
 
-const HOW_STEPS: HowStep[] = [
-  {
-    num: 1,
-    icon: Search,
-    title: 'Keşfet & Seç',
-    desc: 'İhtiyacına uygun eğitim ürününü bul. Mentorları incele, kurslara göz at veya grup derslerini keşfet.',
-    products: ['1:1 Ders', 'Video Kurs', 'Grup Dersi'],
-    gradient: 'from-teal-500 to-teal-600',
-    iconBg: 'bg-teal-50 text-teal-600',
-  },
-  {
-    num: 2,
-    icon: CalendarCheck,
-    title: 'Planla & Kayıt Ol',
-    desc: 'Uygun zamanı seç, ödeme yap ve hemen başla. Güvenli ödeme altyapısıyla tek tıkla kayıt ol.',
-    products: ['Esnek Takvim', 'Güvenli Ödeme', 'Anında Erişim'],
-    gradient: 'from-teal-500 to-teal-600',
-    iconBg: 'bg-teal-50 text-teal-600',
-  },
-  {
-    num: 3,
-    icon: Sparkles,
-    title: 'Öğren & Gelişim',
-    desc: 'Canlı derslerle bire bir öğren, video kurslarla kendi hızında ilerle, sınavlarla kendini test et.',
-    products: ['Canlı Video', 'İlerleme Takibi', 'Sertifika'],
-    gradient: 'from-green-500 to-green-600',
-    iconBg: 'bg-green-50 text-green-600',
-  },
-];
-
-function DecorativeVisual() {
-  const [activeStep, setActiveStep] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % HOW_STEPS.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const step = HOW_STEPS[activeStep];
-
-  return (
-    <div className="relative w-full max-w-md mx-auto">
-      {/* Main card */}
-      <div className="relative rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-200 shadow-xl p-6 space-y-5 overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
-            <GraduationCap className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <p className="font-heading font-bold text-gray-900 text-sm">Nasıl Çalışır?</p>
-            <p className="text-xs text-gray-500">3 adımda başla</p>
-          </div>
-        </div>
-
-        {/* Animated step content */}
-        <div className="relative min-h-[180px]">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeStep}
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -40 }}
-              transition={{ duration: 0.4, ease: 'easeInOut' }}
-              className="space-y-4"
-            >
-              {/* Step number + icon */}
-              <div className="flex items-center gap-3">
-                <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${step.gradient} flex items-center justify-center shadow-md`}>
-                  <step.icon className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Adım {step.num}
-                    </span>
-                  </div>
-                  <p className="font-heading font-bold text-gray-900 text-base">
-                    {step.title}
-                  </p>
-                </div>
-              </div>
-
-              {/* Description */}
-              <p className="text-sm text-gray-600 leading-relaxed">
-                {step.desc}
-              </p>
-
-              {/* Product tags */}
-              <div className="flex flex-wrap gap-2">
-                {step.products.map((product) => (
-                  <span
-                    key={product}
-                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium ${step.iconBg}`}
-                  >
-                    <CheckCircle2 className="h-3 w-3" />
-                    {product}
-                  </span>
-                ))}
-              </div>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* Step indicators */}
-        <div className="flex items-center justify-center gap-2 pt-1">
-          {HOW_STEPS.map((s, i) => (
-            <button
-              key={s.num}
-              onClick={() => setActiveStep(i)}
-              className={`transition-all duration-300 rounded-full ${
-                i === activeStep
-                  ? 'w-8 h-2.5 bg-gradient-to-r from-teal-500 to-green-500'
-                  : 'w-2.5 h-2.5 bg-gray-200 hover:bg-gray-300'
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Floating accent elements */}
-      <motion.div
-        className="absolute -top-4 -right-4 h-20 w-20 rounded-2xl bg-gradient-to-br from-teal-400/20 to-green-500/20 backdrop-blur-sm border border-white/40"
-        animate={{ y: [0, -8, 0] }}
-        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      <motion.div
-        className="absolute -bottom-3 -left-3 h-14 w-14 rounded-xl bg-gradient-to-br from-teal-500/20 to-green-400/20 backdrop-blur-sm border border-white/40"
-        animate={{ y: [0, 6, 0] }}
-        transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
-      />
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Social proof badges                                                */
-/* ------------------------------------------------------------------ */
-
-const proofItems = [
-  { text: '2.500+ öğrenci', icon: Users },
-  { text: '300+ mentor', icon: BookOpen },
-  { text: '%94 memnuniyet', icon: Star },
-];
-
-/* ------------------------------------------------------------------ */
-/*  Main component                                                     */
-/* ------------------------------------------------------------------ */
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.12 } },
+};
 
 export default function HeroCarousel() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const router = useRouter();
   const cta = useCta();
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/public/courses?search=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
-
   return (
-    <section
-      className="relative overflow-hidden bg-[var(--bg-hero)]"
-      style={{ minHeight: 520 }}
-    >
-      {/* Mesh gradient overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: 'var(--gradient-mesh)' }}
-      />
+    <section className="relative overflow-hidden bg-gradient-to-br from-teal-50 via-green-50 to-emerald-50 pt-16 pb-24">
+      {/* Background effects */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+      <div className="absolute top-20 right-10 w-72 h-72 bg-teal-400 rounded-full blur-3xl opacity-20 animate-pulse" />
+      <div className="absolute bottom-20 left-10 w-96 h-96 bg-green-400 rounded-full blur-3xl opacity-15" />
 
-      {/* Content */}
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-20 lg:py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* ── Left column: text ── */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Promo badge */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex justify-center mb-6"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-teal-500/10 to-green-500/10 backdrop-blur-sm rounded-full border border-teal-200">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-teal-500" />
+            </span>
+            <span className="text-sm text-gray-700">
+              Bu ay %20 indirim! Ilk 100 kayit icin gecerli
+            </span>
+          </div>
+        </motion.div>
+
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left column - Text */}
           <motion.div
             variants={stagger}
             initial="hidden"
             animate="visible"
-            className="space-y-6"
+            className="max-w-2xl"
           >
-            {/* Headline */}
             <motion.h1
               variants={fadeInLeft}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
-              className="font-heading text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight"
+              className="text-4xl lg:text-5xl xl:text-6xl font-extrabold text-gray-900 mb-6 leading-tight"
             >
-              YKS&apos;de{' '}
-              <span className="text-teal-500">Fark Yarat</span>
+              Sana Uygun{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-green-600">
+                Mentoru Bul
+              </span>
+              <br />
+              Hedeflerine Ulas
             </motion.h1>
 
-            {/* Subtitle */}
             <motion.p
               variants={fadeInLeft}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
-              className="text-lg text-gray-500 max-w-lg"
+              className="text-lg text-gray-600 mb-8 leading-relaxed"
             >
-              Türkiye&apos;nin en iyi mentorlarından birebir destek al,
-              video derslerle hazırlan ve hedefine bir adım daha yaklaş.
+              500+ uzman mentor arasindan sana en uygun olani sec. Bire bir gorusmeler,
+              grup dersleri veya video kurslarla ogren. Mentorler kendi fiyatlarini belirliyor,
+              sen tercih ediyorsun!
             </motion.p>
 
-            {/* Search bar */}
-            <motion.form
-              variants={fadeInLeft}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
-              onSubmit={handleSearch}
-              className="relative max-w-lg"
-            >
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Ders veya mentor ara..."
-                  className="
-                    w-full h-14 pl-12 pr-4 rounded-2xl
-                    bg-white border border-gray-200
-                    text-gray-900 placeholder:text-gray-300
-                    focus:outline-none focus:border-teal-500
-                    focus:ring-2 focus:ring-teal-500/20
-                    transition-all duration-200
-                    text-base
-                  "
-                />
-              </div>
-            </motion.form>
-
-            {/* CTA button */}
             <motion.div
               variants={fadeInLeft}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
+              className="flex flex-col sm:flex-row gap-3 mb-10"
             >
               <Link href={cta.href}>
-                <button
-                  className="
-                    inline-flex items-center gap-2
-                    rounded-xl px-8 py-4
-                    text-white font-semibold text-base
-                    shadow-lg shadow-teal-500/25
-                    transition-all duration-200
-                    hover:scale-[1.03] hover:shadow-xl hover:shadow-teal-500/30
-                    active:scale-[0.98]
-                  "
-                  style={{ background: 'var(--gradient-cta)' }}
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-teal-600 to-green-600 hover:from-teal-700 hover:to-green-700 text-white shadow-lg shadow-teal-500/25 group px-8 w-full sm:w-auto"
                 >
                   {cta.label}
-                  <ChevronRight className="h-5 w-5" />
-                </button>
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Link href="/public/how-it-works">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-2 border-teal-300 hover:border-teal-400 hover:bg-teal-50 group px-8 w-full sm:w-auto"
+                >
+                  <Play className="mr-2 h-5 w-5" />
+                  Demo Izle
+                </Button>
               </Link>
             </motion.div>
 
-            {/* Social proof badges */}
+            {/* Stats container */}
             <motion.div
-              variants={stagger}
-              className="flex flex-wrap gap-4 pt-2"
+              variants={fadeInLeft}
+              className="grid grid-cols-3 gap-4 p-5 bg-white/70 backdrop-blur-sm rounded-2xl border border-teal-100 shadow-lg"
             >
-              {proofItems.map((item) => (
-                <motion.div
-                  key={item.text}
-                  variants={fadeInUp}
-                  transition={{ duration: 0.4, ease: 'easeOut' }}
-                  className="flex items-center gap-2 text-sm text-gray-600"
-                >
-                  <CheckCircle2 className="h-4.5 w-4.5 text-teal-500 flex-shrink-0" />
-                  <span className="font-medium">{item.text}</span>
-                </motion.div>
-              ))}
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <TrendingUp className="w-4 h-4 text-teal-600" />
+                  <div className="text-2xl font-bold text-teal-600">2.5K+</div>
+                </div>
+                <div className="text-xs text-gray-600">Aktif Ogrenci</div>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <Users className="w-4 h-4 text-green-600" />
+                  <div className="text-2xl font-bold text-green-600">500+</div>
+                </div>
+                <div className="text-xs text-gray-600">Uzman Mentor</div>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <Award className="w-4 h-4 text-emerald-600" />
+                  <div className="text-2xl font-bold text-emerald-600">4.9/5</div>
+                </div>
+                <div className="text-xs text-gray-600">Memnuniyet</div>
+              </div>
             </motion.div>
           </motion.div>
 
-          {/* ── Right column: decorative visual (hidden on small screens) ── */}
+          {/* Right column - Image with floating cards */}
           <motion.div
-            variants={scaleInRight}
+            variants={fadeInRight}
             initial="hidden"
             animate="visible"
-            transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }}
-            className="hidden lg:block"
+            className="relative hidden lg:block"
           >
-            <DecorativeVisual />
+            <div className="absolute -inset-4 bg-gradient-to-r from-teal-500 to-green-500 rounded-3xl opacity-20 blur-2xl" />
+            <img
+              src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80"
+              alt="Ogrenciler"
+              className="relative rounded-3xl shadow-2xl w-full object-cover h-[480px]"
+            />
+            {/* Floating card - Active users */}
+            <motion.div
+              className="absolute top-5 right-5 bg-white/95 backdrop-blur-sm rounded-xl shadow-xl p-3"
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
+                <div>
+                  <div className="text-sm font-medium text-gray-900">25 kisi su an aktif</div>
+                  <div className="text-xs text-gray-500">Son 10 dk&apos;da 8 eslesme</div>
+                </div>
+              </div>
+            </motion.div>
+            {/* Floating card - Success match */}
+            <motion.div
+              className="absolute -bottom-4 -left-4 bg-white rounded-xl shadow-xl p-3"
+              animate={{ y: [0, 6, 0] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-green-500 flex items-center justify-center">
+                  <Check className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-900">Basarili Eslesme!</div>
+                  <div className="text-xs text-gray-500">Ayse, frontend mentor buldu</div>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </div>

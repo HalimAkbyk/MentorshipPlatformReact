@@ -76,7 +76,7 @@ export default function StudentPaymentsPage() {
   const getTypeBadge = (type: string) => {
     switch (type) {
       case 'Booking':
-        return <Badge variant="outline" className="text-xs border-primary-300 text-primary-700">Ders</Badge>;
+        return <Badge variant="outline" className="text-xs border-teal-300 text-teal-700">Ders</Badge>;
       case 'Course':
         return <Badge variant="outline" className="text-xs border-purple-300 text-purple-700">Kurs</Badge>;
       case 'GroupClass':
@@ -249,7 +249,7 @@ export default function StudentPaymentsPage() {
         <CardContent>
           {isLoading ? (
             <div className="py-12 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600" />
             </div>
           ) : orders && orders.items.length > 0 ? (
             <>

@@ -97,7 +97,7 @@ function ExploreClassesContent() {
       {/* Classes Grid */}
       {isLoading ? (
         <div className="py-16 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600" />
         </div>
       ) : data && data.items.length > 0 ? (
         <>
@@ -156,7 +156,7 @@ function ExploreClassesContent() {
                     </div>
 
                     <div className="mt-3 pt-3 border-t flex items-center justify-between">
-                      <span className="text-lg font-bold text-primary-700">
+                      <span className="text-lg font-bold text-teal-700">
                         {formatCurrency(gc.pricePerSeat, gc.currency)}
                       </span>
                       {gc.mentorUserId === user?.id ? (

@@ -131,7 +131,7 @@ export default function MentorCoursesPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-12 h-12 animate-spin text-primary-600" />
+        <Loader2 className="w-12 h-12 animate-spin text-teal-600" />
       </div>
     );
   }
@@ -169,7 +169,7 @@ export default function MentorCoursesPage() {
               onClick={() => { setActiveTab(tab.key); setPage(1); }}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.key
-                  ? 'bg-primary-600 text-white'
+                  ? 'bg-teal-600 text-white'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
@@ -261,7 +261,7 @@ function CourseCard({
             style={getCoverImageStyle(course.coverImagePosition, course.coverImageTransform)}
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-teal-500 to-purple-600 flex items-center justify-center">
             <BookOpen className="w-12 h-12 text-white/60" />
           </div>
         )}
@@ -300,7 +300,7 @@ function CourseCard({
         </div>
 
         {/* Price */}
-        <div className="text-lg font-bold text-primary-600 mb-4">
+        <div className="text-lg font-bold text-teal-600 mb-4">
           {course.price > 0 ? `${course.price.toFixed(2)} ${course.currency}` : 'Ücretsiz'}
         </div>
 

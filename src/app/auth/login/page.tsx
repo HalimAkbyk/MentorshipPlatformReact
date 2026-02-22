@@ -13,6 +13,7 @@ import { useAuthStore } from '@/lib/stores/auth-store';
 import { pickDefaultDashboard, safeRedirectPath } from '@/lib/utils/auth-redirect';
 import { SocialLoginButtons } from '@/components/auth/social-login-buttons';
 import { toast } from 'sonner';
+import { Mail, Lock, Eye, EyeOff, LogIn, Shield, GraduationCap, Briefcase } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email('Geçerli bir email adresi girin'),
@@ -23,12 +24,12 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const login = useAuthStore((s) => s.login);
   const externalLogin = useAuthStore((s) => s.externalLogin);
 
-  // Pending social login data (waiting for role selection — user exists but has no role)
   const [pendingSocial, setPendingSocial] = useState<{
     provider: string;
     token: string;
@@ -70,7 +71,6 @@ export default function LoginPage() {
       setIsLoading(true);
       const result = await externalLogin({ provider, token, displayName });
 
-      // User exists but has no role — show role selection modal
       if (result.pendingToken) {
         setPendingSocial({ provider, token: result.pendingToken, displayName });
         toast.info('Devam etmek için bir rol seçin');
@@ -109,10 +109,13 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 via-green-50 to-emerald-50 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold font-heading text-center">Giriş Yap</CardTitle>
-          <CardDescription className="text-center">
+      <Card className="w-full max-w-md border-0 shadow-xl">
+        <CardHeader className="space-y-1 text-center pb-2">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-green-500 flex items-center justify-center mx-auto mb-3">
+            <LogIn className="w-6 h-6 text-white" />
+          </div>
+          <CardTitle className="text-2xl font-bold">Giriş Yap</CardTitle>
+          <CardDescription>
             Hesabına giriş yapmak için email ve şifreni gir
           </CardDescription>
         </CardHeader>
@@ -138,52 +141,85 @@ export default function LoginPage() {
           {/* Email/Password Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
+              <label htmlFor="email" className="text-sm font-medium text-gray-700">
                 Email
               </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="ornek@email.com"
-                {...register('email')}
-              />
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="ornek@email.com"
+                  className="pl-10 focus:border-teal-400 focus:ring-1 focus:ring-teal-400"
+                  {...register('email')}
+                />
+              </div>
               {errors.email && (
                 <p className="text-sm text-red-600">{errors.email.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
+              <label htmlFor="password" className="text-sm font-medium text-gray-700">
                 Şifre
               </label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                {...register('password')}
-              />
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  className="pl-10 pr-10 focus:border-teal-400 focus:ring-1 focus:ring-teal-400"
+                  {...register('password')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
               {errors.password && (
                 <p className="text-sm text-red-600">{errors.password.message}</p>
               )}
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-teal-600 to-green-600 hover:from-teal-700 hover:to-green-700 text-white py-5 shadow-lg shadow-teal-500/25"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                'Giriş yapılıyor...'
+              ) : (
+                <>
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Giriş Yap
+                </>
+              )}
             </Button>
           </form>
 
           <div className="mt-4 text-center text-sm">
             <span className="text-gray-600">Hesabın yok mu? </span>
-            <Link href="/auth/signup" className="text-primary-600 hover:underline font-medium">
+            <Link href="/auth/signup" className="text-teal-600 hover:underline font-medium">
               Kayıt Ol
             </Link>
           </div>
+
+          {/* Security badge */}
+          <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400">
+            <Shield className="w-3.5 h-3.5" />
+            <span>256-bit SSL ile güvenli bağlantı</span>
+          </div>
         </CardContent>
       </Card>
-      {/* Role Selection Modal (for users with no role) */}
+
+      {/* Role Selection Modal */}
       {pendingSocial && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-          <Card className="w-full max-w-sm">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <Card className="w-full max-w-sm border-0 shadow-2xl">
             <CardHeader>
               <CardTitle className="text-lg text-center">Rol Seçin</CardTitle>
               <CardDescription className="text-center">
@@ -192,18 +228,20 @@ export default function LoginPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <Button
-                className="w-full"
+                className="w-full bg-gradient-to-r from-teal-600 to-green-600 hover:from-teal-700 hover:to-green-700 text-white py-5"
                 onClick={() => handleRoleSelectAndRetry('Student')}
                 disabled={isLoading}
               >
+                <GraduationCap className="w-4 h-4 mr-2" />
                 Danışan olarak devam et
               </Button>
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full border-2 border-teal-300 hover:bg-teal-50 py-5"
                 onClick={() => handleRoleSelectAndRetry('Mentor')}
                 disabled={isLoading}
               >
+                <Briefcase className="w-4 h-4 mr-2" />
                 Mentor olarak devam et
               </Button>
               <Button

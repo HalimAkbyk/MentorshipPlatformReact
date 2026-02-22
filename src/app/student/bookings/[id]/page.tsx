@@ -188,7 +188,7 @@ export default function BookingDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600" />
       </div>
     );
   }
@@ -536,7 +536,7 @@ export default function BookingDetailPage() {
                   </div>
                   <div className="flex justify-between pt-2 border-t">
                     <span className="font-semibold">Toplam</span>
-                    <span className="font-bold text-primary-600">
+                    <span className="font-bold text-teal-600">
                       {formatCurrency(booking.price)}
                     </span>
                   </div>
@@ -577,7 +577,7 @@ export default function BookingDetailPage() {
                   onChange={(e) => setCancelReason(e.target.value)}
                   placeholder="İptal sebebi..."
                   rows={4}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                 />
                 <div className="flex space-x-3 mt-4">
                   <Button
@@ -632,13 +632,13 @@ export default function BookingDetailPage() {
                           onClick={() => setRescheduleDate(dateStr)}
                           className={`flex-shrink-0 flex flex-col items-center px-3 py-2 rounded-lg border text-xs transition-colors ${
                             isSelected
-                              ? 'bg-primary-600 text-white border-primary-600'
-                              : 'bg-white text-gray-700 border-gray-200 hover:border-primary-400 hover:bg-primary-50'
+                              ? 'bg-teal-600 text-white border-teal-600'
+                              : 'bg-white text-gray-700 border-gray-200 hover:border-teal-400 hover:bg-teal-50'
                           }`}
                         >
                           <span className="font-medium">{format(d, 'dd', { locale: tr })}</span>
-                          <span className={isSelected ? 'text-primary-100' : 'text-gray-500'}>{format(d, 'MMM', { locale: tr })}</span>
-                          <span className={`text-[10px] ${isSelected ? 'text-primary-100' : 'text-gray-400'}`}>{format(d, 'EEE', { locale: tr })}</span>
+                          <span className={isSelected ? 'text-teal-100' : 'text-gray-500'}>{format(d, 'MMM', { locale: tr })}</span>
+                          <span className={`text-[10px] ${isSelected ? 'text-teal-100' : 'text-gray-400'}`}>{format(d, 'EEE', { locale: tr })}</span>
                         </button>
                       );
                     })}
@@ -653,7 +653,7 @@ export default function BookingDetailPage() {
                     </label>
                     {loadingSlots ? (
                       <div className="text-center py-4">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto" />
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-teal-600 mx-auto" />
                         <p className="text-sm text-gray-500 mt-2">Uygun saatler hesaplanıyor...</p>
                       </div>
                     ) : rescheduleSlots.length === 0 ? (
@@ -674,14 +674,14 @@ export default function BookingDetailPage() {
                               onClick={() => setSelectedSlot(slot)}
                               className={`p-2 rounded-lg border-2 transition-all text-center ${
                                 isSelected
-                                  ? 'border-primary-600 bg-primary-50 shadow-sm'
-                                  : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'
+                                  ? 'border-teal-600 bg-teal-50 shadow-sm'
+                                  : 'border-gray-200 bg-white hover:border-teal-400 hover:bg-teal-50'
                               }`}
                             >
-                              <div className={`text-sm font-semibold ${isSelected ? 'text-primary-700' : 'text-gray-900'}`}>
+                              <div className={`text-sm font-semibold ${isSelected ? 'text-teal-700' : 'text-gray-900'}`}>
                                 {startTime}
                               </div>
-                              <div className={`text-[10px] ${isSelected ? 'text-primary-500' : 'text-gray-400'}`}>
+                              <div className={`text-[10px] ${isSelected ? 'text-teal-500' : 'text-gray-400'}`}>
                                 {endTime}
                               </div>
                             </button>
@@ -694,8 +694,8 @@ export default function BookingDetailPage() {
 
                 {/* Selected slot summary */}
                 {selectedSlot && (
-                  <div className="bg-primary-50 border border-primary-200 rounded-lg p-3">
-                    <p className="text-sm font-medium text-primary-900">
+                  <div className="bg-teal-50 border border-teal-200 rounded-lg p-3">
+                    <p className="text-sm font-medium text-teal-900">
                       Seçilen: {format(new Date(selectedSlot.startAt), 'dd MMMM yyyy, HH:mm', { locale: tr })} - {format(new Date(selectedSlot.endAt), 'HH:mm')}
                     </p>
                   </div>
