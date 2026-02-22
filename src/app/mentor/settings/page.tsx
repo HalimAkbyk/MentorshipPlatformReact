@@ -222,6 +222,18 @@ export default function MentorSettingsPage() {
   });
   const passwordForm = useForm<PasswordForm>({ resolver: zodResolver(passwordSchema) });
 
+  // user verisi async geldiğinde formu güncelle
+  useEffect(() => {
+    if (user) {
+      profileForm.reset({
+        displayName: user.displayName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        birthYear: user.birthYear || undefined,
+      });
+    }
+  }, [user, profileForm]);
+
   const updateProfile = async (data: ProfileForm) => {
     try { setIsUpdating(true); await userApi.updateProfile({ displayName: data.displayName, phone: data.phone, birthYear: data.birthYear }); toast.success('Profil guncellendi'); refreshUser(); }
     catch (error: any) { toast.error(error.response?.data?.errors?.[0] || 'Bir hata olustu'); }
