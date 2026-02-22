@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-  Calendar, Video, Clock, TrendingUp, Eye, CheckCircle, AlertCircle,
+  Calendar, Video, Clock, CheckCircle, AlertCircle,
   PlayCircle, GraduationCap, ArrowRight, Sparkles, CreditCard, Users,
-  MessageSquare, Settings, Search, BookOpen, ChevronRight, Star,
-  UserCircle, Target, Zap
+  MessageSquare, Settings, Search, BookOpen, ChevronRight,
+  UserCircle, Target
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,8 +20,8 @@ import { useConversations, useUnreadCount } from '@/lib/hooks/use-messages';
 import { useEnrolledCourses } from '@/lib/hooks/use-courses';
 import { useMyEnrollments } from '@/lib/hooks/use-classes';
 import { useAuthStore } from '@/lib/stores/auth-store';
-import { formatDate, formatTime, formatRelativeTime } from '@/lib/utils/format';
-import { BookingStatus, UserRole } from '@/lib/types/enums';
+import { formatDate, formatRelativeTime } from '@/lib/utils/format';
+import { BookingStatus } from '@/lib/types/enums';
 import { apiClient } from '@/lib/api/client';
 import { toast } from 'sonner';
 
@@ -38,22 +38,28 @@ export default function StudentDashboardPage() {
   const router = useRouter();
 
   /* ── Data hooks ── */
-  const { data: upcomingBookings } = useBookings(BookingStatus.Confirmed);
+  const { data: confirmedBookings } = useBookings(BookingStatus.Confirmed);
+  const { data: completedBookings } = useBookings(BookingStatus.Completed, 1, 3);
   const { data: conversations } = useConversations();
   const { data: unreadData } = useUnreadCount();
   const { data: enrolledCourses } = useEnrolledCourses(1, 3);
   const { data: enrollments } = useMyEnrollments(1, 3);
 
   /* ── Derived state ── */
-  const nextBooking = upcomingBookings?.[0];
+  const upcomingBookings = confirmedBookings ?? [];
+  const nextBooking = upcomingBookings[0];
   const profileComplete = Boolean(user?.displayName && user?.birthYear && user?.phone);
-  const isMentor = user?.roles?.includes(UserRole.Mentor);
-  const isStudent = user?.roles?.includes(UserRole.Student);
-  const hasBookings = upcomingBookings && upcomingBookings.length > 0;
+  const hasBookings = upcomingBookings.length > 0;
   const totalUnread = unreadData?.totalUnread ?? 0;
   const activeCourses = enrolledCourses?.items ?? [];
   const activeEnrollments = enrollments?.items ?? [];
   const recentConversations = (conversations ?? []).slice(0, 3);
+  const pastBookings = completedBookings?.items ?? [];
+
+  /* Determine if user has ANY purchase history */
+  const hasAnyPurchase = useMemo(() => {
+    return hasBookings || pastBookings.length > 0 || activeCourses.length > 0 || activeEnrollments.length > 0;
+  }, [hasBookings, pastBookings, activeCourses, activeEnrollments]);
 
   /* ── Room status polling ── */
   const [roomStatus, setRoomStatus] = useState<RoomStatus | null>(null);
@@ -100,11 +106,46 @@ export default function StudentDashboardPage() {
 
   /* ── Context text ── */
   const getContextText = () => {
+    if (!profileComplete) return 'Profilini tamamlayarak basla!';
     if (hasBookings) {
-      const count = upcomingBookings!.length;
+      const count = upcomingBookings.length;
       return `${count} yaklasan dersin var. Hazir misin?`;
     }
     return 'Hadi ilk dersini planla!';
+  };
+
+  /* ── Hero CTA logic ── */
+  const getHeroCTA = () => {
+    if (canJoinNow()) {
+      return (
+        <Button
+          onClick={handleJoinClass}
+          className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg animate-pulse"
+          size="sm"
+        >
+          <Video className="w-4 h-4 mr-1.5" />
+          Derse Katil
+        </Button>
+      );
+    }
+    if (!profileComplete) {
+      return (
+        <Link href="/auth/onboarding/student">
+          <Button className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg" size="sm">
+            <UserCircle className="w-4 h-4 mr-1.5" />
+            Profili Tamamla
+          </Button>
+        </Link>
+      );
+    }
+    return (
+      <Link href="/public/mentors">
+        <Button className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg" size="sm">
+          <Search className="w-4 h-4 mr-1.5" />
+          Mentor Bul
+        </Button>
+      </Link>
+    );
   };
 
   return (
@@ -131,23 +172,7 @@ export default function StudentDashboardPage() {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              {canJoinNow() ? (
-                <Button
-                  onClick={handleJoinClass}
-                  className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg animate-pulse"
-                  size="sm"
-                >
-                  <Video className="w-4 h-4 mr-1.5" />
-                  Derse Katil
-                </Button>
-              ) : (
-                <Link href="/public/mentors">
-                  <Button className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg" size="sm">
-                    <Search className="w-4 h-4 mr-1.5" />
-                    Mentor Bul
-                  </Button>
-                </Link>
-              )}
+              {getHeroCTA()}
             </div>
           </div>
         </motion.div>
@@ -231,7 +256,7 @@ export default function StudentDashboardPage() {
               <CardContent className="p-3">
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { icon: Calendar, value: upcomingBookings?.length ?? 0, label: 'Yaklasan', color: 'text-teal-600 bg-teal-50' },
+                    { icon: Calendar, value: upcomingBookings.length, label: 'Yaklasan', color: 'text-teal-600 bg-teal-50' },
                     { icon: MessageSquare, value: totalUnread, label: 'Mesaj', color: 'text-blue-600 bg-blue-50' },
                     { icon: BookOpen, value: activeCourses.length, label: 'Kurs', color: 'text-green-600 bg-green-50' },
                     { icon: Users, value: activeEnrollments.length, label: 'Grup', color: 'text-indigo-600 bg-indigo-50' },
@@ -253,93 +278,266 @@ export default function StudentDashboardPage() {
 
           {/* ─────────── CENTER PANEL (Main Content) ─────────── */}
           <main className="flex-1 min-w-0 space-y-6">
-            {hasBookings ? (
-              /* ── Upcoming Sessions ── */
-              <section>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">Yaklasan Dersler</h2>
-                  <Link href="/student/bookings" className="text-sm text-teal-600 hover:text-teal-700 font-medium">
-                    Tumunu Gor
-                  </Link>
-                </div>
-                <div className="space-y-3">
-                  {upcomingBookings!.map((booking) => {
-                    const isNext = booking.id === nextBooking?.id;
-                    const roomReady = isNext && roomStatus?.isActive;
-                    return (
-                      <motion.div
-                        key={booking.id}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                      >
-                        <Card className={`border shadow-sm transition-all hover:shadow-md ${
-                          roomReady ? 'border-green-300 bg-green-50/30' : 'border-gray-100 hover:border-teal-200'
-                        }`}>
-                          <CardContent className="p-4">
-                            <div className="flex items-center gap-4">
-                              <Avatar className="w-12 h-12 rounded-xl flex-shrink-0">
-                                <AvatarImage src={booking.mentorAvatar ?? undefined} />
-                                <AvatarFallback className="rounded-xl bg-gradient-to-br from-teal-400 to-green-500 text-white">
-                                  {booking.mentorName.charAt(0).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-gray-900 truncate">{booking.mentorName}</span>
-                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-teal-200 text-teal-700 flex-shrink-0">
-                                    Birebir
-                                  </Badge>
+
+            {hasAnyPurchase ? (
+              /* ══════ DYNAMIC HORIZONTAL BARS ══════ */
+              <>
+                {/* ── BAR 1: Birebir Randevular ── */}
+                <section>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center">
+                        <Calendar className="w-4 h-4 text-teal-600" />
+                      </div>
+                      <h2 className="text-base font-semibold text-gray-900">Birebir Randevular</h2>
+                    </div>
+                    <Link href="/student/bookings" className="text-xs text-teal-600 hover:text-teal-700 font-medium">
+                      Tumunu Gor
+                    </Link>
+                  </div>
+
+                  {upcomingBookings.length > 0 ? (
+                    <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+                      {upcomingBookings.slice(0, 3).map((booking) => {
+                        const isNext = booking.id === nextBooking?.id;
+                        const roomReady = isNext && roomStatus?.isActive;
+                        return (
+                          <motion.div
+                            key={booking.id}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="min-w-[280px] flex-1"
+                          >
+                            <Card className={`border shadow-sm transition-all hover:shadow-md ${
+                              roomReady ? 'border-green-300 bg-green-50/30' : 'border-gray-100 hover:border-teal-200'
+                            }`}>
+                              <CardContent className="p-4">
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="w-10 h-10 rounded-xl flex-shrink-0">
+                                    <AvatarImage src={booking.mentorAvatar ?? undefined} />
+                                    <AvatarFallback className="rounded-xl bg-gradient-to-br from-teal-400 to-green-500 text-white text-sm">
+                                      {booking.mentorName.charAt(0).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-gray-900 text-sm truncate">{booking.mentorName}</p>
+                                    <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500">
+                                      <span className="flex items-center gap-0.5">
+                                        <Calendar className="w-3 h-3" />
+                                        {formatDate(booking.startAt, 'dd MMM')}
+                                      </span>
+                                      <span className="flex items-center gap-0.5">
+                                        <Clock className="w-3 h-3" />
+                                        {formatDate(booking.startAt, 'HH:mm')}
+                                      </span>
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
-                                  <span className="flex items-center gap-1">
-                                    <Calendar className="w-3.5 h-3.5" />
-                                    {formatDate(booking.startAt, 'dd MMM')}
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <Clock className="w-3.5 h-3.5" />
-                                    {formatDate(booking.startAt, 'HH:mm')} - {booking.durationMin} dk
-                                  </span>
+                                <div className="mt-3">
+                                  {roomReady ? (
+                                    <Button
+                                      size="sm"
+                                      onClick={handleJoinClass}
+                                      className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-sm text-xs"
+                                    >
+                                      <Video className="w-3.5 h-3.5 mr-1" />Derse Katil
+                                    </Button>
+                                  ) : (
+                                    <Link href={`/student/bookings/${booking.id}`}>
+                                      <Button size="sm" variant="outline" className="w-full border-teal-200 text-teal-700 hover:bg-teal-50 text-xs">
+                                        Detay
+                                      </Button>
+                                    </Link>
+                                  )}
+                                </div>
+                                {isNext && roomStatus !== null && !roomStatus.isActive && (
+                                  <div className="flex items-center gap-1 mt-2 text-[11px] text-yellow-600">
+                                    <AlertCircle className="w-3 h-3" />
+                                    <span>Mentor henuz baglanmadi</span>
+                                  </div>
+                                )}
+                                {isNext && roomReady && (
+                                  <div className="flex items-center gap-1 mt-2 text-[11px] text-green-600">
+                                    <CheckCircle className="w-3 h-3" />
+                                    <span className="font-medium">Mentor hazir</span>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    /* No upcoming bookings → link to find mentors */
+                    <Card className="border border-dashed border-teal-200 bg-teal-50/30">
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center">
+                            <Search className="w-5 h-5 text-teal-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900 text-sm">Yaklasan randevun yok</p>
+                            <p className="text-xs text-gray-500">Yeni bir mentor bul ve ders planla</p>
+                          </div>
+                        </div>
+                        <Link href="/public/mentors">
+                          <Button size="sm" className="bg-teal-600 hover:bg-teal-700 text-white text-xs">
+                            Mentor Bul <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                          </Button>
+                        </Link>
+                      </CardContent>
+                    </Card>
+                  )}
+                </section>
+
+                {/* ── BAR 2: Grup Dersleri ── */}
+                <section>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center">
+                        <Users className="w-4 h-4 text-indigo-600" />
+                      </div>
+                      <h2 className="text-base font-semibold text-gray-900">Grup Dersleri</h2>
+                    </div>
+                    <Link href="/student/my-classes" className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">
+                      Tumunu Gor
+                    </Link>
+                  </div>
+
+                  {activeEnrollments.length > 0 ? (
+                    <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+                      {activeEnrollments.slice(0, 3).map((enrollment) => (
+                        <Link key={enrollment.enrollmentId} href={`/student/group-classes/${enrollment.classId}`} className="min-w-[280px] flex-1">
+                          <Card className="border border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all h-full">
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="w-10 h-10 rounded-xl flex-shrink-0">
+                                  <AvatarImage src={enrollment.mentorAvatar ?? undefined} />
+                                  <AvatarFallback className="rounded-xl bg-gradient-to-br from-indigo-400 to-purple-500 text-white text-sm">
+                                    {enrollment.mentorName.charAt(0).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-semibold text-gray-900 text-sm truncate">{enrollment.classTitle}</p>
+                                  <p className="text-xs text-gray-500 truncate">{enrollment.mentorName}</p>
                                 </div>
                               </div>
-                              <div className="flex-shrink-0">
-                                {roomReady ? (
-                                  <Button
-                                    size="sm"
-                                    onClick={handleJoinClass}
-                                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-sm"
-                                  >
-                                    <Video className="w-4 h-4 mr-1" />Katil
-                                  </Button>
-                                ) : (
-                                  <Link href={`/student/bookings/${booking.id}`}>
-                                    <Button size="sm" variant="outline" className="border-teal-200 text-teal-700 hover:bg-teal-50">
-                                      Detay
-                                    </Button>
-                                  </Link>
-                                )}
+                              <div className="flex items-center gap-2 mt-3 text-xs text-gray-500">
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-indigo-200 text-indigo-700">
+                                  {enrollment.category}
+                                </Badge>
+                                <span className="flex items-center gap-0.5">
+                                  <Calendar className="w-3 h-3" />
+                                  {formatDate(enrollment.startAt, 'dd MMM HH:mm')}
+                                </span>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    /* No group classes → link to explore */
+                    <Card className="border border-dashed border-indigo-200 bg-indigo-50/30">
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+                            <Users className="w-5 h-5 text-indigo-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900 text-sm">Grup derslerine goz at</p>
+                            <p className="text-xs text-gray-500">Canli derslere katil, birlikte ogren</p>
+                          </div>
+                        </div>
+                        <Link href="/student/explore-classes">
+                          <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs">
+                            Kesfet <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                          </Button>
+                        </Link>
+                      </CardContent>
+                    </Card>
+                  )}
+                </section>
+
+                {/* ── BAR 3: Video Kurslar ── */}
+                <section>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center">
+                        <PlayCircle className="w-4 h-4 text-green-600" />
+                      </div>
+                      <h2 className="text-base font-semibold text-gray-900">Video Kurslar</h2>
+                    </div>
+                    <Link href="/student/courses" className="text-xs text-green-600 hover:text-green-700 font-medium">
+                      Tumunu Gor
+                    </Link>
+                  </div>
+
+                  {activeCourses.length > 0 ? (
+                    <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+                      {activeCourses.slice(0, 3).map((course) => (
+                        <Link key={course.courseId} href={`/student/courses/${course.courseId}/learn`} className="min-w-[280px] flex-1">
+                          <Card className="border-0 shadow-sm overflow-hidden hover:shadow-md transition-all group cursor-pointer h-full">
+                            <div className="relative h-24 bg-gradient-to-br from-teal-100 to-green-100 overflow-hidden">
+                              {course.coverImageUrl ? (
+                                <img
+                                  src={course.coverImageUrl}
+                                  alt={course.courseTitle}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <GraduationCap className="w-8 h-8 text-teal-300" />
+                                </div>
+                              )}
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <PlayCircle className="w-4 h-4 text-teal-600" />
+                                </div>
                               </div>
                             </div>
-                            {isNext && roomStatus !== null && !roomStatus.isActive && (
-                              <div className="flex items-center gap-1.5 mt-2 text-xs text-yellow-600">
-                                <AlertCircle className="w-3.5 h-3.5" />
-                                <span>Mentor henuz baglanmadi</span>
+                            <CardContent className="p-3">
+                              <p className="font-medium text-gray-900 text-sm line-clamp-1 mb-0.5">{course.courseTitle}</p>
+                              <p className="text-xs text-gray-500 mb-2">{course.mentorName}</p>
+                              <div className="flex items-center gap-2">
+                                <Progress value={course.completionPercentage} className="h-1.5 flex-1" />
+                                <span className="text-xs text-gray-500 flex-shrink-0">{Math.round(course.completionPercentage)}%</span>
                               </div>
-                            )}
-                            {isNext && roomReady && (
-                              <div className="flex items-center gap-1.5 mt-2 text-xs text-green-600">
-                                <CheckCircle className="w-3.5 h-3.5" />
-                                <span className="font-medium">Mentor hazir — Derse katilabilirsin</span>
+                              <div className="flex items-center justify-between mt-1 text-[11px] text-gray-400">
+                                <span>{course.completedLectures}/{course.totalLectures} ders</span>
+                                <span className="text-teal-600 font-medium">Devam Et →</span>
                               </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </section>
+                            </CardContent>
+                          </Card>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    /* No courses → link to explore */
+                    <Card className="border border-dashed border-green-200 bg-green-50/30">
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+                            <PlayCircle className="w-5 h-5 text-green-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900 text-sm">Kendi hizinda ogren</p>
+                            <p className="text-xs text-gray-500">Video kurslarla istedigin zaman eris</p>
+                          </div>
+                        </div>
+                        <Link href="/student/explore-courses">
+                          <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white text-xs">
+                            Kesfet <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                          </Button>
+                        </Link>
+                      </CardContent>
+                    </Card>
+                  )}
+                </section>
+              </>
             ) : (
-              /* ── Empty State: Onboarding Steps ── */
+              /* ══════ EMPTY STATE: ONBOARDING STEPS (hiç satın alma yok) ══════ */
               <section>
                 <Card className="border-0 shadow-sm overflow-hidden">
                   <CardContent className="p-6">
@@ -448,56 +646,6 @@ export default function StudentDashboardPage() {
                 </div>
               </section>
             )}
-
-            {/* ── Continue Learning (only if has courses) ── */}
-            {activeCourses.length > 0 && (
-              <section>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">Ogrenmeye Devam Et</h2>
-                  <Link href="/student/courses" className="text-sm text-teal-600 hover:text-teal-700 font-medium">
-                    Tumunu Gor
-                  </Link>
-                </div>
-                <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {activeCourses.slice(0, 3).map((course) => (
-                    <Link key={course.courseId} href={`/student/courses/${course.courseId}/learn`}>
-                      <Card className="border-0 shadow-sm overflow-hidden hover:shadow-md transition-all group cursor-pointer">
-                        <div className="relative h-28 bg-gradient-to-br from-teal-100 to-green-100 overflow-hidden">
-                          {course.coverImageUrl ? (
-                            <img
-                              src={course.coverImageUrl}
-                              alt={course.courseTitle}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <GraduationCap className="w-10 h-10 text-teal-300" />
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                            <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <PlayCircle className="w-5 h-5 text-teal-600" />
-                            </div>
-                          </div>
-                        </div>
-                        <CardContent className="p-3">
-                          <p className="font-medium text-gray-900 text-sm line-clamp-1 mb-1">{course.courseTitle}</p>
-                          <p className="text-xs text-gray-500 mb-2">{course.mentorName}</p>
-                          <div className="flex items-center gap-2">
-                            <Progress value={course.completionPercentage} className="h-1.5 flex-1" />
-                            <span className="text-xs text-gray-500 flex-shrink-0">{Math.round(course.completionPercentage)}%</span>
-                          </div>
-                          <div className="flex items-center justify-between mt-1.5 text-xs text-gray-400">
-                            <span>{course.completedLectures}/{course.totalLectures} ders</span>
-                            <span className="text-teal-600 font-medium">Devam Et →</span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
           </main>
 
           {/* ─────────── RIGHT PANEL ─────────── */}
@@ -567,96 +715,43 @@ export default function StudentDashboardPage() {
               </CardContent>
             </Card>
 
-            {/* Upcoming Group Classes */}
-            {activeEnrollments.length > 0 && (
-              <Card className="border-0 shadow-sm">
-                <CardHeader className="pb-2 px-4 pt-4">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm">Grup Derslerim</CardTitle>
-                    <Link href="/student/my-classes" className="text-xs text-teal-600 hover:text-teal-700">
-                      Tumunu Gor
-                    </Link>
-                  </div>
-                </CardHeader>
-                <CardContent className="px-3 pb-3 space-y-2">
-                  {activeEnrollments.slice(0, 2).map((enrollment) => (
-                    <Link key={enrollment.enrollmentId} href={`/student/group-classes/${enrollment.classId}`}>
-                      <div className="p-3 rounded-lg border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all">
-                        <p className="font-medium text-gray-900 text-xs line-clamp-1">{enrollment.classTitle}</p>
-                        <div className="flex items-center gap-2 mt-1 text-[11px] text-gray-500">
-                          <span className="flex items-center gap-0.5">
-                            <Calendar className="w-3 h-3" />
-                            {formatDate(enrollment.startAt, 'dd MMM HH:mm')}
-                          </span>
-                          <span>•</span>
-                          <span>{enrollment.mentorName}</span>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Explore Group Classes CTA (if no enrollments) */}
-            {activeEnrollments.length === 0 && (
-              <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-100 shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 bg-indigo-100 rounded-lg flex items-center justify-center">
-                      <Users className="w-4 h-4 text-indigo-600" />
+            {/* Quick Tips / Platform Highlights */}
+            <Card className="border-0 shadow-sm bg-gradient-to-br from-slate-50 to-gray-50">
+              <CardHeader className="pb-2 px-4 pt-4">
+                <CardTitle className="text-sm text-gray-700">Biliyor muydun?</CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-4">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-6 h-6 rounded-md bg-teal-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Video className="w-3.5 h-3.5 text-teal-600" />
                     </div>
-                    <p className="font-semibold text-indigo-900 text-sm">Grup Dersleri</p>
-                  </div>
-                  <p className="text-xs text-gray-600 mb-3">Canli grup derslerine katil, birlikte ogren.</p>
-                  <Link href="/student/explore-classes">
-                    <Button size="sm" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs">
-                      Kesfet <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Become Mentor CTA */}
-            {isStudent && !isMentor && (
-              <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-100 shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 bg-amber-100 rounded-lg flex items-center justify-center">
-                      <Sparkles className="w-4 h-4 text-amber-600" />
+                    <div>
+                      <p className="text-xs font-medium text-gray-800">Canli Gorusme</p>
+                      <p className="text-[11px] text-gray-500">Mentorunle yuz yuze video gorusme yapabilirsin</p>
                     </div>
-                    <p className="font-semibold text-amber-900 text-sm">Mentor Ol</p>
                   </div>
-                  <p className="text-xs text-gray-600 mb-3">Bilgini paylas, gelir kazan.</p>
-                  <Link href="/auth/onboarding/mentor?source=student">
-                    <Button size="sm" className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs">
-                      Basvur <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Explore Courses CTA */}
-            {activeCourses.length === 0 && (
-              <Card className="bg-gradient-to-br from-teal-50 to-green-50 border-teal-100 shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 bg-teal-100 rounded-lg flex items-center justify-center">
-                      <PlayCircle className="w-4 h-4 text-teal-600" />
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-6 h-6 rounded-md bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <BookOpen className="w-3.5 h-3.5 text-green-600" />
                     </div>
-                    <p className="font-semibold text-teal-900 text-sm">Video Kurslar</p>
+                    <div>
+                      <p className="text-xs font-medium text-gray-800">Kayit ve Tekrar</p>
+                      <p className="text-[11px] text-gray-500">Tum derslerini tekrar izleyebilirsin</p>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-600 mb-3">Kendi hizinda video derslerle ogren.</p>
-                  <Link href="/student/explore-courses">
-                    <Button size="sm" className="w-full bg-gradient-to-r from-teal-600 to-green-600 hover:from-teal-700 hover:to-green-700 text-white text-xs">
-                      Kesfet <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            )}
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-6 h-6 rounded-md bg-indigo-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <MessageSquare className="w-3.5 h-3.5 text-indigo-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-gray-800">Anlik Mesajlasma</p>
+                      <p className="text-[11px] text-gray-500">Mentorunle ders oncesi/sonrasi iletisim kur</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </aside>
         </div>
       </div>
