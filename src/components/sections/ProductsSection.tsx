@@ -1,6 +1,6 @@
 'use client';
 
-import { MessageSquare, Users, Video, Check, Zap } from 'lucide-react';
+import { MessageSquare, Users, Video, Check, Zap, Star } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -8,37 +8,58 @@ import { Card } from '@/components/ui/card';
 const products = [
   {
     icon: MessageSquare,
-    name: 'Bire Bir Gorusme',
-    desc: 'Ozel seanslar',
-    range: '₺150 - ₺500',
-    period: '/ saat',
+    name: 'Bire Bir Görüşme',
+    desc: 'Kişiye özel mentorluk',
     gradient: 'from-teal-500 to-cyan-600',
-    features: ['Kisisellestirilmis ogrenme', 'Esnek zamanlama', 'Kayit ve tekrar izleme', 'Anlik geri bildirim'],
+    features: [
+      'Sana özel plan ve rehberlik',
+      'Esnek zamanlama',
+      'Bireysel geri bildirim',
+      'Derinlemesine çalışma',
+      'Canlı görüşme',
+    ],
+    highlight: 'En hızlı ilerleme yöntemi',
     count: '350+ mentor',
+    href: '/public/mentors',
+    btnText: 'Mentor Bul',
     btnGradient: 'from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700',
     featured: false,
   },
   {
     icon: Users,
     name: 'Grup Dersleri',
-    desc: 'Kucuk grup egitimleri',
-    range: '₺80 - ₺250',
-    period: '/ ders',
+    desc: 'Küçük gruplarla canlı eğitim',
     gradient: 'from-green-500 to-emerald-600',
-    features: ['Max 10 kisilik gruplar', 'Toplulukla ogrenme', 'Uygun fiyatlar', 'Networking firsati'],
+    features: [
+      'Benzer hedefte kişilerle öğrenme',
+      'Canlı etkileşim',
+      'Soru-cevap imkanı',
+      'Networking fırsatı',
+      'Programlı ders akışı',
+    ],
+    highlight: 'Toplulukla öğrenmek isteyenler için',
     count: '180+ ders',
+    href: '/student/explore-classes',
+    btnText: 'Dersleri Keşfet',
     btnGradient: 'from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700',
     featured: true,
   },
   {
     icon: Video,
     name: 'Video Kurslar',
-    desc: 'Onceden kaydedilmis',
-    range: '₺299 - ₺1.499',
-    period: '/ kurs',
+    desc: 'Kendi hızında öğren',
     gradient: 'from-emerald-500 to-teal-600',
-    features: ['Omur boyu erisim', 'Kendi hizinda ogrenme', 'Indirilebilir kaynaklar', 'Sertifika programlari'],
+    features: [
+      'İstediğin zaman erişim',
+      'Adım adım anlatımlar',
+      'Tekrar izleme imkanı',
+      'Kaynak ve materyaller',
+      'Yapılandırılmış içerik',
+    ],
+    highlight: 'Zaman bağımsız öğrenme',
     count: '120+ kurs',
+    href: '/student/explore-courses',
+    btnText: 'Kursları Keşfet',
     btnGradient: 'from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700',
     featured: false,
   },
@@ -52,13 +73,13 @@ export default function ProductsSection() {
         <div className="text-center max-w-3xl mx-auto mb-14">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-50 rounded-full mb-4 border border-teal-200">
             <Zap className="w-4 h-4 text-teal-600" />
-            <span className="text-sm text-teal-700">3 Farkli Ogrenme Yolu</span>
+            <span className="text-sm text-teal-700">3 Farklı Öğrenme Yolu</span>
           </div>
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-            Pazaryerimizde Neler Sunuluyor?
+            Nasıl Öğrenmek İstersin?
           </h2>
           <p className="text-lg text-gray-600">
-            Mentorlerimiz farkli formatlarda hizmet sunuyor. Fiyatlari kendileri belirliyor.
+            Sana en uygun mentorluk formatını seç ve hemen başla.
           </p>
         </div>
 
@@ -68,7 +89,7 @@ export default function ProductsSection() {
             return (
               <Card
                 key={i}
-                className={`p-6 border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+                className={`p-6 border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col ${
                   s.featured ? 'border-green-300 shadow-lg' : 'border-gray-100 hover:border-teal-200'
                 }`}
               >
@@ -77,13 +98,10 @@ export default function ProductsSection() {
                 >
                   <Icon className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{s.name}</h3>
-                <p className="text-gray-600 mb-4 text-sm">{s.desc}</p>
-                <div className="mb-5">
-                  <span className="text-3xl font-bold text-gray-900">{s.range}</span>
-                  <span className="text-gray-500 text-sm">{s.period}</span>
-                </div>
-                <ul className="space-y-2 mb-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-1">{s.name}</h3>
+                <p className="text-gray-600 mb-5 text-sm">{s.desc}</p>
+
+                <ul className="space-y-2.5 mb-5 flex-1">
                   {s.features.map((f, j) => (
                     <li key={j} className="flex items-center gap-2 text-sm text-gray-700">
                       <Check className="w-4 h-4 text-teal-600 flex-shrink-0" />
@@ -91,11 +109,18 @@ export default function ProductsSection() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/public/mentors">
+
+                {/* Güçlü ek satır */}
+                <div className="flex items-center gap-2 mb-5 px-3 py-2 bg-teal-50 rounded-lg border border-teal-100">
+                  <Star className="w-4 h-4 text-teal-600 flex-shrink-0" />
+                  <span className="text-sm font-medium text-teal-800">{s.highlight}</span>
+                </div>
+
+                <Link href={s.href}>
                   <Button
                     className={`w-full bg-gradient-to-r ${s.btnGradient} text-white`}
                   >
-                    Kesfet
+                    {s.btnText}
                   </Button>
                 </Link>
                 <p className="text-center text-xs text-gray-500 mt-2">{s.count} mevcut</p>
