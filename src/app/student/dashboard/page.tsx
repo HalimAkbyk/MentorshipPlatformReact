@@ -38,15 +38,15 @@ export default function StudentDashboardPage() {
   const router = useRouter();
 
   /* ── Data hooks ── */
-  const { data: confirmedBookings } = useBookings(BookingStatus.Confirmed);
-  const { data: completedBookings } = useBookings(BookingStatus.Completed, 1, 3);
+  const { data: confirmedData } = useBookings(BookingStatus.Confirmed);
+  const { data: allBookingsData } = useBookings(undefined, 1, 1); // status=undefined → tüm bookings, sadece totalCount için
   const { data: conversations } = useConversations();
   const { data: unreadData } = useUnreadCount();
   const { data: enrolledCourses } = useEnrolledCourses(1, 3);
   const { data: enrollments } = useMyEnrollments(1, 3);
 
   /* ── Derived state ── */
-  const upcomingBookings = confirmedBookings ?? [];
+  const upcomingBookings = confirmedData?.items ?? [];
   const nextBooking = upcomingBookings[0];
   const profileComplete = Boolean(user?.displayName && user?.birthYear && user?.phone);
   const hasBookings = upcomingBookings.length > 0;
@@ -54,12 +54,12 @@ export default function StudentDashboardPage() {
   const activeCourses = enrolledCourses?.items ?? [];
   const activeEnrollments = enrollments?.items ?? [];
   const recentConversations = (conversations ?? []).slice(0, 3);
-  const pastBookings = completedBookings?.items ?? [];
+  const totalBookingsEver = allBookingsData?.totalCount ?? 0;
 
-  /* Determine if user has ANY purchase history */
+  /* Determine if user has ANY purchase history (any status booking, any enrollment, any course) */
   const hasAnyPurchase = useMemo(() => {
-    return hasBookings || pastBookings.length > 0 || activeCourses.length > 0 || activeEnrollments.length > 0;
-  }, [hasBookings, pastBookings, activeCourses, activeEnrollments]);
+    return totalBookingsEver > 0 || activeCourses.length > 0 || activeEnrollments.length > 0;
+  }, [totalBookingsEver, activeCourses, activeEnrollments]);
 
   /* ── Room status polling ── */
   const [roomStatus, setRoomStatus] = useState<RoomStatus | null>(null);
