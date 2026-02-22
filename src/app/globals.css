@@ -10,28 +10,28 @@
     --card-foreground: 215 25% 20%;
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 20%;
-    --primary: 73 55% 46%;
+    --primary: 170 83% 29%;
     --primary-foreground: 0 0% 100%;
     --secondary: 210 20% 96%;
     --secondary-foreground: 215 25% 20%;
     --muted: 210 20% 96%;
     --muted-foreground: 210 12% 46%;
-    --accent: 180 30% 42%;
+    --accent: 142 71% 45%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 25% 91%;
     --input: 214.3 25% 91%;
-    --ring: 73 55% 46%;
+    --ring: 170 83% 29%;
     --radius: 0.5rem;
 
     /* ═══════════════════════════════════════
-       LOGO-BASED DESIGN TOKENS
+       FIGMA DESIGN TOKENS (Teal/Green)
     ═══════════════════════════════════════ */
-    --color-lime: #94B835;
+    --color-teal: #0d9488;
+    --color-green: #16a34a;
     --color-navy: #2B3544;
-    --color-teal: #4A8C8C;
-    --color-sage: #6B9F82;
+    --color-emerald: #10b981;
 
     --color-success: #10B981;
     --color-warning: #F59E0B;
@@ -39,26 +39,26 @@
     --color-star: #FBBF24;
 
     --bg-primary: #FAFBFC;
-    --bg-secondary: #F1F5F2;
-    --bg-dark: #1A2230;
-    --bg-hero: #F0F5F1;
+    --bg-secondary: #f0fdfa;
+    --bg-dark: #111827;
+    --bg-hero: #f0fdfa;
 
-    --text-primary: #2B3544;
-    --text-secondary: #516678;
-    --text-muted: #7A8FA0;
-    --text-on-lime: #FFFFFF;
-    --text-on-dark: #F0F3F5;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-muted: #9ca3af;
+    --text-on-teal: #FFFFFF;
+    --text-on-dark: #f9fafb;
 
-    --gradient-hero: linear-gradient(135deg, #2B3544 0%, #4A8C8C 60%, #94B835 100%);
-    --gradient-hero-soft: linear-gradient(135deg, #F0F5F1 0%, #EFFCF8 50%, #F7FBE8 100%);
-    --gradient-cta: linear-gradient(135deg, #94B835 0%, #7A9A22 100%);
-    --gradient-cta-hover: linear-gradient(135deg, #AECC42 0%, #94B835 100%);
-    --gradient-stats: linear-gradient(135deg, #1A2230 0%, #2B3544 50%, #222B38 100%);
-    --gradient-promo: linear-gradient(135deg, #4A8C8C 0%, #94B835 100%);
-    --gradient-card-hover: linear-gradient(180deg, rgba(148,184,53,0.04) 0%, rgba(74,140,140,0.04) 100%);
-    --gradient-mesh: radial-gradient(ellipse at 20% 80%, rgba(74,140,140,0.15) 0%, transparent 50%),
-                     radial-gradient(ellipse at 80% 20%, rgba(148,184,53,0.12) 0%, transparent 50%),
-                     radial-gradient(ellipse at 50% 50%, rgba(107,159,130,0.08) 0%, transparent 60%);
+    --gradient-hero: linear-gradient(135deg, #0d9488 0%, #16a34a 100%);
+    --gradient-hero-soft: linear-gradient(135deg, #f0fdfa 0%, #f0fdf4 50%, #ecfdf5 100%);
+    --gradient-cta: linear-gradient(135deg, #0d9488 0%, #16a34a 100%);
+    --gradient-cta-hover: linear-gradient(135deg, #0f766e 0%, #15803d 100%);
+    --gradient-stats: linear-gradient(135deg, #111827 0%, #1f2937 50%, #111827 100%);
+    --gradient-promo: linear-gradient(135deg, #0d9488 0%, #16a34a 100%);
+    --gradient-card-hover: linear-gradient(180deg, rgba(13,148,136,0.04) 0%, rgba(22,163,74,0.04) 100%);
+    --gradient-mesh: radial-gradient(ellipse at 20% 80%, rgba(13,148,136,0.15) 0%, transparent 50%),
+                     radial-gradient(ellipse at 80% 20%, rgba(22,163,74,0.12) 0%, transparent 50%),
+                     radial-gradient(ellipse at 50% 50%, rgba(16,185,129,0.08) 0%, transparent 60%);
   }
 
   .dark {
@@ -68,19 +68,19 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 73 55% 50%;
+    --primary: 170 83% 35%;
     --primary-foreground: 222.2 47.4% 11.2%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 180 30% 46%;
+    --accent: 142 71% 50%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 73 55% 50%;
+    --ring: 170 83% 35%;
   }
 
   * {
@@ -95,6 +95,14 @@
 }
 
 @layer utilities {
+  /* Grid pattern for hero sections */
+  .bg-grid-pattern {
+    background-image:
+      linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
   /* Glassmorphism */
   .glass {
     background: rgba(255, 255, 255, 0.82);

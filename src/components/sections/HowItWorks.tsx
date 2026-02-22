@@ -64,10 +64,10 @@ export default function HowItWorks() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="font-heading text-3xl md:text-4xl font-bold text-navy-600">
+          <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900">
             Nasıl Çalışır?
           </h2>
-          <p className="mt-4 text-navy-300 text-lg max-w-2xl mx-auto">
+          <p className="mt-4 text-gray-500 text-lg max-w-2xl mx-auto">
             Dört basit adımda hedeflerine ulaşmaya başla
           </p>
         </div>
@@ -102,24 +102,24 @@ export default function HowItWorks() {
               >
                 {/* Step number circle */}
                 <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-lime-500/25"
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-teal-500/25"
                   style={{ background: 'var(--gradient-cta)' }}
                 >
                   {step.number}
                 </div>
 
                 {/* Icon container */}
-                <div className="mt-5 w-12 h-12 rounded-2xl bg-navy-50 flex items-center justify-center">
-                  <Icon className="w-6 h-6 text-navy-600" />
+                <div className="mt-5 w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center">
+                  <Icon className="w-6 h-6 text-gray-900" />
                 </div>
 
                 {/* Title */}
-                <h3 className="mt-4 font-heading font-bold text-navy-600 text-lg">
+                <h3 className="mt-4 font-heading font-bold text-gray-900 text-lg">
                   {step.title}
                 </h3>
 
                 {/* Description */}
-                <p className="mt-2 text-navy-300 text-sm max-w-[220px]">
+                <p className="mt-2 text-gray-500 text-sm max-w-[220px]">
                   {step.description}
                 </p>
               </motion.div>

@@ -122,7 +122,7 @@ export function ConversationDetail({ conversation, bookingDetailHref }: Conversa
               className={cn(
                 'rounded-2xl px-3.5 py-2 text-sm relative',
                 msg.isOwnMessage
-                  ? 'bg-lime-100 text-gray-800 rounded-tr-md'
+                  ? 'bg-teal-100 text-gray-800 rounded-tr-md'
                   : 'bg-white border border-gray-200 text-gray-800 rounded-tl-md'
               )}
             >
@@ -161,7 +161,7 @@ export function ConversationDetail({ conversation, bookingDetailHref }: Conversa
           placeholder="Mesajınızı yazın..."
           maxLength={2000}
           rows={1}
-          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-300 resize-none min-h-[38px] max-h-[100px]"
+          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 resize-none min-h-[38px] max-h-[100px]"
         />
         <Button
           size="sm"

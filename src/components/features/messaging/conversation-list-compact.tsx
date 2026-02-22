@@ -108,7 +108,7 @@ export function ConversationListCompact({ isOpen, onSelectConversation, onClose 
                       {conv.lastMessageContent}
                     </p>
                     {conv.unreadCount > 0 && (
-                      <span className="bg-lime-500 text-white text-[9px] font-bold rounded-full w-4.5 h-4.5 min-w-[18px] px-1 flex items-center justify-center shrink-0">
+                      <span className="bg-teal-500 text-white text-[9px] font-bold rounded-full w-4.5 h-4.5 min-w-[18px] px-1 flex items-center justify-center shrink-0">
                         {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
                       </span>
                     )}

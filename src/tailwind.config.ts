@@ -42,7 +42,7 @@ const config: Config = {
         //  LOGO-BASED BRAND PALETTE
         // ═══════════════════════════════════════════════
 
-        // 🟢 LIME — Logo "MENTORLUK" rengi — Ana CTA / vurgu
+        // 🟢 LIME — Legacy lime palette (kept for backward compat)
         lime: {
           50:  "#F7FBE8",
           100: "#EEF7C8",
@@ -56,7 +56,7 @@ const config: Config = {
           900: "#3D5112",
         },
 
-        // 🔵 NAVY — Logo "DEĞİŞİM" rengi — Metin / Başlık
+        // 🔵 NAVY — Metin / Baslik
         navy: {
           50:  "#F0F3F5",
           100: "#D8DFE5",
@@ -70,55 +70,64 @@ const config: Config = {
           900: "#111827",
         },
 
-        // 🩵 TEAL — Logo "D" ikonu rengi — İkincil aksanlar
+        // 🩵 TEAL — Ana marka rengi (Figma tasarim paleti)
         teal: {
-          50:  "#EFFCF8",
-          100: "#D0F5EB",
-          200: "#A3E8D6",
-          300: "#6DD4BC",
-          400: "#4A8C8C",
-          500: "#3D7A7A",
-          600: "#306666",
-          700: "#265252",
-          800: "#1D3F3F",
-          900: "#142D2D",
+          50:  "#f0fdfa",
+          100: "#ccfbf1",
+          200: "#99f6e4",
+          300: "#5eead4",
+          400: "#2dd4bf",
+          500: "#14b8a6",
+          600: "#0d9488",
+          700: "#0f766e",
+          800: "#115e59",
+          900: "#134e4a",
         },
 
-        // 🌿 SAGE — Logo ikon geçiş tonu
-        sage: {
-          400: "#6B9F82",
-          500: "#5A8A6F",
-          600: "#4A755E",
+        // 🌿 EMERALD — Gecis tonu
+        emerald: {
+          50:  "#ecfdf5",
+          100: "#d1fae5",
+          200: "#a7f3d0",
+          300: "#6ee7b7",
+          400: "#34d399",
+          500: "#10b981",
+          600: "#059669",
+          700: "#047857",
+          800: "#065f46",
+          900: "#064e3b",
         },
 
-        // ── BACKWARD COMPAT (primary/accent CSS vars for shadcn) ──
+        // ── PRIMARY = TEAL (Figma design system) ──
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
-          50:  "#F7FBE8",
-          100: "#EEF7C8",
-          200: "#DDEF9C",
-          300: "#C5E266",
-          400: "#AECC42",
-          500: "#94B835",
-          600: "#7A9A22",
-          700: "#5E7A1A",
-          800: "#4A6115",
-          900: "#3D5112",
+          50:  "#f0fdfa",
+          100: "#ccfbf1",
+          200: "#99f6e4",
+          300: "#5eead4",
+          400: "#2dd4bf",
+          500: "#14b8a6",
+          600: "#0d9488",
+          700: "#0f766e",
+          800: "#115e59",
+          900: "#134e4a",
         },
+
+        // ── ACCENT = GREEN (Figma design system) ──
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
-          50:  "#EFFCF8",
-          100: "#D0F5EB",
-          200: "#A3E8D6",
-          300: "#6DD4BC",
-          400: "#4A8C8C",
-          500: "#3D7A7A",
-          600: "#306666",
-          700: "#265252",
-          800: "#1D3F3F",
-          900: "#142D2D",
+          50:  "#f0fdf4",
+          100: "#dcfce7",
+          200: "#bbf7d0",
+          300: "#86efac",
+          400: "#4ade80",
+          500: "#22c55e",
+          600: "#16a34a",
+          700: "#15803d",
+          800: "#166534",
+          900: "#14532d",
         },
 
         cyan: {

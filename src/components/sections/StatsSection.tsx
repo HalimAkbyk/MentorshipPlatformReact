@@ -85,12 +85,12 @@ function StatCell({ icon: Icon, label, end, suffix = '', decimals = 0 }: StatCel
     <motion.div variants={itemVariants} className="text-center py-4 md:py-0">
       <div ref={ref} className="flex flex-col items-center gap-3">
         <div className="flex items-center justify-center h-14 w-14 rounded-2xl bg-white/[0.06]">
-          <Icon className="h-8 w-8 text-lime-400" />
+          <Icon className="h-8 w-8 text-teal-400" />
         </div>
         <span className="font-heading text-4xl md:text-5xl font-extrabold text-white tabular-nums tracking-tight">
           {formattedValue}
         </span>
-        <span className="text-sm text-navy-300">{label}</span>
+        <span className="text-sm text-gray-400">{label}</span>
       </div>
     </motion.div>
   );
@@ -125,7 +125,7 @@ export default function StatsSection() {
         className="absolute inset-0 pointer-events-none"
         aria-hidden="true"
       >
-        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-72 h-72 bg-lime-500/[0.04] rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-72 h-72 bg-teal-500/[0.04] rounded-full blur-3xl" />
         <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-64 h-64 bg-teal-400/[0.04] rounded-full blur-3xl" />
       </div>
 

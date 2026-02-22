@@ -25,10 +25,10 @@ function dismissBannerId(id: string) {
 }
 
 const GRADIENT_PRESETS = [
-  'from-indigo-600 via-purple-600 to-pink-500',
+  'from-teal-600 via-emerald-600 to-green-600',
   'from-emerald-500 to-teal-600',
-  'from-orange-500 to-red-500',
-  'from-blue-600 to-cyan-500',
+  'from-teal-700 to-green-600',
+  'from-green-600 via-teal-600 to-emerald-600',
 ];
 
 export function TopBanner() {

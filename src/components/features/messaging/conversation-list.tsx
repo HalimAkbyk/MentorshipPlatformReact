@@ -41,7 +41,7 @@ function ConversationItem({
       className={cn(
         'w-full text-left px-4 py-3 transition-colors hover:bg-gray-50 border-l-2',
         isActive
-          ? 'bg-lime-50 border-l-lime-500'
+          ? 'bg-teal-50 border-l-teal-500'
           : 'border-l-transparent',
         conversation.unreadCount > 0 && !isActive && 'bg-blue-50/30'
       )}
@@ -85,7 +85,7 @@ function ConversationItem({
                 {conversation.lastMessageContent}
               </p>
               {conversation.unreadCount > 0 && (
-                <span className="bg-lime-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shrink-0">
+                <span className="bg-teal-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shrink-0">
                   {conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}
                 </span>
               )}

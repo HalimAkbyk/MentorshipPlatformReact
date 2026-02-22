@@ -44,7 +44,7 @@ export default function CmsHeroBanner({
   const title = content.title || moduleTitle;
   const subtitle = content.subtitle || moduleSubtitle || '';
   const description = content.description || '';
-  const gradient = content.gradient || 'from-indigo-600 via-indigo-700 to-purple-800';
+  const gradient = content.gradient || 'from-teal-600 via-teal-700 to-green-800';
   const badge = content.badge;
   const primaryCta = content.primaryCta;
   const secondaryCta = content.secondaryCta;
@@ -124,7 +124,7 @@ export default function CmsHeroBanner({
                 {primaryCta && (
                   <Link
                     href={primaryCta.url}
-                    className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-indigo-700 font-semibold rounded-xl hover:bg-white/90 transition-all shadow-lg hover:shadow-xl text-base"
+                    className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-teal-700 font-semibold rounded-xl hover:bg-white/90 transition-all shadow-lg hover:shadow-xl text-base"
                   >
                     {primaryCta.text}
                     <ArrowRight className="w-4 h-4" />

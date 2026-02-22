@@ -85,11 +85,11 @@ export function FloatingChatWidget() {
           )}
         >
           {/* Popup Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-navy-700 text-white">
+          <div className="flex items-center justify-between px-4 py-3 bg-teal-700 text-white">
             <h3 className="font-semibold text-sm">Mesajlarım</h3>
             <button
               onClick={handleClose}
-              className="p-1 hover:bg-navy-600 rounded-md transition-colors"
+              className="p-1 hover:bg-teal-600 rounded-md transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -122,7 +122,7 @@ export function FloatingChatWidget() {
           'w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 relative',
           view !== 'closed'
             ? 'bg-gray-600 hover:bg-gray-700'
-            : 'bg-navy-700 hover:bg-navy-800'
+            : 'bg-teal-700 hover:bg-teal-800'
         )}
         aria-label={view !== 'closed' ? 'Mesajları kapat' : 'Mesajlar'}
       >

@@ -91,8 +91,8 @@ const HOW_STEPS: HowStep[] = [
     title: 'Keşfet & Seç',
     desc: 'İhtiyacına uygun eğitim ürününü bul. Mentorları incele, kurslara göz at veya grup derslerini keşfet.',
     products: ['1:1 Ders', 'Video Kurs', 'Grup Dersi'],
-    gradient: 'from-lime-500 to-lime-600',
-    iconBg: 'bg-lime-50 text-lime-600',
+    gradient: 'from-teal-500 to-teal-600',
+    iconBg: 'bg-teal-50 text-teal-600',
   },
   {
     num: 2,
@@ -100,7 +100,7 @@ const HOW_STEPS: HowStep[] = [
     title: 'Planla & Kayıt Ol',
     desc: 'Uygun zamanı seç, ödeme yap ve hemen başla. Güvenli ödeme altyapısıyla tek tıkla kayıt ol.',
     products: ['Esnek Takvim', 'Güvenli Ödeme', 'Anında Erişim'],
-    gradient: 'from-teal-400 to-teal-500',
+    gradient: 'from-teal-500 to-teal-600',
     iconBg: 'bg-teal-50 text-teal-600',
   },
   {
@@ -109,8 +109,8 @@ const HOW_STEPS: HowStep[] = [
     title: 'Öğren & Gelişim',
     desc: 'Canlı derslerle bire bir öğren, video kurslarla kendi hızında ilerle, sınavlarla kendini test et.',
     products: ['Canlı Video', 'İlerleme Takibi', 'Sertifika'],
-    gradient: 'from-violet-500 to-violet-600',
-    iconBg: 'bg-violet-50 text-violet-600',
+    gradient: 'from-green-500 to-green-600',
+    iconBg: 'bg-green-50 text-green-600',
   },
 ];
 
@@ -129,15 +129,15 @@ function DecorativeVisual() {
   return (
     <div className="relative w-full max-w-md mx-auto">
       {/* Main card */}
-      <div className="relative rounded-2xl bg-white/80 backdrop-blur-sm border border-navy-100 shadow-xl p-6 space-y-5 overflow-hidden">
+      <div className="relative rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-200 shadow-xl p-6 space-y-5 overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-lime-500 to-lime-600 flex items-center justify-center">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
             <GraduationCap className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="font-heading font-bold text-navy-600 text-sm">Nasıl Çalışır?</p>
-            <p className="text-xs text-navy-300">3 adımda başla</p>
+            <p className="font-heading font-bold text-gray-900 text-sm">Nasıl Çalışır?</p>
+            <p className="text-xs text-gray-500">3 adımda başla</p>
           </div>
         </div>
 
@@ -159,18 +159,18 @@ function DecorativeVisual() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-navy-300 uppercase tracking-wider">
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                       Adım {step.num}
                     </span>
                   </div>
-                  <p className="font-heading font-bold text-navy-600 text-base">
+                  <p className="font-heading font-bold text-gray-900 text-base">
                     {step.title}
                   </p>
                 </div>
               </div>
 
               {/* Description */}
-              <p className="text-sm text-navy-400 leading-relaxed">
+              <p className="text-sm text-gray-600 leading-relaxed">
                 {step.desc}
               </p>
 
@@ -198,8 +198,8 @@ function DecorativeVisual() {
               onClick={() => setActiveStep(i)}
               className={`transition-all duration-300 rounded-full ${
                 i === activeStep
-                  ? 'w-8 h-2.5 bg-gradient-to-r from-lime-500 to-teal-400'
-                  : 'w-2.5 h-2.5 bg-navy-200 hover:bg-navy-300'
+                  ? 'w-8 h-2.5 bg-gradient-to-r from-teal-500 to-green-500'
+                  : 'w-2.5 h-2.5 bg-gray-200 hover:bg-gray-300'
               }`}
             />
           ))}
@@ -208,12 +208,12 @@ function DecorativeVisual() {
 
       {/* Floating accent elements */}
       <motion.div
-        className="absolute -top-4 -right-4 h-20 w-20 rounded-2xl bg-gradient-to-br from-teal-400/20 to-lime-500/20 backdrop-blur-sm border border-white/40"
+        className="absolute -top-4 -right-4 h-20 w-20 rounded-2xl bg-gradient-to-br from-teal-400/20 to-green-500/20 backdrop-blur-sm border border-white/40"
         animate={{ y: [0, -8, 0] }}
         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
       />
       <motion.div
-        className="absolute -bottom-3 -left-3 h-14 w-14 rounded-xl bg-gradient-to-br from-lime-500/20 to-violet-400/20 backdrop-blur-sm border border-white/40"
+        className="absolute -bottom-3 -left-3 h-14 w-14 rounded-xl bg-gradient-to-br from-teal-500/20 to-green-400/20 backdrop-blur-sm border border-white/40"
         animate={{ y: [0, 6, 0] }}
         transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
       />
@@ -272,17 +272,17 @@ export default function HeroCarousel() {
             <motion.h1
               variants={fadeInLeft}
               transition={{ duration: 0.6, ease: 'easeOut' }}
-              className="font-heading text-4xl md:text-5xl lg:text-6xl font-extrabold text-navy-600 leading-tight"
+              className="font-heading text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight"
             >
               YKS&apos;de{' '}
-              <span className="text-lime-500">Fark Yarat</span>
+              <span className="text-teal-500">Fark Yarat</span>
             </motion.h1>
 
             {/* Subtitle */}
             <motion.p
               variants={fadeInLeft}
               transition={{ duration: 0.6, ease: 'easeOut' }}
-              className="text-lg text-navy-300 max-w-lg"
+              className="text-lg text-gray-500 max-w-lg"
             >
               Türkiye&apos;nin en iyi mentorlarından birebir destek al,
               video derslerle hazırlan ve hedefine bir adım daha yaklaş.
@@ -296,7 +296,7 @@ export default function HeroCarousel() {
               className="relative max-w-lg"
             >
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-navy-300" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
                 <input
                   type="text"
                   value={searchQuery}
@@ -304,10 +304,10 @@ export default function HeroCarousel() {
                   placeholder="Ders veya mentor ara..."
                   className="
                     w-full h-14 pl-12 pr-4 rounded-2xl
-                    bg-white border border-navy-100
-                    text-navy-600 placeholder:text-navy-200
-                    focus:outline-none focus:border-lime-500
-                    focus:ring-2 focus:ring-lime-500/20
+                    bg-white border border-gray-200
+                    text-gray-900 placeholder:text-gray-300
+                    focus:outline-none focus:border-teal-500
+                    focus:ring-2 focus:ring-teal-500/20
                     transition-all duration-200
                     text-base
                   "
@@ -326,9 +326,9 @@ export default function HeroCarousel() {
                     inline-flex items-center gap-2
                     rounded-xl px-8 py-4
                     text-white font-semibold text-base
-                    shadow-lg shadow-lime-500/25
+                    shadow-lg shadow-teal-500/25
                     transition-all duration-200
-                    hover:scale-[1.03] hover:shadow-xl hover:shadow-lime-500/30
+                    hover:scale-[1.03] hover:shadow-xl hover:shadow-teal-500/30
                     active:scale-[0.98]
                   "
                   style={{ background: 'var(--gradient-cta)' }}
@@ -349,9 +349,9 @@ export default function HeroCarousel() {
                   key={item.text}
                   variants={fadeInUp}
                   transition={{ duration: 0.4, ease: 'easeOut' }}
-                  className="flex items-center gap-2 text-sm text-navy-400"
+                  className="flex items-center gap-2 text-sm text-gray-600"
                 >
-                  <CheckCircle2 className="h-4.5 w-4.5 text-lime-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-4.5 w-4.5 text-teal-500 flex-shrink-0" />
                   <span className="font-medium">{item.text}</span>
                 </motion.div>
               ))}

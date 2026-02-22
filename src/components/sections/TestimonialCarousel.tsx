@@ -33,18 +33,18 @@ const cardVariants: Variants = {
 function TestimonialSkeleton() {
   return (
     <div className="bg-white rounded-2xl p-8 shadow-lg animate-pulse">
-      <div className="h-10 w-10 bg-lime-100 rounded mb-4" />
+      <div className="h-10 w-10 bg-teal-200 rounded mb-4" />
       <div className="space-y-2 mb-6">
-        <div className="h-4 bg-navy-50 rounded w-full" />
-        <div className="h-4 bg-navy-50 rounded w-5/6" />
-        <div className="h-4 bg-navy-50 rounded w-4/6" />
+        <div className="h-4 bg-gray-100 rounded w-full" />
+        <div className="h-4 bg-gray-100 rounded w-5/6" />
+        <div className="h-4 bg-gray-100 rounded w-4/6" />
       </div>
-      <div className="h-8 bg-lime-50 rounded-lg w-2/3 mb-6" />
+      <div className="h-8 bg-teal-50 rounded-lg w-2/3 mb-6" />
       <div className="flex items-center gap-3">
-        <div className="w-16 h-16 rounded-full bg-navy-50" />
+        <div className="w-16 h-16 rounded-full bg-gray-100" />
         <div className="space-y-2">
-          <div className="h-4 bg-navy-50 rounded w-24" />
-          <div className="h-3 bg-navy-50 rounded w-32" />
+          <div className="h-4 bg-gray-100 rounded w-24" />
+          <div className="h-3 bg-gray-100 rounded w-32" />
         </div>
       </div>
     </div>
@@ -94,18 +94,18 @@ function TestimonialCard({ testimonial }: { testimonial: TestimonialDto }) {
       className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
     >
       {/* Decorative quote mark */}
-      <div className="text-6xl font-serif text-lime-100 leading-none select-none mb-2">
+      <div className="text-6xl font-serif text-teal-100 leading-none select-none mb-2">
         &ldquo;
       </div>
 
       {/* Quote */}
-      <p className="text-navy-400 italic text-sm leading-relaxed mb-6">
+      <p className="text-gray-600 italic text-sm leading-relaxed mb-6">
         {testimonial.quote}
       </p>
 
       {/* Score improvement badge */}
       {diff != null && (
-        <div className="inline-flex items-center gap-1.5 bg-lime-50 border border-lime-200 text-lime-700 text-sm font-medium rounded-lg px-3 py-1.5 mb-6">
+        <div className="inline-flex items-center gap-1.5 bg-teal-50 border border-teal-200 text-teal-700 text-sm font-medium rounded-lg px-3 py-1.5 mb-6">
           <span>TYT: {testimonial.scoreBefore} &rarr; {testimonial.scoreAfter}</span>
           <span className="font-bold">(+{diff})</span>
         </div>
@@ -113,23 +113,23 @@ function TestimonialCard({ testimonial }: { testimonial: TestimonialDto }) {
 
       {/* Student info */}
       <div className="flex items-center gap-3 mb-3">
-        <Avatar className="w-16 h-16 border-[3px] border-lime-300">
+        <Avatar className="w-16 h-16 border-[3px] border-teal-300">
           {testimonial.studentAvatar ? (
             <AvatarImage
               src={testimonial.studentAvatar}
               alt={testimonial.studentName}
             />
           ) : null}
-          <AvatarFallback className="bg-navy-50 text-navy-600 font-semibold text-sm">
+          <AvatarFallback className="bg-gray-100 text-gray-900 font-semibold text-sm">
             {initials}
           </AvatarFallback>
         </Avatar>
 
         <div className="min-w-0">
-          <p className="font-heading font-bold text-navy-600 text-sm truncate">
+          <p className="font-heading font-bold text-gray-900 text-sm truncate">
             {testimonial.studentName}
           </p>
-          <p className="text-xs text-navy-300 truncate">
+          <p className="text-xs text-gray-500 truncate">
             {testimonial.university}
           </p>
         </div>
@@ -141,7 +141,7 @@ function TestimonialCard({ testimonial }: { testimonial: TestimonialDto }) {
       </div>
 
       {/* Mentor attribution */}
-      <p className="text-xs text-navy-300">
+      <p className="text-xs text-gray-500">
         Mentor: {testimonial.mentorName}
       </p>
     </motion.div>
@@ -156,14 +156,14 @@ export default function TestimonialCarousel() {
   const { data: testimonials, isLoading } = useTestimonials();
 
   return (
-    <section className="py-20 bg-lime-50/30">
+    <section className="py-20 bg-teal-50/30">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="font-heading text-3xl md:text-4xl font-bold text-navy-600">
+          <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900">
             Öğrencilerimiz Ne Diyor?
           </h2>
-          <p className="mt-4 text-navy-300 text-lg max-w-2xl mx-auto">
+          <p className="mt-4 text-gray-500 text-lg max-w-2xl mx-auto">
             Binlerce öğrenci mentorluk hizmeti ile hedeflerine ulaştı
           </p>
         </div>

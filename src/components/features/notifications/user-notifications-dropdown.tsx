@@ -113,7 +113,7 @@ export function UserNotificationsDropdown() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setOpen((prev) => !prev)}
-        className="relative p-2 text-navy-400 hover:text-navy-600 hover:bg-navy-50 rounded-lg transition-colors"
+        className="relative p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
@@ -124,15 +124,15 @@ export function UserNotificationsDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl border border-navy-100 shadow-xl z-50">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl border border-gray-200 shadow-xl z-50">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-navy-100">
-            <h3 className="text-sm font-semibold text-navy-600">Bildirimler</h3>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-900">Bildirimler</h3>
             {unreadCount > 0 && (
               <button
                 onClick={() => markAllReadMutation.mutate()}
                 disabled={markAllReadMutation.isPending}
-                className="text-xs text-lime-600 hover:text-lime-700 font-medium flex items-center gap-1"
+                className="text-xs text-teal-600 hover:text-teal-700 font-medium flex items-center gap-1"
               >
                 <CheckCheck className="h-3.5 w-3.5" />
                 Tumunu okundu isaretle
@@ -144,10 +144,10 @@ export function UserNotificationsDropdown() {
           <div className="max-h-[400px] overflow-y-auto">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-5 w-5 animate-spin text-navy-300" />
+                <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
               </div>
             ) : notifications.length === 0 ? (
-              <div className="text-center py-8 text-sm text-navy-300">
+              <div className="text-center py-8 text-sm text-gray-500">
                 Bildirim yok.
               </div>
             ) : (
@@ -157,21 +157,21 @@ export function UserNotificationsDropdown() {
                   <div
                     key={notif.id}
                     onClick={() => handleNotificationClick(notif)}
-                    className={`flex items-start gap-3 px-4 py-3 hover:bg-navy-50 transition-colors border-b border-navy-50 ${
+                    className={`flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 ${
                       navUrl ? 'cursor-pointer' : ''
-                    } ${!notif.isRead ? 'bg-lime-50/50' : ''}`}
+                    } ${!notif.isRead ? 'bg-teal-50/50' : ''}`}
                   >
                     <div className="mt-0.5 shrink-0">
                       <NotificationIcon type={notif.type} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className={`text-sm ${notif.isRead ? 'text-navy-500' : 'text-navy-700 font-medium'}`}>
+                      <p className={`text-sm ${notif.isRead ? 'text-gray-700' : 'text-gray-900 font-medium'}`}>
                         {notif.title}
                       </p>
-                      <p className="text-xs text-navy-300 mt-0.5 line-clamp-2">
+                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
                         {notif.message}
                       </p>
-                      <p className="text-[10px] text-navy-200 mt-1">{timeAgo(notif.createdAt)}</p>
+                      <p className="text-[10px] text-gray-400 mt-1">{timeAgo(notif.createdAt)}</p>
                     </div>
                     {!notif.isRead && (
                       <button
@@ -179,7 +179,7 @@ export function UserNotificationsDropdown() {
                           e.stopPropagation();
                           markReadMutation.mutate(notif.id);
                         }}
-                        className="shrink-0 p-1 text-navy-300 hover:text-lime-600 transition-colors"
+                        className="shrink-0 p-1 text-gray-500 hover:text-teal-600 transition-colors"
                         title="Okundu isaretle"
                       >
                         <Check className="h-3.5 w-3.5" />
@@ -192,7 +192,7 @@ export function UserNotificationsDropdown() {
           </div>
 
           {/* Footer - Bildirimleri Gor link */}
-          <div className="border-t border-navy-100 px-4 py-2.5">
+          <div className="border-t border-gray-200 px-4 py-2.5">
             <Link
               href={notificationsPageUrl}
               onClick={() => setOpen(false)}

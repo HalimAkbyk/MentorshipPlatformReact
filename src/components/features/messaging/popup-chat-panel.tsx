@@ -135,7 +135,7 @@ export function PopupChatPanel({ conversation, onBack }: PopupChatPanelProps) {
               className={cn(
                 'rounded-xl px-3 py-1.5 text-xs relative',
                 msg.isOwnMessage
-                  ? 'bg-lime-100 text-gray-800 rounded-tr-sm'
+                  ? 'bg-teal-100 text-gray-800 rounded-tr-sm'
                   : 'bg-white border border-gray-200 text-gray-800 rounded-tl-sm'
               )}
             >
@@ -172,7 +172,7 @@ export function PopupChatPanel({ conversation, onBack }: PopupChatPanelProps) {
           placeholder="Mesaj yazın..."
           maxLength={2000}
           rows={1}
-          className="flex-1 border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-lime-300 resize-none min-h-[32px] max-h-[80px]"
+          className="flex-1 border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-teal-300 resize-none min-h-[32px] max-h-[80px]"
         />
         <Button
           size="sm"

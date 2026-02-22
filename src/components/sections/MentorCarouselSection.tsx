@@ -40,21 +40,21 @@ const cardVariants: Variants = {
 
 function SkeletonCard() {
   return (
-    <div className="flex-shrink-0 w-[280px] rounded-2xl border border-navy-100 bg-white p-6 animate-pulse">
+    <div className="flex-shrink-0 w-[280px] rounded-2xl border border-gray-200 bg-white p-6 animate-pulse">
       {/* Avatar skeleton */}
       <div className="flex justify-center mb-4">
-        <div className="w-[72px] h-[72px] rounded-full bg-navy-100" />
+        <div className="w-[72px] h-[72px] rounded-full bg-gray-200" />
       </div>
       {/* Name */}
-      <div className="h-5 w-32 mx-auto rounded bg-navy-100 mb-2" />
+      <div className="h-5 w-32 mx-auto rounded bg-gray-200 mb-2" />
       {/* University */}
-      <div className="h-4 w-40 mx-auto rounded bg-navy-50 mb-1" />
+      <div className="h-4 w-40 mx-auto rounded bg-gray-100 mb-1" />
       {/* Department */}
-      <div className="h-4 w-28 mx-auto rounded bg-navy-50 mb-3" />
+      <div className="h-4 w-28 mx-auto rounded bg-gray-100 mb-3" />
       {/* Rating */}
-      <div className="h-4 w-24 mx-auto rounded bg-navy-50 mb-4" />
+      <div className="h-4 w-24 mx-auto rounded bg-gray-100 mb-4" />
       {/* Button */}
-      <div className="h-9 w-full rounded-lg bg-navy-50" />
+      <div className="h-9 w-full rounded-lg bg-gray-100" />
     </div>
   );
 }
@@ -66,7 +66,7 @@ function EmptyState() {
     <div className="flex items-center justify-center w-full py-16">
       <div className="text-center">
         <div className="text-4xl mb-3">🎓</div>
-        <p className="text-navy-300 text-sm">
+        <p className="text-gray-500 text-sm">
           Henüz mentor bulunamadı. Yakında burada olacaklar!
         </p>
       </div>
@@ -104,9 +104,9 @@ function MentorCard({ mentor }: { mentor: MentorListItem }) {
       className="block flex-shrink-0 w-[280px] group"
     >
       <div
-        className="relative rounded-2xl border border-navy-100 bg-white p-6 text-center
+        className="relative rounded-2xl border border-gray-200 bg-white p-6 text-center
           transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-          hover:-translate-y-1.5 hover:shadow-xl hover:border-lime-400"
+          hover:-translate-y-1.5 hover:shadow-xl hover:border-teal-400"
       >
         {/* ── Avatar ── */}
         <div className="relative mx-auto mb-4 w-fit">
@@ -133,25 +133,25 @@ function MentorCard({ mentor }: { mentor: MentorListItem }) {
         </div>
 
         {/* ── Info ── */}
-        <h3 className="font-heading font-bold text-navy-600 text-base mb-1 truncate">
+        <h3 className="font-heading font-bold text-gray-900 text-base mb-1 truncate">
           {mentor.displayName}
         </h3>
-        <p className="text-sm text-navy-300 truncate">{mentor.university}</p>
-        <p className="text-sm text-navy-300 truncate mb-3">{mentor.department}</p>
+        <p className="text-sm text-gray-500 truncate">{mentor.university}</p>
+        <p className="text-sm text-gray-500 truncate mb-3">{mentor.department}</p>
 
         {/* ── Rating ── */}
         <div className="flex items-center justify-center gap-1.5 mb-4">
           <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-          <span className="text-sm font-semibold text-navy-600">
+          <span className="text-sm font-semibold text-gray-900">
             {mentor.ratingAvg.toFixed(1)}
           </span>
-          <span className="text-xs text-navy-300">({mentor.ratingCount})</span>
+          <span className="text-xs text-gray-500">({mentor.ratingCount})</span>
         </div>
 
         {/* ── Price badge ── */}
         {mentor.hourlyRate != null && mentor.hourlyRate > 0 && (
           <div className="mb-4">
-            <span className="inline-block rounded-lg bg-lime-50 px-3 py-1 text-sm font-semibold text-lime-700">
+            <span className="inline-block rounded-lg bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-700">
               {'\u20BA'}{mentor.hourlyRate}/saat
             </span>
           </div>
@@ -161,7 +161,7 @@ function MentorCard({ mentor }: { mentor: MentorListItem }) {
         <Button
           variant="outline"
           size="sm"
-          className="w-full border-lime-400 text-lime-600 hover:bg-lime-50 hover:text-lime-700 font-semibold"
+          className="w-full border-teal-400 text-teal-600 hover:bg-teal-50 hover:text-teal-700 font-semibold"
         >
           Profili Gör
         </Button>
@@ -220,7 +220,7 @@ export default function MentorCarouselSection({
             <span className="text-2xl" role="img" aria-hidden="true">
               {icon}
             </span>
-            <h2 className="text-2xl md:text-3xl font-heading font-bold text-navy-600">
+            <h2 className="text-2xl md:text-3xl font-heading font-bold text-gray-900">
               {title}
             </h2>
           </div>
@@ -228,7 +228,7 @@ export default function MentorCarouselSection({
           {viewAllHref && (
             <Link
               href={viewAllHref}
-              className="hidden sm:flex items-center gap-1 text-sm font-semibold text-lime-600 hover:text-lime-700 transition-colors"
+              className="hidden sm:flex items-center gap-1 text-sm font-semibold text-teal-600 hover:text-teal-700 transition-colors"
             >
               Tümünü Gör
               <ChevronRight className="h-4 w-4" />
@@ -244,8 +244,8 @@ export default function MentorCarouselSection({
               onClick={() => scroll('left')}
               className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10
                 h-10 w-10 items-center justify-center rounded-full
-                bg-white border border-navy-100 shadow-lg
-                text-navy-400 hover:text-navy-600 hover:border-navy-200
+                bg-white border border-gray-200 shadow-lg
+                text-gray-600 hover:text-gray-900 hover:border-gray-300
                 opacity-0 group-hover/carousel:opacity-100
                 transition-all duration-200"
               aria-label="Sola kaydır"
@@ -260,8 +260,8 @@ export default function MentorCarouselSection({
               onClick={() => scroll('right')}
               className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10
                 h-10 w-10 items-center justify-center rounded-full
-                bg-white border border-navy-100 shadow-lg
-                text-navy-400 hover:text-navy-600 hover:border-navy-200
+                bg-white border border-gray-200 shadow-lg
+                text-gray-600 hover:text-gray-900 hover:border-gray-300
                 opacity-0 group-hover/carousel:opacity-100
                 transition-all duration-200"
               aria-label="Sağa kaydır"
@@ -314,7 +314,7 @@ export default function MentorCarouselSection({
           <div className="mt-4 sm:hidden text-center">
             <Link
               href={viewAllHref}
-              className="inline-flex items-center gap-1 text-sm font-semibold text-lime-600 hover:text-lime-700 transition-colors"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-teal-600 hover:text-teal-700 transition-colors"
             >
               Tümünü Gör
               <ChevronRight className="h-4 w-4" />

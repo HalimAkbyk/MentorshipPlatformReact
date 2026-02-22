@@ -15,13 +15,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           "inline-flex items-center justify-center rounded-lg text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
           {
-            "bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md": variant === "default",
+            "bg-teal-600 text-white hover:bg-teal-700 shadow-sm hover:shadow-md": variant === "default",
             "bg-red-600 text-white hover:bg-red-700": variant === "destructive",
             "border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 hover:border-gray-400": variant === "outline",
             "bg-gray-100 text-gray-900 hover:bg-gray-200": variant === "secondary",
             "hover:bg-gray-100": variant === "ghost",
-            "text-primary-600 underline-offset-4 hover:underline": variant === "link",
-            "bg-gradient-to-r from-primary-600 to-primary-500 text-white hover:from-primary-700 hover:to-primary-600 shadow-lg shadow-primary-500/25 hover:shadow-xl hover:shadow-primary-500/30": variant === "gradient",
+            "text-teal-600 underline-offset-4 hover:underline": variant === "link",
+            "bg-gradient-to-r from-teal-600 to-green-600 hover:from-teal-700 hover:to-green-700 text-white shadow-lg shadow-teal-500/25 hover:shadow-xl hover:shadow-teal-500/30": variant === "gradient",
           },
           {
             "h-10 px-4 py-2": size === "default",

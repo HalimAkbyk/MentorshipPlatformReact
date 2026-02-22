@@ -33,7 +33,7 @@ export default function CmsCtaBanner({
 }) {
   const title = content.title || moduleTitle;
   const subtitle = content.subtitle || moduleSubtitle || '';
-  const gradient = content.gradient || 'from-indigo-600 to-purple-700';
+  const gradient = content.gradient || 'from-teal-600 to-green-700';
   const badge = content.badge;
   const primaryCta = content.primaryCta;
   const secondaryCta = content.secondaryCta;
