@@ -51,22 +51,22 @@ export const onboardingApi = {
   // Student
   getStudentOnboarding: async (): Promise<StudentOnboardingData | null> => {
     const res = await apiClient.get<StudentOnboardingData | null>('/onboarding/student');
-    return res.data;
+    return res;
   },
 
   saveStudentOnboarding: async (data: StudentOnboardingData): Promise<StudentOnboardingData> => {
     const res = await apiClient.put<StudentOnboardingData>('/onboarding/student', data);
-    return res.data;
+    return res;
   },
 
   // Mentor
   getMentorOnboarding: async (): Promise<MentorOnboardingData | null> => {
     const res = await apiClient.get<MentorOnboardingData | null>('/onboarding/mentor');
-    return res.data;
+    return res;
   },
 
   saveMentorOnboarding: async (data: MentorOnboardingData): Promise<MentorOnboardingData> => {
     const res = await apiClient.put<MentorOnboardingData>('/onboarding/mentor', data);
-    return res.data;
+    return res;
   },
 };
