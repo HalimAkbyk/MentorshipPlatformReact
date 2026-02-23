@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
 import {
-  User, Lock, Bell, Shield, Trash2, Upload, Check, Camera, Image as ImageIcon,
+  User, Lock, Bell, Shield, Trash2, Upload, Check, Camera,
   Eye, EyeOff, Calendar, BookOpen, CreditCard, Search, Users, MessageSquare,
   ChevronRight, Settings, Target, Briefcase, GraduationCap, Brain, TrendingUp,
   Rocket, Compass, Code, Palette, Calculator, X, Plus
@@ -18,7 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { useAuthStore } from '@/lib/stores/auth-store';
-import { userApi, type PresetAvatar } from '@/lib/api/user';
+import { userApi } from '@/lib/api/user';
 import { onboardingApi, type StudentOnboardingData } from '@/lib/api/onboarding';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils/cn';
@@ -111,8 +111,6 @@ export default function StudentSettingsPage() {
   const [showCurrentPw, setShowCurrentPw] = useState(false);
   const [showNewPw, setShowNewPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
-  const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
-  const [presetAvatars, setPresetAvatars] = useState<PresetAvatar[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   /* ── Onboarding state ── */
@@ -127,8 +125,6 @@ export default function StudentSettingsPage() {
   const [availability, setAvailability] = useState<string[]>([]);
   const [sessionFormat, setSessionFormat] = useState<string[]>([]);
   const [newSubtopic, setNewSubtopic] = useState('');
-
-  useEffect(() => { userApi.getPresetAvatars().then(setPresetAvatars).catch(() => {}); }, []);
 
   /* ── Load onboarding data ── */
   useEffect(() => {
@@ -187,12 +183,6 @@ export default function StudentSettingsPage() {
     finally { setIsUploadingAvatar(false); }
   };
 
-  const handlePresetSelect = async (presetUrl: string) => {
-    try { setIsUploadingAvatar(true); setSelectedPreset(presetUrl); await userApi.setAvatarUrl(presetUrl); toast.success('Avatar guncellendi'); refreshUser(); }
-    catch { toast.error('Avatar guncellenirken hata olustu'); setSelectedPreset(null); }
-    finally { setIsUploadingAvatar(false); }
-  };
-
   const toggleItem = (arr: string[], item: string, setter: (v: string[]) => void) => {
     setter(arr.includes(item) ? arr.filter(i => i !== item) : [...arr, item]);
   };
@@ -226,10 +216,6 @@ export default function StudentSettingsPage() {
       setSavingOnboarding(false);
     }
   };
-
-  const presetUrls = presetAvatars.map(a => a.url);
-  const currentAvatarIsPreset = presetUrls.includes(user?.avatarUrl || '');
-  const activePreset = selectedPreset || (currentAvatarIsPreset ? user?.avatarUrl : null);
 
   /* ── Profile completion ── */
   const profileSteps = [
@@ -369,26 +355,6 @@ export default function StudentSettingsPage() {
                         <p className="text-xs text-gray-500 mt-2">JPG, PNG, GIF veya WebP. Max 2MB.</p>
                       </div>
                     </div>
-                    {presetAvatars.length > 0 && (
-                      <div>
-                        <div className="flex items-center gap-2 mb-3"><ImageIcon className="w-4 h-4 text-gray-500" /><h4 className="text-sm font-medium text-gray-700">Onerilen Avatarlar</h4></div>
-                        <p className="text-xs text-gray-500 mb-3">Birini secin, otomatik olarak kaydedilir</p>
-                        <div className="flex flex-wrap gap-3">
-                          {presetAvatars.map((preset) => {
-                            const isActive = activePreset === preset.url;
-                            return (
-                              <button key={preset.id} onClick={() => handlePresetSelect(preset.url)} disabled={isUploadingAvatar} title={preset.label}
-                                className={cn('relative group rounded-full transition-all duration-200',
-                                  isActive ? 'ring-3 ring-teal-500 ring-offset-2 scale-110' : 'hover:ring-2 hover:ring-teal-300 hover:ring-offset-1 hover:scale-105',
-                                  isUploadingAvatar && 'opacity-50 cursor-not-allowed')}>
-                                <Avatar className="w-14 h-14"><AvatarImage src={preset.url} /><AvatarFallback>{preset.label.charAt(0)}</AvatarFallback></Avatar>
-                                {isActive && (<div className="absolute -bottom-1 -right-1 bg-teal-500 rounded-full p-0.5"><Check className="w-3 h-3 text-white" /></div>)}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
 
