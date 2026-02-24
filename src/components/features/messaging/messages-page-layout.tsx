@@ -4,47 +4,67 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ConversationList } from './conversation-list';
+import { ConversationList, getConversationKey } from './conversation-list';
 import { ConversationDetail } from './conversation-detail';
 import { useConversations } from '@/lib/hooks/use-messages';
 import { useAuthStore } from '@/lib/stores/auth-store';
+import type { ConversationDto } from '@/lib/types/models';
 
 export function MessagesPageLayout() {
   const searchParams = useSearchParams();
-  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
+  const [selectedConv, setSelectedConv] = useState<ConversationDto | null>(null);
   const { data: conversations } = useConversations();
   const autoSelectedRef = useRef(false);
 
-  // Auto-select conversation from URL params (?bookingId=xxx or ?userId=xxx)
+  // Derive selectedId from selectedConv
+  const selectedId = selectedConv ? getConversationKey(selectedConv) : null;
+
+  // Auto-select conversation from URL params (?bookingId=xxx or ?userId=xxx or ?conversationId=xxx)
   useEffect(() => {
     if (autoSelectedRef.current || !conversations || conversations.length === 0) return;
 
+    const conversationIdParam = searchParams.get('conversationId');
     const bookingIdParam = searchParams.get('bookingId');
     const userIdParam = searchParams.get('userId');
 
-    if (bookingIdParam) {
+    if (conversationIdParam) {
+      const found = conversations.find((c) => c.conversationId === conversationIdParam);
+      if (found) {
+        setSelectedConv(found);
+        autoSelectedRef.current = true;
+      }
+    } else if (bookingIdParam) {
       const found = conversations.find((c) => c.bookingId === bookingIdParam);
       if (found) {
-        setSelectedBookingId(bookingIdParam);
+        setSelectedConv(found);
         autoSelectedRef.current = true;
       }
     } else if (userIdParam) {
       const found = conversations.find((c) => c.otherUserId === userIdParam);
       if (found) {
-        setSelectedBookingId(found.bookingId);
+        setSelectedConv(found);
         autoSelectedRef.current = true;
       }
     }
   }, [conversations, searchParams]);
+
+  // Update selectedConv if conversations refresh (e.g., new message comes in and order changes)
+  useEffect(() => {
+    if (!selectedConv || !conversations) return;
+    const key = getConversationKey(selectedConv);
+    const updated = conversations.find((c) => getConversationKey(c) === key);
+    if (updated && updated !== selectedConv) {
+      setSelectedConv(updated);
+    }
+  }, [conversations]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const user = useAuthStore((s) => s.user);
   const isMentor = user?.roles?.includes('Mentor');
 
-  const selectedConversation = conversations?.find((c) => c.bookingId === selectedBookingId) ?? null;
-
-  const bookingDetailHref = selectedConversation
+  const bookingDetailHref = selectedConv && selectedConv.conversationType !== 'Direct' && selectedConv.bookingId
     ? isMentor
-      ? `/mentor/bookings/${selectedConversation.bookingId}`
-      : `/student/bookings/${selectedConversation.bookingId}`
+      ? `/mentor/bookings/${selectedConv.bookingId}`
+      : `/student/bookings/${selectedConv.bookingId}`
     : '#';
 
   return (
@@ -53,7 +73,7 @@ export function MessagesPageLayout() {
         {/* Page Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Mesajlarım</h1>
-          <p className="text-gray-600 mt-1">Rezervasyon bazlı mesajlaşmalarınız</p>
+          <p className="text-gray-600 mt-1">Tüm mesajlaşmalarınız</p>
         </div>
 
         {/* Split Panel Container */}
@@ -61,7 +81,7 @@ export function MessagesPageLayout() {
           {/* Left Panel — Conversation List */}
           <div
             className={`w-full md:w-96 md:border-r border-gray-200 flex flex-col overflow-y-auto shrink-0 ${
-              selectedBookingId ? 'hidden md:flex' : 'flex'
+              selectedId ? 'hidden md:flex' : 'flex'
             }`}
           >
             {/* List Header */}
@@ -70,8 +90,8 @@ export function MessagesPageLayout() {
             </div>
             <div className="flex-1 overflow-y-auto">
               <ConversationList
-                selectedBookingId={selectedBookingId}
-                onSelect={setSelectedBookingId}
+                selectedId={selectedId}
+                onSelect={setSelectedConv}
               />
             </div>
           </div>
@@ -79,16 +99,16 @@ export function MessagesPageLayout() {
           {/* Right Panel — Conversation Detail */}
           <div
             className={`flex-1 flex flex-col min-w-0 ${
-              selectedBookingId ? 'flex' : 'hidden md:flex'
+              selectedId ? 'flex' : 'hidden md:flex'
             }`}
           >
             {/* Mobile Back Button */}
-            {selectedBookingId && (
+            {selectedId && (
               <div className="md:hidden border-b px-3 py-2">
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setSelectedBookingId(null)}
+                  onClick={() => setSelectedConv(null)}
                 >
                   <ArrowLeft className="w-4 h-4 mr-1" />
                   Geri
@@ -96,9 +116,9 @@ export function MessagesPageLayout() {
               </div>
             )}
 
-            {selectedConversation ? (
+            {selectedConv ? (
               <ConversationDetail
-                conversation={selectedConversation}
+                conversation={selectedConv}
                 bookingDetailHref={bookingDetailHref}
               />
             ) : (

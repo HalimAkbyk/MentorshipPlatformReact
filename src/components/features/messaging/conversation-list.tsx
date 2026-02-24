@@ -6,9 +6,16 @@ import { useConversations } from '@/lib/hooks/use-messages';
 import type { ConversationDto } from '@/lib/types/models';
 import { cn } from '@/lib/utils/cn';
 
+/** Unique key for a conversation — prefer conversationId, fallback to bookingId */
+export function getConversationKey(conv: ConversationDto): string {
+  const cid = conv.conversationId;
+  if (cid && cid !== '00000000-0000-0000-0000-000000000000') return cid;
+  return conv.bookingId;
+}
+
 interface ConversationListProps {
-  selectedBookingId: string | null;
-  onSelect: (bookingId: string) => void;
+  selectedId: string | null;
+  onSelect: (conv: ConversationDto) => void;
 }
 
 function formatRelativeTime(dateString: string) {
@@ -35,6 +42,8 @@ function ConversationItem({
   isActive: boolean;
   onClick: () => void;
 }) {
+  const isDirect = conversation.conversationType === 'Direct';
+
   return (
     <button
       onClick={onClick}
@@ -56,12 +65,19 @@ function ConversationItem({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <h4 className={cn(
-              'text-sm truncate',
-              conversation.unreadCount > 0 ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'
-            )}>
-              {conversation.otherUserName}
-            </h4>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <h4 className={cn(
+                'text-sm truncate',
+                conversation.unreadCount > 0 ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'
+              )}>
+                {conversation.otherUserName}
+              </h4>
+              {isDirect && (
+                <span className="px-1.5 py-0.5 bg-blue-100 text-blue-600 text-[9px] font-medium rounded-full shrink-0">
+                  Direkt
+                </span>
+              )}
+            </div>
             {conversation.lastMessageAt && (
               <span className="text-[10px] text-gray-400 shrink-0">
                 {formatRelativeTime(conversation.lastMessageAt)}
@@ -70,7 +86,7 @@ function ConversationItem({
           </div>
 
           <p className="text-xs text-gray-500 truncate mt-0.5">
-            {conversation.offeringTitle}
+            {isDirect ? 'Direkt Mesaj' : conversation.offeringTitle}
           </p>
 
           {conversation.lastMessageContent && (
@@ -97,7 +113,7 @@ function ConversationItem({
   );
 }
 
-export function ConversationList({ selectedBookingId, onSelect }: ConversationListProps) {
+export function ConversationList({ selectedId, onSelect }: ConversationListProps) {
   const { data: conversations, isLoading } = useConversations();
 
   if (isLoading) {
@@ -123,7 +139,7 @@ export function ConversationList({ selectedBookingId, onSelect }: ConversationLi
         <MessageSquare className="w-12 h-12 mb-3 opacity-30" />
         <p className="text-sm font-medium text-gray-500">Henüz mesajınız yok</p>
         <p className="text-xs text-center mt-1">
-          Bir rezervasyon yaptıktan sonra mentorunuzle mesajlaşabilirsiniz.
+          Bir mentor profilinden mesaj göndererek veya rezervasyon yaparak sohbet başlatabilirsiniz.
         </p>
       </div>
     );
@@ -131,14 +147,17 @@ export function ConversationList({ selectedBookingId, onSelect }: ConversationLi
 
   return (
     <div className="flex flex-col divide-y divide-gray-100">
-      {conversations.map((conv) => (
-        <ConversationItem
-          key={conv.bookingId}
-          conversation={conv}
-          isActive={selectedBookingId === conv.bookingId}
-          onClick={() => onSelect(conv.bookingId)}
-        />
-      ))}
+      {conversations.map((conv) => {
+        const key = getConversationKey(conv);
+        return (
+          <ConversationItem
+            key={key}
+            conversation={conv}
+            isActive={selectedId === key}
+            onClick={() => onSelect(conv)}
+          />
+        );
+      })}
     </div>
   );
 }

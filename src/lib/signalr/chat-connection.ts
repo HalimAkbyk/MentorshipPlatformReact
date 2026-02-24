@@ -46,7 +46,8 @@ export async function stopConnection(): Promise<void> {
 
 export type NewMessagePayload = {
   id: string;
-  bookingId: string;
+  conversationId: string;
+  bookingId: string | null;
   senderUserId: string;
   senderName: string;
   senderAvatar: string | null;

@@ -444,6 +444,7 @@ export interface LectureNoteDto {
 // ===== Messaging Models =====
 
 export interface ConversationDto {
+  conversationId: string;
   bookingId: string;
   otherUserId: string;
   otherUserName: string;
@@ -456,6 +457,7 @@ export interface ConversationDto {
   lastMessageAt: string | null;
   lastMessageIsOwn: boolean;
   unreadCount: number;
+  conversationType: 'Booking' | 'Direct';
 }
 
 export interface VideoUploadUrlResponse {

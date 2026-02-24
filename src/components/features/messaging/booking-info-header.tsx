@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Calendar, Clock, ExternalLink } from 'lucide-react';
+import { Calendar, Clock, ExternalLink, MessageCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -47,6 +47,35 @@ function formatTimeOnly(dateString: string) {
 }
 
 export function BookingInfoHeader({ conversation, bookingDetailHref }: BookingInfoHeaderProps) {
+  const isDirect = conversation.conversationType === 'Direct';
+
+  // Direct conversation: simplified header without booking info
+  if (isDirect) {
+    return (
+      <div className="px-4 py-3 border-b bg-gray-50/80">
+        <div className="flex items-center gap-3">
+          <Avatar className="w-10 h-10 shrink-0">
+            <AvatarImage src={conversation.otherUserAvatar ?? undefined} />
+            <AvatarFallback className="bg-teal-100 text-teal-600 text-sm">
+              {conversation.otherUserName.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-sm truncate">{conversation.otherUserName}</h3>
+            <div className="flex items-center gap-1 mt-0.5">
+              <MessageCircle className="w-3 h-3 text-blue-500" />
+              <p className="text-xs text-gray-500">Direkt Mesaj</p>
+            </div>
+          </div>
+          <Badge variant="secondary" className="shrink-0 text-[10px] bg-blue-50 text-blue-600 border-blue-200">
+            Direkt
+          </Badge>
+        </div>
+      </div>
+    );
+  }
+
+  // Booking conversation: full header with booking details
   return (
     <div className="px-4 py-3 border-b bg-gray-50/80">
       <div className="flex items-center gap-3">

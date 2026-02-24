@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../../../../components/ui/a
 import { Badge } from '../../../../components/ui/badge';
 import { useMentor } from '../../../../lib/hooks/use-mentors';
 import { useAuthStore } from '../../../../lib/stores/auth-store';
-import { useConversations } from '../../../../lib/hooks/use-messages';
+import { useStartDirectConversation } from '../../../../lib/hooks/use-messages';
 import { formatCurrency, formatDate } from '../../../../lib/utils/format';
 import { ROUTES } from '../../../../lib/constants/routes';
 import type { VerificationType } from '../../../../lib/types/enums';
@@ -37,28 +37,27 @@ export default function MentorProfilePage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
   const isOwnProfile = isAuthenticated && user?.id === mentorId;
-  const { data: conversations } = useConversations(isAuthenticated);
+  const startDirectConversation = useStartDirectConversation();
   const [selectedTab, setSelectedTab] = useState<'about' | 'offerings' | 'reviews'>('about');
   const [enrichedOfferings, setEnrichedOfferings] = useState<OfferingDto[]>([]);
   const [offeringsLoading, setOfferingsLoading] = useState(false);
 
-  const handleSendMessage = useCallback(() => {
+  const handleSendMessage = useCallback(async () => {
     if (!isAuthenticated) {
       router.push(`/auth/login?redirect=/public/mentors/${mentorId}`);
       return;
     }
 
-    // Find a conversation with this mentor
-    const conversation = conversations?.find((c) => c.otherUserId === mentorId);
     const isMentor = user?.roles?.includes('Mentor');
     const basePath = isMentor ? '/mentor/messages' : '/student/messages';
 
-    if (conversation) {
-      router.push(`${basePath}?bookingId=${conversation.bookingId}`);
-    } else {
-      toast.info('Bu mentorla mesajlaşabilmek için önce bir görüşme rezervasyonu yapmanız gerekmektedir.');
+    try {
+      const result = await startDirectConversation.mutateAsync(mentorId);
+      router.push(`${basePath}?conversationId=${result.conversationId}`);
+    } catch {
+      toast.error('Mesaj başlatılırken bir hata oluştu.');
     }
-  }, [isAuthenticated, conversations, mentorId, router, user]);
+  }, [isAuthenticated, mentorId, router, user, startDirectConversation]);
 
   // Fetch enriched offerings with questions, descriptions, etc.
   useEffect(() => {

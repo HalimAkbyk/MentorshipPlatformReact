@@ -32,15 +32,42 @@ export interface UnreadCountDto {
   perBooking: BookingUnreadDto[];
 }
 
+export interface DirectConversationResult {
+  conversationId: string;
+  otherUserId: string;
+  otherUserName: string;
+  otherUserAvatar: string | null;
+  isNew: boolean;
+}
+
 export const messagesApi = {
-  send: (bookingId: string, content: string) =>
+  // Send message (supports both conversationId and bookingId)
+  send: (params: { conversationId?: string; bookingId?: string; content: string }) =>
+    apiClient.post<{ messageId: string }>('/messages', params),
+
+  // Legacy: send via booking
+  sendToBooking: (bookingId: string, content: string) =>
     apiClient.post<{ messageId: string }>('/messages', { bookingId, content }),
 
+  // Start or get a direct conversation
+  startDirectConversation: (recipientUserId: string) =>
+    apiClient.post<DirectConversationResult>('/messages/conversations/direct', { recipientUserId }),
+
+  // Get messages by booking (legacy)
   getByBooking: (bookingId: string, page = 1, pageSize = 50) =>
     apiClient.get<PaginatedMessages>(`/messages/booking/${bookingId}`, { page, pageSize }),
 
+  // Get messages by conversation
+  getByConversation: (conversationId: string, page = 1, pageSize = 50) =>
+    apiClient.get<PaginatedMessages>(`/messages/conversation/${conversationId}`, { page, pageSize }),
+
+  // Mark booking messages as read (legacy)
   markAsRead: (bookingId: string) =>
     apiClient.post(`/messages/booking/${bookingId}/read`),
+
+  // Mark conversation messages as read
+  markConversationAsRead: (conversationId: string) =>
+    apiClient.post(`/messages/conversation/${conversationId}/read`),
 
   getUnreadCount: () =>
     apiClient.get<UnreadCountDto>('/messages/unread-count'),

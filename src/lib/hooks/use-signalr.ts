@@ -19,10 +19,16 @@ import {
 import { messagesApi } from '../api/messages';
 import type { PaginatedMessages } from '../api/messages';
 
-// Global active booking tracking (set by message components)
+// Global active booking/conversation tracking (set by message components)
 let activeBookingId: string | null = null;
+let activeConversationId: string | null = null;
+
 export function setActiveBookingId(bookingId: string | null) {
   activeBookingId = bookingId;
+}
+
+export function setActiveConversationId(conversationId: string | null) {
+  activeConversationId = conversationId;
 }
 
 export function useSignalR() {
@@ -45,38 +51,59 @@ export function useSignalR() {
       connectedRef.current = true;
 
       onReceiveMessage((msg: NewMessagePayload) => {
-        // Add message to cache if that booking's messages are loaded
-        queryClient.setQueryData<PaginatedMessages>(
-          ['messages', msg.bookingId, 1],
-          (old) => {
-            if (!old) return old;
-            // Avoid duplicates
-            if (old.items.some((m) => m.id === msg.id)) return old;
-            return {
-              ...old,
-              items: [...old.items, msg],
-              totalCount: old.totalCount + 1,
-            };
-          }
-        );
+        // Add message to conversation-based cache
+        if (msg.conversationId) {
+          queryClient.setQueryData<PaginatedMessages>(
+            ['messages', 'conversation', msg.conversationId, 1],
+            (old) => {
+              if (!old) return old;
+              if (old.items.some((m) => m.id === msg.id)) return old;
+              return {
+                ...old,
+                items: [...old.items, msg],
+                totalCount: old.totalCount + 1,
+              };
+            }
+          );
+        }
+
+        // Also update legacy booking-based cache if bookingId exists
+        if (msg.bookingId) {
+          queryClient.setQueryData<PaginatedMessages>(
+            ['messages', 'booking', msg.bookingId, 1],
+            (old) => {
+              if (!old) return old;
+              if (old.items.some((m) => m.id === msg.id)) return old;
+              return {
+                ...old,
+                items: [...old.items, msg],
+                totalCount: old.totalCount + 1,
+              };
+            }
+          );
+        }
 
         // Invalidate conversations and unread count
         queryClient.invalidateQueries({ queryKey: ['conversations'] });
         queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
 
-        // Auto-mark as read if user is viewing this booking
-        if (activeBookingId === msg.bookingId) {
+        // Auto-mark as read if user is viewing this conversation
+        if (activeConversationId && msg.conversationId === activeConversationId) {
+          messagesApi.markConversationAsRead(msg.conversationId).catch(() => {});
+        } else if (activeBookingId && msg.bookingId === activeBookingId) {
           messagesApi.markAsRead(msg.bookingId).catch(() => {});
         }
       });
 
       onMessagesRead((payload: MessagesReadPayload) => {
-        // Update read status in cache
-        queryClient.setQueryData<PaginatedMessages>(
-          ['messages', payload.bookingId, 1],
+        // Update read status in all message caches (both conversation and booking keys)
+        queryClient.setQueriesData<PaginatedMessages>(
+          { queryKey: ['messages'] },
           (old) => {
             if (!old) return old;
             const idSet = new Set(payload.messageIds);
+            const hasMatch = old.items.some((m) => idSet.has(m.id));
+            if (!hasMatch) return old;
             return {
               ...old,
               items: old.items.map((m) =>
@@ -109,7 +136,6 @@ export function useSignalR() {
 
       // Real-time notification count updates (replaces polling)
       onNotificationCountUpdated((payload: NotificationCountPayload) => {
-        // Cache expects { count: number } shape (matching notificationsApi.getUnreadCount response)
         queryClient.setQueryData(['user-notification-count'], { count: payload.unreadCount });
         queryClient.invalidateQueries({ queryKey: ['user-notifications'] });
       });

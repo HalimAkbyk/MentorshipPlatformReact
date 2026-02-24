@@ -4,11 +4,17 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Flag, MessageSquare, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useBookingMessages, useSendMessage, useMarkAsRead } from '@/lib/hooks/use-messages';
+import {
+  useBookingMessages,
+  useConversationMessages,
+  useSendMessage,
+  useMarkAsRead,
+  useMarkConversationAsRead,
+} from '@/lib/hooks/use-messages';
 import { ReportDialog } from './report-dialog';
 import { MessageStatus } from './message-status';
 import { BookingInfoHeader } from './booking-info-header';
-import { setActiveBookingId } from '@/lib/hooks/use-signalr';
+import { setActiveBookingId, setActiveConversationId } from '@/lib/hooks/use-signalr';
 import type { ConversationDto } from '@/lib/types/models';
 import { cn } from '@/lib/utils/cn';
 
@@ -33,9 +39,25 @@ export function ConversationDetail({ conversation, bookingDetailHref }: Conversa
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { data, isLoading } = useBookingMessages(conversation.bookingId);
+  const hasConversationId = conversation.conversationId && conversation.conversationId !== '00000000-0000-0000-0000-000000000000';
+  const hasBookingId = conversation.bookingId && conversation.bookingId !== '00000000-0000-0000-0000-000000000000';
+
+  // Fetch messages: prefer conversationId, fallback to bookingId
+  const { data: convData, isLoading: convLoading } = useConversationMessages(
+    hasConversationId ? conversation.conversationId : '',
+    1
+  );
+  const { data: bookingData, isLoading: bookingLoading } = useBookingMessages(
+    !hasConversationId && hasBookingId ? conversation.bookingId : '',
+    1
+  );
+
+  const data = hasConversationId ? convData : bookingData;
+  const isLoading = hasConversationId ? convLoading : bookingLoading;
+
   const sendMutation = useSendMessage();
   const markAsRead = useMarkAsRead();
+  const markConvAsRead = useMarkConversationAsRead();
 
   const messages = data?.items ?? [];
 
@@ -44,10 +66,14 @@ export function ConversationDetail({ conversation, bookingDetailHref }: Conversa
     if (messages.length > 0) {
       const hasUnread = messages.some((m) => !m.isOwnMessage && !m.isRead);
       if (hasUnread) {
-        markAsRead.mutate(conversation.bookingId);
+        if (hasConversationId) {
+          markConvAsRead.mutate(conversation.conversationId);
+        } else if (hasBookingId) {
+          markAsRead.mutate(conversation.bookingId);
+        }
       }
     }
-  }, [messages.length, conversation.bookingId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [messages.length, conversation.conversationId, conversation.bookingId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-scroll (container-level only, not page)
   useEffect(() => {
@@ -55,18 +81,33 @@ export function ConversationDetail({ conversation, bookingDetailHref }: Conversa
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length]);
 
-  // Reset input when switching conversations + track active booking
+  // Reset input when switching conversations + track active booking/conversation
   useEffect(() => {
     setContent('');
-    setActiveBookingId(conversation.bookingId);
-    return () => setActiveBookingId(null);
-  }, [conversation.bookingId]);
+    if (hasConversationId) {
+      setActiveConversationId(conversation.conversationId);
+    }
+    if (hasBookingId) {
+      setActiveBookingId(conversation.bookingId);
+    }
+    return () => {
+      setActiveConversationId(null);
+      setActiveBookingId(null);
+    };
+  }, [conversation.conversationId, conversation.bookingId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSend = async () => {
     const trimmed = content.trim();
     if (!trimmed) return;
     try {
-      await sendMutation.mutateAsync({ bookingId: conversation.bookingId, content: trimmed });
+      const params: { conversationId?: string; bookingId?: string; content: string } = { content: trimmed };
+      if (hasConversationId) {
+        params.conversationId = conversation.conversationId;
+      }
+      if (hasBookingId) {
+        params.bookingId = conversation.bookingId;
+      }
+      await sendMutation.mutateAsync(params);
       setContent('');
       textareaRef.current?.focus();
     } catch {
