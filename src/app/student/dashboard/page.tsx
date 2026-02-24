@@ -702,40 +702,52 @@ export default function StudentDashboardPage() {
               <CardContent className="px-2 pb-2">
                 {recentConversations.length > 0 ? (
                   <div className="divide-y divide-gray-100">
-                    {recentConversations.map((conv) => (
-                      <Link
-                        key={conv.bookingId}
-                        href="/student/messages"
-                        className="flex items-center gap-2.5 px-2 py-2.5 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="relative flex-shrink-0">
-                          <Avatar className="w-8 h-8">
-                            <AvatarImage src={conv.otherUserAvatar ?? undefined} />
-                            <AvatarFallback className="bg-gradient-to-br from-teal-400 to-green-500 text-white text-xs">
-                              {conv.otherUserName.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium text-gray-900 truncate">{conv.otherUserName}</span>
-                            {conv.lastMessageAt && (
-                              <span className="text-[10px] text-gray-400 flex-shrink-0 ml-1">
-                                {formatRelativeTime(conv.lastMessageAt)}
-                              </span>
+                    {recentConversations.map((conv) => {
+                      const isUnread = conv.unreadCount > 0;
+                      return (
+                        <Link
+                          key={conv.conversationId || conv.bookingId}
+                          href="/student/messages"
+                          className={`flex items-center gap-2.5 px-2 py-2.5 rounded-lg transition-colors ${
+                            isUnread
+                              ? 'bg-teal-50/70 hover:bg-teal-50'
+                              : 'hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="relative flex-shrink-0">
+                            <Avatar className="w-8 h-8">
+                              <AvatarImage src={conv.otherUserAvatar ?? undefined} />
+                              <AvatarFallback className="bg-gradient-to-br from-teal-400 to-green-500 text-white text-xs">
+                                {conv.otherUserName.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            {isUnread && (
+                              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-teal-500 rounded-full border-2 border-white" />
                             )}
                           </div>
-                          <p className="text-[11px] text-gray-500 truncate">
-                            {conv.lastMessageContent || conv.offeringTitle}
-                          </p>
-                        </div>
-                        {conv.unreadCount > 0 && (
-                          <span className="w-4 h-4 bg-teal-500 text-white text-[9px] rounded-full flex items-center justify-center flex-shrink-0">
-                            {conv.unreadCount}
-                          </span>
-                        )}
-                      </Link>
-                    ))}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <span className={`text-xs truncate ${isUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-900'}`}>
+                                {conv.otherUserName}
+                              </span>
+                              {conv.lastMessageAt && (
+                                <span className={`text-[10px] flex-shrink-0 ml-1 ${isUnread ? 'text-teal-600 font-medium' : 'text-gray-400'}`}>
+                                  {formatRelativeTime(conv.lastMessageAt)}
+                                </span>
+                              )}
+                            </div>
+                            <p className={`text-[11px] truncate ${isUnread ? 'text-gray-700 font-medium' : 'text-gray-500'}`}>
+                              {conv.lastMessageContent || conv.offeringTitle}
+                            </p>
+                          </div>
+                          {isUnread && (
+                            <span className="min-w-[20px] h-5 bg-teal-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center flex-shrink-0 px-1">
+                              {conv.unreadCount}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-6">

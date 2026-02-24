@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   Bell,
   Check,
@@ -28,6 +28,8 @@ const PAGE_SIZE = 20;
 
 export default function NotificationsPage() {
   const router = useRouter();
+  const pathname = usePathname();
+  const isMentor = pathname.startsWith('/mentor');
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
@@ -49,7 +51,7 @@ export default function NotificationsPage() {
     if (!notif.isRead) {
       markReadMutation.mutate(notif.id);
     }
-    const url = getNavigationUrl(notif);
+    const url = getNavigationUrl(notif, isMentor);
     if (url) {
       router.push(url);
     }
@@ -125,7 +127,7 @@ export default function NotificationsPage() {
           </div>
         ) : (
           filteredNotifications.map((notif: UserNotificationDto) => {
-            const navUrl = getNavigationUrl(notif);
+            const navUrl = getNavigationUrl(notif, isMentor);
             return (
               <div
                 key={notif.id}

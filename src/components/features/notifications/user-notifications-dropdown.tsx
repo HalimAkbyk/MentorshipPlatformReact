@@ -47,7 +47,7 @@ export function NotificationIcon({ type }: { type: string }) {
   }
 }
 
-export function getNavigationUrl(notif: UserNotificationDto): string | null {
+export function getNavigationUrl(notif: UserNotificationDto, isMentor?: boolean): string | null {
   if (!notif.referenceType || !notif.referenceId) return null;
   switch (notif.referenceType) {
     case 'Course':
@@ -56,6 +56,10 @@ export function getNavigationUrl(notif: UserNotificationDto): string | null {
       return `/student/bookings/${notif.referenceId}`;
     case 'Order':
       return '/student/payments';
+    case 'Conversation':
+      return isMentor
+        ? `/mentor/messages?conversationId=${notif.referenceId}`
+        : `/student/messages?conversationId=${notif.referenceId}`;
     default:
       return null;
   }
@@ -72,9 +76,11 @@ function useNotificationsPageUrl(): string {
 
 export function UserNotificationsDropdown() {
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notificationsPageUrl = useNotificationsPageUrl();
+  const isMentor = pathname.startsWith('/mentor');
 
   const { data: countData } = useNotificationCount();
   const unreadCount = countData?.count ?? 0;
@@ -102,7 +108,7 @@ export function UserNotificationsDropdown() {
     if (!notif.isRead) {
       markReadMutation.mutate(notif.id);
     }
-    const url = getNavigationUrl(notif);
+    const url = getNavigationUrl(notif, isMentor);
     if (url) {
       setOpen(false);
       router.push(url);
@@ -152,7 +158,7 @@ export function UserNotificationsDropdown() {
               </div>
             ) : (
               notifications.map((notif: UserNotificationDto) => {
-                const navUrl = getNavigationUrl(notif);
+                const navUrl = getNavigationUrl(notif, isMentor);
                 return (
                   <div
                     key={notif.id}
