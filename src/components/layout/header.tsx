@@ -14,9 +14,11 @@ import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { useUnreadCount } from '@/lib/hooks/use-messages';
+import { useQueryClient } from '@tanstack/react-query';
 import { UserRole } from '@/lib/types/enums';
 import { cn } from '@/lib/utils/cn';
 import { UserNotificationsDropdown } from '../features/notifications/user-notifications-dropdown';
+import { stopConnection } from '@/lib/signalr/chat-connection';
 
 type NavLink = { href: string; label: string; icon?: React.ReactNode };
 
@@ -59,6 +61,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { user, isAuthenticated, logout } = useAuthStore();
   const isAdmin = user?.roles.includes(UserRole.Admin);
   const isMentor = user?.roles.includes(UserRole.Mentor);
@@ -182,7 +185,7 @@ export function Header() {
       {/* Çıkış */}
       <div className="border-t border-gray-200 py-1">
         <button
-          onClick={() => { logout(); onClose(); router.push('/'); }}
+          onClick={() => { stopConnection(); queryClient.clear(); logout(); onClose(); router.push('/'); }}
           className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
         >
           <LogOut className="w-4 h-4 text-red-400" />
