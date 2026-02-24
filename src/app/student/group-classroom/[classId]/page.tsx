@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useGroupClass } from '@/lib/hooks/use-classes';
 import { videoApi } from '@/lib/api/video';
+import { apiClient } from '@/lib/api/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
@@ -819,7 +820,7 @@ export default function StudentGroupClassroomPage() {
   };
 
   // ─── Leave ───
-  const handleLeave = () => { clearMentorAbsenceTimer(); fullDisconnect(); router.push('/student/my-classes'); };
+  const handleLeave = async () => { try { await apiClient.post(`/video/room/group-class-${classId}/leave`); } catch {} clearMentorAbsenceTimer(); fullDisconnect(); router.push('/student/my-classes'); };
 
   // ─── Waiting Screen ───
   if (waitingForHost && !isConnected && !isConnecting) {

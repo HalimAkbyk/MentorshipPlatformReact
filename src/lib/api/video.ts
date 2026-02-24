@@ -18,6 +18,11 @@ export interface RoomStatusResponse {
   participantCount: number;
 }
 
+export interface LeaveRoomResponse {
+  isRoomEmpty: boolean;
+  sessionEnded: boolean;
+}
+
 export const videoApi = {
   getToken: async (data: VideoTokenRequest): Promise<VideoTokenResponse> => {
     return apiClient.post<VideoTokenResponse>('/video/token', data);
@@ -32,6 +37,10 @@ export const videoApi = {
 
   getRoomStatus: async (roomName: string): Promise<RoomStatusResponse> => {
     return apiClient.get<RoomStatusResponse>(`/video/room/${roomName}/status`);
+  },
+
+  leaveRoom: async (roomName: string): Promise<LeaveRoomResponse> => {
+    return apiClient.post<LeaveRoomResponse>(`/video/room/${roomName}/leave`);
   },
 
   endSession: async (roomName: string): Promise<void> => {

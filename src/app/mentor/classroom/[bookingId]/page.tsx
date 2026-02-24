@@ -622,7 +622,9 @@ export default function MentorClassroomPage() {
   };
 
   // ─── Leave Room (odadan ayrıl, seans tamamlanmaz) ───
-  const handleLeaveRoom = () => {
+  const handleLeaveRoom = async () => {
+    // Backend'e ayrılma bildirimi gönder (oda boş mu kontrolü için)
+    try { await apiClient.post(`/video/room/${bookingId}/leave`); } catch {}
     fullDisconnect();
     toast.info('Odadan ayrıldınız. Seans tamamlanmadı, tekrar katılabilirsiniz.');
     router.push('/mentor/bookings');

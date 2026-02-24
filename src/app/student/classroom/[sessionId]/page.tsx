@@ -5,7 +5,8 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Video, VideoOff, Mic, MicOff, Monitor, MonitorOff,
-  MessageSquare, Users, PhoneOff, Settings, Hand, X, Image as ImageIcon
+  MessageSquare, Users, PhoneOff, Settings, Hand, X, Image as ImageIcon,
+  AlertTriangle,
 } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Badge } from '../../../../components/ui/badge';
@@ -144,6 +145,13 @@ export default function StudentClassroomPage() {
   const [bookingTimes, setBookingTimes] = useState<{ startAt: string; endAt: string } | null>(null);
   const [isWaitingForMentor, setIsWaitingForMentor] = useState(false);
 
+  // ─── Mentor absence countdown (10 dk) ───
+  const [mentorAbsent, setMentorAbsent] = useState(false);
+  const [mentorAbsenceSeconds, setMentorAbsenceSeconds] = useState(0);
+  const mentorAbsenceTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mentorAbsenceStartRef = useRef<number | null>(null);
+  const MENTOR_ABSENCE_LIMIT_SEC = 600; // 10 dakika
+
   // Session lifecycle settings
   const { sessionGracePeriodMinutes } = useSessionLifecycleSettings();
 
@@ -187,6 +195,52 @@ export default function StudentClassroomPage() {
 
   // Reset unread when chat opens
   useEffect(() => { if (isChatOpen) setUnreadCount(0); }, [isChatOpen]);
+
+  // ─── Mentor absence timer helpers ───
+  const startMentorAbsenceTimer = useCallback(() => {
+    // Zaten çalışıyorsa tekrar başlatma
+    if (mentorAbsenceTimerRef.current) return;
+    setMentorAbsent(true);
+    mentorAbsenceStartRef.current = Date.now();
+    setMentorAbsenceSeconds(0);
+    mentorAbsenceTimerRef.current = setInterval(() => {
+      if (!mentorAbsenceStartRef.current) return;
+      const elapsed = Math.floor((Date.now() - mentorAbsenceStartRef.current) / 1000);
+      setMentorAbsenceSeconds(elapsed);
+    }, 1000);
+  }, []);
+
+  const stopMentorAbsenceTimer = useCallback(() => {
+    if (mentorAbsenceTimerRef.current) {
+      clearInterval(mentorAbsenceTimerRef.current);
+      mentorAbsenceTimerRef.current = null;
+    }
+    mentorAbsenceStartRef.current = null;
+    setMentorAbsent(false);
+    setMentorAbsenceSeconds(0);
+  }, []);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (mentorAbsenceTimerRef.current) clearInterval(mentorAbsenceTimerRef.current);
+    };
+  }, []);
+
+  // Auto-end when mentor absent for 10 minutes
+  useEffect(() => {
+    if (mentorAbsent && mentorAbsenceSeconds >= MENTOR_ABSENCE_LIMIT_SEC) {
+      toast.error('Mentor 10 dakikadır odaya dönmedi. Seans sonlandırılıyor.');
+      stopMentorAbsenceTimer();
+      // Odadan ayrıl ve backend'e bildir
+      const autoEnd = async () => {
+        try { await apiClient.post(`/video/room/${sessionId}/leave`); } catch {}
+        fullDisconnect();
+        router.push(ROUTES.BOOKINGS);
+      };
+      autoEnd();
+    }
+  }, [mentorAbsent, mentorAbsenceSeconds]);
 
   // Auto-leave when grace period expires
   useEffect(() => {
@@ -577,15 +631,27 @@ export default function StudentClassroomPage() {
         };
 
         newRoom.participants.forEach(handleParticipant);
-        newRoom.on('participantConnected', handleParticipant);
+        newRoom.on('participantConnected', (p: any) => {
+          handleParticipant(p);
+          // Mentor geri döndüyse sayacı durdur
+          stopMentorAbsenceTimer();
+        });
         newRoom.on('participantDisconnected', (p: any) => {
           const { displayName } = parseIdentity(p.identity);
           toast.info(`${displayName} dersten ayrıldı`);
           removeRemoteTile(p.identity);
+
+          // Odada başka katılımcı kalmadıysa → mentor ayrılmış, sayacı başlat
+          const remainingParticipants = newRoom.participants.size;
+          if (remainingParticipants === 0) {
+            toast.warning('Mentor odadan ayrıldı. 10 dakika içinde dönmezse seans sonlanacak.');
+            startMentorAbsenceTimer();
+          }
         });
 
         newRoom.on('disconnected', () => {
           toast.info('Ders sonlandırıldı');
+          stopMentorAbsenceTimer();
           fullDisconnect();
         });
 
@@ -699,7 +765,10 @@ export default function StudentClassroomPage() {
   };
 
   // ─── Leave Room ───
-  const leaveRoom = () => {
+  const leaveRoom = async () => {
+    stopMentorAbsenceTimer();
+    // Backend'e ayrılma bildirimi gönder
+    try { await apiClient.post(`/video/room/${sessionId}/leave`); } catch {}
     fullDisconnect();
     toast.success('Dersten ayrıldınız');
     router.push(ROUTES.BOOKINGS);
@@ -823,6 +892,19 @@ export default function StudentClassroomPage() {
           gracePeriodMinutes={sessionGracePeriodMinutes}
           isRoomActive={!!room}
         />
+      )}
+
+      {/* Mentor Absence Banner */}
+      {mentorAbsent && (
+        <div className="bg-orange-600 text-white px-4 py-2 flex items-center justify-center gap-3 shrink-0 animate-pulse">
+          <AlertTriangle className="w-5 h-5 shrink-0" />
+          <span className="text-sm font-medium">
+            Mentor odadan ayrıldı. {Math.max(0, Math.ceil((MENTOR_ABSENCE_LIMIT_SEC - mentorAbsenceSeconds) / 60))} dk {Math.max(0, (MENTOR_ABSENCE_LIMIT_SEC - mentorAbsenceSeconds) % 60)} sn içinde dönmezse seans sonlanacak.
+          </span>
+          <span className="font-mono font-bold text-lg">
+            {Math.floor(Math.max(0, MENTOR_ABSENCE_LIMIT_SEC - mentorAbsenceSeconds) / 60)}:{String(Math.max(0, MENTOR_ABSENCE_LIMIT_SEC - mentorAbsenceSeconds) % 60).padStart(2, '0')}
+          </span>
+        </div>
       )}
 
       {/* Header */}

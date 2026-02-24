@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useGroupClass, useCompleteGroupClass } from '@/lib/hooks/use-classes';
 import { videoApi } from '@/lib/api/video';
+import { apiClient } from '@/lib/api/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
@@ -688,7 +689,8 @@ export default function MentorGroupClassroomPage() {
     router.push('/mentor/group-classes');
   };
 
-  const handleLeaveRoom = () => {
+  const handleLeaveRoom = async () => {
+    try { await apiClient.post(`/video/room/group-class-${classId}/leave`); } catch {}
     fullDisconnect({ endSession: true });
     toast.info('Odadan ayrıldınız. Ders tamamlanmadı, tekrar katılabilirsiniz.');
     router.push('/mentor/group-classes');
