@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Calendar, Clock, Filter } from 'lucide-react';
+import { Calendar, Clock, BookOpen } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent, CardHeader } from '../../../components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../components/ui/avatar';
@@ -15,16 +15,16 @@ import { ROUTES } from '../../../lib/constants/routes';
 import { Pagination } from '../../../components/ui/pagination';
 
 const statusFilters = [
-  { value: 'all', label: 'Tümü' },
   { value: BookingStatus.Confirmed, label: 'Yaklaşan' },
   { value: BookingStatus.Completed, label: 'Tamamlanan' },
   { value: BookingStatus.Cancelled, label: 'İptal Edilen' },
+  { value: 'all', label: 'Tümü' },
 ];
 
 export default function BookingsPage() {
-  const [selectedStatus, setSelectedStatus] = useState<'all' | BookingStatus>('all');
+  const [selectedStatus, setSelectedStatus] = useState<'all' | BookingStatus>(BookingStatus.Confirmed);
   const [page, setPage] = useState(1);
-  
+
   const { data, isLoading } = useBookings(
     selectedStatus === 'all' ? undefined : selectedStatus,
     page,
@@ -34,151 +34,150 @@ export default function BookingsPage() {
   const bookings = data?.items;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Gradient Hero Header */}
-      <div className="bg-gradient-to-br from-teal-600 to-green-600 py-12">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-              Rezervasyonlarım
-            </h1>
-            <p className="text-teal-100 text-lg max-w-2xl mx-auto mb-6">
-              Tüm rezervasyonlarınızı görüntüleyin ve yönetin
-            </p>
-            <Link href="/public/mentors">
-              <Button
-                variant="secondary"
-                className="bg-white/20 hover:bg-white/30 text-white border-0"
-              >
-                <Calendar className="w-4 h-4 mr-2" />
-                Yeni Rezervasyon
-              </Button>
-            </Link>
+    <div className="container mx-auto px-4 py-6 max-w-6xl">
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center">
+            <BookOpen className="w-4 h-4 text-teal-600" />
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900">Rezervasyonlarım</h1>
+            <p className="text-xs text-gray-500">Tüm rezervasyonlarınızı görüntüleyin</p>
           </div>
         </div>
+        <Link href="/public/mentors">
+          <Button size="sm" className="text-xs">
+            <Calendar className="w-3.5 h-3.5 mr-1" />
+            Yeni Rezervasyon
+          </Button>
+        </Link>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Filters */}
-        <div className="flex items-center space-x-2 mb-6 overflow-x-auto">
-          {statusFilters.map((filter) => (
-            <button
-              key={filter.value}
-              onClick={() => { setSelectedStatus(filter.value as any); setPage(1); }}
-              className={cn(
-                'px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
-                selectedStatus === filter.value
-                  ? 'bg-teal-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              )}
-            >
-              {filter.label}
-            </button>
+      {/* Filters */}
+      <div className="flex items-center gap-1.5 mb-5 overflow-x-auto">
+        {statusFilters.map((filter) => (
+          <button
+            key={filter.value}
+            onClick={() => { setSelectedStatus(filter.value as any); setPage(1); }}
+            className={cn(
+              'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap',
+              selectedStatus === filter.value
+                ? 'bg-teal-600 text-white'
+                : 'bg-white text-gray-600 hover:bg-gray-100'
+            )}
+          >
+            {filter.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Bookings List */}
+      {isLoading ? (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="border-0 shadow-sm animate-pulse">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-200 rounded-xl" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-3/4" />
+                    <div className="h-3 bg-gray-100 rounded w-1/2" />
+                  </div>
+                </div>
+                <div className="h-8 bg-gray-100 rounded mt-3" />
+              </CardContent>
+            </Card>
           ))}
         </div>
-
-        {/* Bookings List */}
-        {isLoading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <CardHeader>
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-gray-200 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-gray-200 rounded w-3/4" />
-                      <div className="h-3 bg-gray-200 rounded w-1/2" />
+      ) : bookings && bookings.length > 0 ? (
+        <>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {bookings.map((booking) => (
+              <Link key={booking.id} href={ROUTES.BOOKING_DETAIL(booking.id)}>
+                <Card className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer h-full">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-2.5">
+                        <Avatar className="w-10 h-10 rounded-xl">
+                          <AvatarImage src={booking.mentorAvatar??undefined} />
+                          <AvatarFallback className="rounded-xl bg-gradient-to-br from-teal-400 to-green-500 text-white text-sm">
+                            {booking.mentorName.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <h3 className="font-semibold text-sm text-gray-900">{booking.mentorName}</h3>
+                          <p className="text-[10px] text-gray-400">Mentör</p>
+                        </div>
+                      </div>
+                      <Badge
+                        variant={
+                          booking.status === BookingStatus.Completed
+                            ? 'success'
+                            : booking.status === BookingStatus.Cancelled ||
+                              booking.status === BookingStatus.Expired ||
+                              booking.status === BookingStatus.NoShow
+                            ? 'destructive'
+                            : booking.status === BookingStatus.Disputed
+                            ? 'outline'
+                            : 'default'
+                        }
+                        className="text-[10px] px-1.5 py-0"
+                      >
+                        {booking.status === BookingStatus.PendingPayment && 'Ödeme Bekliyor'}
+                        {booking.status === BookingStatus.Confirmed && 'Onaylandı'}
+                        {booking.status === BookingStatus.Completed && 'Tamamlandı'}
+                        {booking.status === BookingStatus.Cancelled && 'İptal'}
+                        {booking.status === BookingStatus.NoShow && 'Katılmadı'}
+                        {booking.status === BookingStatus.Disputed && 'İtiraz'}
+                        {booking.status === BookingStatus.Expired && 'Süresi Doldu'}
+                      </Badge>
                     </div>
-                  </div>
-                </CardHeader>
-              </Card>
+
+                    <div className="space-y-1.5 text-xs text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {formatDate(booking.startAt, 'PPP')}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {formatRelativeTime(booking.startAt)} ({booking.durationMin} dk)
+                      </div>
+                    </div>
+
+                    <div className="pt-2.5 mt-2.5 border-t border-gray-100">
+                      <span className="text-sm font-bold text-teal-600">
+                        {formatCurrency(booking.price)}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
-        ) : bookings && bookings.length > 0 ? (
-          <>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {bookings.map((booking) => (
-                <Link key={booking.id} href={ROUTES.BOOKING_DETAIL(booking.id)}>
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                    <CardHeader>
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center space-x-3">
-                          <Avatar>
-                            <AvatarImage src={booking.mentorAvatar??undefined} />
-                            <AvatarFallback>
-                              {booking.mentorName.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h3 className="font-semibold">{booking.mentorName}</h3>
-                            <p className="text-xs text-gray-500">Mentör</p>
-                          </div>
-                        </div>
-                        <Badge
-                          variant={
-                            booking.status === BookingStatus.Completed
-                              ? 'success'
-                              : booking.status === BookingStatus.Cancelled ||
-                                booking.status === BookingStatus.Expired ||
-                                booking.status === BookingStatus.NoShow
-                              ? 'destructive'
-                              : booking.status === BookingStatus.Disputed
-                              ? 'outline'
-                              : 'default'
-                          }
-                        >
-                          {booking.status === BookingStatus.PendingPayment && 'Ödeme Bekliyor'}
-                          {booking.status === BookingStatus.Confirmed && 'Onaylandı'}
-                          {booking.status === BookingStatus.Completed && 'Tamamlandı'}
-                          {booking.status === BookingStatus.Cancelled && 'İptal'}
-                          {booking.status === BookingStatus.NoShow && 'Katılmadı'}
-                          {booking.status === BookingStatus.Disputed && 'İtiraz'}
-                          {booking.status === BookingStatus.Expired && 'Süresi Doldu'}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center text-gray-600">
-                          <Calendar className="w-4 h-4 mr-2" />
-                          {formatDate(booking.startAt, 'PPP')}
-                        </div>
-                        <div className="flex items-center text-gray-600">
-                          <Clock className="w-4 h-4 mr-2" />
-                          {formatRelativeTime(booking.startAt)} ({booking.durationMin} dk)
-                        </div>
-                        <div className="pt-2 border-t">
-                          <span className="text-lg font-bold text-teal-600">
-                            {formatCurrency(booking.price)}
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
+          <Pagination
+            page={page}
+            totalPages={data?.totalPages ?? 1}
+            totalCount={data?.totalCount ?? 0}
+            onPageChange={setPage}
+            itemLabel="rezervasyon"
+          />
+        </>
+      ) : (
+        <Card className="border border-dashed border-teal-200 bg-teal-50/30">
+          <CardContent className="p-8 text-center">
+            <div className="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center mx-auto mb-3">
+              <Calendar className="w-6 h-6 text-teal-600" />
             </div>
-            <Pagination
-              page={page}
-              totalPages={data?.totalPages ?? 1}
-              totalCount={data?.totalCount ?? 0}
-              onPageChange={setPage}
-              itemLabel="rezervasyon"
-            />
-          </>
-        ) : (
-          <div className="text-center py-12">
-            <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold font-heading mb-2">Henüz rezervasyon yok</h3>
-            <p className="text-gray-600 mb-6">
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">Henüz rezervasyon yok</h3>
+            <p className="text-xs text-gray-500 mb-4">
               İlk rezervasyonunuzu yaparak mentörlerinizle tanışın
             </p>
             <Link href="/public/mentors">
-              <Button>Mentörleri Keşfet</Button>
+              <Button size="sm" className="text-xs">Mentörleri Keşfet</Button>
             </Link>
-          </div>
-        )}
-      </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

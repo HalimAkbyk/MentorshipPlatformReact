@@ -16,14 +16,14 @@ import { cn } from '../../../lib/utils/cn';
 import { Pagination } from '../../../components/ui/pagination';
 
 const statusFilters = [
-  { value: 'all', label: 'Tümü' },
   { value: BookingStatus.Confirmed, label: 'Yaklaşan' },
   { value: BookingStatus.Completed, label: 'Tamamlanan' },
   { value: BookingStatus.Cancelled, label: 'İptal Edilen' },
+  { value: 'all', label: 'Tümü' },
 ];
 
 export default function MentorBookingsPage() {
-  const [selectedStatus, setSelectedStatus] = useState<'all' | BookingStatus>('all');
+  const [selectedStatus, setSelectedStatus] = useState<'all' | BookingStatus>(BookingStatus.Confirmed);
   const [page, setPage] = useState(1);
   const { devMode, earlyJoinMinutes } = useSessionJoinSettings();
 

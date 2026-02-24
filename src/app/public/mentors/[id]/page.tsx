@@ -7,7 +7,7 @@ import Link from 'next/link';
 import {
   Calendar, Star, CheckCircle, Video, Clock, HelpCircle, Tag, AlertTriangle,
   ArrowLeft, Users, Award, Shield, Globe, GraduationCap, Building2,
-  MessageSquare, Heart, Share2, TrendingUp, Play
+  MessageSquare, Heart, Share2, TrendingUp, Play, Settings, Package, Eye, BarChart3
 } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../../components/ui/card';
@@ -538,32 +538,113 @@ export default function MentorProfilePage() {
             </div>
           </div>
 
-          {/* Sidebar — Booking Card */}
+          {/* Sidebar — Booking Card or Own Profile Actions */}
           <div className="space-y-6">
-            <Card className="p-6 border-0 shadow-xl sticky top-20">
-              <div className="text-center mb-5">
-                {enrichedOfferings.length > 0 ? (
-                  <>
-                    <div className="text-3xl font-bold text-gray-900 mb-1">
-                      {formatCurrency(Math.min(...enrichedOfferings.map(o => o.price)))}
-                    </div>
-                    <p className="text-sm text-gray-500">başlangıç fiyatı</p>
-                  </>
-                ) : mentor.offerings.length > 0 ? (
-                  <>
-                    <div className="text-3xl font-bold text-gray-900 mb-1">
-                      {formatCurrency(Math.min(...mentor.offerings.map(o => o.price)))}
-                    </div>
-                    <p className="text-sm text-gray-500">başlangıç fiyatı</p>
-                  </>
-                ) : (
-                  <p className="text-sm text-gray-500">Fiyat bilgisi için hizmetlere bakın</p>
-                )}
-                <p className="text-xs text-gray-400 mt-1">Taksit seçeneği mevcuttur</p>
-              </div>
+            {isOwnProfile ? (
+              /* ─── Own Profile Sidebar ─── */
+              <Card className="p-6 border-0 shadow-xl sticky top-20">
+                <div className="text-center mb-5">
+                  <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center mx-auto mb-3">
+                    <Eye className="w-6 h-6 text-teal-600" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-gray-900">Profiliniz</h3>
+                  <p className="text-xs text-gray-500 mt-1">Öğrenciler profilinizi böyle görüyor</p>
+                </div>
 
-              <div className="space-y-3 mb-5">
-                {!isOwnProfile && (
+                <div className="space-y-2 mb-5">
+                  <Link href="/mentor/offerings">
+                    <Button className="w-full bg-gradient-to-r from-teal-600 to-green-600 hover:from-teal-700 hover:to-green-700 text-white py-5">
+                      <Package className="w-4 h-4 mr-2" />
+                      Paketlerimi Düzenle
+                    </Button>
+                  </Link>
+                  <Link href="/mentor/availability">
+                    <Button variant="outline" className="w-full border-2 border-teal-300 hover:bg-teal-50 py-4 text-teal-700">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Uygunluk Ayarları
+                    </Button>
+                  </Link>
+                  <Link href="/mentor/settings">
+                    <Button variant="outline" className="w-full py-4">
+                      <Settings className="w-4 h-4 mr-2" />
+                      Profil Ayarları
+                    </Button>
+                  </Link>
+                </div>
+
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                    <span className="text-gray-600">Puan</span>
+                    <span className="text-gray-900 font-medium flex items-center gap-1">
+                      <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                      {mentor.ratingAvg.toFixed(1)} ({mentor.ratingCount})
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                    <span className="text-gray-600">Aktif Paket</span>
+                    <span className="text-gray-900 font-medium">{enrichedOfferings.length || mentor.offerings.length} adet</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                    <span className="text-gray-600">Uygun Slot</span>
+                    <span className="text-gray-900 font-medium">{mentor.availableSlots.length} saat</span>
+                  </div>
+                  {mentor.graduationYear && (
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-gray-600">Mezuniyet</span>
+                      <span className="text-gray-900 font-medium">{mentor.graduationYear}</span>
+                    </div>
+                  )}
+                </div>
+
+                {mentor.availableSlots.length === 0 && (
+                  <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs text-amber-800 font-medium">Uygun slot yok</p>
+                        <p className="text-xs text-amber-600">Öğrencilerin randevu alabilmesi için uygunluk saatlerinizi ayarlayın</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {(enrichedOfferings.length === 0 && mentor.offerings.length === 0) && (
+                  <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs text-amber-800 font-medium">Paket oluşturun</p>
+                        <p className="text-xs text-amber-600">Profilinizde hizmet görünmesi için en az bir paket ekleyin</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </Card>
+            ) : (
+              /* ─── Visitor Sidebar ─── */
+              <Card className="p-6 border-0 shadow-xl sticky top-20">
+                <div className="text-center mb-5">
+                  {enrichedOfferings.length > 0 ? (
+                    <>
+                      <div className="text-3xl font-bold text-gray-900 mb-1">
+                        {formatCurrency(Math.min(...enrichedOfferings.map(o => o.price)))}
+                      </div>
+                      <p className="text-sm text-gray-500">başlangıç fiyatı</p>
+                    </>
+                  ) : mentor.offerings.length > 0 ? (
+                    <>
+                      <div className="text-3xl font-bold text-gray-900 mb-1">
+                        {formatCurrency(Math.min(...mentor.offerings.map(o => o.price)))}
+                      </div>
+                      <p className="text-sm text-gray-500">başlangıç fiyatı</p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-gray-500">Fiyat bilgisi için hizmetlere bakın</p>
+                  )}
+                  <p className="text-xs text-gray-400 mt-1">Taksit seçeneği mevcuttur</p>
+                </div>
+
+                <div className="space-y-3 mb-5">
                   <Button
                     className="w-full bg-gradient-to-r from-teal-600 to-green-600 hover:from-teal-700 hover:to-green-700 text-white shadow-lg shadow-teal-500/25 py-5"
                     onClick={() => {
@@ -577,78 +658,80 @@ export default function MentorProfilePage() {
                     <Calendar className="w-4 h-4 mr-2" />
                     Görüşme Planla
                   </Button>
-                )}
-                <Button
-                  variant="outline"
-                  className="w-full border-2 border-teal-300 hover:bg-teal-50 py-5 text-teal-700"
-                  onClick={handleSendMessage}
-                >
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Mesaj Gönder
-                </Button>
-              </div>
+                  <Button
+                    variant="outline"
+                    className="w-full border-2 border-teal-300 hover:bg-teal-50 py-5 text-teal-700"
+                    onClick={handleSendMessage}
+                  >
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Mesaj Gönder
+                  </Button>
+                </div>
 
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Puan</span>
-                  <span className="text-gray-900 font-medium flex items-center gap-1">
-                    <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                    {mentor.ratingAvg.toFixed(1)} ({mentor.ratingCount})
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Hizmetler</span>
-                  <span className="text-gray-900 font-medium">{enrichedOfferings.length || mentor.offerings.length} paket</span>
-                </div>
-                {mentor.graduationYear && (
+                <div className="space-y-3 text-sm">
                   <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                    <span className="text-gray-600">Mezuniyet</span>
-                    <span className="text-gray-900 font-medium">{mentor.graduationYear}</span>
+                    <span className="text-gray-600">Puan</span>
+                    <span className="text-gray-900 font-medium flex items-center gap-1">
+                      <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                      {mentor.ratingAvg.toFixed(1)} ({mentor.ratingCount})
+                    </span>
                   </div>
-                )}
-                <div className="flex items-center justify-between py-2">
-                  <span className="text-gray-600">Uygun Slot</span>
-                  <span className="text-gray-900 font-medium">{mentor.availableSlots.length} saat</span>
-                </div>
-              </div>
-
-              <div className="mt-5 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                <div className="flex items-start gap-2">
-                  <Shield className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-xs text-amber-800 font-medium">Para iade garantisi</p>
-                    <p className="text-xs text-amber-600">İlk görüşmeden memnun kalmazsanız %100 iade</p>
+                  <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                    <span className="text-gray-600">Hizmetler</span>
+                    <span className="text-gray-900 font-medium">{enrichedOfferings.length || mentor.offerings.length} paket</span>
+                  </div>
+                  {mentor.graduationYear && (
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Mezuniyet</span>
+                      <span className="text-gray-900 font-medium">{mentor.graduationYear}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-gray-600">Uygun Slot</span>
+                    <span className="text-gray-900 font-medium">{mentor.availableSlots.length} saat</span>
                   </div>
                 </div>
-              </div>
 
-              <div className="mt-4 flex items-center justify-center gap-4">
-                <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-red-500 transition-colors">
-                  <Heart className="w-4 h-4" /> Kaydet
-                </button>
-                <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-teal-600 transition-colors">
-                  <Share2 className="w-4 h-4" /> Paylaş
-                </button>
-              </div>
-            </Card>
-
-            {/* Social Proof */}
-            <Card className="p-4 border border-gray-200">
-              <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                <TrendingUp className="w-4 h-4 text-teal-600" />
-                <span>Bu hafta birçok kişi görüşme planladı</span>
-              </div>
-              <div className="flex -space-x-2">
-                {['A', 'M', 'S', 'D', 'E'].map((letter, i) => (
-                  <div key={i} className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-400 to-green-500 border-2 border-white flex items-center justify-center text-white text-xs font-medium">
-                    {letter}
+                <div className="mt-5 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <Shield className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs text-amber-800 font-medium">Para iade garantisi</p>
+                      <p className="text-xs text-amber-600">İlk görüşmeden memnun kalmazsanız %100 iade</p>
+                    </div>
                   </div>
-                ))}
-                <div className="w-7 h-7 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-gray-600 text-xs">
-                  +
                 </div>
-              </div>
-            </Card>
+
+                <div className="mt-4 flex items-center justify-center gap-4">
+                  <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-red-500 transition-colors">
+                    <Heart className="w-4 h-4" /> Kaydet
+                  </button>
+                  <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-teal-600 transition-colors">
+                    <Share2 className="w-4 h-4" /> Paylaş
+                  </button>
+                </div>
+              </Card>
+            )}
+
+            {/* Social Proof — only for visitors */}
+            {!isOwnProfile && (
+              <Card className="p-4 border border-gray-200">
+                <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                  <TrendingUp className="w-4 h-4 text-teal-600" />
+                  <span>Bu hafta birçok kişi görüşme planladı</span>
+                </div>
+                <div className="flex -space-x-2">
+                  {['A', 'M', 'S', 'D', 'E'].map((letter, i) => (
+                    <div key={i} className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-400 to-green-500 border-2 border-white flex items-center justify-center text-white text-xs font-medium">
+                      {letter}
+                    </div>
+                  ))}
+                  <div className="w-7 h-7 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-gray-600 text-xs">
+                    +
+                  </div>
+                </div>
+              </Card>
+            )}
           </div>
         </div>
       </div>

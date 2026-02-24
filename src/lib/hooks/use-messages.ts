@@ -71,8 +71,9 @@ export function useStartDirectConversation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (recipientUserId: string) => messagesApi.startDirectConversation(recipientUserId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    onSuccess: async () => {
+      // Await invalidation so conversations list is fresh before navigation
+      await queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
 }

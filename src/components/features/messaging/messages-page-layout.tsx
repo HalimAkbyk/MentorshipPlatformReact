@@ -21,11 +21,14 @@ export function MessagesPageLayout() {
 
   // Auto-select conversation from URL params (?bookingId=xxx or ?userId=xxx or ?conversationId=xxx)
   useEffect(() => {
-    if (autoSelectedRef.current || !conversations || conversations.length === 0) return;
+    if (!conversations || conversations.length === 0) return;
 
     const conversationIdParam = searchParams.get('conversationId');
     const bookingIdParam = searchParams.get('bookingId');
     const userIdParam = searchParams.get('userId');
+
+    // If already selected and no URL param pointing elsewhere, skip
+    if (autoSelectedRef.current && !conversationIdParam && !bookingIdParam && !userIdParam) return;
 
     if (conversationIdParam) {
       const found = conversations.find((c) => c.conversationId === conversationIdParam);
@@ -33,6 +36,7 @@ export function MessagesPageLayout() {
         setSelectedConv(found);
         autoSelectedRef.current = true;
       }
+      // If not found yet, don't set autoSelectedRef — keep trying on next conversation refresh
     } else if (bookingIdParam) {
       const found = conversations.find((c) => c.bookingId === bookingIdParam);
       if (found) {

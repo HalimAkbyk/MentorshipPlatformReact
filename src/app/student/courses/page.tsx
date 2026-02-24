@@ -18,144 +18,141 @@ export default function StudentCoursesPage() {
   const courses = coursesData?.items;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Gradient Hero Header */}
-      <div className="bg-gradient-to-br from-teal-600 to-green-600 py-12">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-              Kurslarım
-            </h1>
-            <p className="text-teal-100 text-lg max-w-2xl mx-auto mb-6">
-              Kayıtlı olduğunuz kursları görüntüleyip devam edin
-            </p>
-            <Button
-              onClick={() => router.push(ROUTES.COURSE_CATALOG)}
-              variant="secondary"
-              className="bg-white/20 hover:bg-white/30 text-white border-0"
-            >
-              <BookOpen className="w-4 h-4 mr-2" />
-              Kurs Keşfet
-            </Button>
+    <div className="container mx-auto px-4 py-6 max-w-6xl">
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
+            <GraduationCap className="w-4 h-4 text-purple-600" />
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900">Kayıtlarım</h1>
+            <p className="text-xs text-gray-500">Kayıtlı olduğunuz kurslar</p>
           </div>
         </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className="text-xs"
+          onClick={() => router.push(ROUTES.COURSE_CATALOG)}
+        >
+          <BookOpen className="w-3.5 h-3.5 mr-1" />
+          Kurs Keşfet
+        </Button>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      {/* Course Grid */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="border-0 shadow-sm animate-pulse overflow-hidden">
+              <div className="h-28 bg-gray-200" />
+              <CardContent className="p-3 space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-3/4" />
+                <div className="h-3 bg-gray-200 rounded w-1/2" />
+                <div className="h-2 bg-gray-200 rounded w-full" />
+                <div className="h-3 bg-gray-200 rounded w-1/3" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : courses && courses.length > 0 ? (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {courses.map((course) => (
+              <Card
+                key={course.courseId}
+                className="border-0 shadow-sm overflow-hidden hover:shadow-md transition-all group"
+              >
+                {/* Cover Image */}
+                <div className="relative h-28 overflow-hidden">
+                  {course.coverImageUrl ? (
+                    <img
+                      src={course.coverImageUrl}
+                      alt={course.courseTitle}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      style={getCoverImageStyle(course.coverImagePosition, course.coverImageTransform)}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-purple-400 to-purple-700 flex items-center justify-center">
+                      <GraduationCap className="w-10 h-10 text-white/50" />
+                    </div>
+                  )}
+                  {course.completionPercentage === 100 && (
+                    <div className="absolute top-2 right-2 bg-green-500 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded">
+                      Tamamlandı
+                    </div>
+                  )}
+                </div>
 
-        {/* Course Grid */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className="animate-pulse overflow-hidden">
-                <div className="h-40 bg-gray-200" />
-                <CardContent className="p-4 space-y-3">
-                  <div className="h-5 bg-gray-200 rounded w-3/4" />
-                  <div className="h-3 bg-gray-200 rounded w-1/2" />
-                  <div className="h-2 bg-gray-200 rounded w-full" />
-                  <div className="h-4 bg-gray-200 rounded w-1/3" />
+                <CardContent className="p-3">
+                  <h3 className="font-semibold text-sm text-gray-900 mb-0.5 line-clamp-2 group-hover:text-purple-600 transition-colors">
+                    {course.courseTitle}
+                  </h3>
+                  <p className="text-[10px] text-gray-400 mb-2">{course.mentorName}</p>
+
+                  {/* Progress Bar */}
+                  <div className="mb-2">
+                    <div className="flex items-center justify-between text-[10px] text-gray-500 mb-1">
+                      <span>
+                        {course.completedLectures}/{course.totalLectures} ders
+                      </span>
+                      <span className="font-medium">
+                        %{Math.round(course.completionPercentage)}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                      <div
+                        className="bg-purple-600 h-1.5 rounded-full transition-all duration-500"
+                        style={{ width: `${course.completionPercentage}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Last Accessed */}
+                  {course.lastAccessedAt && (
+                    <p className="text-[10px] text-gray-400 flex items-center gap-1 mb-2">
+                      <Clock className="w-2.5 h-2.5" />
+                      Son: {formatRelativeTime(course.lastAccessedAt)}
+                    </p>
+                  )}
+
+                  {/* Continue Button */}
+                  <Button
+                    className="w-full text-xs"
+                    size="sm"
+                    onClick={() => router.push(ROUTES.COURSE_PLAYER(course.courseId))}
+                  >
+                    Devam Et
+                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                  </Button>
                 </CardContent>
               </Card>
             ))}
           </div>
-        ) : courses && courses.length > 0 ? (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courses.map((course) => (
-                <Card
-                  key={course.courseId}
-                  className="overflow-hidden hover:shadow-lg transition-shadow group"
-                >
-                  {/* Cover Image */}
-                  <div className="relative h-40 overflow-hidden">
-                    {course.coverImageUrl ? (
-                      <img
-                        src={course.coverImageUrl}
-                        alt={course.courseTitle}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        style={getCoverImageStyle(course.coverImagePosition, course.coverImageTransform)}
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-teal-400 to-teal-700 flex items-center justify-center">
-                        <GraduationCap className="w-12 h-12 text-white/50" />
-                      </div>
-                    )}
-                    {/* Progress Overlay */}
-                    {course.completionPercentage === 100 && (
-                      <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded">
-                        Tamamlandı
-                      </div>
-                    )}
-                  </div>
-
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 group-hover:text-teal-600 transition-colors">
-                      {course.courseTitle}
-                    </h3>
-                    <p className="text-xs text-gray-500 mb-3">{course.mentorName}</p>
-
-                    {/* Progress Bar */}
-                    <div className="mb-2">
-                      <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                        <span>
-                          {course.completedLectures}/{course.totalLectures} ders tamamlandı
-                        </span>
-                        <span className="font-medium">
-                          %{Math.round(course.completionPercentage)}
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-teal-600 h-2 rounded-full transition-all duration-500"
-                          style={{ width: `${course.completionPercentage}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Last Accessed */}
-                    {course.lastAccessedAt && (
-                      <p className="text-xs text-gray-400 flex items-center gap-1 mb-3">
-                        <Clock className="w-3 h-3" />
-                        Son erişim: {formatRelativeTime(course.lastAccessedAt)}
-                      </p>
-                    )}
-
-                    {/* Continue Button */}
-                    <Button
-                      className="w-full mt-2"
-                      size="sm"
-                      onClick={() => router.push(ROUTES.COURSE_PLAYER(course.courseId))}
-                    >
-                      Devam Et
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+          <Pagination
+            page={page}
+            totalPages={coursesData?.totalPages ?? 1}
+            totalCount={coursesData?.totalCount ?? 0}
+            onPageChange={setPage}
+            itemLabel="kurs"
+          />
+        </>
+      ) : (
+        <Card className="border border-dashed border-purple-200 bg-purple-50/30">
+          <CardContent className="p-8 text-center">
+            <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center mx-auto mb-3">
+              <GraduationCap className="w-6 h-6 text-purple-600" />
             </div>
-            <Pagination
-              page={page}
-              totalPages={coursesData?.totalPages ?? 1}
-              totalCount={coursesData?.totalCount ?? 0}
-              onPageChange={setPage}
-              itemLabel="kurs"
-            />
-          </>
-        ) : (
-          <div className="text-center py-16">
-            <GraduationCap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold font-heading mb-2 text-gray-700">
-              Henüz bir kursa kayıt olmadınız
-            </h3>
-            <p className="text-gray-500 mb-6">
-              Kurs kataloğundan ilginizi çeken kursları keşfedin ve öğrenmeye başlayın
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">Henüz bir kursa kayıt olmadınız</h3>
+            <p className="text-xs text-gray-500 mb-4">
+              Kurs kataloğundan ilginizi çeken kursları keşfedin
             </p>
-            <Button onClick={() => router.push(ROUTES.COURSE_CATALOG)}>
+            <Button size="sm" className="text-xs" onClick={() => router.push(ROUTES.COURSE_CATALOG)}>
               Kursları Keşfet
             </Button>
-          </div>
-        )}
-      </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

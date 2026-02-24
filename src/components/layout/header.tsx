@@ -163,8 +163,9 @@ export function Header() {
           label="Mesajlarım"
           onClick={onClose}
         />
-        <DropdownLink href="/student/explore-classes" icon={<Users className="w-4 h-4 text-gray-400" />} label="Grup Dersleri" onClick={onClose} />
-        <DropdownLink href="/student/my-classes" icon={<Calendar className="w-4 h-4 text-gray-400" />} label="Kayıtlarım" onClick={onClose} />
+        <DropdownLink href="/student/bookings" icon={<Calendar className="w-4 h-4 text-gray-400" />} label="Rezervasyonlarım" onClick={onClose} />
+        <DropdownLink href="/student/my-classes" icon={<Users className="w-4 h-4 text-gray-400" />} label="Grup Derslerim" onClick={onClose} />
+        <DropdownLink href="/student/courses" icon={<BookOpen className="w-4 h-4 text-gray-400" />} label="Kayıtlarım" onClick={onClose} />
         <DropdownLink href="/student/payments" icon={<CreditCard className="w-4 h-4 text-gray-400" />} label="Ödemelerim" onClick={onClose} />
         <DropdownLink href={settingsHref} icon={<Settings className="w-4 h-4 text-gray-400" />} label="Ayarlar" onClick={onClose} />
         {isStudent && !isMentor && (

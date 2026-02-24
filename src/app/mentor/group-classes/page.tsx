@@ -26,7 +26,7 @@ const STATUS_TABS = [
   { label: 'Aktif', value: 'Published' },
   { label: 'Tamamlanan', value: 'Completed' },
   { label: 'İptal', value: 'Cancelled' },
-  { label: 'Tümü', value: '' },
+  { label: 'Tümü', value: 'all' },
 ];
 
 function isClassExpired(gc: { status: string; endAt: string }): boolean {
@@ -40,7 +40,7 @@ function MentorGroupClassesContent() {
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState('');
 
-  const { data: classesData, isLoading } = useMyGroupClasses(statusFilter || undefined, page);
+  const { data: classesData, isLoading } = useMyGroupClasses(statusFilter === 'all' ? undefined : (statusFilter || undefined), page);
   const classes = classesData?.items;
   const cancelMutation = useCancelGroupClass();
   const completeMutation = useCompleteGroupClass();
