@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { messagesApi } from '../api/messages';
+import { useAuthStore } from '../stores/auth-store';
 import { toast } from 'sonner';
 
 export function useBookingMessages(bookingId: string, page = 1) {
@@ -77,15 +78,15 @@ export function useStartDirectConversation() {
 }
 
 export function useUnreadCount() {
-  // Only fetch when user is authenticated — prevents 401 redirect on public pages
-  const isAuthenticated = typeof window !== 'undefined'
-    ? !!localStorage.getItem('accessToken')
-    : false;
+  // Use auth store for reliable check — prevents 401/500 on public pages
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const hasHydrated = useAuthStore((s) => s._hasHydrated);
 
   return useQuery({
     queryKey: ['unreadCount'],
     queryFn: () => messagesApi.getUnreadCount(),
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && hasHydrated,
+    retry: false,
   });
 }
 
