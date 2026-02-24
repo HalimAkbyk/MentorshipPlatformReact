@@ -70,21 +70,22 @@ function MentorGroupClassesContent() {
   };
 
   const getStatusBadge = (status: string, gc?: { endAt: string }) => {
+    const cls = "text-[10px] px-1.5 py-0";
     // Check for expired class (client-side fallback)
     if (status === 'Expired' || (status === 'Published' && gc && isClassExpired({ status, endAt: gc.endAt }))) {
-      return <Badge className="bg-orange-100 text-orange-700">Süresi Doldu</Badge>;
+      return <Badge className={`bg-orange-100 text-orange-700 ${cls}`}>Süresi Doldu</Badge>;
     }
     switch (status) {
       case 'Published':
-        return <Badge className="bg-green-100 text-green-700">Aktif</Badge>;
+        return <Badge className={`bg-green-100 text-green-700 ${cls}`}>Aktif</Badge>;
       case 'Completed':
-        return <Badge className="bg-blue-100 text-blue-700">Tamamlandı</Badge>;
+        return <Badge className={`bg-blue-100 text-blue-700 ${cls}`}>Tamamlandı</Badge>;
       case 'Cancelled':
-        return <Badge className="bg-red-100 text-red-700">İptal</Badge>;
+        return <Badge className={`bg-red-100 text-red-700 ${cls}`}>İptal</Badge>;
       case 'Draft':
-        return <Badge variant="outline">Taslak</Badge>;
+        return <Badge variant="outline" className={cls}>Taslak</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline" className={cls}>{status}</Badge>;
     }
   };
 
@@ -103,80 +104,101 @@ function MentorGroupClassesContent() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold font-heading">Grup Dersleri</h1>
-          <p className="text-sm text-gray-500 mt-1">Tek seferlik grup derslerinizi yönetin</p>
+    <div className="container mx-auto px-4 py-6 max-w-6xl">
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center">
+            <Users className="w-4 h-4 text-indigo-600" />
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900">Grup Dersleri</h1>
+            <p className="text-xs text-gray-500">Tek seferlik grup derslerinizi yönetin</p>
+          </div>
         </div>
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus className="w-4 h-4 mr-2" />
+        <Button size="sm" onClick={() => setShowCreate(true)} className="text-xs">
+          <Plus className="w-3.5 h-3.5 mr-1" />
           Yeni Grup Dersi
         </Button>
       </div>
 
       {/* Status Tabs */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-1.5 mb-5">
         {STATUS_TABS.map((tab) => (
-          <Button
+          <button
             key={tab.value}
-            variant={statusFilter === tab.value ? 'default' : 'outline'}
-            size="sm"
             onClick={() => { setStatusFilter(tab.value); setPage(1); }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+              statusFilter === tab.value
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white text-gray-600 hover:bg-gray-100'
+            }`}
           >
             {tab.label}
-          </Button>
+          </button>
         ))}
       </div>
 
       {/* Class List */}
       {isLoading ? (
-        <div className="py-16 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600" />
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="border-0 shadow-sm animate-pulse">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gray-200" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-1/3" />
+                    <div className="h-3 bg-gray-100 rounded w-2/3" />
+                  </div>
+                  <div className="h-5 bg-gray-200 rounded w-20" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       ) : classes && classes.length > 0 ? (
         <>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {classes.map((gc) => (
-            <Card key={gc.id}>
-              <CardContent className="pt-6">
+            <Card key={gc.id} className="border-0 shadow-sm hover:shadow-md transition-all">
+              <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-lg">{gc.title}</span>
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-semibold text-sm text-gray-900">{gc.title}</span>
                       {getStatusBadge(gc.status, gc)}
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                         {gc.category}
                       </Badge>
                     </div>
 
                     {gc.description && (
-                      <p className="text-sm text-gray-600 line-clamp-2">{gc.description}</p>
+                      <p className="text-xs text-gray-500 line-clamp-1">{gc.description}</p>
                     )}
 
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
+                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
                         {formatDateTime(gc.startAt)}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
                         {formatTime(gc.startAt)} - {formatTime(gc.endAt)}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        {gc.enrolledCount}/{gc.capacity} katılımcı
-                      </div>
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Users className="w-3 h-3" />
+                        {gc.enrolledCount}/{gc.capacity}
+                      </span>
                     </div>
                   </div>
 
                   <div className="text-right shrink-0">
-                    <div className="text-lg font-bold">
+                    <div className="text-sm font-bold text-gray-900">
                       {formatCurrency(gc.pricePerSeat, gc.currency)}
                     </div>
-                    <div className="text-xs text-gray-500">kişi başı</div>
+                    <div className="text-[10px] text-gray-400">kişi başı</div>
                     {gc.enrolledCount > 0 && (
-                      <div className="text-xs text-green-600 mt-1">
+                      <div className="text-[10px] text-green-600 font-medium mt-0.5">
                         Toplam: {formatCurrency(gc.pricePerSeat * gc.enrolledCount, gc.currency)}
                       </div>
                     )}
@@ -185,28 +207,29 @@ function MentorGroupClassesContent() {
 
                 {/* Actions */}
                 {gc.status === 'Published' && !isClassExpired(gc) && (
-                  <div className="mt-4 pt-4 border-t flex items-center gap-2">
+                  <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2">
                     <Link href={`/mentor/group-classroom/${gc.id}`}>
-                      <Button size="sm" variant="default">
+                      <Button size="sm" className="text-xs bg-indigo-600 hover:bg-indigo-700">
                         Derse Başla
                       </Button>
                     </Link>
                     <Button
                       size="sm"
                       variant="outline"
+                      className="text-xs"
                       onClick={() => handleComplete(gc.id)}
                       disabled={completeMutation.isPending}
                     >
-                      <CheckCircle className="w-4 h-4 mr-1" />
+                      <CheckCircle className="w-3.5 h-3.5 mr-1" />
                       Tamamlandı
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
-                      className="text-red-600 border-red-200 hover:bg-red-50"
+                      className="text-xs text-red-600 border-red-200 hover:bg-red-50"
                       onClick={() => setCancellingId(cancellingId === gc.id ? null : gc.id)}
                     >
-                      <XCircle className="w-4 h-4 mr-1" />
+                      <XCircle className="w-3.5 h-3.5 mr-1" />
                       İptal Et
                     </Button>
                   </div>
@@ -215,8 +238,8 @@ function MentorGroupClassesContent() {
                 {/* Cancel Form */}
                 {cancellingId === gc.id && (
                   <div className="mt-3 p-3 rounded-lg bg-red-50 border border-red-200 space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-red-700">
-                      <AlertCircle className="w-4 h-4" />
+                    <div className="flex items-center gap-2 text-xs text-red-700">
+                      <AlertCircle className="w-3.5 h-3.5" />
                       <span className="font-medium">
                         İptal edildiğinde tüm kayıtlı öğrencilere otomatik iade yapılır
                       </span>
@@ -225,11 +248,13 @@ function MentorGroupClassesContent() {
                       placeholder="İptal sebebi..."
                       value={cancelReason}
                       onChange={(e) => setCancelReason(e.target.value)}
+                      className="text-sm h-8"
                     />
                     <div className="flex gap-2">
                       <Button
                         size="sm"
                         variant="destructive"
+                        className="text-xs"
                         disabled={!cancelReason.trim() || cancelMutation.isPending}
                         onClick={() => handleCancel(gc.id)}
                       >
@@ -238,6 +263,7 @@ function MentorGroupClassesContent() {
                       <Button
                         size="sm"
                         variant="outline"
+                        className="text-xs"
                         onClick={() => {
                           setCancellingId(null);
                           setCancelReason('');
@@ -261,12 +287,15 @@ function MentorGroupClassesContent() {
         />
         </>
       ) : (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600">Bu kategoride grup dersiniz bulunmuyor</p>
-            <Button className="mt-4" onClick={() => setShowCreate(true)}>
-              <Plus className="w-4 h-4 mr-2" />
+        <Card className="border border-dashed border-indigo-200 bg-indigo-50/30">
+          <CardContent className="p-8 text-center">
+            <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center mx-auto mb-3">
+              <Users className="w-6 h-6 text-indigo-600" />
+            </div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">Bu kategoride grup dersiniz bulunmuyor</h3>
+            <p className="text-xs text-gray-500 mb-4">Yeni bir grup dersi oluşturun</p>
+            <Button size="sm" className="text-xs" onClick={() => setShowCreate(true)}>
+              <Plus className="w-3.5 h-3.5 mr-1" />
               İlk Grup Dersini Oluştur
             </Button>
           </CardContent>

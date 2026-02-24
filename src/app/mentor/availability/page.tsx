@@ -276,7 +276,7 @@ export default function AvailabilityPage() {
 
   if (isCheckingApproval || templateLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[400px]">
+      <div className="container mx-auto px-4 py-6 max-w-6xl flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600" />
       </div>
     );
@@ -284,7 +284,7 @@ export default function AvailabilityPage() {
 
   if (!isApproved) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
         <Card className="max-w-2xl mx-auto border-yellow-200 bg-yellow-50">
           <CardHeader>
             <div className="flex items-start gap-3">
@@ -309,54 +309,68 @@ export default function AvailabilityPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-6 max-w-6xl">
       {/* Header */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold font-heading mb-1">Müsaitlik Yönetimi</h1>
-          <p className="text-gray-600">Haftalık programınızı belirleyin, slotlar otomatik oluşturulsun</p>
+      <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center">
+            <CalendarIcon className="w-4 h-4 text-teal-600" />
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900">Müsaitlik Yönetimi</h1>
+            <p className="text-xs text-gray-500">Haftalık programınızı belirleyin, slotlar otomatik oluşturulsun</p>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant={activeTab === 'schedule' ? 'default' : 'outline'} onClick={() => setActiveTab('schedule')} size="sm">
-            <Clock className="w-4 h-4 mr-1" /> Haftalık Program
-          </Button>
-          <Button variant={activeTab === 'calendar' ? 'default' : 'outline'} onClick={() => setActiveTab('calendar')} size="sm">
-            <CalendarIcon className="w-4 h-4 mr-1" /> Takvim
-          </Button>
+        <div className="flex gap-1.5">
+          <button
+            onClick={() => setActiveTab('schedule')}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              activeTab === 'schedule' ? 'bg-teal-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <Clock className="w-3.5 h-3.5" /> Haftalık Program
+          </button>
+          <button
+            onClick={() => setActiveTab('calendar')}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              activeTab === 'calendar' ? 'bg-teal-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <CalendarIcon className="w-3.5 h-3.5" /> Takvim
+          </button>
         </div>
       </div>
 
       {/* Info Banner */}
-      <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-        <CalendarIcon className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+      <div className="mb-5 bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2.5">
+        <CalendarIcon className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
         <div>
-          <p className="text-sm text-blue-800 font-medium">Varsayılan Müsaitlik Programı</p>
-          <p className="text-xs text-blue-600 mt-1">
-            Bu program, özel müsaitlik programı tanımlanmamış paketlere uygulanır.
-            Paketlerinize özel program tanımlamak için{' '}
+          <p className="text-xs text-blue-800 font-medium">Varsayılan Müsaitlik Programı</p>
+          <p className="text-[11px] text-blue-600 mt-0.5">
+            Bu program, özel müsaitlik programı tanımlanmamış paketlere uygulanır.{' '}
             <button
               onClick={() => router.push('/mentor/offerings')}
               className="underline hover:text-blue-800 font-medium"
             >
               Paketlerim
             </button>{' '}
-            sayfasını ziyaret edin.
+            sayfasından özel program tanımlayabilirsiniz.
           </p>
         </div>
       </div>
 
       {/* ===== TAB 1: WEEKLY SCHEDULE ===== */}
       {activeTab === 'schedule' && (
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="pb-2 px-4 pt-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle>Haftalık Program</CardTitle>
-                    <CardDescription>Her gün için müsait olduğunuz saatleri belirleyin. Bu şablon, bugünden itibaren {settings.maxBookingDaysAhead} gün ileriye uygulanır. Geçmiş günler sadece gelecek haftalarda geçerlidir.</CardDescription>
+                    <CardTitle className="text-sm">Haftalık Program</CardTitle>
+                    <CardDescription className="text-xs">Her gün için müsait olduğunuz saatleri belirleyin. Bugünden itibaren {settings.maxBookingDaysAhead} gün ileriye uygulanır.</CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" onClick={applyToAll}>Tüm Günlere Uygula</Button>
+                  <Button variant="outline" size="sm" className="text-xs" onClick={applyToAll}>Tüm Günlere Uygula</Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -437,11 +451,11 @@ export default function AvailabilityPage() {
           </div>
 
           {/* Right: Overrides + Stats */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Özel Günler / Tatiller</CardTitle>
-                <CardDescription className="text-xs">Takvim sekmesinde tarihe tıklayarak özel gün ekleyin</CardDescription>
+          <div className="space-y-4">
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="pb-2 px-4 pt-4">
+                <CardTitle className="text-sm">Özel Günler / Tatiller</CardTitle>
+                <CardDescription className="text-[11px]">Takvim sekmesinde tarihe tıklayarak özel gün ekleyin</CardDescription>
               </CardHeader>
               <CardContent>
                 {template?.overrides && template.overrides.length > 0 ? (
@@ -467,16 +481,16 @@ export default function AvailabilityPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-2 gap-4 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-teal-600">{slots?.filter((s: any) => !s.isBooked).length || 0}</div>
-                    <div className="text-xs text-gray-500">Müsait Slot</div>
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-4">
+                <div className="grid grid-cols-2 gap-3 text-center">
+                  <div className="rounded-lg bg-teal-50/50 p-3">
+                    <div className="text-lg font-bold text-teal-600">{slots?.filter((s: any) => !s.isBooked).length || 0}</div>
+                    <div className="text-[10px] text-gray-500">Müsait Slot</div>
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold text-blue-600">{slots?.filter((s: any) => s.isBooked).length || 0}</div>
-                    <div className="text-xs text-gray-500">Rezerve Slot</div>
+                  <div className="rounded-lg bg-blue-50/50 p-3">
+                    <div className="text-lg font-bold text-blue-600">{slots?.filter((s: any) => s.isBooked).length || 0}</div>
+                    <div className="text-[10px] text-gray-500">Rezerve Slot</div>
                   </div>
                 </div>
               </CardContent>
@@ -487,8 +501,8 @@ export default function AvailabilityPage() {
 
       {/* ===== TAB 2: CALENDAR VIEW ===== */}
       {activeTab === 'calendar' && (
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-4">
             <FullCalendar
               ref={calendarRef}
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}

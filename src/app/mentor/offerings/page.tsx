@@ -150,81 +150,81 @@ export default function MentorOfferingsPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button onClick={() => router.push('/mentor/dashboard')} className="text-gray-500 hover:text-gray-700">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
+    <div className="min-h-screen bg-gray-50/50">
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center">
+              <Package className="w-4 h-4 text-teal-600" />
+            </div>
             <div>
-              <h1 className="text-2xl font-bold font-heading">Paketlerim</h1>
-              <p className="text-sm text-gray-500">Mentorluk paketlerinizi yönetin</p>
+              <h1 className="text-lg font-semibold text-gray-900">Paketlerim</h1>
+              <p className="text-xs text-gray-500">Mentorluk paketlerinizi yönetin</p>
             </div>
           </div>
-          <Button onClick={() => setShowCreateModal(true)} className="gap-2">
-            <Plus className="w-4 h-4" />
+          <Button size="sm" onClick={() => setShowCreateModal(true)} className="gap-1.5 text-xs">
+            <Plus className="w-3.5 h-3.5" />
             Yeni Paket
           </Button>
         </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-8">
         {offerings.length === 0 ? (
-          <Card className="text-center py-16">
-            <CardContent>
-              <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold font-heading text-gray-700 mb-2">Henüz paket oluşturmadınız</h3>
-              <p className="text-gray-500 mb-6">
+          <Card className="border border-dashed border-teal-200 bg-teal-50/30">
+            <CardContent className="p-8 text-center">
+              <div className="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center mx-auto mb-3">
+                <Package className="w-6 h-6 text-teal-600" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">Henüz paket oluşturmadınız</h3>
+              <p className="text-xs text-gray-500 mb-4">
                 Öğrencilerinize sunacağınız mentorluk paketlerini oluşturun.
               </p>
-              <Button onClick={() => setShowCreateModal(true)} className="gap-2">
-                <Plus className="w-4 h-4" />
+              <Button size="sm" className="text-xs" onClick={() => setShowCreateModal(true)}>
+                <Plus className="w-3.5 h-3.5 mr-1" />
                 İlk Paketinizi Oluşturun
               </Button>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {offerings.map((offering, index) => (
               <Card
                 key={offering.id}
-                className={`transition-all ${!offering.isActive ? 'opacity-60 border-dashed' : ''}`}
+                className={`border-0 shadow-sm transition-all ${!offering.isActive ? 'opacity-60 border border-dashed' : 'hover:shadow-md'}`}
               >
                 <CardContent className="p-0">
                   {/* Main row */}
-                  <div className="flex items-center gap-4 p-4">
+                  <div className="flex items-center gap-3 p-4">
                     {/* Drag handle & order controls */}
-                    <div className="flex flex-col items-center gap-1">
+                    <div className="flex flex-col items-center gap-0.5">
                       <button
                         onClick={() => handleMove(index, 'up')}
                         disabled={index === 0}
                         className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
                       >
-                        <ChevronUp className="w-4 h-4" />
+                        <ChevronUp className="w-3.5 h-3.5" />
                       </button>
-                      <GripVertical className="w-4 h-4 text-gray-300" />
+                      <GripVertical className="w-3.5 h-3.5 text-gray-300" />
                       <button
                         onClick={() => handleMove(index, 'down')}
                         disabled={index === offerings.length - 1}
                         className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
                       >
-                        <ChevronDown className="w-4 h-4" />
+                        <ChevronDown className="w-3.5 h-3.5" />
                       </button>
                     </div>
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-lg truncate">{offering.title}</h3>
-                        <Badge variant={offering.isActive ? 'success' : 'secondary'}>
+                      <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                        <h3 className="font-semibold text-sm text-gray-900 truncate">{offering.title}</h3>
+                        <Badge variant={offering.isActive ? 'success' : 'secondary'} className="text-[10px] px-1.5 py-0">
                           {offering.isActive ? 'Aktif' : 'Pasif'}
                         </Badge>
                         {offering.availabilityTemplateId ? (
@@ -240,25 +240,25 @@ export default function MentorOfferingsPage() {
                         )}
                       </div>
                       {offering.subtitle && (
-                        <p className="text-sm text-gray-500 truncate">{offering.subtitle}</p>
+                        <p className="text-xs text-gray-500 truncate">{offering.subtitle}</p>
                       )}
-                      <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          {offering.durationMin} dk
+                      <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-500">
+                        <span className="flex items-center gap-0.5">
+                          <Clock className="w-3 h-3" />
+                          {offering.durationMin}dk
                         </span>
-                        <span className="flex items-center gap-1">
-                          <DollarSign className="w-3.5 h-3.5" />
+                        <span className="flex items-center gap-0.5 font-medium text-teal-600">
+                          <DollarSign className="w-3 h-3" />
                           {offering.price} {offering.currency}
                         </span>
                         {offering.questionCount > 0 && (
-                          <span className="flex items-center gap-1">
-                            <HelpCircle className="w-3.5 h-3.5" />
+                          <span className="flex items-center gap-0.5">
+                            <HelpCircle className="w-3 h-3" />
                             {offering.questionCount} soru
                           </span>
                         )}
                         {offering.sessionType && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                             {offering.sessionType}
                           </Badge>
                         )}

@@ -5,7 +5,7 @@ import { getCoverImageStyle } from '@/components/ui/cover-image-editor';
 import { useRouter } from 'next/navigation';
 import {
   Plus, Pencil, Trash2, Archive, Send, Loader2,
-  BookOpen, Users, Star, Clock, ArrowLeft,
+  BookOpen, Users, Star, Clock, PlayCircle,
   XCircle, RotateCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -126,51 +126,36 @@ export default function MentorCoursesPage() {
     { key: CourseStatus.Archived, label: 'Arşiv' },
   ];
 
-  // ===== Loading State =====
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-12 h-12 animate-spin text-teal-600" />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.push('/mentor/dashboard')}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
+    <div className="min-h-screen bg-gray-50/50">
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
+              <PlayCircle className="w-4 h-4 text-purple-600" />
+            </div>
             <div>
-              <h1 className="text-2xl font-bold font-heading">Kurslarım</h1>
-              <p className="text-sm text-gray-500">Video kurslarınızı yönetin</p>
+              <h1 className="text-lg font-semibold text-gray-900">Kurslarım</h1>
+              <p className="text-xs text-gray-500">Video kurslarınızı yönetin</p>
             </div>
           </div>
-          <Button onClick={() => router.push(ROUTES.MENTOR_COURSE_NEW)} className="gap-2">
-            <Plus className="w-4 h-4" />
+          <Button size="sm" onClick={() => router.push(ROUTES.MENTOR_COURSE_NEW)} className="gap-1.5 text-xs">
+            <Plus className="w-3.5 h-3.5" />
             Yeni Kurs Oluştur
           </Button>
         </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-6">
         {/* Filter Tabs */}
-        <div className="flex gap-1 mb-6 bg-white rounded-lg border p-1 w-fit overflow-x-auto">
+        <div className="flex gap-1.5 mb-5 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => { setActiveTab(tab.key); setPage(1); }}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.key
-                  ? 'bg-teal-600 text-white'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-100'
               }`}
             >
               {tab.label}
@@ -178,30 +163,49 @@ export default function MentorCoursesPage() {
           ))}
         </div>
 
-        {/* Empty State */}
-        {filteredCourses.length === 0 ? (
-          <Card className="text-center py-16">
-            <CardContent>
-              <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold font-heading text-gray-700 mb-2">
+        {isLoading ? (
+          /* ══════ SKELETON ══════ */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="border-0 shadow-sm animate-pulse overflow-hidden">
+                <div className="h-28 bg-gray-200" />
+                <CardContent className="p-3 space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-3/4" />
+                  <div className="h-3 bg-gray-100 rounded w-full" />
+                  <div className="flex gap-2 mt-2">
+                    <div className="h-3 bg-gray-100 rounded w-12" />
+                    <div className="h-3 bg-gray-100 rounded w-12" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : filteredCourses.length === 0 ? (
+          /* ══════ EMPTY STATE ══════ */
+          <Card className="border border-dashed border-purple-200 bg-purple-50/30">
+            <CardContent className="p-8 text-center">
+              <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center mx-auto mb-3">
+                <BookOpen className="w-6 h-6 text-purple-600" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">
                 {activeTab === 'all'
                   ? 'Henüz kurs oluşturmadınız'
                   : `Bu kategoride kurs bulunamadı`}
               </h3>
-              <p className="text-gray-500 mb-6">
+              <p className="text-xs text-gray-500 mb-4">
                 Öğrencilerinize sunacağınız video kurslarını oluşturun.
               </p>
               {activeTab === 'all' && (
-                <Button onClick={() => router.push(ROUTES.MENTOR_COURSE_NEW)} className="gap-2">
-                  <Plus className="w-4 h-4" />
+                <Button size="sm" className="text-xs" onClick={() => router.push(ROUTES.MENTOR_COURSE_NEW)}>
+                  <Plus className="w-3.5 h-3.5 mr-1" />
                   İlk Kursunuzu Oluşturun
                 </Button>
               )}
             </CardContent>
           </Card>
         ) : (
-          /* Course Grid */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          /* ══════ COURSE GRID ══════ */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredCourses.map((course) => (
               <CourseCard
                 key={course.id}
@@ -250,9 +254,9 @@ function CourseCard({
   isArchiving: boolean;
 }) {
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+    <Card className="overflow-hidden border-0 shadow-sm hover:shadow-md transition-all">
       {/* Cover Image */}
-      <div className="relative h-40 overflow-hidden">
+      <div className="relative h-28 overflow-hidden">
         {course.coverImageUrl ? (
           <img
             src={course.coverImageUrl}
@@ -262,50 +266,50 @@ function CourseCard({
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-teal-500 to-purple-600 flex items-center justify-center">
-            <BookOpen className="w-12 h-12 text-white/60" />
+            <BookOpen className="w-8 h-8 text-white/60" />
           </div>
         )}
-        <div className="absolute top-3 left-3">
+        <div className="absolute top-2 left-2">
           {statusBadge(course.status)}
         </div>
       </div>
 
-      <CardContent className="p-4">
+      <CardContent className="p-3">
         {/* Title */}
-        <h3 className="font-semibold text-lg mb-1 line-clamp-2">{course.title}</h3>
+        <h3 className="font-semibold text-sm text-gray-900 mb-0.5 line-clamp-2">{course.title}</h3>
         {course.shortDescription && (
-          <p className="text-sm text-gray-500 line-clamp-2 mb-3">{course.shortDescription}</p>
+          <p className="text-xs text-gray-500 line-clamp-1 mb-2">{course.shortDescription}</p>
         )}
 
         {/* Stats */}
-        <div className="flex items-center gap-3 text-sm text-gray-600 mb-3">
-          <span className="flex items-center gap-1">
-            <BookOpen className="w-3.5 h-3.5" />
-            {course.totalLectures} ders
+        <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+          <span className="flex items-center gap-0.5">
+            <BookOpen className="w-3 h-3" />
+            {course.totalLectures}
           </span>
-          <span className="flex items-center gap-1">
-            <Clock className="w-3.5 h-3.5" />
+          <span className="flex items-center gap-0.5">
+            <Clock className="w-3 h-3" />
             {formatDuration(course.totalDurationSec)}
           </span>
-          <span className="flex items-center gap-1">
-            <Users className="w-3.5 h-3.5" />
+          <span className="flex items-center gap-0.5">
+            <Users className="w-3 h-3" />
             {course.enrollmentCount}
           </span>
           {course.ratingAvg > 0 && (
-            <span className="flex items-center gap-1">
-              <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+            <span className="flex items-center gap-0.5">
+              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
               {course.ratingAvg.toFixed(1)}
             </span>
           )}
         </div>
 
         {/* Price */}
-        <div className="text-lg font-bold text-teal-600 mb-4">
+        <div className="text-sm font-bold text-teal-600 mb-3">
           {course.price > 0 ? `${course.price.toFixed(2)} ${course.currency}` : 'Ücretsiz'}
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2 border-t pt-3">
+        <div className="flex items-center gap-2 border-t border-gray-100 pt-2.5">
           <Button variant="outline" size="sm" onClick={onEdit} className="flex-1 gap-1">
             <Pencil className="w-3.5 h-3.5" />
             Düzenle

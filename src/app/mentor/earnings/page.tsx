@@ -144,35 +144,40 @@ export default function EarningsPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold font-heading">Kazanclarim</h1>
-          {summary && (
-            <p className="text-sm text-gray-500 mt-1">
-              Bu ay: <span className="font-semibold text-green-600">{formatCurrency(summary.thisMonthEarnings)}</span>
-            </p>
-          )}
+    <div className="container mx-auto px-4 py-6 max-w-6xl">
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center">
+            <DollarSign className="w-4 h-4 text-green-600" />
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900">Kazanclarim</h1>
+            {summary && (
+              <p className="text-xs text-gray-500">
+                Bu ay: <span className="font-semibold text-green-600">{formatCurrency(summary.thisMonthEarnings)}</span>
+              </p>
+            )}
+          </div>
         </div>
         <Button
+          size="sm"
           onClick={() => setPayoutDialogOpen(true)}
           disabled={!payoutSettings || payoutSettings.availableBalance < payoutSettings.minimumPayoutAmount || payoutSettings.hasPendingRequest}
-          className="gap-2"
+          className="gap-1.5 text-xs"
         >
-          <Send className="w-4 h-4" />
+          <Send className="w-3.5 h-3.5" />
           Odeme Talep Et
         </Button>
       </div>
 
       {/* Pending payout request warning */}
       {payoutSettings?.hasPendingRequest && (
-        <div className="mb-6 flex items-start gap-3 p-4 rounded-lg bg-amber-50 border border-amber-200">
-          <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+        <div className="mb-5 flex items-start gap-2.5 p-3 rounded-lg bg-amber-50 border border-amber-200">
+          <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
           <div>
-            <p className="text-sm font-medium text-amber-800">Bekleyen odeme talebiniz var</p>
-            <p className="text-sm text-amber-600 mt-0.5">
+            <p className="text-xs font-medium text-amber-800">Bekleyen odeme talebiniz var</p>
+            <p className="text-xs text-amber-600 mt-0.5">
               {formatCurrency(payoutSettings.pendingRequestAmount ?? 0)} tutarindaki talebiniz incelenmektedir.
-              Yeni talep icin mevcut talebin sonuclanmasi beklenmektedir.
             </p>
           </div>
         </div>
@@ -180,67 +185,71 @@ export default function EarningsPage() {
 
       {/* Min payout info */}
       {payoutSettings && !payoutSettings.hasPendingRequest && payoutSettings.availableBalance < payoutSettings.minimumPayoutAmount && (
-        <div className="mb-6 flex items-start gap-3 p-4 rounded-lg bg-blue-50 border border-blue-200">
-          <Info className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+        <div className="mb-5 flex items-start gap-2.5 p-3 rounded-lg bg-blue-50 border border-blue-200">
+          <Info className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
           <div>
-            <p className="text-sm font-medium text-blue-800">Minimum odeme tutarina ulasilmadi</p>
-            <p className="text-sm text-blue-600 mt-0.5">
-              Odeme talep edebilmek icin kullanilabilir bakiyenizin en az{' '}
-              <span className="font-semibold">{formatCurrency(payoutSettings.minimumPayoutAmount)}</span> olmasi gerekmektedir.
-              Mevcut bakiyeniz: <span className="font-semibold">{formatCurrency(payoutSettings.availableBalance)}</span>
+            <p className="text-xs font-medium text-blue-800">Minimum odeme tutarina ulasilmadi</p>
+            <p className="text-xs text-blue-600 mt-0.5">
+              Min: <span className="font-semibold">{formatCurrency(payoutSettings.minimumPayoutAmount)}</span> | Bakiye: <span className="font-semibold">{formatCurrency(payoutSettings.availableBalance)}</span>
             </p>
           </div>
         </div>
       )}
 
       {/* Stats */}
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam Kazanc</CardTitle>
-            <DollarSign className="h-4 w-4 text-gray-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 rounded-md bg-teal-50 flex items-center justify-center">
+                <DollarSign className="w-3.5 h-3.5 text-teal-600" />
+              </div>
+              <span className="text-xs text-gray-500">Toplam Kazanc</span>
+            </div>
+            <div className="text-xl font-bold text-gray-900">
               {summaryLoading ? '...' : formatCurrency(summary?.totalEarnings ?? 0)}
             </div>
-            <p className="text-xs text-gray-600">Tum zamanlar</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">Tum zamanlar</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Kullanilabilir Bakiye</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-700">
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 rounded-md bg-green-50 flex items-center justify-center">
+                <TrendingUp className="w-3.5 h-3.5 text-green-600" />
+              </div>
+              <span className="text-xs text-gray-500">Kullanilabilir</span>
+            </div>
+            <div className="text-xl font-bold text-green-700">
               {summaryLoading ? '...' : formatCurrency(summary?.availableBalance ?? 0)}
             </div>
-            <p className="text-xs text-gray-600">Cekilebilir</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">Cekilebilir</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Bekleyen (Emanet)</CardTitle>
-            <Clock className="h-4 w-4 text-amber-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-700">
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 rounded-md bg-amber-50 flex items-center justify-center">
+                <Clock className="w-3.5 h-3.5 text-amber-600" />
+              </div>
+              <span className="text-xs text-gray-500">Emanet</span>
+            </div>
+            <div className="text-xl font-bold text-amber-700">
               {summaryLoading ? '...' : formatCurrency(summary?.escrowBalance ?? 0)}
             </div>
-            <p className="text-xs text-gray-600">Ders tamamlaninca aktiflesir</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">Ders tamamlaninca aktiflesir</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Payout Requests Section */}
       {payoutRequests && payoutRequests.items.length > 0 && (
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Odeme Taleplerim</CardTitle>
-            <CardDescription>Gecmis ve mevcut odeme talepleri</CardDescription>
+        <Card className="border-0 shadow-sm mb-6">
+          <CardHeader className="pb-2 px-4 pt-4">
+            <CardTitle className="text-sm">Odeme Taleplerim</CardTitle>
+            <CardDescription className="text-xs">Gecmis ve mevcut odeme talepleri</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -319,12 +328,12 @@ export default function EarningsPage() {
       )}
 
       {/* Transactions */}
-      <Card>
-        <CardHeader>
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-2 px-4 pt-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Islem Gecmisi</CardTitle>
-              <CardDescription>Tum kazanc ve odeme hareketleri</CardDescription>
+              <CardTitle className="text-sm">Islem Gecmisi</CardTitle>
+              <CardDescription className="text-xs">Tum kazanc ve odeme hareketleri</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-gray-400" />
