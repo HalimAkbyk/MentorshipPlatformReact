@@ -125,7 +125,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'E-posta Ayarlari', href: '/admin/settings/email' },
       { label: 'Kategoriler', href: '/admin/settings/categories' },
       { label: 'Komisyon Oranlari', href: '/admin/settings/fees' },
-      { label: 'Avatar Yonetimi', href: '/admin/settings/avatars' },
+      { label: 'Avatar Moderasyon', href: '/admin/avatars' },
     ],
   },
   {

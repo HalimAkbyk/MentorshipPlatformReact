@@ -20,50 +20,38 @@ export const userApi = {
     return apiClient.put<{ avatarUrl: string }>('/me/avatar-url', { avatarUrl });
   },
 
-  getPresetAvatars: async (): Promise<PresetAvatar[]> => {
-    return apiClient.get<PresetAvatar[]>('/me/preset-avatars');
-  },
-
   changePassword: async (data: ChangePasswordRequest): Promise<void> => {
     return apiClient.post('/auth/change-password', data);
   },
 };
 
-export interface PresetAvatar {
-  id: string;
-  url: string;
-  label: string;
-  sortOrder: number;
-}
-
-export interface AdminPresetAvatar extends PresetAvatar {
-  isActive: boolean;
+// ===== Admin Avatar Moderation =====
+export interface UserAvatarInfo {
+  userId: string;
+  displayName: string;
+  email: string | null;
+  avatarUrl: string | null;
+  roles: string[];
+  isFlagged: boolean;
 }
 
 export const adminAvatarApi = {
-  getAll: async (): Promise<AdminPresetAvatar[]> => {
-    return apiClient.get<AdminPresetAvatar[]>('/admin/preset-avatars');
+  getUserAvatars: async (flaggedOnly?: boolean, withAvatarOnly?: boolean): Promise<UserAvatarInfo[]> => {
+    const params: Record<string, string> = {};
+    if (flaggedOnly) params.flaggedOnly = 'true';
+    if (withAvatarOnly) params.withAvatarOnly = 'true';
+    return apiClient.get<UserAvatarInfo[]>('/admin/user-avatars', params);
   },
 
-  create: async (file: File, label: string, sortOrder: number): Promise<AdminPresetAvatar> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('label', label);
-    formData.append('sortOrder', sortOrder.toString());
-    return apiClient.postForm<AdminPresetAvatar>('/admin/preset-avatars', formData);
+  flagAvatar: async (userId: string): Promise<void> => {
+    return apiClient.post(`/admin/user-avatars/${userId}/flag`);
   },
 
-  update: async (id: string, data: { label: string; sortOrder: number; isActive: boolean }): Promise<AdminPresetAvatar> => {
-    return apiClient.put<AdminPresetAvatar>(`/admin/preset-avatars/${id}`, data);
+  resetAvatar: async (userId: string): Promise<void> => {
+    return apiClient.post(`/admin/user-avatars/${userId}/reset`);
   },
 
-  updateImage: async (id: string, file: File): Promise<AdminPresetAvatar> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    return apiClient.putForm<AdminPresetAvatar>(`/admin/preset-avatars/${id}/image`, formData);
-  },
-
-  delete: async (id: string): Promise<void> => {
-    return apiClient.delete(`/admin/preset-avatars/${id}`);
+  unflagAvatar: async (userId: string): Promise<void> => {
+    return apiClient.post(`/admin/user-avatars/${userId}/unflag`);
   },
 };

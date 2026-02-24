@@ -178,7 +178,7 @@ export default function StudentSettingsPage() {
     if (file.size > 2 * 1024 * 1024) { toast.error('Dosya boyutu 2MB\'den buyuk olamaz'); return; }
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) { toast.error('Sadece JPG, PNG, GIF veya WebP yuklenebilir'); return; }
-    try { setIsUploadingAvatar(true); setSelectedPreset(null); await userApi.uploadAvatar(file); toast.success('Avatar guncellendi'); refreshUser(); }
+    try { setIsUploadingAvatar(true); await userApi.uploadAvatar(file); toast.success('Avatar guncellendi'); refreshUser(); }
     catch { toast.error('Dosya yuklenirken hata olustu'); }
     finally { setIsUploadingAvatar(false); }
   };
