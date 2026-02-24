@@ -5,7 +5,8 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Video, VideoOff, Mic, MicOff, Monitor, MonitorOff,
-  MessageSquare, Users, PhoneOff, Settings, X, Image as ImageIcon
+  MessageSquare, Users, PhoneOff, Settings, X, Image as ImageIcon,
+  LogOut, AlertTriangle,
 } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Badge } from '../../../../components/ui/badge';
@@ -138,6 +139,8 @@ export default function MentorClassroomPage() {
   const [isRoomActive, setIsRoomActive] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [bookingTimes, setBookingTimes] = useState<{ startAt: string; endAt: string } | null>(null);
+  const [showEndSessionDialog, setShowEndSessionDialog] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
 
   // Session lifecycle settings
   const { sessionGracePeriodMinutes } = useSessionLifecycleSettings();
@@ -605,8 +608,20 @@ export default function MentorClassroomPage() {
     }
   };
 
-  // ─── End Session ───
-  const endSession = async () => {
+  // ─── Leave Room (odadan ayrıl, seans tamamlanmaz) ───
+  const handleLeaveRoom = () => {
+    fullDisconnect();
+    toast.info('Odadan ayrıldınız. Seans tamamlanmadı, tekrar katılabilirsiniz.');
+    router.push('/mentor/bookings');
+  };
+
+  // ─── End Session (seansı tamamla — onay dialog'u ile) ───
+  const handleEndSessionClick = () => {
+    setShowEndSessionDialog(true);
+  };
+
+  const confirmEndSession = async () => {
+    setIsCompleting(true);
     // 1) Video room'u kapat
     try { await apiClient.post(`/video/room/${bookingId}/end`); } catch {}
     try { roomRef.current?.disconnect(); } catch {}
@@ -614,20 +629,29 @@ export default function MentorClassroomPage() {
 
     // 2) Booking'i complete et
     try {
-      const result = await apiClient.post(`/bookings/${bookingId}/complete`);
-      // Basarili — seans tamamlandi
+      await apiClient.post(`/bookings/${bookingId}/complete`);
       toast.success('Seans tamamlandı');
-      router.push('/mentor/bookings');
     } catch (e: any) {
-      // Erken sonlandirma — seans suresi dolmamis
       const errorMsg = e?.response?.data?.errors?.[0] || e?.message || '';
       if (errorMsg.includes('henüz dolmadı') || errorMsg.includes('dolmad')) {
         toast.warning('Video oturumu sonlandırıldı ancak seans süresi dolmadı. Odayı tekrar aktifleştirebilirsiniz.');
       } else {
         toast.warning('Video oturumu sonlandırıldı: ' + errorMsg);
       }
-      router.push('/mentor/bookings');
+    } finally {
+      setIsCompleting(false);
+      setShowEndSessionDialog(false);
     }
+    router.push('/mentor/bookings');
+  };
+
+  // endSession kısayolu — otomatik kapatma için (timer, grace period)
+  const endSession = async () => {
+    try { await apiClient.post(`/video/room/${bookingId}/end`); } catch {}
+    try { roomRef.current?.disconnect(); } catch {}
+    fullDisconnect();
+    try { await apiClient.post(`/bookings/${bookingId}/complete`); } catch {}
+    router.push('/mentor/bookings');
   };
 
   // ─── Mentor Host Controls ───
@@ -762,9 +786,14 @@ export default function MentorClassroomPage() {
             <div className="text-white font-mono text-lg">{sessionTimer.formattedRemaining}</div>
           )}
           {isRoomActive ? (
-            <Button variant="destructive" size="sm" onClick={endSession}>
-              <PhoneOff className="w-4 h-4 mr-2" /> Seansı Sonlandır
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleLeaveRoom} className="text-gray-300 border-gray-600 hover:bg-gray-700">
+                <LogOut className="w-4 h-4 mr-2" /> Odadan Ayrıl
+              </Button>
+              <Button variant="destructive" size="sm" onClick={handleEndSessionClick}>
+                <PhoneOff className="w-4 h-4 mr-2" /> Seansı Sonlandır
+              </Button>
+            </div>
           ) : (
             <Button onClick={activateRoom} disabled={isConnecting} size="sm">
               <Video className="w-4 h-4 mr-2" /> {isConnecting ? 'Aktifleştiriliyor...' : 'Odayı Aktifleştir'}
@@ -909,6 +938,58 @@ export default function MentorClassroomPage() {
                     </button>
                   ))}
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* End Session Confirmation Dialog */}
+      {showEndSessionDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-800 rounded-xl shadow-2xl max-w-md w-full border border-gray-700">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-6 h-6 text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Seansı Sonlandır</h3>
+                  <p className="text-sm text-gray-400">Bu işlem geri alınamaz</p>
+                </div>
+              </div>
+              <p className="text-gray-300 text-sm mb-2">
+                Seansı tamamlamak istediğinize emin misiniz?
+              </p>
+              <ul className="text-gray-400 text-sm space-y-1 mb-6 ml-4 list-disc">
+                <li>Video oturumu kapatılacak</li>
+                <li>Seans &quot;Tamamlandı&quot; olarak işaretlenecek</li>
+                <li>Bu işlem geri alınamaz</li>
+              </ul>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700"
+                  onClick={() => setShowEndSessionDialog(false)}
+                  disabled={isCompleting}
+                >
+                  Vazgeç
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex-1"
+                  onClick={confirmEndSession}
+                  disabled={isCompleting}
+                >
+                  {isCompleting ? (
+                    <span className="flex items-center gap-2">
+                      <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                      Tamamlanıyor...
+                    </span>
+                  ) : (
+                    'Evet, Seansı Sonlandır'
+                  )}
+                </Button>
               </div>
             </div>
           </div>
