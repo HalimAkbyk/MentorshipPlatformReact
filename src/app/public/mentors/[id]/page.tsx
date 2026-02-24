@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getCoverImageStyle } from '@/components/ui/cover-image-editor';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -15,10 +15,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '../../../../components/ui/a
 import { Badge } from '../../../../components/ui/badge';
 import { useMentor } from '../../../../lib/hooks/use-mentors';
 import { useAuthStore } from '../../../../lib/stores/auth-store';
+import { useConversations } from '../../../../lib/hooks/use-messages';
 import { formatCurrency, formatDate } from '../../../../lib/utils/format';
 import { ROUTES } from '../../../../lib/constants/routes';
 import type { VerificationType } from '../../../../lib/types/enums';
 import { offeringsApi, type OfferingDto } from '../../../../lib/api/offerings';
+import { toast } from 'sonner';
 
 const verificationLabels: Record<VerificationType, string> = {
   Basic: 'Temel Doğrulama',
@@ -35,9 +37,28 @@ export default function MentorProfilePage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
   const isOwnProfile = isAuthenticated && user?.id === mentorId;
+  const { data: conversations } = useConversations(isAuthenticated);
   const [selectedTab, setSelectedTab] = useState<'about' | 'offerings' | 'reviews'>('about');
   const [enrichedOfferings, setEnrichedOfferings] = useState<OfferingDto[]>([]);
   const [offeringsLoading, setOfferingsLoading] = useState(false);
+
+  const handleSendMessage = useCallback(() => {
+    if (!isAuthenticated) {
+      router.push(`/auth/login?redirect=/public/mentors/${mentorId}`);
+      return;
+    }
+
+    // Find a conversation with this mentor
+    const conversation = conversations?.find((c) => c.otherUserId === mentorId);
+    const isMentor = user?.roles?.includes('Mentor');
+    const basePath = isMentor ? '/mentor/messages' : '/student/messages';
+
+    if (conversation) {
+      router.push(`${basePath}?bookingId=${conversation.bookingId}`);
+    } else {
+      toast.info('Bu mentorla mesajlaşabilmek için önce bir görüşme rezervasyonu yapmanız gerekmektedir.');
+    }
+  }, [isAuthenticated, conversations, mentorId, router, user]);
 
   // Fetch enriched offerings with questions, descriptions, etc.
   useEffect(() => {
@@ -558,7 +579,11 @@ export default function MentorProfilePage() {
                     Görüşme Planla
                   </Button>
                 )}
-                <Button variant="outline" className="w-full border-2 border-teal-300 hover:bg-teal-50 py-5 text-teal-700">
+                <Button
+                  variant="outline"
+                  className="w-full border-2 border-teal-300 hover:bg-teal-50 py-5 text-teal-700"
+                  onClick={handleSendMessage}
+                >
                   <MessageSquare className="w-4 h-4 mr-2" />
                   Mesaj Gönder
                 </Button>

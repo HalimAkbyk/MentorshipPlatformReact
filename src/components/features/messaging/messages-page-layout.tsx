@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConversationList } from './conversation-list';
@@ -9,8 +10,32 @@ import { useConversations } from '@/lib/hooks/use-messages';
 import { useAuthStore } from '@/lib/stores/auth-store';
 
 export function MessagesPageLayout() {
+  const searchParams = useSearchParams();
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const { data: conversations } = useConversations();
+  const autoSelectedRef = useRef(false);
+
+  // Auto-select conversation from URL params (?bookingId=xxx or ?userId=xxx)
+  useEffect(() => {
+    if (autoSelectedRef.current || !conversations || conversations.length === 0) return;
+
+    const bookingIdParam = searchParams.get('bookingId');
+    const userIdParam = searchParams.get('userId');
+
+    if (bookingIdParam) {
+      const found = conversations.find((c) => c.bookingId === bookingIdParam);
+      if (found) {
+        setSelectedBookingId(bookingIdParam);
+        autoSelectedRef.current = true;
+      }
+    } else if (userIdParam) {
+      const found = conversations.find((c) => c.otherUserId === userIdParam);
+      if (found) {
+        setSelectedBookingId(found.bookingId);
+        autoSelectedRef.current = true;
+      }
+    }
+  }, [conversations, searchParams]);
   const user = useAuthStore((s) => s.user);
   const isMentor = user?.roles?.includes('Mentor');
 
