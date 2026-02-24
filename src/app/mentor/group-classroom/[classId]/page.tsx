@@ -7,6 +7,7 @@ import { videoApi } from '@/lib/api/video';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { useAuthStore } from '@/lib/stores/auth-store';
 import {
   Video, VideoOff, Mic, MicOff, Monitor, MonitorOff,
   MessageSquare, Users, PhoneOff, Settings, X, Image as ImageIcon,
@@ -127,6 +128,8 @@ export default function MentorGroupClassroomPage() {
 
   const { data: groupClass } = useGroupClass(classId);
   const completeMutation = useCompleteGroupClass();
+  const currentUser = useAuthStore(s => s.user);
+  const localDisplayName = currentUser?.displayName || 'Mentor';
 
   // State
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
@@ -748,7 +751,8 @@ export default function MentorGroupClassroomPage() {
             isVideoEnabled={isVideoEnabled}
             isRoomActive={isRoomActive}
             isMentor={true}
-            localLabel="Siz (Mentor)"
+            localLabel={localDisplayName}
+            localDisplayName={localDisplayName}
             remoteTiles={remoteTiles}
             screenShareState={screenShareState}
             localScreenPreviewRef={localScreenPreviewRef}
@@ -783,7 +787,7 @@ export default function MentorGroupClassroomPage() {
         )}
 
         {isParticipantsOpen && (
-          <ParticipantsPanel remoteTiles={remoteTiles} localDisplayName="Mentor" localIsAudioEnabled={isAudioEnabled} localIsVideoEnabled={isVideoEnabled}
+          <ParticipantsPanel remoteTiles={remoteTiles} localDisplayName={localDisplayName} localIsAudioEnabled={isAudioEnabled} localIsVideoEnabled={isVideoEnabled}
             isMentor={true} onMuteParticipant={muteParticipant} onUnmuteParticipant={unmuteParticipant} onKickParticipant={kickParticipant} onClose={() => setIsParticipantsOpen(false)} />
         )}
       </div>

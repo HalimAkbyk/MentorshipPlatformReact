@@ -1,11 +1,19 @@
 'use client';
 
 import { RefObject, useMemo } from 'react';
-import { Users, Monitor, Video, MicOff } from 'lucide-react';
+import { Users, Monitor, Video, VideoOff, MicOff } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { RemoteVideoMount } from './RemoteVideoMount';
 import { RemoteTile, ScreenShareState } from './types';
+
+// Helper: get initials from display name (first letter of first + last word)
+function getInitials(name: string): string {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
 
 interface ClassroomLayoutProps {
   // Local video
@@ -15,6 +23,7 @@ interface ClassroomLayoutProps {
   isRoomActive: boolean;
   isMentor: boolean;
   localLabel: string;
+  localDisplayName?: string;
 
   // Remote participants
   remoteTiles: RemoteTile[];
@@ -30,6 +39,7 @@ export function ClassroomLayout({
   isRoomActive,
   isMentor,
   localLabel,
+  localDisplayName,
   remoteTiles,
   screenShareState,
 }: ClassroomLayoutProps) {
@@ -41,6 +51,7 @@ export function ClassroomLayout({
       localScreenPreviewRef={localScreenPreviewRef}
       isVideoEnabled={isVideoEnabled}
       localLabel={localLabel}
+      localDisplayName={localDisplayName}
       remoteTiles={remoteTiles}
       screenShareState={screenShareState}
       isMentor={isMentor}
@@ -53,6 +64,7 @@ export function ClassroomLayout({
     isRoomActive={isRoomActive}
     isMentor={isMentor}
     localLabel={localLabel}
+    localDisplayName={localDisplayName}
     remoteTiles={remoteTiles}
   />;
 }
@@ -66,6 +78,7 @@ function NormalLayout({
   isRoomActive,
   isMentor,
   localLabel,
+  localDisplayName,
   remoteTiles,
 }: {
   localVideoRef: RefObject<HTMLDivElement>;
@@ -73,6 +86,7 @@ function NormalLayout({
   isRoomActive: boolean;
   isMentor: boolean;
   localLabel: string;
+  localDisplayName?: string;
   remoteTiles: RemoteTile[];
 }) {
   const remoteColsClass = useMemo(() => {
@@ -93,12 +107,15 @@ function NormalLayout({
               {localLabel}
             </div>
             {!isVideoEnabled && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-800 z-10">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 z-10">
                 <Avatar className="w-24 h-24">
                   <AvatarFallback className="bg-gray-700 text-white text-3xl">
-                    {isMentor ? 'M' : 'S'}
+                    {localDisplayName ? getInitials(localDisplayName) : (isMentor ? 'M' : 'S')}
                   </AvatarFallback>
                 </Avatar>
+                {localDisplayName && (
+                  <span className="text-gray-300 text-sm mt-2">{localDisplayName}</span>
+                )}
               </div>
             )}
             {isMentor && !isRoomActive && (
@@ -174,9 +191,18 @@ function NormalLayout({
                           <span className="text-xs">✋</span>
                         </div>
                       )}
-                      {!tile.cameraVideoEl && (
-                        <div className="absolute inset-0 flex items-center justify-center text-gray-500">
-                          <Users className="w-10 h-10" />
+                      {(!tile.cameraVideoEl || !tile.isVideoEnabled) && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 z-[5]">
+                          <Avatar className="w-20 h-20 mb-2">
+                            <AvatarFallback className="bg-gray-700 text-white text-2xl">
+                              {getInitials(tile.displayName)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-gray-300 text-sm">{tile.displayName}</span>
+                          <div className="flex items-center gap-1 mt-1 text-gray-500">
+                            <VideoOff className="w-3.5 h-3.5" />
+                            <span className="text-xs">Kamera kapalı</span>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -199,6 +225,7 @@ function ScreenShareLayout({
   localScreenPreviewRef,
   isVideoEnabled,
   localLabel,
+  localDisplayName,
   remoteTiles,
   screenShareState,
   isMentor,
@@ -207,6 +234,7 @@ function ScreenShareLayout({
   localScreenPreviewRef: RefObject<HTMLDivElement>;
   isVideoEnabled: boolean;
   localLabel: string;
+  localDisplayName?: string;
   remoteTiles: RemoteTile[];
   screenShareState: ScreenShareState;
   isMentor: boolean;
@@ -260,10 +288,10 @@ function ScreenShareLayout({
               {localLabel}
             </div>
             {!isVideoEnabled && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800">
                 <Avatar className="w-10 h-10">
                   <AvatarFallback className="bg-gray-700 text-white text-sm">
-                    {isMentor ? 'M' : 'S'}
+                    {localDisplayName ? getInitials(localDisplayName) : (isMentor ? 'M' : 'S')}
                   </AvatarFallback>
                 </Avatar>
               </div>
@@ -293,9 +321,14 @@ function ScreenShareLayout({
               {tile.isHandRaised && (
                 <div className="absolute top-1 right-1 text-yellow-400 text-xs">✋</div>
               )}
-              {!tile.cameraVideoEl && (
-                <div className="absolute inset-0 flex items-center justify-center text-gray-500 bg-gray-900">
-                  <Users className="w-8 h-8" />
+              {(!tile.cameraVideoEl || !tile.isVideoEnabled) && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 z-[5]">
+                  <Avatar className="w-8 h-8">
+                    <AvatarFallback className="bg-gray-700 text-white text-xs">
+                      {getInitials(tile.displayName)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-gray-500 text-[10px] mt-0.5">{tile.displayName}</span>
                 </div>
               )}
             </div>

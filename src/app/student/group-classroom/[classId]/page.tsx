@@ -7,6 +7,7 @@ import { videoApi } from '@/lib/api/video';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { useAuthStore } from '@/lib/stores/auth-store';
 import {
   Video, VideoOff, Mic, MicOff, Hand, Monitor, MonitorOff,
   MessageSquare, Users, PhoneOff, Settings, X, Image as ImageIcon,
@@ -126,6 +127,8 @@ export default function StudentGroupClassroomPage() {
   const classId = params.classId as string;
 
   const { data: groupClass } = useGroupClass(classId);
+  const currentUser = useAuthStore(s => s.user);
+  const localDisplayName = currentUser?.displayName || 'Öğrenci';
 
   // State
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
@@ -901,7 +904,8 @@ export default function StudentGroupClassroomPage() {
             isVideoEnabled={isVideoEnabled}
             isRoomActive={true}
             isMentor={false}
-            localLabel="Sen"
+            localLabel={localDisplayName}
+            localDisplayName={localDisplayName}
             remoteTiles={remoteTiles}
             screenShareState={screenShareState}
             localScreenPreviewRef={localScreenPreviewRef}
@@ -936,7 +940,7 @@ export default function StudentGroupClassroomPage() {
         )}
 
         {isParticipantsOpen && (
-          <ParticipantsPanel remoteTiles={remoteTiles} localDisplayName="Öğrenci" localIsAudioEnabled={isAudioEnabled} localIsVideoEnabled={isVideoEnabled}
+          <ParticipantsPanel remoteTiles={remoteTiles} localDisplayName={localDisplayName} localIsAudioEnabled={isAudioEnabled} localIsVideoEnabled={isVideoEnabled}
             isMentor={false} onClose={() => setIsParticipantsOpen(false)} />
         )}
       </div>

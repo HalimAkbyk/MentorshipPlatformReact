@@ -12,6 +12,7 @@ import { Button } from '../../../../components/ui/button';
 import { Badge } from '../../../../components/ui/badge';
 import { apiClient } from '../../../../lib/api/client';
 import { toast } from 'sonner';
+import { useAuthStore } from '../../../../lib/stores/auth-store';
 
 import { ClassroomLayout } from '../../../../components/classroom/ClassroomLayout';
 import { ParticipantsPanel } from '../../../../components/classroom/ParticipantsPanel';
@@ -124,6 +125,8 @@ export default function MentorClassroomPage() {
   const params = useParams();
   const router = useRouter();
   const bookingId = params.bookingId as string;
+  const currentUser = useAuthStore(s => s.user);
+  const localDisplayName = currentUser?.displayName || 'Mentor';
 
   // State
   const [room, setRoom] = useState<any>(null);
@@ -324,6 +327,10 @@ export default function MentorClassroomPage() {
     setRemoteTiles(prev => prev.map(t => t.identity === identity ? { ...t, isAudioEnabled: enabled } : t));
   };
 
+  const setRemoteVideoEnabled = (identity: string, enabled: boolean) => {
+    setRemoteTiles(prev => prev.map(t => t.identity === identity ? { ...t, isVideoEnabled: enabled } : t));
+  };
+
   // ─── Pipeline helpers ───
   const stopProcessedPipeline = () => {
     try { vbRef.current?.stop(); } catch {}
@@ -506,8 +513,14 @@ export default function MentorClassroomPage() {
         p.tracks.forEach((pub: any) => { if (pub.isSubscribed && pub.track) attachRemoteTrack(pub.track, p); });
         p.on('trackSubscribed', (track: any) => attachRemoteTrack(track, p));
         p.on('trackUnsubscribed', (track: any) => detachRemoteTrack(track, p));
-        p.on('trackDisabled', (track: any) => { if (track.kind === 'audio') setRemoteAudioEnabled(p.identity, false); });
-        p.on('trackEnabled', (track: any) => { if (track.kind === 'audio') setRemoteAudioEnabled(p.identity, true); });
+        p.on('trackDisabled', (track: any) => {
+          if (track.kind === 'audio') setRemoteAudioEnabled(p.identity, false);
+          if (track.kind === 'video') setRemoteVideoEnabled(p.identity, false);
+        });
+        p.on('trackEnabled', (track: any) => {
+          if (track.kind === 'audio') setRemoteAudioEnabled(p.identity, true);
+          if (track.kind === 'video') setRemoteVideoEnabled(p.identity, true);
+        });
       };
 
       newRoom.participants.forEach(handleParticipant);
@@ -811,7 +824,8 @@ export default function MentorClassroomPage() {
             isVideoEnabled={isVideoEnabled}
             isRoomActive={isRoomActive}
             isMentor={true}
-            localLabel="Siz (Mentor)"
+            localLabel={localDisplayName}
+            localDisplayName={localDisplayName}
             remoteTiles={remoteTiles}
             screenShareState={screenShareState}
           />
@@ -849,7 +863,7 @@ export default function MentorClassroomPage() {
         {isParticipantsOpen && (
           <ParticipantsPanel
             remoteTiles={remoteTiles}
-            localDisplayName="Mentor"
+            localDisplayName={localDisplayName}
             localIsAudioEnabled={isAudioEnabled}
             localIsVideoEnabled={isVideoEnabled}
             isMentor={true}

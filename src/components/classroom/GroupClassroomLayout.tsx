@@ -6,12 +6,21 @@ import { Avatar, AvatarFallback } from '../ui/avatar';
 import { RemoteVideoMount } from './RemoteVideoMount';
 import { RemoteTile, ScreenShareState } from './types';
 
+// Helper: get initials from display name (first letter of first + last word)
+function getInitials(name: string): string {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
+
 interface GroupClassroomLayoutProps {
   localVideoRef: RefObject<HTMLDivElement>;
   isVideoEnabled: boolean;
   isRoomActive: boolean;
   isMentor: boolean;
   localLabel: string;
+  localDisplayName?: string;
   remoteTiles: RemoteTile[];
   screenShareState?: ScreenShareState;
   localScreenPreviewRef?: RefObject<HTMLDivElement>;
@@ -23,6 +32,7 @@ export function GroupClassroomLayout({
   isRoomActive,
   isMentor,
   localLabel,
+  localDisplayName,
   remoteTiles,
   screenShareState,
   localScreenPreviewRef,
@@ -82,7 +92,7 @@ export function GroupClassroomLayout({
               <div className="absolute inset-0 flex items-center justify-center bg-gray-800 z-[5]">
                 <Avatar className="w-10 h-10">
                   <AvatarFallback className="bg-gray-700 text-white text-lg">
-                    {isMentor ? 'M' : 'S'}
+                    {localDisplayName ? getInitials(localDisplayName) : (isMentor ? 'M' : 'S')}
                   </AvatarFallback>
                 </Avatar>
               </div>
@@ -112,7 +122,7 @@ export function GroupClassroomLayout({
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 z-[5]">
                   <Avatar className="w-8 h-8">
                     <AvatarFallback className="bg-gray-700 text-white text-sm">
-                      {tile.displayName.charAt(0).toUpperCase()}
+                      {getInitials(tile.displayName)}
                     </AvatarFallback>
                   </Avatar>
                   <span className="text-gray-500 text-[10px] mt-1">{tile.displayName}</span>
@@ -137,12 +147,15 @@ export function GroupClassroomLayout({
           {localLabel}
         </div>
         {!isVideoEnabled && isRoomActive && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-800 z-10">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 z-10">
             <Avatar className="w-16 h-16">
               <AvatarFallback className="bg-gray-700 text-white text-2xl">
-                {isMentor ? 'M' : 'S'}
+                {localDisplayName ? getInitials(localDisplayName) : (isMentor ? 'M' : 'S')}
               </AvatarFallback>
             </Avatar>
+            {localDisplayName && (
+              <span className="text-gray-300 text-sm mt-2">{localDisplayName}</span>
+            )}
           </div>
         )}
         {isMentor && !isRoomActive && (
@@ -185,7 +198,7 @@ export function GroupClassroomLayout({
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 z-[5]">
               <Avatar className="w-16 h-16 mb-2">
                 <AvatarFallback className="bg-gray-700 text-white text-2xl">
-                  {tile.displayName.charAt(0).toUpperCase()}
+                  {getInitials(tile.displayName)}
                 </AvatarFallback>
               </Avatar>
               <span className="text-gray-400 text-sm">{tile.displayName}</span>
