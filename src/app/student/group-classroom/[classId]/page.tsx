@@ -628,7 +628,13 @@ export default function StudentGroupClassroomPage() {
       toast.success('Derse katıldınız!');
     } catch (e: any) {
       console.error('Room join error:', e);
-      toast.error('Bağlantı hatası: ' + (e?.message ?? ''));
+      const errMsg = e?.response?.data?.errors?.[0] || e?.message || '';
+      // Mentor henüz aktifleştirmedi → sessizce bekle
+      if (errMsg.includes('Mentor henüz') || errMsg.includes('aktifleştirmedi')) {
+        console.log('⏳ Mentor has not activated room yet');
+      } else {
+        toast.error('Bağlantı hatası: ' + (e?.message ?? ''));
+      }
       setWaitingForHost(true);
     } finally { setIsConnecting(false); }
   }, [classId, roomName, isConnecting, attachLocalPreview, fullDisconnect, groupClass, startMentorAbsenceTimer, clearMentorAbsenceTimer]);

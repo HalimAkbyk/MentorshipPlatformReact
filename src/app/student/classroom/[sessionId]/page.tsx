@@ -142,6 +142,7 @@ export default function StudentClassroomPage() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [bookingTimes, setBookingTimes] = useState<{ startAt: string; endAt: string } | null>(null);
+  const [isWaitingForMentor, setIsWaitingForMentor] = useState(false);
 
   // Session lifecycle settings
   const { sessionGracePeriodMinutes } = useSessionLifecycleSettings();
@@ -468,10 +469,11 @@ export default function StudentClassroomPage() {
     }
   }, [screenShareState.active, screenShareState.isLocal]);
 
-  // ─── Auto-Join Room (Student) ───
+  // ─── Auto-Join Room (Student) with mentor-wait polling ───
   useEffect(() => {
     const attemptId = ++joinAttemptRef.current;
     let cancelled = false;
+    let pollTimer: ReturnType<typeof setTimeout> | null = null;
 
     const join = async () => {
       setIsConnecting(true);
@@ -496,11 +498,34 @@ export default function StudentClassroomPage() {
 
         console.log('🎬 Student joining room:', sessionId, 'attempt:', attemptId);
 
-        const resp = await apiClient.post<{ token: string; roomName: string }>('/video/token', {
-          roomName: sessionId, isHost: false,
-        });
+        let resp: any;
+        try {
+          resp = await apiClient.post<{ token: string; roomName: string }>('/video/token', {
+            roomName: sessionId, isHost: false,
+          });
+        } catch (tokenErr: any) {
+          // ──── Mentor henüz aktifleştirmedi → lobby'de bekle, poll et ────
+          const errMsg = tokenErr?.response?.data?.errors?.[0] || tokenErr?.message || '';
+          if (errMsg.includes('Mentor henüz') || errMsg.includes('aktifleştirmedi')) {
+            console.log('⏳ Mentor has not activated room, waiting...');
+            setIsWaitingForMentor(true);
+            setIsConnecting(false);
+            // 8 saniyede bir tekrar dene
+            if (!cancelled) {
+              pollTimer = setTimeout(() => {
+                if (!cancelled) join();
+              }, 8000);
+            }
+            return;
+          }
+          // Diğer hatalar — rethrow
+          throw tokenErr;
+        }
 
         if (cancelled) { console.log('⏹ Join cancelled (cleanup ran)'); return; }
+
+        // Mentor odayı aktifleştirmiş — bekleme modundan çık
+        setIsWaitingForMentor(false);
 
         const token = (resp as any)?.data?.token ?? (resp as any)?.token;
         const roomName = (resp as any)?.data?.roomName ?? (resp as any)?.roomName;
@@ -578,6 +603,7 @@ export default function StudentClassroomPage() {
 
     return () => {
       cancelled = true;
+      if (pollTimer) clearTimeout(pollTimer);
       console.log('🧹 Cleanup for attempt:', attemptId);
       fullDisconnect();
     };
@@ -761,6 +787,29 @@ export default function StudentClassroomPage() {
   };
 
   // ─── Render ───
+
+  // Mentor bekleme ekranı — mentor odayı aktifleştirene kadar gösterilir
+  if (isWaitingForMentor) {
+    return (
+      <div className="h-screen bg-gray-900 flex flex-col items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 mx-auto border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
+          <h2 className="text-white text-xl font-semibold">Mentor Bekleniyor</h2>
+          <p className="text-gray-400 text-sm max-w-sm">
+            Mentor henüz odayı aktifleştirmedi. Oda aktifleştirildiğinde otomatik olarak bağlanacaksınız.
+          </p>
+          <div className="flex items-center justify-center gap-2 text-gray-500 text-xs">
+            <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
+            <span>Bağlantı bekleniyor...</span>
+          </div>
+          <Button variant="outline" size="sm" className="mt-4 text-gray-300 border-gray-600 hover:bg-gray-700" onClick={() => router.push('/student/bookings')}>
+            ← Randevulara Dön
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
       {/* Session Timer Banner */}
