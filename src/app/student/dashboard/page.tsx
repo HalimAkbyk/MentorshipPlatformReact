@@ -38,12 +38,15 @@ export default function StudentDashboardPage() {
   const router = useRouter();
 
   /* ── Data hooks ── */
-  const { data: confirmedData } = useBookings(BookingStatus.Confirmed);
-  const { data: allBookingsData } = useBookings(undefined, 1, 1); // status=undefined → tüm bookings, sadece totalCount için
+  const { data: confirmedData, isLoading: loadingBookings } = useBookings(BookingStatus.Confirmed);
+  const { data: allBookingsData, isLoading: loadingAllBookings } = useBookings(undefined, 1, 1); // status=undefined → tüm bookings, sadece totalCount için
   const { data: conversations } = useConversations();
   const { data: unreadData } = useUnreadCount();
-  const { data: enrolledCourses } = useEnrolledCourses(1, 3);
-  const { data: enrollments } = useMyEnrollments(1, 3);
+  const { data: enrolledCourses, isLoading: loadingCourses } = useEnrolledCourses(1, 3);
+  const { data: enrollments, isLoading: loadingEnrollments } = useMyEnrollments(1, 3);
+
+  /* ── Data still loading? (prevents onboarding flash) ── */
+  const dataLoading = loadingAllBookings || loadingCourses || loadingEnrollments;
 
   /* ── Derived state ── */
   const upcomingBookings = confirmedData?.items ?? [];
@@ -279,7 +282,35 @@ export default function StudentDashboardPage() {
           {/* ─────────── CENTER PANEL (Main Content) ─────────── */}
           <main className="flex-1 min-w-0 space-y-6">
 
-            {hasAnyPurchase ? (
+            {dataLoading ? (
+              /* ══════ SKELETON LOADING STATE ══════ */
+              <>
+                {[1, 2, 3].map((i) => (
+                  <section key={i}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-7 h-7 rounded-lg bg-gray-200 animate-pulse" />
+                      <div className="h-5 w-36 bg-gray-200 rounded animate-pulse" />
+                    </div>
+                    <div className="flex gap-3">
+                      {[1, 2, 3].map((j) => (
+                        <Card key={j} className="min-w-[280px] flex-1 border-0 shadow-sm">
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-gray-200 animate-pulse" />
+                              <div className="flex-1 space-y-2">
+                                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+                                <div className="h-3 w-32 bg-gray-100 rounded animate-pulse" />
+                              </div>
+                            </div>
+                            <div className="h-8 w-full bg-gray-100 rounded mt-3 animate-pulse" />
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </section>
+                ))}
+              </>
+            ) : hasAnyPurchase ? (
               /* ══════ DYNAMIC HORIZONTAL BARS ══════ */
               <>
                 {/* ── BAR 1: Birebir Randevular ── */}
