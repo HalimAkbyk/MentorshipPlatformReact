@@ -9,6 +9,8 @@ import type { MyMentorOffering,MyMentorProfile } from '@/lib/types/mentor';
 export interface MentorFilters {
   searchTerm?: string;
   university?: string;
+  category?: string;
+  sortBy?: string;
   minPrice?: number;
   maxPrice?: number;
   page?: number;

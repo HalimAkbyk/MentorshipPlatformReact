@@ -5,6 +5,7 @@ import type { CreateGroupClassRequest } from '../types/api';
 export function useGroupClasses(filters?: {
   category?: string;
   search?: string;
+  sortBy?: string;
   page?: number;
   pageSize?: number;
 }) {

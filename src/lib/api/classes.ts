@@ -10,6 +10,7 @@ export const classesApi = {
   list: async (filters?: {
     category?: string;
     search?: string;
+    sortBy?: string;
     page?: number;
     pageSize?: number;
   }): Promise<PaginatedResponse<GroupClass>> => {

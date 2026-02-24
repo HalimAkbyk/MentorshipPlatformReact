@@ -25,6 +25,7 @@ export interface MentorListItem {
   ratingCount: number;
   hourlyRate?: number;
   isVerified: boolean;
+  categories?: string[];
 }
 
 export interface MentorDetail {
