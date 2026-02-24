@@ -18,19 +18,30 @@ export default function StudentCoursesPage() {
   const courses = coursesData?.items;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold font-heading mb-2">Kurslarım</h1>
-            <p className="text-gray-600">Kayıtlı olduğunuz kursları görüntüleyip devam edin</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Gradient Hero Header */}
+      <div className="bg-gradient-to-br from-teal-600 to-green-600 py-12">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+              Kurslarım
+            </h1>
+            <p className="text-teal-100 text-lg max-w-2xl mx-auto mb-6">
+              Kayıtlı olduğunuz kursları görüntüleyip devam edin
+            </p>
+            <Button
+              onClick={() => router.push(ROUTES.COURSE_CATALOG)}
+              variant="secondary"
+              className="bg-white/20 hover:bg-white/30 text-white border-0"
+            >
+              <BookOpen className="w-4 h-4 mr-2" />
+              Kurs Keşfet
+            </Button>
           </div>
-          <Button onClick={() => router.push(ROUTES.COURSE_CATALOG)}>
-            <BookOpen className="w-4 h-4 mr-2" />
-            Kurs Keşfet
-          </Button>
         </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
 
         {/* Course Grid */}
         {isLoading ? (

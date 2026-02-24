@@ -151,36 +151,40 @@ export default function StudentExploreCoursesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-teal-600 via-teal-700 to-teal-900 text-white">
-        <div className="container mx-auto px-4 py-10 md:py-14">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-3xl md:text-4xl font-bold font-heading mb-3">
+      {/* Gradient Hero Header */}
+      <div className="bg-gradient-to-br from-teal-600 to-green-600 py-12">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
               Video Eğitimler
             </h1>
-            <p className="text-teal-100 text-base md:text-lg mb-8 max-w-2xl mx-auto">
-              Uzman eğitmenlerden video derslerle kendinizi geliştirin. İstediğiniz zaman, istediğiniz yerden öğrenin.
+            <p className="text-teal-100 text-lg max-w-2xl mx-auto">
+              Uzman eğitmenlerden video derslerle kendinizi geliştirin
             </p>
+          </div>
 
-            {/* Search Bar */}
-            <div className="max-w-xl mx-auto relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Kurs adı, konu veya eğitmen ara..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-12 pr-12 py-3.5 rounded-xl text-gray-900 bg-white shadow-xl focus:outline-none focus:ring-2 focus:ring-teal-300 text-sm md:text-base"
-              />
-              {search && (
-                <button
-                  onClick={() => { setSearch(''); searchInputRef.current?.focus(); }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
+          {/* Search Card */}
+          <div className="max-w-3xl mx-auto">
+            <div className="bg-white rounded-xl shadow-lg p-3 flex flex-col sm:flex-row gap-3">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Kurs adı, konu veya eğitmen ara..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-10 pr-10 border-0 shadow-none focus:outline-none h-12 text-base rounded-lg"
+                />
+                {search && (
+                  <button
+                    onClick={() => { setSearch(''); searchInputRef.current?.focus(); }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
