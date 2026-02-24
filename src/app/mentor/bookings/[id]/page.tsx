@@ -24,6 +24,7 @@ import { availabilityApi, type ComputedTimeSlot } from '../../../../lib/api/avai
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { useSessionJoinSettings, getSessionJoinStatus } from '../../../../lib/hooks/use-platform-settings';
 
 export default function MentorBookingDetailPage() {
   const params = useParams();
@@ -34,6 +35,8 @@ export default function MentorBookingDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showMessages, setShowMessages] = useState(false);
   const { data: unreadData } = useUnreadCount();
+
+  const { devMode, earlyJoinMinutes } = useSessionJoinSettings();
 
   // Reschedule state
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
@@ -220,6 +223,9 @@ export default function MentorBookingDetailPage() {
 
   const isLive = isSessionLive();
   const canJoin = canJoinSoon();
+  const joinStatus = booking.status === BookingStatus.Confirmed
+    ? getSessionJoinStatus(booking.startAt, devMode, earlyJoinMinutes)
+    : null;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -261,25 +267,31 @@ export default function MentorBookingDetailPage() {
           </Card>
         )}
 
-        {/* Action Buttons */}
-        {(isLive || canJoin) && (
-          <Card className="mb-6 bg-teal-50 border-teal-200">
+        {/* Action Buttons - Start/Join Session */}
+        {booking.status === BookingStatus.Confirmed && joinStatus && (
+          <Card className={`mb-6 ${joinStatus.canJoin ? 'bg-teal-50 border-teal-200' : 'bg-gray-50 border-gray-200'}`}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-semibold text-lg mb-1">
-                    {isLive ? 'Seans Şu Anda Canlı!' : 'Seans Yakında Başlayacak'}
+                    {isLive ? 'Seans Şu Anda Canlı!' : joinStatus.canJoin ? 'Dersi Başlatabilirsiniz' : 'Ders Başlangıcı Bekleniyor'}
                   </h3>
                   <p className="text-sm text-gray-600">
                     {isLive
                       ? 'Hemen derse katılabilirsiniz'
-                      : 'Odayı aktifleştirerek hazırlık yapabilirsiniz'}
+                      : joinStatus.canJoin
+                      ? 'Odayı aktifleştirerek dersi başlatabilirsiniz'
+                      : `Ders en erken ${earlyJoinMinutes} dakika önce başlatılabilir. Başlangıca ${Math.ceil(joinStatus.minutesUntilStart)} dakika kaldı.`}
                   </p>
                 </div>
-                <Link href={`/mentor/classroom/${booking.id}`}>
-                  <Button size="lg" variant={isLive ? "default" : "outline"}>
+                <Link href={joinStatus.canJoin ? `/mentor/classroom/${booking.id}` : '#'}>
+                  <Button
+                    size="lg"
+                    variant={isLive ? "default" : "outline"}
+                    disabled={!joinStatus.canJoin}
+                  >
                     <Video className="w-5 h-5 mr-2" />
-                    {isLive ? 'Derse Katıl' : 'Odayı Aç'}
+                    {isLive ? 'Derse Katıl' : joinStatus.canJoin ? 'Dersi Başlat' : `${Math.ceil(joinStatus.minutesUntilStart)} dk`}
                   </Button>
                 </Link>
               </div>

@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Calendar, Clock, Video, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, Video, CheckCircle, Info } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent, CardHeader } from '../../../components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../components/ui/avatar';
 import { Badge } from '../../../components/ui/badge';
 import { useBookings } from '../../../lib/hooks/use-bookings';
+import { useSessionJoinSettings, getSessionJoinStatus } from '../../../lib/hooks/use-platform-settings';
 import { formatDate, formatTime } from '../../../lib/utils/format';
 import { BookingStatus } from '../../../lib/types/enums';
 import type { Booking } from '../../../lib/types/models';
@@ -24,7 +25,8 @@ const statusFilters = [
 export default function MentorBookingsPage() {
   const [selectedStatus, setSelectedStatus] = useState<'all' | BookingStatus>('all');
   const [page, setPage] = useState(1);
-  
+  const { devMode, earlyJoinMinutes } = useSessionJoinSettings();
+
   const { data, isLoading } = useBookings(
     selectedStatus === 'all' ? undefined : selectedStatus,
     page,
@@ -98,7 +100,10 @@ export default function MentorBookingsPage() {
             {bookings.map((booking) => {
               const isLive = isSessionLive(booking);
               const canJoin = canJoinSoon(booking);
-              
+              const joinStatus = booking.status === BookingStatus.Confirmed
+                ? getSessionJoinStatus(booking.startAt, devMode, earlyJoinMinutes)
+                : null;
+
               return (
                 <Card key={booking.id} className="hover:shadow-lg transition-shadow h-full flex flex-col">
                   <CardHeader>
@@ -164,30 +169,30 @@ export default function MentorBookingsPage() {
                   </CardHeader>
 
                   <CardContent className="pt-0 mt-auto">
-                    <div className="flex gap-2">
-                      {booking.status === BookingStatus.Confirmed && (isLive || canJoin) && (
+                    <div className="flex flex-col gap-2">
+                      {booking.status === BookingStatus.Confirmed && joinStatus?.canJoin && (
                         <Link href={`/mentor/classroom/${booking.id}`} className="flex-1">
                           <Button className="w-full" variant={isLive ? "default" : "outline"}>
                             <Video className="w-4 h-4 mr-2" />
-                            {isLive ? 'Derse Katıl' : 'Odayı Aç'}
+                            {isLive ? 'Derse Katıl' : 'Dersi Başlat'}
                           </Button>
                         </Link>
                       )}
-                      {booking.status === BookingStatus.Confirmed && !isLive && !canJoin && (
-                        <Link href={`/mentor/bookings/${booking.id}`} className="flex-1">
-                          <Button variant="outline" className="w-full">
-                            Detaylar
-                          </Button>
-                        </Link>
+                      {booking.status === BookingStatus.Confirmed && joinStatus && !joinStatus.canJoin && (
+                        <div className="text-center">
+                          <p className="text-xs text-gray-500 flex items-center justify-center gap-1 mb-2">
+                            <Info className="w-3 h-3" />
+                            En erken {earlyJoinMinutes} dk önce başlatılabilir
+                          </p>
+                        </div>
                       )}
-                      {(booking.status === BookingStatus.Completed || booking.status === BookingStatus.Cancelled) && (
-                        <Link href={`/mentor/bookings/${booking.id}`} className="flex-1">
-                          <Button variant="outline" className="w-full">
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            İncele
-                          </Button>
-                        </Link>
-                      )}
+                      <Link href={`/mentor/bookings/${booking.id}`} className="flex-1">
+                        <Button variant="outline" className="w-full">
+                          {booking.status === BookingStatus.Completed || booking.status === BookingStatus.Cancelled
+                            ? (<><CheckCircle className="w-4 h-4 mr-2" />İncele</>)
+                            : 'Detaylar'}
+                        </Button>
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>

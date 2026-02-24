@@ -63,9 +63,14 @@ const categoryConfig: Record<string, { label: string; icon: React.ElementType; d
     icon: Gauge,
     description: 'Sistem limitleri ve varsayilan degerler',
   },
+  Dev: {
+    label: 'Geliştirme Modu',
+    icon: Settings,
+    description: 'Geliştirme ve test amaçlı ayarlar',
+  },
 };
 
-const categoryOrder = ['General', 'Fee', 'Email', 'SMS', 'Payment', 'Limits'];
+const categoryOrder = ['General', 'Fee', 'Email', 'SMS', 'Payment', 'Limits', 'Dev'];
 
 // Sensitive keys that should be masked by default
 const sensitiveKeys = new Set([

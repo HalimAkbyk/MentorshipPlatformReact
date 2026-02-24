@@ -25,6 +25,8 @@ import { apiClient } from '@/lib/api/client';
 import { formatDate, formatRelativeTime, formatCurrency } from '@/lib/utils/format';
 import { BookingStatus } from '@/lib/types/enums';
 import type { MyMentorProfile, MyMentorOffering } from '@/lib/types/mentor';
+import { useSessionJoinSettings, getSessionJoinStatus } from '@/lib/hooks/use-platform-settings';
+import { toast } from 'sonner';
 
 /* ──────────────────────────────── Types ──────────────────────────────── */
 interface RoomStatus {
@@ -60,6 +62,9 @@ export default function MentorDashboardPage() {
   const { data: unreadData } = useUnreadCount();
   const { data: myGroupClasses } = useMyGroupClasses(undefined, 1, 5);
   const { data: myCourses } = useMyCourses(1, 5);
+
+  /* ── Session join settings ── */
+  const { devMode, earlyJoinMinutes } = useSessionJoinSettings();
 
   /* ── Derived state ── */
   const upcomingBookings = confirmedData?.items ?? [];
@@ -99,7 +104,14 @@ export default function MentorDashboardPage() {
     return () => clearInterval(interval);
   }, [upcomingBookings, checkRoomStatuses]);
 
-  const handleStartSession = (bookingId: string) => {
+  const handleStartSession = (bookingId: string, startAt?: string) => {
+    if (startAt) {
+      const { canJoin, minutesUntilStart } = getSessionJoinStatus(startAt, devMode, earlyJoinMinutes);
+      if (!canJoin) {
+        toast.error(`Ders en erken ${earlyJoinMinutes} dakika önce başlatılabilir. Başlangıca ${Math.ceil(minutesUntilStart)} dakika kaldı.`);
+        return;
+      }
+    }
     router.push(`/mentor/classroom/${bookingId}`);
   };
 
@@ -146,14 +158,16 @@ export default function MentorDashboardPage() {
       );
     }
     if (nextBooking) {
+      const heroJoinStatus = getSessionJoinStatus(nextBooking.startAt, devMode, earlyJoinMinutes);
       return (
         <Button
-          onClick={() => handleStartSession(nextBooking.id)}
-          className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg"
+          onClick={() => handleStartSession(nextBooking.id, nextBooking.startAt)}
+          className={`shadow-lg ${heroJoinStatus.canJoin ? 'bg-white text-teal-700 hover:bg-teal-50' : 'bg-white/60 text-teal-700/60 cursor-not-allowed'}`}
           size="sm"
+          disabled={!heroJoinStatus.canJoin}
         >
           <Video className="w-4 h-4 mr-1.5" />
-          Dersi Baslat
+          {heroJoinStatus.canJoin ? 'Dersi Baslat' : `${Math.ceil(heroJoinStatus.minutesUntilStart)} dk sonra`}
         </Button>
       );
     }
@@ -431,6 +445,7 @@ export default function MentorDashboardPage() {
                   {upcomingBookings.slice(0, 3).map((booking) => {
                     const status = roomStatus[booking.id];
                     const isActive = status?.isActive === true;
+                    const joinStatus = getSessionJoinStatus(booking.startAt, devMode, earlyJoinMinutes);
                     return (
                       <motion.div
                         key={booking.id}
@@ -467,16 +482,24 @@ export default function MentorDashboardPage() {
                             <div className="mt-3">
                               <Button
                                 size="sm"
-                                onClick={() => handleStartSession(booking.id)}
+                                onClick={() => handleStartSession(booking.id, booking.startAt)}
+                                disabled={!joinStatus.canJoin && !isActive}
                                 className={`w-full text-xs ${
                                   isActive
                                     ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-sm'
-                                    : 'bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white'
+                                    : joinStatus.canJoin
+                                    ? 'bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white'
+                                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                                 }`}
                               >
                                 <Video className="w-3.5 h-3.5 mr-1" />
-                                {isActive ? 'Derse Katil' : 'Dersi Baslat'}
+                                {isActive ? 'Derse Katil' : joinStatus.canJoin ? 'Dersi Baslat' : `${Math.ceil(joinStatus.minutesUntilStart)} dk sonra`}
                               </Button>
+                              {!joinStatus.canJoin && !isActive && (
+                                <p className="text-[10px] text-center text-gray-400 mt-1">
+                                  En erken {earlyJoinMinutes} dk once baslatilabilir
+                                </p>
+                              )}
                             </div>
                             {isActive && (
                               <div className="flex items-center gap-1 mt-2 text-[11px] text-green-600">

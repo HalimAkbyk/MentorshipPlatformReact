@@ -22,6 +22,7 @@ import { availabilityApi, type ComputedTimeSlot } from '../../../../lib/api/avai
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { useSessionJoinSettings, getSessionJoinStatus } from '../../../../lib/hooks/use-platform-settings';
 
 interface RoomStatus {
   isActive: boolean;
@@ -47,6 +48,8 @@ export default function BookingDetailPage() {
   const [cancelReason, setCancelReason] = useState('');
   const [roomStatus, setRoomStatus] = useState<RoomStatus | null>(null);
   const [checkingRoom, setCheckingRoom] = useState(false);
+
+  const { devMode, earlyJoinMinutes } = useSessionJoinSettings();
 
   // Reschedule state
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
@@ -463,7 +466,13 @@ export default function BookingDetailPage() {
 
                     {!canJoinNow() && roomStatus && !roomStatus.isActive && (
                       <p className="text-xs text-center text-gray-600">
-                        Mentor odayı aktifleştirdiğinde katılabileceksiniz
+                        Mentor odayı aktifleştirdiğinde katılabileceksiniz.
+                        {!devMode && booking.status === BookingStatus.Confirmed && (() => {
+                          const jStatus = getSessionJoinStatus(booking.startAt, devMode, earlyJoinMinutes);
+                          return !jStatus.canJoin
+                            ? ` Ders başlangıcına ${Math.ceil(jStatus.minutesUntilStart)} dk kaldı.`
+                            : '';
+                        })()}
                       </p>
                     )}
                   </div>
