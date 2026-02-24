@@ -198,12 +198,11 @@ export default function StudentExploreCoursesPage() {
               <button
                 key={opt.value}
                 onClick={() => { setCategory(opt.value === category ? '' : opt.value); setPage(1); }}
-                className={cn(
-                  'px-3.5 py-1.5 rounded-full text-sm font-medium transition-all border',
+                className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
                   category === opt.value
-                    ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
-                    : `${opt.color} border-transparent`
-                )}
+                    ? 'bg-gradient-to-r from-teal-600 to-green-600 text-white shadow-md'
+                    : 'bg-white border border-gray-200 text-gray-700 hover:border-teal-300 hover:text-teal-600'
+                }`}
               >
                 {opt.label}
               </button>

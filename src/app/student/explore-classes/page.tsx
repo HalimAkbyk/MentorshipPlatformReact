@@ -92,17 +92,20 @@ function ExploreClassesContent() {
       {/* Category Filter */}
       <div className="flex gap-2 flex-wrap mb-6">
         {CATEGORIES.map((cat) => (
-          <Button
+          <button
             key={cat.value}
-            variant={category === cat.value ? 'default' : 'outline'}
-            size="sm"
             onClick={() => {
               setCategory(cat.value);
               setPage(1);
             }}
+            className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
+              category === cat.value
+                ? 'bg-gradient-to-r from-teal-600 to-green-600 text-white shadow-md'
+                : 'bg-white border border-gray-200 text-gray-700 hover:border-teal-300 hover:text-teal-600'
+            }`}
           >
             {cat.label}
-          </Button>
+          </button>
         ))}
       </div>
 

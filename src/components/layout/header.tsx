@@ -92,8 +92,6 @@ export function Header() {
     { href: '/student/explore-courses', label: 'Eğitimler', icon: <PlayCircle className="w-4 h-4" /> },
     { href: '/public/mentors', label: 'Mentor Bul', icon: <Search className="w-4 h-4" /> },
     { href: '/student/explore-classes', label: 'Grup Dersleri', icon: <Users className="w-4 h-4" /> },
-    { href: '/student/courses', label: 'Kurslarım', icon: <GraduationCap className="w-4 h-4" /> },
-    { href: '/student/bookings', label: 'Rezervasyonlarım', icon: <BookOpen className="w-4 h-4" /> },
   ];
 
   const navLinks = isAuthenticated && !isAdmin ? authenticatedLinks : publicLinks;
