@@ -90,81 +90,78 @@ export const homepageApi = {
     }
   },
 
-  // Testimonials — try backend, fallback to featured reviews
-  getTestimonials: async (limit = 6): Promise<TestimonialDto[]> => {
-    try {
-      const res = await apiClient.get<TestimonialDto[]>('/public/testimonials', { limit });
-      return res;
-    } catch {
-      // Fallback static testimonials
-      return [
-        {
-          id: '1',
-          studentName: 'Ahmet Akif',
-          university: 'Boğaziçi Üniversitesi',
-          department: 'Bilgisayar Mühendisliği',
-          scoreBefore: 320,
-          scoreAfter: 445,
-          quote: 'Mentorluk sürecinde yalnız olmadığımı hissettim. Motivasyonum düştüğünde bile yanındaydı. TYT puanımı 125 puan artırdım!',
-          rating: 5,
-          mentorName: 'Ahmet Yılmaz',
-        },
-        {
-          id: '2',
-          studentName: 'Berkan Şimşek',
-          university: 'İTÜ',
-          department: 'Elektrik-Elektronik Mühendisliği',
-          scoreBefore: 280,
-          scoreAfter: 410,
-          quote: 'Çalışma tempomun bana göre belirlenmesi çok iyi oldu. Hangi konularda eksik olduğumu tespit ettik ve odaklı çalıştık.',
-          rating: 5,
-          mentorName: 'Zeynep Kara',
-        },
-        {
-          id: '3',
-          studentName: 'Şeyda Ahlat',
-          university: 'ODTÜ',
-          department: 'Matematik',
-          scoreBefore: 350,
-          scoreAfter: 460,
-          quote: 'Mentorluk hizmeti aldım ve TYT kısmını tamamladık. Kafamın rahat olduğu bir yıl oldu. Hedefime ulaştım!',
-          rating: 5,
-          mentorName: 'Can Demir',
-        },
-        {
-          id: '4',
-          studentName: 'Elif Yıldız',
-          university: 'Hacettepe Üniversitesi',
-          department: 'Tıp Fakültesi',
-          scoreBefore: 380,
-          scoreAfter: 485,
-          quote: 'Mentorüm her hafta düzenli takip yaptı. Özellikle AYT Fen bölümünde inanılmaz gelişim gösterdim.',
-          rating: 5,
-          mentorName: 'Seda Yıldız',
-        },
-        {
-          id: '5',
-          studentName: 'Oğuzhan Kaya',
-          university: 'Bilkent Üniversitesi',
-          department: 'Endüstri Mühendisliği',
-          scoreBefore: 300,
-          scoreAfter: 430,
-          quote: 'Sayısal derslerde çok zorlanıyordum. Mentorüm sayesinde matematik ve fizik artık en güçlü derslerim.',
-          rating: 5,
-          mentorName: 'Murat Özkan',
-        },
-        {
-          id: '6',
-          studentName: 'Nisa Korkmaz',
-          university: 'Koç Üniversitesi',
-          department: 'İşletme',
-          scoreBefore: 340,
-          scoreAfter: 455,
-          quote: 'Zaman yönetimi konusunda çok zorlanıyordum. Mentörüm bana kişiselleştirilmiş bir plan hazırladı.',
-          rating: 5,
-          mentorName: 'Deniz Aydın',
-        },
-      ];
-    }
+  // Testimonials — static until backend endpoint is implemented
+  getTestimonials: async (_limit = 6): Promise<TestimonialDto[]> => {
+    // TODO: Re-enable when /api/public/testimonials endpoint exists
+    // const res = await apiClient.get<TestimonialDto[]>('/public/testimonials', { limit });
+    // return res;
+    return [
+      {
+        id: '1',
+        studentName: 'Ahmet Akif',
+        university: 'Boğaziçi Üniversitesi',
+        department: 'Bilgisayar Mühendisliği',
+        scoreBefore: 320,
+        scoreAfter: 445,
+        quote: 'Mentorluk sürecinde yalnız olmadığımı hissettim. Motivasyonum düştüğünde bile yanındaydı. TYT puanımı 125 puan artırdım!',
+        rating: 5,
+        mentorName: 'Ahmet Yılmaz',
+      },
+      {
+        id: '2',
+        studentName: 'Berkan Şimşek',
+        university: 'İTÜ',
+        department: 'Elektrik-Elektronik Mühendisliği',
+        scoreBefore: 280,
+        scoreAfter: 410,
+        quote: 'Çalışma tempomun bana göre belirlenmesi çok iyi oldu. Hangi konularda eksik olduğumu tespit ettik ve odaklı çalıştık.',
+        rating: 5,
+        mentorName: 'Zeynep Kara',
+      },
+      {
+        id: '3',
+        studentName: 'Şeyda Ahlat',
+        university: 'ODTÜ',
+        department: 'Matematik',
+        scoreBefore: 350,
+        scoreAfter: 460,
+        quote: 'Mentorluk hizmeti aldım ve TYT kısmını tamamladık. Kafamın rahat olduğu bir yıl oldu. Hedefime ulaştım!',
+        rating: 5,
+        mentorName: 'Can Demir',
+      },
+      {
+        id: '4',
+        studentName: 'Elif Yıldız',
+        university: 'Hacettepe Üniversitesi',
+        department: 'Tıp Fakültesi',
+        scoreBefore: 380,
+        scoreAfter: 485,
+        quote: 'Mentorüm her hafta düzenli takip yaptı. Özellikle AYT Fen bölümünde inanılmaz gelişim gösterdim.',
+        rating: 5,
+        mentorName: 'Seda Yıldız',
+      },
+      {
+        id: '5',
+        studentName: 'Oğuzhan Kaya',
+        university: 'Bilkent Üniversitesi',
+        department: 'Endüstri Mühendisliği',
+        scoreBefore: 300,
+        scoreAfter: 430,
+        quote: 'Sayısal derslerde çok zorlanıyordum. Mentorüm sayesinde matematik ve fizik artık en güçlü derslerim.',
+        rating: 5,
+        mentorName: 'Murat Özkan',
+      },
+      {
+        id: '6',
+        studentName: 'Nisa Korkmaz',
+        university: 'Koç Üniversitesi',
+        department: 'İşletme',
+        scoreBefore: 340,
+        scoreAfter: 455,
+        quote: 'Zaman yönetimi konusunda çok zorlanıyordum. Mentörüm bana kişiselleştirilmiş bir plan hazırladı.',
+        rating: 5,
+        mentorName: 'Deniz Aydın',
+      },
+    ];
   },
 };
