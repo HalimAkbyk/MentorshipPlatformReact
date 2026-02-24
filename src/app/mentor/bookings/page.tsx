@@ -1,6 +1,3 @@
-// File: src/app/mentor/bookings/page.tsx
-// Backend'de student bilgisi yok, geçici çözüm
-
 'use client';
 
 import { useState } from 'react';
@@ -30,7 +27,9 @@ export default function MentorBookingsPage() {
   
   const { data, isLoading } = useBookings(
     selectedStatus === 'all' ? undefined : selectedStatus,
-    page
+    page,
+    15,
+    'mentor'
   );
   const bookings = data?.items;
 
@@ -106,13 +105,14 @@ export default function MentorBookingsPage() {
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
                         <Avatar>
+                          <AvatarImage src={booking.studentAvatar ?? undefined} />
                           <AvatarFallback className="bg-teal-100 text-teal-600">
-                            Ö
+                            {booking.studentName?.charAt(0)?.toUpperCase() ?? 'Ö'}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <h3 className="font-semibold">Öğrenci</h3>
-                          <p className="text-xs text-gray-500">Detaylar için tıklayın</p>
+                          <h3 className="font-semibold">{booking.studentName || 'Öğrenci'}</h3>
+                          <p className="text-xs text-gray-500">Öğrenci</p>
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-2">

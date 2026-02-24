@@ -27,7 +27,9 @@ export default function BookingsPage() {
   
   const { data, isLoading } = useBookings(
     selectedStatus === 'all' ? undefined : selectedStatus,
-    page
+    page,
+    15,
+    'student'
   );
   const bookings = data?.items;
 

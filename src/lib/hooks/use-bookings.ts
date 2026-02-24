@@ -2,10 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { bookingsApi } from '../../lib/api/bookings';
 import type { BookingStatus } from '../../lib/types/enums';
 
-export function useBookings(status?: BookingStatus, page = 1, pageSize = 15) {
+export function useBookings(status?: BookingStatus, page = 1, pageSize = 15, role?: 'student' | 'mentor') {
   return useQuery({
-    queryKey: ['bookings', status, page, pageSize],
-    queryFn: () => bookingsApi.list(status, page, pageSize),
+    queryKey: ['bookings', status, page, pageSize, role],
+    queryFn: () => bookingsApi.list(status, page, pageSize, role),
   });
 }
 

@@ -22,8 +22,8 @@ export const bookingsApi = {
     return apiClient.post('/bookings', data);
   },
 
-  list: async (status?: BookingStatus, page = 1, pageSize = 15): Promise<PaginatedResponse<Booking>> => {
-    return apiClient.get('/bookings/me', { status, page, pageSize });
+  list: async (status?: BookingStatus, page = 1, pageSize = 15, role?: 'student' | 'mentor'): Promise<PaginatedResponse<Booking>> => {
+    return apiClient.get('/bookings/me', { status, page, pageSize, role });
   },
 
   getById: async (id: string): Promise<BookingDetail> => {
