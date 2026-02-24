@@ -14,6 +14,9 @@ import { toast } from 'sonner';
 
 import { ClassroomLayout } from '../../../../components/classroom/ClassroomLayout';
 import { ParticipantsPanel } from '../../../../components/classroom/ParticipantsPanel';
+import { SessionTimerBanner } from '../../../../components/classroom/SessionTimerBanner';
+import { useSessionTimer } from '../../../../lib/hooks/use-session-timer';
+import { useSessionLifecycleSettings } from '../../../../lib/hooks/use-platform-settings';
 import {
   RemoteTile, ScreenShareState, ChatMessage, BgMode,
   VIRTUAL_BACKGROUNDS, parseIdentity, isScreenShareTrack,
@@ -131,10 +134,21 @@ export default function MentorClassroomPage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [duration, setDuration] = useState(0);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isRoomActive, setIsRoomActive] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [bookingTimes, setBookingTimes] = useState<{ startAt: string; endAt: string } | null>(null);
+
+  // Session lifecycle settings
+  const { sessionGracePeriodMinutes } = useSessionLifecycleSettings();
+
+  // Session timer — countdown from endAt
+  const sessionTimer = useSessionTimer({
+    startAt: bookingTimes?.startAt || new Date().toISOString(),
+    endAt: bookingTimes?.endAt || new Date(Date.now() + 3600000).toISOString(),
+    gracePeriodMinutes: sessionGracePeriodMinutes,
+    enabled: !!bookingTimes,
+  });
 
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
@@ -180,6 +194,10 @@ export default function MentorClassroomPage() {
           toast.error('Bu seans iptal edilmiş veya tamamlanmış.');
           router.push('/mentor/bookings');
         }
+        // Capture booking times for session timer
+        if (data?.startAt && data?.endAt) {
+          setBookingTimes({ startAt: data.startAt, endAt: data.endAt });
+        }
       } catch (e) {
         console.error('Booking status check failed:', e);
       }
@@ -187,11 +205,13 @@ export default function MentorClassroomPage() {
     checkBookingStatus();
   }, [bookingId, router]);
 
-  // Duration timer
+  // Auto-end session when grace period expires
   useEffect(() => {
-    const interval = setInterval(() => setDuration(prev => prev + 1), 1000);
-    return () => clearInterval(interval);
-  }, []);
+    if (sessionTimer.phase === 'ended' && isRoomActive) {
+      toast.warning('Seans süresi ve uzatma süresi doldu. Oda otomatik kapatılıyor.');
+      endSession();
+    }
+  }, [sessionTimer.phase, isRoomActive]);
 
   // Enumerate devices
   useEffect(() => { requestPermissionsAndEnumerate(); }, []);
@@ -714,14 +734,22 @@ export default function MentorClassroomPage() {
     setNewMessage('');
   };
 
-  const formatDuration = (s: number) => {
-    const m = Math.floor(s / 60); const sec = s % 60;
-    return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-  };
-
   // ─── Render ───
   return (
     <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
+      {/* Session Timer Banner */}
+      {bookingTimes && (
+        <SessionTimerBanner
+          phase={sessionTimer.phase}
+          formattedRemaining={sessionTimer.formattedRemaining}
+          formattedElapsed={sessionTimer.formattedElapsed}
+          warningLevel={sessionTimer.warningLevel}
+          graceRemainingSeconds={sessionTimer.graceRemainingSeconds}
+          gracePeriodMinutes={sessionGracePeriodMinutes}
+          isRoomActive={isRoomActive}
+        />
+      )}
+
       {/* Header */}
       <div className="bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center justify-between shrink-0">
         <div className="flex items-center space-x-4">
@@ -730,7 +758,9 @@ export default function MentorClassroomPage() {
           {isConnecting && <span className="text-yellow-400 text-sm">Bağlanıyor...</span>}
         </div>
         <div className="flex items-center space-x-4">
-          {isRoomActive && <div className="text-white font-mono text-lg">{formatDuration(duration)}</div>}
+          {isRoomActive && bookingTimes && (
+            <div className="text-white font-mono text-lg">{sessionTimer.formattedRemaining}</div>
+          )}
           {isRoomActive ? (
             <Button variant="destructive" size="sm" onClick={endSession}>
               <PhoneOff className="w-4 h-4 mr-2" /> Seansı Sonlandır

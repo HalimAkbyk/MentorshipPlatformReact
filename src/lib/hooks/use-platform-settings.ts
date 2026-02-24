@@ -28,6 +28,20 @@ export function useSessionJoinSettings() {
 }
 
 /**
+ * Helper hook: returns grace period settings for session lifecycle.
+ */
+export function useSessionLifecycleSettings() {
+  const { data: settings } = usePlatformSettings();
+
+  const devMode = settings?.dev_mode_session_bypass === 'true';
+  const sessionGracePeriodMinutes = parseInt(settings?.session_grace_period_minutes || '10', 10);
+  const groupClassGracePeriodMinutes = parseInt(settings?.group_class_grace_period_minutes || '15', 10);
+  const earlyJoinMinutes = parseInt(settings?.session_early_join_minutes || '15', 10);
+
+  return { devMode, sessionGracePeriodMinutes, groupClassGracePeriodMinutes, earlyJoinMinutes };
+}
+
+/**
  * Utility: check if a session can be started/joined right now.
  * Returns { canJoin, minutesUntilJoinable, minutesUntilStart }
  */

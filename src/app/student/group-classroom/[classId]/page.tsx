@@ -15,6 +15,9 @@ import {
 
 import { GroupClassroomLayout } from '@/components/classroom/GroupClassroomLayout';
 import { ParticipantsPanel } from '@/components/classroom/ParticipantsPanel';
+import { SessionTimerBanner } from '@/components/classroom/SessionTimerBanner';
+import { useSessionTimer } from '@/lib/hooks/use-session-timer';
+import { useSessionLifecycleSettings } from '@/lib/hooks/use-platform-settings';
 import {
   RemoteTile, ChatMessage, BgMode, ScreenShareState,
   VIRTUAL_BACKGROUNDS, parseIdentity, isScreenShareTrack,
@@ -134,9 +137,17 @@ export default function StudentGroupClassroomPage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [duration, setDuration] = useState(0);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+
+  // Session lifecycle
+  const { groupClassGracePeriodMinutes } = useSessionLifecycleSettings();
+  const sessionTimer = useSessionTimer({
+    startAt: groupClass?.startAt || new Date().toISOString(),
+    endAt: groupClass?.endAt || new Date(Date.now() + 3600000).toISOString(),
+    gracePeriodMinutes: groupClassGracePeriodMinutes,
+    enabled: !!groupClass?.startAt,
+  });
   const [waitingForHost, setWaitingForHost] = useState(true);
   const [checkingRoom, setCheckingRoom] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -183,12 +194,13 @@ export default function StudentGroupClassroomPage() {
   useEffect(() => { isChatOpenRef.current = isChatOpen; }, [isChatOpen]);
   useEffect(() => { if (isChatOpen) setUnreadCount(0); }, [isChatOpen]);
 
-  // Duration timer
+  // Auto-leave when grace period expires
   useEffect(() => {
-    if (!isConnected) return;
-    const interval = setInterval(() => setDuration(prev => prev + 1), 1000);
-    return () => clearInterval(interval);
-  }, [isConnected]);
+    if (sessionTimer.phase === 'ended' && isConnected) {
+      toast.warning('Ders süresi ve uzatma süresi doldu. Otomatik ayrılıyorsunuz.');
+      handleLeave();
+    }
+  }, [sessionTimer.phase, isConnected]);
 
   // Enumerate devices
   useEffect(() => { requestPermissionsAndEnumerate(); }, []);
@@ -800,11 +812,6 @@ export default function StudentGroupClassroomPage() {
   // ─── Leave ───
   const handleLeave = () => { clearMentorAbsenceTimer(); fullDisconnect(); router.push('/student/my-classes'); };
 
-  const formatDuration = (s: number) => {
-    const m = Math.floor(s / 60); const sec = s % 60;
-    return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-  };
-
   // ─── Waiting Screen ───
   if (waitingForHost && !isConnected && !isConnecting) {
     return (
@@ -839,6 +846,19 @@ export default function StudentGroupClassroomPage() {
 
   return (
     <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
+      {/* Session Timer Banner */}
+      {groupClass?.startAt && (
+        <SessionTimerBanner
+          phase={sessionTimer.phase}
+          formattedRemaining={sessionTimer.formattedRemaining}
+          formattedElapsed={sessionTimer.formattedElapsed}
+          warningLevel={sessionTimer.warningLevel}
+          graceRemainingSeconds={sessionTimer.graceRemainingSeconds}
+          gracePeriodMinutes={groupClassGracePeriodMinutes}
+          isRoomActive={isConnected}
+        />
+      )}
+
       {/* Header */}
       <div className="bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center justify-between shrink-0">
         <div className="flex items-center space-x-4">
@@ -850,7 +870,7 @@ export default function StudentGroupClassroomPage() {
             <Users className="w-4 h-4" />
             <span>{1 + remoteTiles.length} katılımcı</span>
           </div>
-          <div className="text-white font-mono text-lg">{formatDuration(duration)}</div>
+          <div className="text-white font-mono text-lg">{sessionTimer.formattedRemaining}</div>
         </div>
       </div>
 

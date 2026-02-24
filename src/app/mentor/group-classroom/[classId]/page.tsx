@@ -15,6 +15,9 @@ import {
 
 import { GroupClassroomLayout } from '@/components/classroom/GroupClassroomLayout';
 import { ParticipantsPanel } from '@/components/classroom/ParticipantsPanel';
+import { SessionTimerBanner } from '@/components/classroom/SessionTimerBanner';
+import { useSessionTimer } from '@/lib/hooks/use-session-timer';
+import { useSessionLifecycleSettings } from '@/lib/hooks/use-platform-settings';
 import {
   RemoteTile, ChatMessage, BgMode, ScreenShareState,
   VIRTUAL_BACKGROUNDS, parseIdentity, isScreenShareTrack,
@@ -134,11 +137,19 @@ export default function MentorGroupClassroomPage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [duration, setDuration] = useState(0);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isRoomActive, setIsRoomActive] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showEndClassDialog, setShowEndClassDialog] = useState(false);
+
+  // Session lifecycle
+  const { groupClassGracePeriodMinutes } = useSessionLifecycleSettings();
+  const sessionTimer = useSessionTimer({
+    startAt: groupClass?.startAt || new Date().toISOString(),
+    endAt: groupClass?.endAt || new Date(Date.now() + 3600000).toISOString(),
+    gracePeriodMinutes: groupClassGracePeriodMinutes,
+    enabled: !!groupClass?.startAt,
+  });
   const [isCompleting, setIsCompleting] = useState(false);
   const [screenShareState, setScreenShareState] = useState<ScreenShareState>({
     active: false, sharerIdentity: null, screenVideoEl: null, isLocal: false,
@@ -174,12 +185,13 @@ export default function MentorGroupClassroomPage() {
   useEffect(() => { isChatOpenRef.current = isChatOpen; }, [isChatOpen]);
   useEffect(() => { if (isChatOpen) setUnreadCount(0); }, [isChatOpen]);
 
-  // Duration timer
+  // Auto-end when grace period expires
   useEffect(() => {
-    if (!isRoomActive) return;
-    const interval = setInterval(() => setDuration(prev => prev + 1), 1000);
-    return () => clearInterval(interval);
-  }, [isRoomActive]);
+    if (sessionTimer.phase === 'ended' && isRoomActive) {
+      toast.warning('Ders süresi ve uzatma süresi doldu. Oda otomatik kapatılıyor.');
+      confirmEndClass();
+    }
+  }, [sessionTimer.phase, isRoomActive]);
 
   // Enumerate devices
   useEffect(() => { requestPermissionsAndEnumerate(); }, []);
@@ -679,13 +691,21 @@ export default function MentorGroupClassroomPage() {
     router.push('/mentor/group-classes');
   };
 
-  const formatDuration = (s: number) => {
-    const m = Math.floor(s / 60); const sec = s % 60;
-    return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-  };
-
   return (
     <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
+      {/* Session Timer Banner */}
+      {groupClass?.startAt && (
+        <SessionTimerBanner
+          phase={sessionTimer.phase}
+          formattedRemaining={sessionTimer.formattedRemaining}
+          formattedElapsed={sessionTimer.formattedElapsed}
+          warningLevel={sessionTimer.warningLevel}
+          graceRemainingSeconds={sessionTimer.graceRemainingSeconds}
+          gracePeriodMinutes={groupClassGracePeriodMinutes}
+          isRoomActive={isRoomActive}
+        />
+      )}
+
       {/* Header */}
       <div className="bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center justify-between shrink-0">
         <div className="flex items-center space-x-4">
@@ -700,7 +720,7 @@ export default function MentorGroupClassroomPage() {
                 <Users className="w-4 h-4" />
                 <span>{1 + remoteTiles.length} katılımcı</span>
               </div>
-              <div className="text-white font-mono text-lg">{formatDuration(duration)}</div>
+              <div className="text-white font-mono text-lg">{sessionTimer.formattedRemaining}</div>
             </>
           )}
           {isRoomActive ? (

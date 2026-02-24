@@ -15,6 +15,9 @@ import { ROUTES } from '@/lib/constants/routes';
 
 import { ClassroomLayout } from '../../../../components/classroom/ClassroomLayout';
 import { ParticipantsPanel } from '../../../../components/classroom/ParticipantsPanel';
+import { SessionTimerBanner } from '../../../../components/classroom/SessionTimerBanner';
+import { useSessionTimer } from '../../../../lib/hooks/use-session-timer';
+import { useSessionLifecycleSettings } from '../../../../lib/hooks/use-platform-settings';
 import {
   RemoteTile, ScreenShareState, ChatMessage, BgMode,
   VIRTUAL_BACKGROUNDS, parseIdentity, isScreenShareTrack,
@@ -133,9 +136,20 @@ export default function StudentClassroomPage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [duration, setDuration] = useState(0);
   const [isConnecting, setIsConnecting] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [bookingTimes, setBookingTimes] = useState<{ startAt: string; endAt: string } | null>(null);
+
+  // Session lifecycle settings
+  const { sessionGracePeriodMinutes } = useSessionLifecycleSettings();
+
+  // Session timer — countdown from endAt
+  const sessionTimer = useSessionTimer({
+    startAt: bookingTimes?.startAt || new Date().toISOString(),
+    endAt: bookingTimes?.endAt || new Date(Date.now() + 3600000).toISOString(),
+    gracePeriodMinutes: sessionGracePeriodMinutes,
+    enabled: !!bookingTimes,
+  });
 
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
@@ -170,11 +184,13 @@ export default function StudentClassroomPage() {
   // Reset unread when chat opens
   useEffect(() => { if (isChatOpen) setUnreadCount(0); }, [isChatOpen]);
 
-  // Duration timer
+  // Auto-leave when grace period expires
   useEffect(() => {
-    const interval = setInterval(() => setDuration(prev => prev + 1), 1000);
-    return () => clearInterval(interval);
-  }, []);
+    if (sessionTimer.phase === 'ended' && room) {
+      toast.warning('Seans süresi ve uzatma süresi doldu. Otomatik ayrılıyorsunuz.');
+      leaveRoom();
+    }
+  }, [sessionTimer.phase, room]);
 
   // Enumerate devices
   useEffect(() => { requestPermissionsAndEnumerate(); }, []);
@@ -463,6 +479,10 @@ export default function StudentClassroomPage() {
             router.push('/student/bookings');
             return;
           }
+          // Capture booking times for session timer
+          if (bookingData?.startAt && bookingData?.endAt) {
+            setBookingTimes({ startAt: bookingData.startAt, endAt: bookingData.endAt });
+          }
         } catch (e) {
           console.error('Booking status check failed:', e);
         }
@@ -727,14 +747,22 @@ export default function StudentClassroomPage() {
     setNewMessage('');
   };
 
-  const formatDuration = (s: number) => {
-    const m = Math.floor(s / 60); const sec = s % 60;
-    return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-  };
-
   // ─── Render ───
   return (
     <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
+      {/* Session Timer Banner */}
+      {bookingTimes && (
+        <SessionTimerBanner
+          phase={sessionTimer.phase}
+          formattedRemaining={sessionTimer.formattedRemaining}
+          formattedElapsed={sessionTimer.formattedElapsed}
+          warningLevel={sessionTimer.warningLevel}
+          graceRemainingSeconds={sessionTimer.graceRemainingSeconds}
+          gracePeriodMinutes={sessionGracePeriodMinutes}
+          isRoomActive={!!room}
+        />
+      )}
+
       {/* Header */}
       <div className="bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center justify-between shrink-0">
         <div className="flex items-center space-x-4">
@@ -743,7 +771,9 @@ export default function StudentClassroomPage() {
           {isConnecting && <span className="text-yellow-400 text-sm">Bağlanıyor...</span>}
         </div>
         <div className="flex items-center space-x-4">
-          {room && <div className="text-white font-mono text-lg">{formatDuration(duration)}</div>}
+          {room && bookingTimes && (
+            <div className="text-white font-mono text-lg">{sessionTimer.formattedRemaining}</div>
+          )}
           <Button variant="destructive" size="sm" onClick={leaveRoom}>
             <PhoneOff className="w-4 h-4 mr-2" /> Dersten Ayrıl
           </Button>
