@@ -10,6 +10,37 @@ import { useConversations } from '@/lib/hooks/use-messages';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import type { ConversationDto } from '@/lib/types/models';
 
+const EMPTY_GUID = '00000000-0000-0000-0000-000000000000';
+
+/**
+ * Build a synthetic ConversationDto from URL params.
+ * Used when a direct conversation exists but has no messages yet
+ * (backend filters out empty conversations from GetMyConversations).
+ */
+function buildSyntheticConversation(
+  conversationId: string,
+  recipientId: string,
+  recipientName: string,
+  recipientAvatar: string | null,
+): ConversationDto {
+  return {
+    conversationId,
+    bookingId: EMPTY_GUID,
+    otherUserId: recipientId,
+    otherUserName: recipientName,
+    otherUserAvatar: recipientAvatar,
+    offeringTitle: 'Direkt Mesaj',
+    bookingStartAt: '',
+    bookingEndAt: '',
+    bookingStatus: '',
+    lastMessageContent: null,
+    lastMessageAt: null,
+    lastMessageIsOwn: false,
+    unreadCount: 0,
+    conversationType: 'Direct',
+  };
+}
+
 export function MessagesPageLayout() {
   const searchParams = useSearchParams();
   const [selectedConv, setSelectedConv] = useState<ConversationDto | null>(null);
@@ -21,8 +52,6 @@ export function MessagesPageLayout() {
 
   // Auto-select conversation from URL params (?bookingId=xxx or ?userId=xxx or ?conversationId=xxx)
   useEffect(() => {
-    if (!conversations || conversations.length === 0) return;
-
     const conversationIdParam = searchParams.get('conversationId');
     const bookingIdParam = searchParams.get('bookingId');
     const userIdParam = searchParams.get('userId');
@@ -30,23 +59,46 @@ export function MessagesPageLayout() {
     // If already selected and no URL param pointing elsewhere, skip
     if (autoSelectedRef.current && !conversationIdParam && !bookingIdParam && !userIdParam) return;
 
-    if (conversationIdParam) {
-      const found = conversations.find((c) => c.conversationId === conversationIdParam);
-      if (found) {
-        setSelectedConv(found);
-        autoSelectedRef.current = true;
+    // Try to find in conversations list first
+    if (conversations && conversations.length > 0) {
+      if (conversationIdParam) {
+        const found = conversations.find((c) => c.conversationId === conversationIdParam);
+        if (found) {
+          setSelectedConv(found);
+          autoSelectedRef.current = true;
+          return;
+        }
+      } else if (bookingIdParam) {
+        const found = conversations.find((c) => c.bookingId === bookingIdParam);
+        if (found) {
+          setSelectedConv(found);
+          autoSelectedRef.current = true;
+          return;
+        }
+      } else if (userIdParam) {
+        const found = conversations.find((c) => c.otherUserId === userIdParam);
+        if (found) {
+          setSelectedConv(found);
+          autoSelectedRef.current = true;
+          return;
+        }
       }
-      // If not found yet, don't set autoSelectedRef — keep trying on next conversation refresh
-    } else if (bookingIdParam) {
-      const found = conversations.find((c) => c.bookingId === bookingIdParam);
-      if (found) {
-        setSelectedConv(found);
-        autoSelectedRef.current = true;
-      }
-    } else if (userIdParam) {
-      const found = conversations.find((c) => c.otherUserId === userIdParam);
-      if (found) {
-        setSelectedConv(found);
+    }
+
+    // Conversation not found in list — build synthetic from URL params
+    // This happens when a direct conversation was just created but has no messages yet
+    if (conversationIdParam && !autoSelectedRef.current) {
+      const recipientName = searchParams.get('recipientName');
+      const recipientId = searchParams.get('recipientId');
+      if (recipientName && recipientId) {
+        const recipientAvatar = searchParams.get('recipientAvatar');
+        const synthetic = buildSyntheticConversation(
+          conversationIdParam,
+          recipientId,
+          recipientName,
+          recipientAvatar,
+        );
+        setSelectedConv(synthetic);
         autoSelectedRef.current = true;
       }
     }

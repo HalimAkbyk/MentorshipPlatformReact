@@ -53,7 +53,15 @@ export default function MentorProfilePage() {
 
     try {
       const result = await startDirectConversation.mutateAsync(mentorId);
-      router.push(`${basePath}?conversationId=${result.conversationId}`);
+      // Pass recipient info via URL params so messages page can open the conversation
+      // even if GetMyConversations doesn't return it yet (no messages sent)
+      const params = new URLSearchParams({
+        conversationId: result.conversationId,
+        recipientName: result.otherUserName,
+        recipientId: result.otherUserId,
+      });
+      if (result.otherUserAvatar) params.set('recipientAvatar', result.otherUserAvatar);
+      router.push(`${basePath}?${params.toString()}`);
     } catch {
       toast.error('Mesaj başlatılırken bir hata oluştu.');
     }
