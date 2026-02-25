@@ -171,6 +171,19 @@ const months = [
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 60 }, (_, i) => String(currentYear - 14 - i));
 
+/** Format raw phone digits (e.g. "5551234567") into display format "(555) 123 45 67" */
+const formatPhoneForDisplay = (raw: string): string => {
+  const digits = raw.replace(/\D/g, '').slice(0, 10);
+  if (digits.length > 6) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)} ${digits.slice(6, 8)}${digits.length > 8 ? ' ' + digits.slice(8) : ''}`;
+  } else if (digits.length > 3) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  } else if (digits.length > 0) {
+    return `(${digits}`;
+  }
+  return '';
+};
+
 // ===== MAIN COMPONENT =====
 export default function StudentOnboardingPage() {
   const router = useRouter();
@@ -214,12 +227,16 @@ export default function StudentOnboardingPage() {
       setAvatarPreview(user.avatarUrl);
     }
 
+    // Always prefill birthYear from user entity (not stored in onboarding profile)
+    if (user.birthYear) {
+      setProfile(p => ({ ...p, birthYear: String(user.birthYear) }));
+    }
+
     // Prefill onboarding data from backend (single source of truth for all onboarding fields)
     onboardingApi.getStudentOnboarding().then(existing => {
       if (!existing) {
-        // No onboarding data yet — fallback to user fields
-        if (user.phone) setProfile(p => ({ ...p, phone: user.phone || '' }));
-        if (user.birthYear) setProfile(p => ({ ...p, birthYear: String(user.birthYear) }));
+        // No onboarding data yet — fallback to user fields for phone
+        if (user.phone) setProfile(p => ({ ...p, phone: formatPhoneForDisplay(user.phone || '') }));
         return;
       }
 
@@ -227,7 +244,9 @@ export default function StudentOnboardingPage() {
       const profileUpdates: Partial<ProfileData> = {};
       if (existing.birthDay) profileUpdates.birthDay = existing.birthDay;
       if (existing.birthMonth) profileUpdates.birthMonth = existing.birthMonth;
-      if (existing.phone) profileUpdates.phone = existing.phone;
+      // Format phone for display
+      const rawPhone = existing.phone || user.phone || '';
+      if (rawPhone) profileUpdates.phone = formatPhoneForDisplay(rawPhone);
       if (existing.city) profileUpdates.city = existing.city;
       if (existing.gender) profileUpdates.gender = existing.gender;
       if (existing.status) profileUpdates.status = existing.status;
@@ -237,10 +256,6 @@ export default function StudentOnboardingPage() {
           Object.assign(profileUpdates, detail);
         } catch {}
       }
-
-      // Fallbacks from user entity when onboarding doesn't have them yet
-      if (!profileUpdates.phone && user.phone) profileUpdates.phone = user.phone;
-      if (!profileUpdates.birthDay && user.birthYear) profileUpdates.birthYear = String(user.birthYear);
 
       if (Object.keys(profileUpdates).length > 0) {
         setProfile(p => ({ ...p, ...profileUpdates }));
@@ -264,8 +279,7 @@ export default function StudentOnboardingPage() {
       }
     }).catch(() => {
       // Fallback to user fields if API fails
-      if (user.phone) setProfile(p => ({ ...p, phone: user.phone || '' }));
-      if (user.birthYear) setProfile(p => ({ ...p, birthYear: String(user.birthYear) }));
+      if (user.phone) setProfile(p => ({ ...p, phone: formatPhoneForDisplay(user.phone || '') }));
     });
   }, [user]);
 
@@ -465,10 +479,6 @@ export default function StudentOnboardingPage() {
     }
   };
 
-  const handleSkip = () => {
-    saveAllData('/student/dashboard');
-  };
-
   if (isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-teal-50/30">
@@ -479,20 +489,6 @@ export default function StudentOnboardingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-teal-50/30">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <button onClick={() => router.push('/')} className="flex items-center gap-2">
-            <img src="/images/logo.svg" alt="Değişim Mentorluk" className="h-8" />
-          </button>
-          {currentStep > 1 && currentStep < 7 && (
-            <Button variant="ghost" size="sm" onClick={handleSkip} disabled={saving} className="text-gray-400 text-xs hover:text-gray-600">
-              {saving ? 'Kaydediliyor...' : 'Atla'}
-            </Button>
-          )}
-        </div>
-      </header>
-
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 md:py-10">
         {/* Progress */}
         <div className="mb-6 md:mb-8">

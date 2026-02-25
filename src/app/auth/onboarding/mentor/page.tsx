@@ -461,21 +461,6 @@ export default function MentorOnboardingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-teal-50/30">
-      {/* Top Nav */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-green-500 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-semibold text-gray-900 text-sm">Mentor Basvurusu</span>
-          </div>
-          <Button variant="ghost" size="sm" onClick={() => router.push('/mentor/dashboard')} className="text-gray-500 text-xs">
-            Daha Sonra Tamamla
-          </Button>
-        </div>
-      </header>
-
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 md:py-10">
         {/* Student Upgrade Banner */}
         {isStudentUpgrade && (
