@@ -10,18 +10,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthStore } from '@/lib/stores/auth-store';
-import { pickDefaultDashboard, safeRedirectPath } from '@/lib/utils/auth-redirect';
+import { safeRedirectPath } from '@/lib/utils/auth-redirect';
 import { SocialLoginButtons } from '@/components/auth/social-login-buttons';
 import { toast } from 'sonner';
-import { UserRole } from '@/lib/types/enums';
 import { useFeatureFlag } from '@/lib/hooks/use-feature-flags';
-import { AlertTriangle, Mail, Lock, Eye, EyeOff, User, Shield, GraduationCap, Briefcase, UserPlus } from 'lucide-react';
+import { AlertTriangle, Mail, Lock, Eye, EyeOff, User, Shield, UserPlus } from 'lucide-react';
 
 const signupSchema = z.object({
   displayName: z.string().min(2, 'İsim en az 2 karakter olmalı'),
   email: z.string().email('Geçerli bir email adresi girin'),
   password: z.string().min(8, 'Şifre en az 8 karakter olmalı'),
-  role: z.enum(['Student', 'Mentor']),
 });
 
 type SignupForm = z.infer<typeof signupSchema>;
@@ -33,46 +31,32 @@ export default function SignupPage() {
   const searchParams = useSearchParams();
   const signup = useAuthStore((s) => s.signup);
   const externalLogin = useAuthStore((s) => s.externalLogin);
-  const defaultRole = searchParams.get('role') === 'mentor' ? 'Mentor' : 'Student';
   const registrationEnabled = useFeatureFlag('registration_enabled');
-
-  const [pendingSocial, setPendingSocial] = useState<{
-    provider: string;
-    token: string;
-    displayName?: string;
-  } | null>(null);
 
   const {
     register,
     handleSubmit,
-    watch,
-    setValue,
     formState: { errors },
   } = useForm<SignupForm>({
     resolver: zodResolver(signupSchema),
-    defaultValues: {
-      role: defaultRole,
-    },
   });
 
-  const selectedRole = watch('role');
-
   const navigateAfterAuth = () => {
-    const stateUser = useAuthStore.getState().user;
     const redirect = safeRedirectPath(searchParams.get('redirect'));
     if (redirect) {
       router.replace(redirect);
       return;
     }
-    router.replace(pickDefaultDashboard(stateUser?.roles));
+    // Herkes öğrenci olarak kaydolduğu için student onboarding'e yönlendir
+    router.replace('/auth/onboarding/student');
   };
 
-  const onSubmit = async (values: { email: string; password: string; displayName: string; role: string }) => {
+  const onSubmit = async (values: SignupForm) => {
     try {
       setIsLoading(true);
-      await signup(values.email, values.password, values.displayName, values.role);
+      await signup(values.email, values.password, values.displayName, 'Student');
       navigateAfterAuth();
-    } catch (e) {
+    } catch {
       // Interceptor handles toast
     } finally {
       setIsLoading(false);
@@ -82,18 +66,21 @@ export default function SignupPage() {
   const handleSocialLogin = async (provider: string, token: string, displayName?: string) => {
     try {
       setIsLoading(true);
-      const currentRole = watch('role') || defaultRole;
       const result = await externalLogin({
         provider,
         token,
         displayName,
-        initialRole: currentRole,
+        initialRole: 'Student',
       });
 
+      // Eğer pendingToken dönerse, Student rolüyle tekrar dene
       if (result.pendingToken) {
-        setPendingSocial({ provider, token: result.pendingToken, displayName });
-        toast.info('Lütfen rol seçiniz ve tekrar deneyin');
-        return;
+        await externalLogin({
+          provider,
+          token: result.pendingToken,
+          displayName,
+          initialRole: 'Student',
+        });
       }
 
       if (result.isNewUser) {
@@ -103,24 +90,6 @@ export default function SignupPage() {
       navigateAfterAuth();
     } catch {
       // Error handled by global interceptor
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleRoleSelectAndRetry = async (role: 'Student' | 'Mentor') => {
-    if (!pendingSocial) return;
-    try {
-      setIsLoading(true);
-      await externalLogin({
-        ...pendingSocial,
-        initialRole: role,
-      });
-      setPendingSocial(null);
-      toast.success('Hesabınız oluşturuldu!');
-      navigateAfterAuth();
-    } catch (e) {
-      // Error already handled by interceptor
     } finally {
       setIsLoading(false);
     }
@@ -170,42 +139,6 @@ export default function SignupPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Role Selection */}
-          <div className="space-y-2 mb-5">
-            <label className="text-sm font-medium text-gray-700">Rol Seçimi</label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setValue('role', 'Student')}
-                className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all ${
-                  selectedRole === 'Student'
-                    ? 'border-teal-500 bg-teal-50 text-teal-700'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                }`}
-              >
-                <GraduationCap className="w-5 h-5" />
-                <span className="font-medium text-sm">Danışan</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setValue('role', 'Mentor')}
-                className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all ${
-                  selectedRole === 'Mentor'
-                    ? 'border-green-500 bg-green-50 text-green-700'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                }`}
-              >
-                <Briefcase className="w-5 h-5" />
-                <span className="font-medium text-sm">Mentor</span>
-              </button>
-            </div>
-            {/* Hidden input for react-hook-form */}
-            <input type="hidden" {...register('role')} />
-            {errors.role && (
-              <p className="text-sm text-red-600">{errors.role.message}</p>
-            )}
-          </div>
-
           {/* Social Login Buttons */}
           <SocialLoginButtons
             mode="signup"
@@ -320,47 +253,6 @@ export default function SignupPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Role Selection Modal (for pending social login) */}
-      {pendingSocial && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <Card className="w-full max-w-sm border-0 shadow-2xl">
-            <CardHeader>
-              <CardTitle className="text-lg text-center">Rol Seçin</CardTitle>
-              <CardDescription className="text-center">
-                Devam etmek için bir rol seçin
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button
-                className="w-full bg-gradient-to-r from-teal-600 to-green-600 hover:from-teal-700 hover:to-green-700 text-white py-5"
-                onClick={() => handleRoleSelectAndRetry('Student')}
-                disabled={isLoading}
-              >
-                <GraduationCap className="w-4 h-4 mr-2" />
-                Danışan olarak devam et
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full border-2 border-teal-300 hover:bg-teal-50 py-5"
-                onClick={() => handleRoleSelectAndRetry('Mentor')}
-                disabled={isLoading}
-              >
-                <Briefcase className="w-4 h-4 mr-2" />
-                Mentor olarak devam et
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full text-gray-500"
-                onClick={() => setPendingSocial(null)}
-                disabled={isLoading}
-              >
-                İptal
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   );
 }
