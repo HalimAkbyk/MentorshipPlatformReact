@@ -145,83 +145,78 @@ function ExploreClassesContent() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5">
-        {/* Categories + Filters Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
-          {/* Category Pills */}
-          <div className="flex-1 overflow-x-auto">
-            <div className="flex gap-1.5 pb-1">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.value}
-                  onClick={() => { setCategory(cat.value); setPage(1); }}
-                  className={cn(
-                    'px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 whitespace-nowrap',
-                    category === cat.value
-                      ? 'bg-gradient-to-r from-teal-600 to-green-600 text-white shadow-sm'
-                      : 'bg-white border border-gray-200 text-gray-600 hover:border-teal-300 hover:text-teal-600'
-                  )}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Filter Controls */}
-          <div className="flex items-center gap-2 shrink-0">
+        {/* Category Pills */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {CATEGORIES.map((cat) => (
             <button
-              onClick={() => setShowFilters(!showFilters)}
+              key={cat.value}
+              onClick={() => { setCategory(cat.value); setPage(1); }}
               className={cn(
-                'sm:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors',
-                showFilters ? 'bg-teal-50 text-teal-700' : 'text-gray-600 hover:bg-gray-50 border border-gray-200'
+                'px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200',
+                category === cat.value
+                  ? 'bg-gradient-to-r from-teal-600 to-green-600 text-white shadow-sm'
+                  : 'bg-white border border-gray-200 text-gray-600 hover:border-teal-300 hover:text-teal-600'
               )}
             >
-              <Filter className="w-3.5 h-3.5" />
-              Filtre
-              {activeFilterCount > 0 && (
-                <span className="bg-teal-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
-                  {activeFilterCount}
-                </span>
-              )}
+              {cat.label}
             </button>
+          ))}
+        </div>
 
-            <div className="hidden sm:flex items-center gap-2">
-              <select
-                value={priceRange}
-                onChange={(e) => { setPriceRange(e.target.value); setPage(1); }}
-                className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-teal-300"
-              >
-                {priceRangeOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-
-              <select
-                value={sortBy}
-                onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
-                className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-teal-300"
-              >
-                {sortOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-
-            {activeFilterCount > 0 && (
-              <button
-                onClick={clearAllFilters}
-                className="text-[11px] text-teal-600 hover:text-teal-700 font-medium flex items-center gap-0.5"
-              >
-                <X className="w-3 h-3" />
-                Temizle
-              </button>
+        {/* Filter Controls */}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={cn(
+              'sm:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors',
+              showFilters ? 'bg-teal-50 text-teal-700' : 'text-gray-600 hover:bg-gray-50 border border-gray-200'
             )}
-            {data && (
-              <span className="text-xs text-gray-500">
-                <strong className="text-gray-700">{data.totalCount}</strong> ders
+          >
+            <Filter className="w-3.5 h-3.5" />
+            Filtre
+            {activeFilterCount > 0 && (
+              <span className="bg-teal-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                {activeFilterCount}
               </span>
             )}
+          </button>
+
+          <div className="hidden sm:flex items-center gap-2">
+            <select
+              value={priceRange}
+              onChange={(e) => { setPriceRange(e.target.value); setPage(1); }}
+              className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-teal-300"
+            >
+              {priceRangeOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+
+            <select
+              value={sortBy}
+              onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
+              className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-teal-300"
+            >
+              {sortOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
           </div>
+
+          {activeFilterCount > 0 && (
+            <button
+              onClick={clearAllFilters}
+              className="text-[11px] text-teal-600 hover:text-teal-700 font-medium flex items-center gap-0.5"
+            >
+              <X className="w-3 h-3" />
+              Temizle
+            </button>
+          )}
+          {data && (
+            <span className="text-xs text-gray-500 ml-auto">
+              <strong className="text-gray-700">{data.totalCount}</strong> ders
+            </span>
+          )}
         </div>
 
         {/* Mobile Filters */}
