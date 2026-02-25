@@ -225,7 +225,7 @@ export default function MentorOnboardingPage() {
   const [city, setCity] = useState('');
   const [citySearch, setCitySearch] = useState('');
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
-  const cityRef = useRef<HTMLDivElement>(null);
+  const cityContainerRef = useRef<HTMLDivElement>(null);
   const [timezone, setTimezone] = useState('Europe/Istanbul (UTC+3)');
   const [languages, setLanguages] = useState<string[]>(['Turkce']);
 
@@ -278,14 +278,15 @@ export default function MentorOnboardingPage() {
 
   // Close city dropdown on click outside
   useEffect(() => {
+    if (!cityDropdownOpen) return;
     const handler = (e: MouseEvent) => {
-      if (cityRef.current && !cityRef.current.contains(e.target as Node)) {
+      if (cityContainerRef.current && !cityContainerRef.current.contains(e.target as Node)) {
         setCityDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  }, [cityDropdownOpen]);
 
   const filteredCities = useMemo(() => {
     if (!citySearch) return CITIES;
@@ -649,7 +650,7 @@ export default function MentorOnboardingPage() {
 
                       {/* Location */}
                       <div className="grid sm:grid-cols-2 gap-4">
-                        <div ref={cityRef} className="relative">
+                        <div ref={cityContainerRef} className="relative">
                           <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">Şehir</Label>
                           <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />

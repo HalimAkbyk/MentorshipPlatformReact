@@ -192,7 +192,7 @@ export default function StudentOnboardingPage() {
   const [topicSearch, setTopicSearch] = useState('');
   const [citySearch, setCitySearch] = useState('');
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
-  const cityRef = useRef<HTMLDivElement>(null);
+  const cityContainerRef = useRef<HTMLDivElement>(null);
   const [saving, setSaving] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -267,14 +267,15 @@ export default function StudentOnboardingPage() {
 
   // Close city dropdown on click outside
   useEffect(() => {
+    if (!cityDropdownOpen) return;
     const handler = (e: MouseEvent) => {
-      if (cityRef.current && !cityRef.current.contains(e.target as Node)) {
+      if (cityContainerRef.current && !cityContainerRef.current.contains(e.target as Node)) {
         setCityDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  }, [cityDropdownOpen]);
 
   const filteredCities = useMemo(() => {
     if (!citySearch) return TURKISH_CITIES;
@@ -654,7 +655,7 @@ function Step1Profile({ profile, updateProfile, avatarPreview, onAvatarClick }: 
             <p className="text-[10px] text-gray-400 mt-1">Seans hatırlatmaları ve bildirimler için kullanılacaktır</p>
           </div>
 
-          <div ref={cityRef} className="relative">
+          <div ref={cityContainerRef} className="relative">
             <div className="flex items-center gap-2 mb-1.5">
               <MapPin className="w-4 h-4 text-gray-400" />
               <Label className="text-sm text-gray-700">Şehir *</Label>
