@@ -210,29 +210,43 @@ export default function StudentOnboardingPage() {
     prefillDone.current = true;
 
     // Prefill profile from user
-    if (user.phone) {
-      setProfile(p => ({ ...p, phone: user.phone || '' }));
-    }
-    if (user.birthYear) {
-      setProfile(p => ({ ...p, birthYear: String(user.birthYear) }));
-    }
     if (user.avatarUrl) {
       setAvatarPreview(user.avatarUrl);
     }
 
-    // Prefill onboarding data from backend
+    // Prefill onboarding data from backend (single source of truth for all onboarding fields)
     onboardingApi.getStudentOnboarding().then(existing => {
-      if (!existing) return;
-      if (existing.city) setProfile(p => ({ ...p, city: existing.city || '' }));
-      if (existing.gender) setProfile(p => ({ ...p, gender: existing.gender || '' }));
-      if (existing.status) setProfile(p => ({ ...p, status: existing.status || '' }));
+      if (!existing) {
+        // No onboarding data yet — fallback to user fields
+        if (user.phone) setProfile(p => ({ ...p, phone: user.phone || '' }));
+        if (user.birthYear) setProfile(p => ({ ...p, birthYear: String(user.birthYear) }));
+        return;
+      }
+
+      // Profile fields from onboarding
+      const profileUpdates: Partial<ProfileData> = {};
+      if (existing.birthDay) profileUpdates.birthDay = existing.birthDay;
+      if (existing.birthMonth) profileUpdates.birthMonth = existing.birthMonth;
+      if (existing.phone) profileUpdates.phone = existing.phone;
+      if (existing.city) profileUpdates.city = existing.city;
+      if (existing.gender) profileUpdates.gender = existing.gender;
+      if (existing.status) profileUpdates.status = existing.status;
       if (existing.statusDetail) {
         try {
           const detail = JSON.parse(existing.statusDetail);
-          setProfile(p => ({ ...p, ...detail }));
+          Object.assign(profileUpdates, detail);
         } catch {}
       }
 
+      // Fallbacks from user entity when onboarding doesn't have them yet
+      if (!profileUpdates.phone && user.phone) profileUpdates.phone = user.phone;
+      if (!profileUpdates.birthDay && user.birthYear) profileUpdates.birthYear = String(user.birthYear);
+
+      if (Object.keys(profileUpdates).length > 0) {
+        setProfile(p => ({ ...p, ...profileUpdates }));
+      }
+
+      // Onboarding form data
       const ob: Partial<OnboardingFormData> = {};
       if (existing.goals) try { ob.goals = JSON.parse(existing.goals); } catch {}
       if (existing.categories) try { ob.categories = JSON.parse(existing.categories); } catch {}
@@ -248,7 +262,11 @@ export default function StudentOnboardingPage() {
       if (Object.keys(ob).length > 0) {
         setData(prev => ({ ...prev, ...ob }));
       }
-    }).catch(() => {});
+    }).catch(() => {
+      // Fallback to user fields if API fails
+      if (user.phone) setProfile(p => ({ ...p, phone: user.phone || '' }));
+      if (user.birthYear) setProfile(p => ({ ...p, birthYear: String(user.birthYear) }));
+    });
   }, [user]);
 
   const updateProfile = (updates: Partial<ProfileData>) => setProfile(p => ({ ...p, ...updates }));
@@ -282,7 +300,73 @@ export default function StudentOnboardingPage() {
     }
   };
 
-  const handleNext = () => { if (currentStep < TOTAL_STEPS) setCurrentStep(p => p + 1); };
+  // Build the onboarding payload from current state
+  const buildOnboardingPayload = (): StudentOnboardingData => ({
+    birthDay: profile.birthDay || null,
+    birthMonth: profile.birthMonth || null,
+    phone: profile.phone.replace(/\s/g, '') || null,
+    city: profile.city || null,
+    gender: profile.gender || null,
+    status: profile.status || null,
+    statusDetail: buildStatusDetail(),
+    goals: JSON.stringify(data.goals),
+    categories: JSON.stringify(data.categories),
+    subtopics: JSON.stringify(data.subtopics),
+    level: data.level || null,
+    preferences: JSON.stringify(data.preferences),
+    budgetMin: data.budgetRange[0],
+    budgetMax: data.budgetRange[1],
+    availability: JSON.stringify(data.availability),
+    sessionFormats: JSON.stringify(data.sessionFormat),
+  });
+
+  // Save progress silently in the background (no toast, no redirect)
+  const saveCurrentProgress = async () => {
+    try {
+      // Save onboarding data
+      await onboardingApi.saveStudentOnboarding(buildOnboardingPayload());
+
+      // For step 1, also update the User profile (displayName, phone, birthYear)
+      if (currentStep === 1) {
+        const birthYear = profile.birthYear ? Number(profile.birthYear) : undefined;
+        const displayName = user?.displayName || 'Öğrenci';
+        const phone = profile.phone.replace(/\s/g, '');
+        try {
+          const updated = await userApi.updateProfile({
+            displayName,
+            phone: phone || undefined,
+            birthYear,
+          });
+          useAuthStore.setState(s => ({
+            ...s,
+            user: { ...(s.user as any), ...updated },
+          }));
+        } catch {}
+
+        // Upload avatar if new
+        if (avatarFile) {
+          try {
+            const { avatarUrl } = await userApi.uploadAvatar(avatarFile);
+            useAuthStore.setState(s => ({
+              ...s,
+              user: s.user ? { ...s.user, avatarUrl } : s.user,
+            }));
+            setAvatarFile(null); // Don't re-upload on next save
+          } catch {}
+        }
+      }
+    } catch {
+      // Silent fail — don't block navigation
+    }
+  };
+
+  const handleNext = async () => {
+    if (currentStep < TOTAL_STEPS) {
+      // Save progress in the background, then advance
+      saveCurrentProgress(); // fire-and-forget
+      setCurrentStep(p => p + 1);
+    }
+  };
   const handleBack = () => { if (currentStep > 1) setCurrentStep(p => p - 1); };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -364,22 +448,7 @@ export default function StudentOnboardingPage() {
       } catch {}
 
       // 3) Save onboarding-specific data to new endpoint
-      const onboardingPayload: StudentOnboardingData = {
-        city: profile.city || null,
-        gender: profile.gender || null,
-        status: profile.status || null,
-        statusDetail: buildStatusDetail(),
-        goals: JSON.stringify(data.goals),
-        categories: JSON.stringify(data.categories),
-        subtopics: JSON.stringify(data.subtopics),
-        level: data.level || null,
-        preferences: JSON.stringify(data.preferences),
-        budgetMin: data.budgetRange[0],
-        budgetMax: data.budgetRange[1],
-        availability: JSON.stringify(data.availability),
-        sessionFormats: JSON.stringify(data.sessionFormat),
-      };
-      await onboardingApi.saveStudentOnboarding(onboardingPayload);
+      await onboardingApi.saveStudentOnboarding(buildOnboardingPayload());
 
       toast.success('Profil bilgileriniz kaydedildi!');
       router.push(redirectTo);

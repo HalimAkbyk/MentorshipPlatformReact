@@ -3,6 +3,9 @@ import { apiClient } from './client';
 // ===== Student Onboarding Types =====
 export interface StudentOnboardingData {
   id?: string;
+  birthDay?: string | null;
+  birthMonth?: string | null;
+  phone?: string | null;
   city?: string | null;
   gender?: string | null;
   status?: string | null;
