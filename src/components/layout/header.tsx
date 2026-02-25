@@ -120,11 +120,13 @@ export function Header() {
   /* ---------------------------------------------------------------- */
   /* Dropdown content (shared between desktop dropdown & mobile menu)  */
   /* ---------------------------------------------------------------- */
+  const profileHref = isMentor ? `/public/mentors/${user?.id || ''}` : settingsHref;
+
   const renderDropdownSections = (onClose: () => void) => (
     <>
-      {/* Panel */}
+      {/* Genel */}
       <div className="py-1">
-        <SectionLabel>Panel</SectionLabel>
+        <SectionLabel>Genel</SectionLabel>
         <DropdownLink
           href={panelHref}
           icon={<LayoutDashboard className="w-4 h-4 text-teal-500" />}
@@ -132,25 +134,6 @@ export function Header() {
           onClick={onClose}
           className="font-medium text-teal-600 hover:bg-teal-50"
         />
-      </div>
-
-      {/* Mentor Yönetimi */}
-      {isMentor && (
-        <div className="border-t border-gray-200 py-1">
-          <SectionLabel>Mentor Yönetimi</SectionLabel>
-          <DropdownLink href="/mentor/courses" icon={<PlayCircle className="w-4 h-4 text-gray-400" />} label="Video Kurslarim" onClick={onClose} />
-          <DropdownLink href="/mentor/offerings" icon={<Package className="w-4 h-4 text-gray-400" />} label="Paketlerim" onClick={onClose} />
-          <DropdownLink href="/mentor/availability" icon={<Calendar className="w-4 h-4 text-gray-400" />} label="Uygunluk" onClick={onClose} />
-          <DropdownLink href="/mentor/bookings" icon={<BookOpen className="w-4 h-4 text-gray-400" />} label="Derslerim" onClick={onClose} />
-          <DropdownLink href="/mentor/group-classes" icon={<Users className="w-4 h-4 text-gray-400" />} label="Grup Dersleri" onClick={onClose} />
-          <DropdownLink href="/mentor/earnings" icon={<DollarSign className="w-4 h-4 text-gray-400" />} label="Kazanclarim" onClick={onClose} />
-          <DropdownLink href={`/public/mentors/${user?.id || ''}`} icon={<Eye className="w-4 h-4 text-gray-400" />} label="Profilimi Gör" onClick={onClose} />
-        </div>
-      )}
-
-      {/* Hesap */}
-      <div className="border-t border-gray-200 py-1">
-        <SectionLabel>Hesap</SectionLabel>
         <DropdownLink
           href={messagesHref}
           icon={
@@ -166,9 +149,38 @@ export function Header() {
           label="Mesajlarım"
           onClick={onClose}
         />
-        <DropdownLink href="/student/bookings" icon={<Calendar className="w-4 h-4 text-gray-400" />} label="Rezervasyonlarım" onClick={onClose} />
-        <DropdownLink href="/student/my-classes" icon={<Users className="w-4 h-4 text-gray-400" />} label="Grup Derslerim" onClick={onClose} />
-        <DropdownLink href="/student/courses" icon={<BookOpen className="w-4 h-4 text-gray-400" />} label="Kayıtlarım" onClick={onClose} />
+      </div>
+
+      {/* Mentor — İçerik Yönetimi */}
+      {isMentor && (
+        <div className="border-t border-gray-200 py-1">
+          <SectionLabel>İçerik Yönetimi</SectionLabel>
+          <DropdownLink href="/mentor/offerings" icon={<Package className="w-4 h-4 text-gray-400" />} label="1:1 Paketlerim" onClick={onClose} />
+          <DropdownLink href="/mentor/bookings" icon={<BookOpen className="w-4 h-4 text-gray-400" />} label="Bire Bir Seanslarım" onClick={onClose} />
+          <DropdownLink href="/mentor/group-classes" icon={<Users className="w-4 h-4 text-gray-400" />} label="Çoklu Seanslarım" onClick={onClose} />
+          <DropdownLink href="/mentor/courses" icon={<PlayCircle className="w-4 h-4 text-gray-400" />} label="Video Eğitimlerim" onClick={onClose} />
+        </div>
+      )}
+
+      {/* Mentor — Kazanç */}
+      {isMentor && (
+        <div className="border-t border-gray-200 py-1">
+          <SectionLabel>Kazanç</SectionLabel>
+          <DropdownLink href="/mentor/earnings" icon={<DollarSign className="w-4 h-4 text-gray-400" />} label="Kazançlarım" onClick={onClose} />
+        </div>
+      )}
+
+      {/* Öğrenci — Katılımlarım */}
+      <div className="border-t border-gray-200 py-1">
+        <SectionLabel>Katılımlarım</SectionLabel>
+        <DropdownLink href="/student/bookings" icon={<Calendar className="w-4 h-4 text-gray-400" />} label="Bire Bir Seanslarım" onClick={onClose} />
+        <DropdownLink href="/student/my-classes" icon={<Users className="w-4 h-4 text-gray-400" />} label="Çoklu Seanslarım" onClick={onClose} />
+        <DropdownLink href="/student/courses" icon={<BookOpen className="w-4 h-4 text-gray-400" />} label="Video Eğitimlerim" onClick={onClose} />
+      </div>
+
+      {/* Hesap */}
+      <div className="border-t border-gray-200 py-1">
+        <SectionLabel>Hesap</SectionLabel>
         <DropdownLink href="/student/payments" icon={<CreditCard className="w-4 h-4 text-gray-400" />} label="Ödemelerim" onClick={onClose} />
         <DropdownLink href={settingsHref} icon={<Settings className="w-4 h-4 text-gray-400" />} label="Ayarlar" onClick={onClose} />
         {isStudent && !isMentor && (
@@ -281,8 +293,12 @@ export function Header() {
                     role="menu"
                     className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl ring-1 ring-gray-200 py-2 z-50 max-h-[calc(100vh-100px)] overflow-y-auto"
                   >
-                    {/* User info */}
-                    <div className="px-4 py-3 border-b border-gray-200">
+                    {/* User info — clickable, links to profile */}
+                    <Link
+                      href={profileHref}
+                      onClick={closeDropdown}
+                      className="block px-4 py-3 border-b border-gray-200 hover:bg-teal-50 transition-colors cursor-pointer"
+                    >
                       <div className="flex items-center gap-3">
                         <Avatar className="w-10 h-10">
                           <AvatarImage src={user?.avatarUrl} />
@@ -290,12 +306,15 @@ export function Header() {
                             {user?.displayName?.charAt(0)?.toUpperCase() || '?'}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <p className="text-sm font-medium text-gray-900 truncate">{user?.displayName}</p>
                           <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+                          {isMentor && (
+                            <p className="text-[10px] text-teal-600 mt-0.5">Profilimi Gör →</p>
+                          )}
                         </div>
                       </div>
-                    </div>
+                    </Link>
 
                     {renderDropdownSections(closeDropdown)}
                   </div>
@@ -351,19 +370,26 @@ export function Header() {
               </div>
             ) : (
               <div className="flex flex-col">
-                {/* Mobile user info */}
-                <div className="flex items-center gap-3 px-4 py-3">
+                {/* Mobile user info — clickable */}
+                <Link
+                  href={profileHref}
+                  onClick={closeMobile}
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-teal-50 transition-colors rounded-lg"
+                >
                   <Avatar className="w-8 h-8">
                     <AvatarImage src={user?.avatarUrl} />
                     <AvatarFallback className="text-xs bg-teal-50 text-teal-700">
                       {user?.displayName?.charAt(0)?.toUpperCase() || '?'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-gray-900 truncate">{user?.displayName}</p>
                     <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+                    {isMentor && (
+                      <p className="text-[10px] text-teal-600 mt-0.5">Profilimi Gör →</p>
+                    )}
                   </div>
-                </div>
+                </Link>
 
                 {renderDropdownSections(closeMobile)}
               </div>

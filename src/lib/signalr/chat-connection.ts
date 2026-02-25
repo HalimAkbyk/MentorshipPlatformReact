@@ -88,9 +88,21 @@ export function onNotificationCountUpdated(callback: (payload: NotificationCount
   connection?.on('NotificationCountUpdated', callback);
 }
 
+export type RoomStatusPayload = {
+  roomName: string;
+  isActive: boolean;
+  hostConnected: boolean;
+  participantCount: number;
+};
+
+export function onRoomStatusChanged(callback: (payload: RoomStatusPayload) => void): void {
+  connection?.on('RoomStatusChanged', callback);
+}
+
 export function removeAllListeners(): void {
   connection?.off('ReceiveMessage');
   connection?.off('MessagesRead');
   connection?.off('MessageDelivered');
   connection?.off('NotificationCountUpdated');
+  connection?.off('RoomStatusChanged');
 }

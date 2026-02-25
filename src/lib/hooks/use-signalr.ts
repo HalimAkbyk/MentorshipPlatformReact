@@ -10,11 +10,13 @@ import {
   onMessagesRead,
   onMessageDelivered,
   onNotificationCountUpdated,
+  onRoomStatusChanged,
   removeAllListeners,
   type NewMessagePayload,
   type MessagesReadPayload,
   type MessageDeliveredPayload,
   type NotificationCountPayload,
+  type RoomStatusPayload,
 } from '../signalr/chat-connection';
 import { messagesApi } from '../api/messages';
 import type { PaginatedMessages } from '../api/messages';
@@ -138,6 +140,15 @@ export function useSignalR() {
       onNotificationCountUpdated((payload: NotificationCountPayload) => {
         queryClient.setQueryData(['user-notification-count'], { count: payload.unreadCount });
         queryClient.invalidateQueries({ queryKey: ['user-notifications'] });
+      });
+
+      // Real-time room status updates (replaces polling)
+      onRoomStatusChanged((payload: RoomStatusPayload) => {
+        queryClient.setQueryData(['room-status', payload.roomName], {
+          isActive: payload.isActive,
+          hostConnected: payload.hostConnected,
+          participantCount: payload.participantCount,
+        });
       });
     };
 

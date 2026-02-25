@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Clock, User, MapPin, AlertCircle, Video, MessageSquare, CheckCircle, HelpCircle, RefreshCw, X, Mail, Info, RotateCcw } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '../../../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../../components/ui/avatar';
@@ -43,41 +44,52 @@ export default function BookingDetailPage() {
   const rejectReschedule = useRejectReschedule();
   const { data: unreadData } = useUnreadCount();
 
+  const queryClient = useQueryClient();
+
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showMessages, setShowMessages] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
-  const [roomStatus, setRoomStatus] = useState<RoomStatus | null>(null);
-  const [checkingRoom, setCheckingRoom] = useState(false);
 
   const { devMode, earlyJoinMinutes } = useSessionJoinSettings();
 
   // Reschedule state
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
 
-  // Room status check
-  const checkRoomStatus = async () => {
-    if (!booking || booking.status !== BookingStatus.Confirmed) return;
+  // Room status via SignalR (real-time) + initial fetch on mount
+  // SignalR updates are pushed to queryClient cache key ['room-status', bookingId]
+  const roomStatus = queryClient.getQueryData<RoomStatus>(['room-status', bookingId]) ?? null;
 
-    try {
-      setCheckingRoom(true);
-      const response = await apiClient.get<RoomStatus>(`/video/room/${bookingId}/status`);
-      setRoomStatus(response);
-    } catch (error) {
-      console.error('Room status check error:', error);
-      setRoomStatus({ isActive: false, hostConnected: false, participantCount: 0 });
-    } finally {
-      setCheckingRoom(false);
-    }
-  };
+  // Subscribe to cache changes for re-renders
+  const [, forceUpdate] = useState(0);
+  useEffect(() => {
+    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+      if (event?.query?.queryKey?.[0] === 'room-status' && event?.query?.queryKey?.[1] === bookingId) {
+        forceUpdate((c) => c + 1);
+      }
+    });
+    return () => unsubscribe();
+  }, [queryClient, bookingId]);
 
-  // Check room status periodically for confirmed bookings
+  // Initial room status fetch on mount (one-time, no polling)
   useEffect(() => {
     if (!booking || booking.status !== BookingStatus.Confirmed) return;
-    checkRoomStatus();
-    const interval = setInterval(checkRoomStatus, 15000);
-    return () => clearInterval(interval);
-  }, [booking]);
+
+    const fetchInitialStatus = async () => {
+      try {
+        const response = await apiClient.get<RoomStatus>(`/video/room/${bookingId}/status`);
+        queryClient.setQueryData(['room-status', bookingId], response);
+      } catch {
+        queryClient.setQueryData(['room-status', bookingId], {
+          isActive: false,
+          hostConnected: false,
+          participantCount: 0,
+        });
+      }
+    };
+
+    fetchInitialStatus();
+  }, [booking, bookingId, queryClient]);
 
   // Reschedule handler moved to RescheduleCalendar component
 
@@ -411,10 +423,10 @@ export default function BookingDetailPage() {
                       onClick={handleJoinClass}
                       className="w-full"
                       size="lg"
-                      disabled={!canJoinNow() || checkingRoom}
+                      disabled={!canJoinNow()}
                     >
                       <Video className="w-4 h-4 mr-2" />
-                      {checkingRoom ? 'Kontrol ediliyor...' : 'Derse Katıl'}
+                      Derse Katıl
                     </Button>
 
                     {/* Mentor Status Indicator */}
