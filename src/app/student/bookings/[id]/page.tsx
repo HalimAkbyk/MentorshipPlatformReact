@@ -18,7 +18,8 @@ import { formatDate, formatTime, formatCurrency } from '../../../../lib/utils/fo
 import { BookingStatus } from '../../../../lib/types/enums';
 import { ROUTES } from '../../../../lib/constants/routes';
 import { apiClient } from '../../../../lib/api/client';
-import { availabilityApi, type ComputedTimeSlot } from '../../../../lib/api/availability';
+import { type ComputedTimeSlot } from '../../../../lib/api/availability';
+import { RescheduleCalendar } from '../../../../components/features/bookings/reschedule-calendar';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -53,10 +54,6 @@ export default function BookingDetailPage() {
 
   // Reschedule state
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
-  const [rescheduleDate, setRescheduleDate] = useState('');
-  const [rescheduleSlots, setRescheduleSlots] = useState<ComputedTimeSlot[]>([]);
-  const [selectedSlot, setSelectedSlot] = useState<ComputedTimeSlot | null>(null);
-  const [loadingSlots, setLoadingSlots] = useState(false);
 
   // Room status check
   const checkRoomStatus = async () => {
@@ -82,28 +79,7 @@ export default function BookingDetailPage() {
     return () => clearInterval(interval);
   }, [booking]);
 
-  // Fetch available slots when date changes
-  useEffect(() => {
-    if (!rescheduleDate || !booking) return;
-    const fetchSlots = async () => {
-      setLoadingSlots(true);
-      setSelectedSlot(null);
-      try {
-        const slots = await availabilityApi.getAvailableTimeSlots(
-          booking.mentorUserId,
-          booking.offeringId,
-          rescheduleDate
-        );
-        setRescheduleSlots(slots);
-      } catch (e) {
-        toast.error('Müsait slotlar yüklenemedi');
-        setRescheduleSlots([]);
-      } finally {
-        setLoadingSlots(false);
-      }
-    };
-    fetchSlots();
-  }, [rescheduleDate, booking]);
+  // Reschedule handler moved to RescheduleCalendar component
 
   const handleCancel = async () => {
     if (!cancelReason.trim()) {
@@ -127,17 +103,11 @@ export default function BookingDetailPage() {
     router.push(ROUTES.CLASSROOM(bookingId));
   };
 
-  const handleReschedule = async () => {
-    if (!selectedSlot) {
-      toast.error('Lütfen bir saat seçin');
-      return;
-    }
+  const handleReschedule = async (slot: ComputedTimeSlot) => {
     try {
-      await rescheduleBooking.mutateAsync({ id: bookingId, newStartAt: selectedSlot.startAt });
+      await rescheduleBooking.mutateAsync({ id: bookingId, newStartAt: slot.startAt });
       toast.success('Seans saati güncellendi');
       setShowRescheduleModal(false);
-      setRescheduleDate('');
-      setSelectedSlot(null);
       refetch();
     } catch (error: any) {
       toast.error(error.response?.data?.errors?.[0] || 'Seans saati güncellenemedi');
@@ -612,128 +582,15 @@ export default function BookingDetailPage() {
 
         {/* Reschedule Modal */}
         {showRescheduleModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <Card className="max-w-lg w-full max-h-[80vh] overflow-y-auto">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Seans Saatini Güncelle</CardTitle>
-                  <CardDescription>
-                    Yeni bir tarih ve saat seçin. (Kalan hak: {2 - (booking.rescheduleCountStudent ?? 0)}/2)
-                  </CardDescription>
-                </div>
-                <Button variant="ghost" size="sm" onClick={() => setShowRescheduleModal(false)}>
-                  <X className="w-4 h-4" />
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Date Selection - Horizontal scrollable date buttons */}
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Tarih Seçin</label>
-                  <div className="flex gap-2 overflow-x-auto pb-2">
-                    {Array.from({ length: 30 }, (_, i) => {
-                      const d = new Date();
-                      d.setDate(d.getDate() + i + 1); // start from tomorrow
-                      const dateStr = format(d, 'yyyy-MM-dd');
-                      const isSelected = rescheduleDate === dateStr;
-                      return (
-                        <button
-                          key={dateStr}
-                          onClick={() => setRescheduleDate(dateStr)}
-                          className={`flex-shrink-0 flex flex-col items-center px-3 py-2 rounded-lg border text-xs transition-colors ${
-                            isSelected
-                              ? 'bg-teal-600 text-white border-teal-600'
-                              : 'bg-white text-gray-700 border-gray-200 hover:border-teal-400 hover:bg-teal-50'
-                          }`}
-                        >
-                          <span className="font-medium">{format(d, 'dd', { locale: tr })}</span>
-                          <span className={isSelected ? 'text-teal-100' : 'text-gray-500'}>{format(d, 'MMM', { locale: tr })}</span>
-                          <span className={`text-[10px] ${isSelected ? 'text-teal-100' : 'text-gray-400'}`}>{format(d, 'EEE', { locale: tr })}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Time Slots */}
-                {rescheduleDate && (
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">
-                      {format(new Date(rescheduleDate + 'T00:00:00'), 'dd MMMM yyyy, EEEE', { locale: tr })} - Müsait Saatler
-                    </label>
-                    {loadingSlots ? (
-                      <div className="text-center py-4">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-teal-600 mx-auto" />
-                        <p className="text-sm text-gray-500 mt-2">Uygun saatler hesaplanıyor...</p>
-                      </div>
-                    ) : rescheduleSlots.length === 0 ? (
-                      <div className="text-center py-6 text-gray-500">
-                        <Calendar className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                        <p className="text-sm font-medium">Bu tarihte müsait saat yok</p>
-                        <p className="text-xs mt-1">Başka bir tarih seçin</p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                        {rescheduleSlots.map((slot) => {
-                          const startTime = format(new Date(slot.startAt), 'HH:mm');
-                          const endTime = format(new Date(slot.endAt), 'HH:mm');
-                          const isSelected = selectedSlot?.startAt === slot.startAt;
-                          return (
-                            <button
-                              key={slot.startAt}
-                              onClick={() => setSelectedSlot(slot)}
-                              className={`p-2 rounded-lg border-2 transition-all text-center ${
-                                isSelected
-                                  ? 'border-teal-600 bg-teal-50 shadow-sm'
-                                  : 'border-gray-200 bg-white hover:border-teal-400 hover:bg-teal-50'
-                              }`}
-                            >
-                              <div className={`text-sm font-semibold ${isSelected ? 'text-teal-700' : 'text-gray-900'}`}>
-                                {startTime}
-                              </div>
-                              <div className={`text-[10px] ${isSelected ? 'text-teal-500' : 'text-gray-400'}`}>
-                                {endTime}
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Selected slot summary */}
-                {selectedSlot && (
-                  <div className="bg-teal-50 border border-teal-200 rounded-lg p-3">
-                    <p className="text-sm font-medium text-teal-900">
-                      Seçilen: {format(new Date(selectedSlot.startAt), 'dd MMMM yyyy, HH:mm', { locale: tr })} - {format(new Date(selectedSlot.endAt), 'HH:mm')}
-                    </p>
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="flex space-x-3 pt-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowRescheduleModal(false);
-                      setRescheduleDate('');
-                      setSelectedSlot(null);
-                    }}
-                    className="flex-1"
-                  >
-                    Vazgeç
-                  </Button>
-                  <Button
-                    onClick={handleReschedule}
-                    className="flex-1"
-                    disabled={!selectedSlot || rescheduleBooking.isPending}
-                  >
-                    {rescheduleBooking.isPending ? 'Güncelleniyor...' : 'Saati Güncelle'}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <RescheduleCalendar
+            mentorUserId={booking.mentorUserId}
+            offeringId={booking.offeringId}
+            remainingCount={2 - (booking.rescheduleCountStudent ?? 0)}
+            isMentor={false}
+            isPending={rescheduleBooking.isPending}
+            onConfirm={handleReschedule}
+            onCancel={() => setShowRescheduleModal(false)}
+          />
         )}
 
         {/* Review Modal */}
