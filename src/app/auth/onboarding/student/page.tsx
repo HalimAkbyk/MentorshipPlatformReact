@@ -192,7 +192,6 @@ export default function StudentOnboardingPage() {
   const [topicSearch, setTopicSearch] = useState('');
   const [citySearch, setCitySearch] = useState('');
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
-  const cityContainerRef = useRef<HTMLDivElement>(null);
   const [saving, setSaving] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -265,17 +264,7 @@ export default function StudentOnboardingPage() {
     }).catch(() => {});
   }, [user]);
 
-  // Close city dropdown on click outside
-  useEffect(() => {
-    if (!cityDropdownOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (cityContainerRef.current && !cityContainerRef.current.contains(e.target as Node)) {
-        setCityDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [cityDropdownOpen]);
+  const closeCityDropdown = () => { setTimeout(() => setCityDropdownOpen(false), 150); };
 
   const filteredCities = useMemo(() => {
     if (!citySearch) return TURKISH_CITIES;
@@ -655,7 +644,7 @@ function Step1Profile({ profile, updateProfile, avatarPreview, onAvatarClick }: 
             <p className="text-[10px] text-gray-400 mt-1">Seans hatırlatmaları ve bildirimler için kullanılacaktır</p>
           </div>
 
-          <div ref={cityContainerRef} className="relative">
+          <div className="relative">
             <div className="flex items-center gap-2 mb-1.5">
               <MapPin className="w-4 h-4 text-gray-400" />
               <Label className="text-sm text-gray-700">Şehir *</Label>
@@ -667,6 +656,7 @@ function Step1Profile({ profile, updateProfile, avatarPreview, onAvatarClick }: 
                 value={cityDropdownOpen ? citySearch : (profile.city || '')}
                 onChange={e => { setCitySearch(e.target.value); if (!cityDropdownOpen) setCityDropdownOpen(true); }}
                 onFocus={() => { setCityDropdownOpen(true); setCitySearch(''); }}
+                onBlur={closeCityDropdown}
                 placeholder="Şehir ara..."
                 className="h-11 rounded-xl pl-10 bg-gray-50 border-gray-200 text-sm focus:bg-white"
                 autoComplete="off"
@@ -690,7 +680,7 @@ function Step1Profile({ profile, updateProfile, avatarPreview, onAvatarClick }: 
                     <button
                       key={c}
                       type="button"
-                      onClick={() => { updateProfile({ city: c }); setCitySearch(''); setCityDropdownOpen(false); }}
+                      onMouseDown={() => { updateProfile({ city: c }); setCitySearch(''); setCityDropdownOpen(false); }}
                       className={`w-full text-left px-3 py-2 text-sm hover:bg-teal-50 transition-colors ${profile.city === c ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-700'}`}
                     >
                       {c}

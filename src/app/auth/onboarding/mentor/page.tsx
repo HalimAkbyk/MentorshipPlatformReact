@@ -225,7 +225,6 @@ export default function MentorOnboardingPage() {
   const [city, setCity] = useState('');
   const [citySearch, setCitySearch] = useState('');
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
-  const cityContainerRef = useRef<HTMLDivElement>(null);
   const [timezone, setTimezone] = useState('Europe/Istanbul (UTC+3)');
   const [languages, setLanguages] = useState<string[]>(['Turkce']);
 
@@ -276,17 +275,7 @@ export default function MentorOnboardingPage() {
     setCurrentStep(stepKeyToId(stepFromUrl));
   }, [stepFromUrl]);
 
-  // Close city dropdown on click outside
-  useEffect(() => {
-    if (!cityDropdownOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (cityContainerRef.current && !cityContainerRef.current.contains(e.target as Node)) {
-        setCityDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [cityDropdownOpen]);
+  const closeCityDropdown = () => { setTimeout(() => setCityDropdownOpen(false), 150); };
 
   const filteredCities = useMemo(() => {
     if (!citySearch) return CITIES;
@@ -650,7 +639,7 @@ export default function MentorOnboardingPage() {
 
                       {/* Location */}
                       <div className="grid sm:grid-cols-2 gap-4">
-                        <div ref={cityContainerRef} className="relative">
+                        <div className="relative">
                           <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">Şehir</Label>
                           <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
@@ -659,6 +648,7 @@ export default function MentorOnboardingPage() {
                               value={cityDropdownOpen ? citySearch : (city || '')}
                               onChange={e => { setCitySearch(e.target.value); if (!cityDropdownOpen) setCityDropdownOpen(true); }}
                               onFocus={() => { setCityDropdownOpen(true); setCitySearch(''); }}
+                              onBlur={closeCityDropdown}
                               placeholder="Şehir ara..."
                               className="pl-10"
                               autoComplete="off"
@@ -675,7 +665,7 @@ export default function MentorOnboardingPage() {
                                 <div className="px-3 py-2 text-sm text-gray-400">Sonuç bulunamadı</div>
                               ) : (
                                 filteredCities.map(c => (
-                                  <button key={c} type="button" onClick={() => { setCity(c); setCitySearch(''); setCityDropdownOpen(false); }}
+                                  <button key={c} type="button" onMouseDown={() => { setCity(c); setCitySearch(''); setCityDropdownOpen(false); }}
                                     className={`w-full text-left px-3 py-2 text-sm hover:bg-teal-50 transition-colors ${city === c ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-700'}`}>
                                     {c}
                                   </button>
