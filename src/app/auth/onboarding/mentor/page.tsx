@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Target, Briefcase, MessageSquare, CheckCircle2,
   Camera, X, Plus, ChevronRight, ChevronLeft, Globe, Clock, Star,
-  Shield, Linkedin, Github, ExternalLink, Sparkles, Info,
+  Shield, Linkedin, Github, ExternalLink, Sparkles, Info, Search,
   ArrowRight, Check, Users, Video, Mic, MessageCircle, Package,
   GraduationCap, Award, FileText, Trash2, Trophy, BookOpen, Zap,
 } from 'lucide-react';
@@ -110,9 +110,16 @@ const SESSION_FORMATS = [
 ];
 
 const CITIES = [
-  'Istanbul', 'Ankara', 'Izmir', 'Bursa', 'Antalya', 'Adana',
-  'Konya', 'Gaziantep', 'Mersin', 'Kayseri', 'Eskisehir', 'Diyarbakir',
-  'Samsun', 'Trabzon', 'Denizli', 'Malatya', 'Erzurum', 'Sakarya',
+  'Adana', 'Adıyaman', 'Afyonkarahisar', 'Ağrı', 'Aksaray', 'Amasya', 'Ankara', 'Antalya',
+  'Ardahan', 'Artvin', 'Aydın', 'Balıkesir', 'Bartın', 'Batman', 'Bayburt', 'Bilecik',
+  'Bingöl', 'Bitlis', 'Bolu', 'Burdur', 'Bursa', 'Çanakkale', 'Çankırı', 'Çorum',
+  'Denizli', 'Diyarbakır', 'Düzce', 'Edirne', 'Elazığ', 'Erzincan', 'Erzurum', 'Eskişehir',
+  'Gaziantep', 'Giresun', 'Gümüşhane', 'Hakkari', 'Hatay', 'Iğdır', 'Isparta', 'İstanbul',
+  'İzmir', 'Kahramanmaraş', 'Karabük', 'Karaman', 'Kars', 'Kastamonu', 'Kayseri',
+  'Kırıkkale', 'Kırklareli', 'Kırşehir', 'Kilis', 'Kocaeli', 'Konya', 'Kütahya', 'Malatya',
+  'Manisa', 'Mardin', 'Mersin', 'Muğla', 'Muş', 'Nevşehir', 'Niğde', 'Ordu', 'Osmaniye',
+  'Rize', 'Sakarya', 'Samsun', 'Şanlıurfa', 'Siirt', 'Sinop', 'Şırnak', 'Sivas',
+  'Tekirdağ', 'Tokat', 'Trabzon', 'Tunceli', 'Uşak', 'Van', 'Yalova', 'Yozgat', 'Zonguldak',
 ];
 
 const LANGUAGES = [
@@ -216,6 +223,9 @@ export default function MentorOnboardingPage() {
 
   // Step 1 extras
   const [city, setCity] = useState('');
+  const [citySearch, setCitySearch] = useState('');
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+  const cityRef = useRef<HTMLDivElement>(null);
   const [timezone, setTimezone] = useState('Europe/Istanbul (UTC+3)');
   const [languages, setLanguages] = useState<string[]>(['Turkce']);
 
@@ -265,6 +275,23 @@ export default function MentorOnboardingPage() {
   useEffect(() => {
     setCurrentStep(stepKeyToId(stepFromUrl));
   }, [stepFromUrl]);
+
+  // Close city dropdown on click outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (cityRef.current && !cityRef.current.contains(e.target as Node)) {
+        setCityDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filteredCities = useMemo(() => {
+    if (!citySearch) return CITIES;
+    const q = citySearch.toLowerCase().replace(/[ıİ]/g, m => m === 'ı' ? 'i' : 'i');
+    return CITIES.filter(c => c.toLowerCase().replace(/[ıİ]/g, m => m === 'ı' ? 'i' : 'i').includes(q));
+  }, [citySearch]);
 
   const goStep = useCallback((key: StepKey) => {
     const sourceParam = isStudentUpgrade ? '&source=student' : '';
@@ -622,7 +649,40 @@ export default function MentorOnboardingPage() {
 
                       {/* Location */}
                       <div className="grid sm:grid-cols-2 gap-4">
-                        <div><Label className="text-sm font-semibold text-gray-700 mb-1.5 block">Sehir</Label><Select value={city} onValueChange={setCity}><SelectTrigger><SelectValue placeholder="Sehir secin" /></SelectTrigger><SelectContent>{CITIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+                        <div ref={cityRef} className="relative">
+                          <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">Şehir</Label>
+                          <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                            <Input
+                              type="text"
+                              value={cityDropdownOpen ? citySearch : (city || '')}
+                              onChange={e => { setCitySearch(e.target.value); if (!cityDropdownOpen) setCityDropdownOpen(true); }}
+                              onFocus={() => { setCityDropdownOpen(true); setCitySearch(''); }}
+                              placeholder="Şehir ara..."
+                              className="pl-10"
+                              autoComplete="off"
+                            />
+                            {city && !cityDropdownOpen && (
+                              <button type="button" onClick={() => { setCity(''); setCitySearch(''); setCityDropdownOpen(true); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                          {cityDropdownOpen && (
+                            <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                              {filteredCities.length === 0 ? (
+                                <div className="px-3 py-2 text-sm text-gray-400">Sonuç bulunamadı</div>
+                              ) : (
+                                filteredCities.map(c => (
+                                  <button key={c} type="button" onClick={() => { setCity(c); setCitySearch(''); setCityDropdownOpen(false); }}
+                                    className={`w-full text-left px-3 py-2 text-sm hover:bg-teal-50 transition-colors ${city === c ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-700'}`}>
+                                    {c}
+                                  </button>
+                                ))
+                              )}
+                            </div>
+                          )}
+                        </div>
                         <div><Label className="text-sm font-semibold text-gray-700 mb-1.5 block">Zaman Dilimi</Label><Select value={timezone} onValueChange={setTimezone}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TIMEZONES.map((tz) => <SelectItem key={tz} value={tz}>{tz}</SelectItem>)}</SelectContent></Select></div>
                       </div>
 

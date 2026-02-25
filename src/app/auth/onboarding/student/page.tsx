@@ -190,6 +190,9 @@ export default function StudentOnboardingPage() {
   const [profile, setProfile] = useState<ProfileData>(initialProfile);
   const [data, setData] = useState<OnboardingFormData>(initialOnboarding);
   const [topicSearch, setTopicSearch] = useState('');
+  const [citySearch, setCitySearch] = useState('');
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+  const cityRef = useRef<HTMLDivElement>(null);
   const [saving, setSaving] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -261,6 +264,23 @@ export default function StudentOnboardingPage() {
       }
     }).catch(() => {});
   }, [user]);
+
+  // Close city dropdown on click outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (cityRef.current && !cityRef.current.contains(e.target as Node)) {
+        setCityDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filteredCities = useMemo(() => {
+    if (!citySearch) return TURKISH_CITIES;
+    const q = citySearch.toLowerCase().replace(/[ıİ]/g, m => m === 'ı' ? 'i' : 'i');
+    return TURKISH_CITIES.filter(c => c.toLowerCase().replace(/[ıİ]/g, m => m === 'ı' ? 'i' : 'i').includes(q));
+  }, [citySearch]);
 
   const updateProfile = (updates: Partial<ProfileData>) => setProfile(p => ({ ...p, ...updates }));
   const updateData = (updates: Partial<OnboardingFormData>) => setData(p => ({ ...p, ...updates }));
@@ -410,8 +430,8 @@ export default function StudentOnboardingPage() {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <button onClick={() => router.push('/')} className="flex items-center gap-2 text-lg font-bold text-teal-600">
-            MentorPlatform
+          <button onClick={() => router.push('/')} className="flex items-center gap-2">
+            <img src="/images/logo.svg" alt="Değişim Mentorluk" className="h-8" />
           </button>
           {currentStep > 1 && currentStep < 7 && (
             <Button variant="ghost" size="sm" onClick={handleSkip} disabled={saving} className="text-gray-400 text-xs hover:text-gray-600">
@@ -616,28 +636,68 @@ function Step1Profile({ profile, updateProfile, avatarPreview, onAvatarClick }: 
                 type="tel"
                 value={profile.phone}
                 onChange={e => {
-                  const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-                  const formatted = val.replace(/(\d{3})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4').trim();
+                  const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
+                  let formatted = raw;
+                  if (raw.length > 6) {
+                    formatted = `(${raw.slice(0, 3)}) ${raw.slice(3, 6)} ${raw.slice(6, 8)}${raw.length > 8 ? ' ' + raw.slice(8) : ''}`;
+                  } else if (raw.length > 3) {
+                    formatted = `(${raw.slice(0, 3)}) ${raw.slice(3)}`;
+                  } else if (raw.length > 0) {
+                    formatted = `(${raw}`;
+                  }
                   updateProfile({ phone: formatted });
                 }}
-                placeholder="5XX XXX XX XX"
+                placeholder="(5XX) XXX XX XX"
                 className="h-11 rounded-xl pl-12 bg-gray-50 border-gray-200 focus:bg-white"
               />
             </div>
             <p className="text-[10px] text-gray-400 mt-1">Seans hatırlatmaları ve bildirimler için kullanılacaktır</p>
           </div>
 
-          <div>
+          <div ref={cityRef} className="relative">
             <div className="flex items-center gap-2 mb-1.5">
               <MapPin className="w-4 h-4 text-gray-400" />
               <Label className="text-sm text-gray-700">Şehir *</Label>
             </div>
-            <Select value={profile.city} onValueChange={v => updateProfile({ city: v })}>
-              <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200 text-sm"><SelectValue placeholder="Şehir seçin" /></SelectTrigger>
-              <SelectContent className="max-h-60">
-                {TURKISH_CITIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <Input
+                type="text"
+                value={cityDropdownOpen ? citySearch : (profile.city || '')}
+                onChange={e => { setCitySearch(e.target.value); if (!cityDropdownOpen) setCityDropdownOpen(true); }}
+                onFocus={() => { setCityDropdownOpen(true); setCitySearch(''); }}
+                placeholder="Şehir ara..."
+                className="h-11 rounded-xl pl-10 bg-gray-50 border-gray-200 text-sm focus:bg-white"
+                autoComplete="off"
+              />
+              {profile.city && !cityDropdownOpen && (
+                <button
+                  type="button"
+                  onClick={() => { updateProfile({ city: '' }); setCitySearch(''); setCityDropdownOpen(true); }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+            {cityDropdownOpen && (
+              <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                {filteredCities.length === 0 ? (
+                  <div className="px-3 py-2 text-sm text-gray-400">Sonuç bulunamadı</div>
+                ) : (
+                  filteredCities.map(c => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => { updateProfile({ city: c }); setCitySearch(''); setCityDropdownOpen(false); }}
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-teal-50 transition-colors ${profile.city === c ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-700'}`}
+                    >
+                      {c}
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         </div>
 
