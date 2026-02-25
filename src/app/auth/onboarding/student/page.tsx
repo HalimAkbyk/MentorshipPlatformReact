@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -10,7 +10,7 @@ import {
   Palette, TrendingUp, Lightbulb, Brain, Calculator, Compass,
   CalendarDays, Video, Mic, MessageCircle,
   Zap, Heart, Shield, Award, CheckCircle2, X, User, Phone,
-  MapPin, Building2, Camera
+  Building2, Camera
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -20,6 +20,7 @@ import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { SearchableCitySelect } from '@/components/ui/searchable-city-select';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { UserRole } from '@/lib/types/enums';
 import { userApi } from '@/lib/api/user';
@@ -142,18 +143,6 @@ const STATUS_OPTIONS = [
   { id: 'freelancer', label: 'Freelancer / Girişimci', emoji: '🚀', description: 'Bağımsız çalışıyorum veya girişimim var' },
 ];
 
-const TURKISH_CITIES = [
-  'Adana', 'Adıyaman', 'Afyonkarahisar', 'Ağrı', 'Aksaray', 'Amasya', 'Ankara', 'Antalya',
-  'Ardahan', 'Artvin', 'Aydın', 'Balıkesir', 'Bartın', 'Batman', 'Bayburt', 'Bilecik',
-  'Bingöl', 'Bitlis', 'Bolu', 'Burdur', 'Bursa', 'Çanakkale', 'Çankırı', 'Çorum',
-  'Denizli', 'Diyarbakır', 'Düzce', 'Edirne', 'Elazığ', 'Erzincan', 'Erzurum', 'Eskişehir',
-  'Gaziantep', 'Giresun', 'Gümüşhane', 'Hakkari', 'Hatay', 'Iğdır', 'Isparta', 'İstanbul',
-  'İzmir', 'Kahramanmaraş', 'Karabük', 'Karaman', 'Kars', 'Kastamonu', 'Kayseri',
-  'Kırıkkale', 'Kırklareli', 'Kırşehir', 'Kilis', 'Kocaeli', 'Konya', 'Kütahya', 'Malatya',
-  'Manisa', 'Mardin', 'Mersin', 'Muğla', 'Muş', 'Nevşehir', 'Niğde', 'Ordu', 'Osmaniye',
-  'Rize', 'Sakarya', 'Samsun', 'Şanlıurfa', 'Siirt', 'Sinop', 'Şırnak', 'Sivas',
-  'Tekirdağ', 'Tokat', 'Trabzon', 'Tunceli', 'Uşak', 'Van', 'Yalova', 'Yozgat', 'Zonguldak',
-];
 
 const SECTORS = [
   'Teknoloji / Yazılım', 'Finans / Bankacılık', 'Sağlık', 'Eğitim', 'Perakende / E-Ticaret',
@@ -190,8 +179,6 @@ export default function StudentOnboardingPage() {
   const [profile, setProfile] = useState<ProfileData>(initialProfile);
   const [data, setData] = useState<OnboardingFormData>(initialOnboarding);
   const [topicSearch, setTopicSearch] = useState('');
-  const [citySearch, setCitySearch] = useState('');
-  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -263,14 +250,6 @@ export default function StudentOnboardingPage() {
       }
     }).catch(() => {});
   }, [user]);
-
-  const closeCityDropdown = () => { setTimeout(() => setCityDropdownOpen(false), 150); };
-
-  const filteredCities = useMemo(() => {
-    if (!citySearch) return TURKISH_CITIES;
-    const q = citySearch.toLowerCase().replace(/[ıİ]/g, m => m === 'ı' ? 'i' : 'i');
-    return TURKISH_CITIES.filter(c => c.toLowerCase().replace(/[ıİ]/g, m => m === 'ı' ? 'i' : 'i').includes(q));
-  }, [citySearch]);
 
   const updateProfile = (updates: Partial<ProfileData>) => setProfile(p => ({ ...p, ...updates }));
   const updateData = (updates: Partial<OnboardingFormData>) => setData(p => ({ ...p, ...updates }));
@@ -644,52 +623,10 @@ function Step1Profile({ profile, updateProfile, avatarPreview, onAvatarClick }: 
             <p className="text-[10px] text-gray-400 mt-1">Seans hatırlatmaları ve bildirimler için kullanılacaktır</p>
           </div>
 
-          <div className="relative">
-            <div className="flex items-center gap-2 mb-1.5">
-              <MapPin className="w-4 h-4 text-gray-400" />
-              <Label className="text-sm text-gray-700">Şehir *</Label>
-            </div>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              <Input
-                type="text"
-                value={cityDropdownOpen ? citySearch : (profile.city || '')}
-                onChange={e => { setCitySearch(e.target.value); if (!cityDropdownOpen) setCityDropdownOpen(true); }}
-                onFocus={() => { setCityDropdownOpen(true); setCitySearch(''); }}
-                onBlur={closeCityDropdown}
-                placeholder="Şehir ara..."
-                className="h-11 rounded-xl pl-10 bg-gray-50 border-gray-200 text-sm focus:bg-white"
-                autoComplete="off"
-              />
-              {profile.city && !cityDropdownOpen && (
-                <button
-                  type="button"
-                  onClick={() => { updateProfile({ city: '' }); setCitySearch(''); setCityDropdownOpen(true); }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-            {cityDropdownOpen && (
-              <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
-                {filteredCities.length === 0 ? (
-                  <div className="px-3 py-2 text-sm text-gray-400">Sonuç bulunamadı</div>
-                ) : (
-                  filteredCities.map(c => (
-                    <button
-                      key={c}
-                      type="button"
-                      onMouseDown={() => { updateProfile({ city: c }); setCitySearch(''); setCityDropdownOpen(false); }}
-                      className={`w-full text-left px-3 py-2 text-sm hover:bg-teal-50 transition-colors ${profile.city === c ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-700'}`}
-                    >
-                      {c}
-                    </button>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
+          <SearchableCitySelect
+            value={profile.city}
+            onChange={(city) => updateProfile({ city })}
+          />
         </div>
 
         {/* Cinsiyet */}
