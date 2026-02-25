@@ -91,11 +91,19 @@ class ApiClient {
             return Promise.reject(error);
           }
 
+          // On /auth pages (onboarding, signup, login), don't clear tokens or redirect.
+          // These pages handle auth state themselves; clearing here would break
+          // onboarding save flows where the user is still authenticated.
+          const isAuthPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/auth');
+          if (isAuthPage) {
+            return Promise.reject(error);
+          }
+
           this.clearTokens();
 
           // Only redirect to login from protected pages (student, mentor, admin).
           // Public pages should never force a login redirect on 401.
-          if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
+          if (typeof window !== 'undefined') {
             const isProtectedRoute = ['/student', '/mentor', '/admin'].some(
               (prefix) => window.location.pathname.startsWith(prefix)
             );

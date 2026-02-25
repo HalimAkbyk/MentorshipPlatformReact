@@ -326,6 +326,14 @@ export default function StudentOnboardingPage() {
     try {
       setSaving(true);
 
+      // Check if token exists before making API calls
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Oturum bilginiz bulunamadı. Lütfen tekrar giriş yapın.');
+        router.push('/auth/login');
+        return;
+      }
+
       // 1) Upload avatar if new
       if (avatarFile) {
         try {
@@ -376,7 +384,13 @@ export default function StudentOnboardingPage() {
       toast.success('Profil bilgileriniz kaydedildi!');
       router.push(redirectTo);
     } catch (err: any) {
-      toast.error(err?.response?.data?.errors?.[0] || 'Bir hata oluştu');
+      const status = err?.response?.status;
+      if (status === 401) {
+        toast.error('Oturumunuz zaman aşımına uğramış. Lütfen tekrar giriş yapın.');
+        router.push('/auth/login');
+      } else {
+        toast.error(err?.response?.data?.errors?.[0] || 'Bir hata oluştu');
+      }
     } finally {
       setSaving(false);
     }
