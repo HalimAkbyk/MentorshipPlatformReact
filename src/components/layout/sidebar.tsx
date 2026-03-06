@@ -11,16 +11,18 @@ type Section = { title: string; items: Item[] };
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { user } = useAuthStore();
+  const { user, activeView } = useAuthStore();
 
   const roles = user?.roles ?? [];
   const isMentor = roles.includes(UserRole.Mentor as any);
   const isStudent = roles.includes(UserRole.Student as any);
+  const isDualRole = isMentor && isStudent;
+  const viewAsMentor = isDualRole ? activeView === 'mentor' : isMentor;
 
   const sections: Section[] = [];
 
   // ── Mentor sections ──
-  if (isMentor) {
+  if (viewAsMentor) {
     sections.push({
       title: 'Genel',
       items: [
@@ -34,6 +36,8 @@ export function Sidebar() {
       items: [
         { label: '1:1 Paketlerim', href: '/mentor/offerings' },
         { label: 'Bire Bir Seanslarım', href: '/mentor/bookings' },
+        { label: 'Seans Talepleri', href: '/mentor/session-requests' },
+        { label: 'Anlık Seans', href: '/mentor/free-session' },
         { label: 'Çoklu Seanslarım', href: '/mentor/group-classes' },
         { label: 'Video Eğitimlerim', href: '/mentor/courses' },
       ],
@@ -48,54 +52,35 @@ export function Sidebar() {
     });
   }
 
-  // ── Student sections (both student-only and mentor+student) ──
-  if (isStudent) {
-    if (!isMentor) {
-      // Student-only: add panel & messages in Genel
-      sections.push({
-        title: 'Genel',
-        items: [
-          { label: 'Panel', href: '/student/dashboard' },
-          { label: 'Mesajlarım', href: '/student/messages' },
-        ],
-      });
-    }
+  // ── Student sections ──
+  if (isStudent && !viewAsMentor) {
+    sections.push({
+      title: 'Genel',
+      items: [
+        { label: 'Panel', href: '/student/dashboard' },
+        { label: 'Mesajlarım', href: '/student/messages' },
+      ],
+    });
 
-    // Katılımlarım — shared between mentor+student and student-only
     const katilimItems: Item[] = [
+      { label: 'Eğitim Keşfet', href: '/student/explore-courses' },
+      { label: 'Grup Dersleri Keşfet', href: '/student/explore-classes' },
       { label: 'Bire Bir Seanslarım', href: '/student/bookings' },
+      { label: 'Seans Taleplerim', href: '/student/session-requests' },
       { label: 'Çoklu Seanslarım', href: '/student/my-classes' },
       { label: 'Video Eğitimlerim', href: '/student/courses' },
     ];
-
-    // If mentor+student, also add explore links
-    if (isMentor) {
-      katilimItems.unshift(
-        { label: 'Eğitim Keşfet', href: '/student/explore-courses' },
-        { label: 'Grup Dersleri Keşfet', href: '/student/explore-classes' },
-      );
-    } else {
-      katilimItems.unshift(
-        { label: 'Eğitim Keşfet', href: '/student/explore-courses' },
-        { label: 'Grup Dersleri Keşfet', href: '/student/explore-classes' },
-      );
-    }
 
     sections.push({
       title: 'Katılımlarım',
       items: katilimItems,
     });
 
-    // Hesap
     const hesapItems: Item[] = [
       { label: 'Ödemelerim', href: '/student/payments' },
       { label: 'Kredilerim', href: '/student/credits' },
+      { label: 'Ayarlar', href: viewAsMentor ? '/mentor/settings' : '/student/settings' },
     ];
-    if (!isMentor) {
-      hesapItems.push({ label: 'Ayarlar', href: '/student/settings' });
-    } else {
-      hesapItems.push({ label: 'Ayarlar', href: '/mentor/settings' });
-    }
 
     sections.push({
       title: 'Hesap',

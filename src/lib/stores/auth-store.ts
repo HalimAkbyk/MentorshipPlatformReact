@@ -18,11 +18,14 @@ interface ExternalLoginResult {
   pendingToken?: string;
 }
 
+type ActiveView = 'student' | 'mentor';
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   _hasHydrated: boolean;
+  activeView: ActiveView;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, displayName: string, role: string) => Promise<void>;
   externalLogin: (params: ExternalLoginParams) => Promise<ExternalLoginResult>;
@@ -30,6 +33,7 @@ interface AuthState {
   initialize: () => Promise<void>;
   refreshUser: () => Promise<void>;
   applyRoleUpgrade: () => Promise<void>;
+  setActiveView: (view: ActiveView) => void;
 }
 
 type AnyAuthResponse = any;
@@ -69,6 +73,7 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: true,
       _hasHydrated: false,
+      activeView: 'student' as ActiveView,
 
       initialize: async () => {
         // 1) Check if any token exists at all (localStorage + cookie fallback)
@@ -250,9 +255,13 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      setActiveView: (view: ActiveView) => {
+        set({ activeView: view });
+      },
+
       logout: () => {
         authApi.logout();
-        set({ user: null, isAuthenticated: false, isLoading: false });
+        set({ user: null, isAuthenticated: false, isLoading: false, activeView: 'student' });
       },
     }),
     {
@@ -260,6 +269,7 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
+        activeView: state.activeView,
       }),
       onRehydrateStorage: () => {
         return (state) => {

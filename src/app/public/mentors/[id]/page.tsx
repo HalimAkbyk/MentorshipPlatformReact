@@ -21,6 +21,8 @@ import { ROUTES } from '../../../../lib/constants/routes';
 import type { VerificationType } from '../../../../lib/types/enums';
 import { offeringsApi, type OfferingDto } from '../../../../lib/api/offerings';
 import { toast } from 'sonner';
+import { FullCalendarView } from '../../../../components/features/booking/full-calendar-view';
+import { SessionRequestDialog } from '../../../../components/features/booking/session-request-dialog';
 
 const verificationLabels: Record<VerificationType, string> = {
   Basic: 'Temel Doğrulama',
@@ -38,9 +40,11 @@ export default function MentorProfilePage() {
   const user = useAuthStore((state) => state.user);
   const isOwnProfile = isAuthenticated && user?.id === mentorId;
   const startDirectConversation = useStartDirectConversation();
-  const [selectedTab, setSelectedTab] = useState<'about' | 'offerings' | 'reviews'>('about');
+  const [selectedTab, setSelectedTab] = useState<'about' | 'offerings' | 'calendar' | 'reviews'>('about');
   const [enrichedOfferings, setEnrichedOfferings] = useState<OfferingDto[]>([]);
   const [offeringsLoading, setOfferingsLoading] = useState(false);
+  const [calendarOfferingId, setCalendarOfferingId] = useState<string>('');
+  const [sessionRequestSlot, setSessionRequestSlot] = useState<{ startAt: string; durationMin: number } | null>(null);
 
   const handleSendMessage = useCallback(async () => {
     if (!isAuthenticated) {
@@ -72,7 +76,13 @@ export default function MentorProfilePage() {
     if (!mentorId) return;
     setOfferingsLoading(true);
     offeringsApi.getMentorOfferings(mentorId)
-      .then(data => setEnrichedOfferings(data ?? []))
+      .then(data => {
+        const offerings = data ?? [];
+        setEnrichedOfferings(offerings);
+        if (offerings.length > 0 && !calendarOfferingId) {
+          setCalendarOfferingId(offerings[0].id);
+        }
+      })
       .catch(() => setEnrichedOfferings([]))
       .finally(() => setOfferingsLoading(false));
   }, [mentorId]);
@@ -173,6 +183,7 @@ export default function MentorProfilePage() {
   const tabs = [
     { id: 'about' as const, label: 'Hakkında' },
     { id: 'offerings' as const, label: 'Hizmetler' },
+    { id: 'calendar' as const, label: 'Takvim' },
     { id: 'reviews' as const, label: 'Yorumlar' },
   ];
 
@@ -532,6 +543,68 @@ export default function MentorProfilePage() {
                           </div>
                         </CardContent>
                       </Card>
+                    )}
+                  </div>
+                )}
+
+                {/* Calendar Tab */}
+                {selectedTab === 'calendar' && (
+                  <div>
+                    {/* Offering selector for calendar */}
+                    {enrichedOfferings.length > 1 && (
+                      <div className="mb-4">
+                        <label className="text-xs font-medium text-gray-700 mb-1.5 block">Paket Seçin</label>
+                        <select
+                          value={calendarOfferingId}
+                          onChange={(e) => setCalendarOfferingId(e.target.value)}
+                          className="w-full sm:w-auto text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        >
+                          {enrichedOfferings.map((o) => (
+                            <option key={o.id} value={o.id}>{o.title} ({o.durationMin} dk)</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {(calendarOfferingId || enrichedOfferings.length > 0) ? (
+                      <FullCalendarView
+                        mentorId={mentorId}
+                        offeringId={calendarOfferingId || enrichedOfferings[0]?.id || ''}
+                        onSlotClick={(slot) => {
+                          if (isOwnProfile) return;
+                          if (slot.type === 'Available') {
+                            // Direct booking
+                            const ofId = calendarOfferingId || enrichedOfferings[0]?.id;
+                            if (ofId) handleBooking(ofId);
+                          } else if (slot.type === 'Unavailable') {
+                            // Session request
+                            if (!isAuthenticated) {
+                              router.push(`/auth/login?redirect=/public/mentors/${mentorId}`);
+                              return;
+                            }
+                            const offering = enrichedOfferings.find(o => o.id === (calendarOfferingId || enrichedOfferings[0]?.id));
+                            setSessionRequestSlot({
+                              startAt: slot.startAt,
+                              durationMin: offering?.durationMin ?? 60,
+                            });
+                          }
+                        }}
+                      />
+                    ) : (
+                      <p className="text-center text-gray-500 py-8">
+                        Takvimi görüntülemek için eğitmenin aktif bir paketi olmalıdır.
+                      </p>
+                    )}
+
+                    {/* Session Request Dialog */}
+                    {sessionRequestSlot && (
+                      <SessionRequestDialog
+                        mentorUserId={mentorId}
+                        offeringId={calendarOfferingId || enrichedOfferings[0]?.id || ''}
+                        startAt={sessionRequestSlot.startAt}
+                        durationMin={sessionRequestSlot.durationMin}
+                        onClose={() => setSessionRequestSlot(null)}
+                      />
                     )}
                   </div>
                 )}

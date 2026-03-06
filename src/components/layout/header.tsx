@@ -8,7 +8,7 @@ import {
   Menu, X, Settings, LogOut, ChevronDown, Search, BookOpen,
   LayoutDashboard, Eye, PlayCircle, Sparkles, CreditCard,
   GraduationCap, Package, Calendar, DollarSign, MessageSquare,
-  Users, Coins,
+  Users, Coins, ClipboardList, Video,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -18,6 +18,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { UserRole } from '@/lib/types/enums';
 import { cn } from '@/lib/utils/cn';
 import { UserNotificationsDropdown } from '../features/notifications/user-notifications-dropdown';
+import { RoleToggle } from './role-toggle';
 import { stopConnection } from '@/lib/signalr/chat-connection';
 import { useFeatureFlag } from '@/lib/hooks/use-feature-flags';
 
@@ -63,23 +64,25 @@ export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, logout, activeView } = useAuthStore();
   const isAdmin = user?.roles.includes(UserRole.Admin);
   const isMentor = user?.roles.includes(UserRole.Mentor);
   const isStudent = user?.roles.includes(UserRole.Student);
+  const isDualRole = isMentor && isStudent;
+  const viewAsMentor = isDualRole ? activeView === 'mentor' : !!isMentor;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { data: unreadData } = useUnreadCount();
   const totalUnread = unreadData?.totalUnread ?? 0;
-  const messagesHref = isMentor ? '/mentor/messages' : '/student/messages';
+  const messagesHref = viewAsMentor ? '/mentor/messages' : '/student/messages';
   const externalMentorRegistration = useFeatureFlag('EXTERNAL_MENTOR_REGISTRATION');
 
   const isActive = (href: string) => pathname === href || pathname?.startsWith(href + '/');
 
-  const panelHref = isAdmin ? '/admin/dashboard' : isMentor ? '/mentor/dashboard' : '/student/dashboard';
-  const settingsHref = isAdmin ? '/admin/dashboard' : isMentor ? '/mentor/settings' : '/student/settings';
+  const panelHref = isAdmin ? '/admin/dashboard' : viewAsMentor ? '/mentor/dashboard' : '/student/dashboard';
+  const settingsHref = isAdmin ? '/admin/dashboard' : viewAsMentor ? '/mentor/settings' : '/student/settings';
 
   const closeDropdown = () => setDropdownOpen(false);
   const closeMobile = () => setMobileMenuOpen(false);
@@ -123,7 +126,7 @@ export function Header() {
   /* ---------------------------------------------------------------- */
   /* Dropdown content (shared between desktop dropdown & mobile menu)  */
   /* ---------------------------------------------------------------- */
-  const profileHref = isMentor ? `/public/mentors/${user?.id || ''}` : settingsHref;
+  const profileHref = viewAsMentor ? `/public/mentors/${user?.id || ''}` : settingsHref;
 
   const renderDropdownSections = (onClose: () => void) => (
     <>
@@ -155,18 +158,20 @@ export function Header() {
       </div>
 
       {/* Mentor — İçerik Yönetimi */}
-      {isMentor && (
+      {viewAsMentor && (
         <div className="border-t border-gray-200 py-1">
           <SectionLabel>İçerik Yönetimi</SectionLabel>
           <DropdownLink href="/mentor/offerings" icon={<Package className="w-4 h-4 text-gray-400" />} label="1:1 Paketlerim" onClick={onClose} />
           <DropdownLink href="/mentor/bookings" icon={<BookOpen className="w-4 h-4 text-gray-400" />} label="Bire Bir Seanslarım" onClick={onClose} />
+          <DropdownLink href="/mentor/session-requests" icon={<ClipboardList className="w-4 h-4 text-gray-400" />} label="Seans Talepleri" onClick={onClose} />
+          <DropdownLink href="/mentor/free-session" icon={<Video className="w-4 h-4 text-gray-400" />} label="Anlık Seans" onClick={onClose} />
           <DropdownLink href="/mentor/group-classes" icon={<Users className="w-4 h-4 text-gray-400" />} label="Çoklu Seanslarım" onClick={onClose} />
           <DropdownLink href="/mentor/courses" icon={<PlayCircle className="w-4 h-4 text-gray-400" />} label="Video Eğitimlerim" onClick={onClose} />
         </div>
       )}
 
       {/* Mentor — Kazanç */}
-      {isMentor && (
+      {viewAsMentor && (
         <div className="border-t border-gray-200 py-1">
           <SectionLabel>Kazanç</SectionLabel>
           <DropdownLink href="/mentor/earnings" icon={<DollarSign className="w-4 h-4 text-gray-400" />} label="Kazançlarım" onClick={onClose} />
@@ -175,12 +180,13 @@ export function Header() {
       )}
 
       {/* Öğrenci — Katılımlarım */}
-      <div className="border-t border-gray-200 py-1">
+      {(!isDualRole || !viewAsMentor) && <div className="border-t border-gray-200 py-1">
         <SectionLabel>Katılımlarım</SectionLabel>
         <DropdownLink href="/student/bookings" icon={<Calendar className="w-4 h-4 text-gray-400" />} label="Bire Bir Seanslarım" onClick={onClose} />
+        <DropdownLink href="/student/session-requests" icon={<ClipboardList className="w-4 h-4 text-gray-400" />} label="Seans Taleplerim" onClick={onClose} />
         <DropdownLink href="/student/my-classes" icon={<Users className="w-4 h-4 text-gray-400" />} label="Çoklu Seanslarım" onClick={onClose} />
         <DropdownLink href="/student/courses" icon={<BookOpen className="w-4 h-4 text-gray-400" />} label="Video Eğitimlerim" onClick={onClose} />
-      </div>
+      </div>}
 
       {/* Hesap */}
       <div className="border-t border-gray-200 py-1">
@@ -273,7 +279,9 @@ export function Header() {
                 </Link>
               </>
             ) : (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
+              {/* Role Toggle */}
+              <RoleToggle />
               {/* Notification Bell */}
               <UserNotificationsDropdown />
               {/* User Dropdown */}
@@ -314,7 +322,7 @@ export function Header() {
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-medium text-gray-900 truncate">{user?.displayName}</p>
                           <p className="text-xs text-gray-400 truncate">{user?.email}</p>
-                          {isMentor && (
+                          {viewAsMentor && (
                             <p className="text-[10px] text-teal-600 mt-0.5">Profilimi Gör →</p>
                           )}
                         </div>
