@@ -438,7 +438,7 @@ export default function MentorOnboardingPage() {
                     {/* City */}
                     <div className="space-y-2 mb-4">
                       <Label>Sehir</Label>
-                      <SearchableCitySelect value={city} onValueChange={setCity} />
+                      <SearchableCitySelect value={city} onChange={setCity} />
                     </div>
 
                     {/* Languages */}
