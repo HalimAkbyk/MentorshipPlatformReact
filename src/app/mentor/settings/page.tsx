@@ -345,39 +345,6 @@ export default function MentorSettingsPage() {
               </div>
             </Card>
 
-            {/* Quick Navigation */}
-            <Card className="border-0 shadow-sm">
-              <CardContent className="p-2">
-                <nav className="space-y-0.5">
-                  {[
-                    { href: '/mentor/dashboard', icon: User, label: 'Panel', color: 'text-teal-600' },
-                    { href: '/mentor/courses', icon: BookOpen, label: 'Video Kurslarim', color: 'text-green-600' },
-                    { href: '/mentor/offerings', icon: Package, label: 'Paketlerim', color: 'text-blue-600' },
-                    { href: '/mentor/availability', icon: Clock, label: 'Uygunluk', color: 'text-purple-600' },
-                    { href: '/mentor/bookings', icon: Calendar, label: 'Derslerim', color: 'text-orange-600' },
-                    { href: '/mentor/group-classes', icon: Users, label: 'Grup Dersleri', color: 'text-indigo-600' },
-                    { href: '/mentor/messages', icon: MessageSquare, label: 'Mesajlarim', color: 'text-pink-600' },
-                    { href: '/mentor/earnings', icon: DollarSign, label: 'Kazanclarim', color: 'text-emerald-600' },
-                    { href: '/mentor/settings', icon: Settings, label: 'Ayarlar', color: 'text-teal-600', active: true },
-                  ].map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
-                        item.active
-                          ? 'bg-teal-50 text-teal-700 font-medium'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                      }`}
-                    >
-                      <item.icon className={`w-4 h-4 ${item.color}`} />
-                      <span className="truncate">{item.label}</span>
-                      {item.active && <ChevronRight className="w-3.5 h-3.5 ml-auto text-teal-400" />}
-                    </Link>
-                  ))}
-                </nav>
-              </CardContent>
-            </Card>
-
             {/* Settings Tabs */}
             <Card className="border-0 shadow-sm">
               <CardHeader className="pb-2 px-4 pt-4">
