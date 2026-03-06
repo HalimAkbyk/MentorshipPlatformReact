@@ -189,6 +189,7 @@ export default function MentorOnboardingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const authUser = useAuthStore((s) => s.user);
   const stepFromUrl = useMemo(() => normalizeStep(searchParams.get('step')), [searchParams]);
   const isStudentUpgrade = searchParams.get('source') === 'student';
   const [currentStep, setCurrentStep] = useState<number>(stepKeyToId(stepFromUrl));
@@ -270,8 +271,29 @@ export default function MentorOnboardingPage() {
   // ===== Prefill =====
   useEffect(() => {
     (async () => {
+      // Always prefill displayName and avatar from auth store
+      const storeUser = useAuthStore.getState().user;
+      if (storeUser?.displayName) {
+        profileForm.setValue('fullName', storeUser.displayName);
+      }
+      if (storeUser?.avatarUrl) {
+        setAvatarPreview(storeUser.avatarUrl);
+      }
+
       if (isStudentUpgrade) {
         setHasProfile(false);
+
+        // Prefill from student onboarding data
+        try {
+          const studentOb = await onboardingApi.getStudentOnboarding();
+          if (studentOb) {
+            if (studentOb.city) setCity(studentOb.city);
+            if (studentOb.categories) { try { setSelectedCategories(JSON.parse(studentOb.categories)); } catch { /* */ } }
+            if (studentOb.subtopics) { try { setSubtopics(JSON.parse(studentOb.subtopics)); } catch { /* */ } }
+            if (studentOb.sessionFormats) { try { setSessionFormats(JSON.parse(studentOb.sessionFormats)); } catch { /* */ } }
+          }
+        } catch { /* no student onboarding data */ }
+
         setIsPrefillLoading(false);
         return;
       }
@@ -280,7 +302,7 @@ export default function MentorOnboardingPage() {
         const p = await mentorsApi.getMyProfile();
         setHasProfile(true);
         profileForm.reset({
-          fullName: p.displayName ?? '',
+          fullName: p.displayName ?? storeUser?.displayName ?? '',
           headline: p.headline ?? '',
           bio: p.bio ?? '',
           university: p.university ?? '',
@@ -585,7 +607,8 @@ export default function MentorOnboardingPage() {
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div>
                           <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">Ad Soyad <span className="text-red-500">*</span></Label>
-                          <Input placeholder="Adiniz ve soyadiniz" {...profileForm.register('fullName')} />
+                          <Input placeholder="Adiniz ve soyadiniz" {...profileForm.register('fullName')} disabled={!!authUser?.displayName} className={authUser?.displayName ? 'bg-gray-100 cursor-not-allowed' : ''} />
+                          {authUser?.displayName && <p className="text-xs text-gray-500 mt-1">Hesap bilgilerinizden alindi. Degistirmek icin Ayarlar&apos;a gidin.</p>}
                           {profileForm.formState.errors.fullName && <p className="text-xs text-red-600 mt-1">{profileForm.formState.errors.fullName.message}</p>}
                         </div>
                         <div>
