@@ -157,6 +157,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Sistem Sagligi', href: '/admin/system/health' },
       { label: 'Arka Plan Isleri', href: '/admin/system/jobs' },
       { label: 'Ozellik Bayraklari', href: '/admin/system/feature-flags' },
+      { label: 'Veritabani Temizligi', href: '/admin/system/cleanup' },
     ],
   },
   {

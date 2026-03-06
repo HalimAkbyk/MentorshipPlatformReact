@@ -33,6 +33,8 @@ const routeLabels: Record<string, string> = {
   create: 'Olustur',
   detail: 'Detay',
   wiki: 'Platform Wiki',
+  cleanup: 'Veritabani Temizligi',
+  system: 'Sistem',
 };
 
 function getLabel(segment: string): string {

@@ -1572,4 +1572,11 @@ export const adminApi = {
     bonusPercentage?: number;
   }): Promise<void> =>
     apiClient.post('/admin/instructor-performance/accrual-parameters', data),
+
+  cleanupDatabase: (): Promise<{
+    success: boolean;
+    message: string;
+    adminUsersKept: number;
+    deletedRows: Record<string, number>;
+  }> => apiClient.post('/admin/cleanup-database'),
 };
