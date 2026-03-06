@@ -21,6 +21,7 @@ import { useMyGroupClasses } from '@/lib/hooks/use-classes';
 import { useMyCourses } from '@/lib/hooks/use-courses';
 import { mentorsApi } from '@/lib/api/mentors';
 import { earningsApi, type MentorEarningsSummaryDto } from '@/lib/api/earnings';
+import { availabilityApi } from '@/lib/api/availability';
 import { apiClient } from '@/lib/api/client';
 import { formatDate, formatRelativeTime, formatCurrency } from '@/lib/utils/format';
 import { BookingStatus } from '@/lib/types/enums';
@@ -44,6 +45,7 @@ export default function MentorDashboardPage() {
   const [profile, setProfile] = useState<MyMentorProfile | null>(null);
   const [offerings, setOfferings] = useState<MyMentorOffering[]>([]);
   const [earnings, setEarnings] = useState<MentorEarningsSummaryDto | null>(null);
+  const [hasAvailability, setHasAvailability] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,6 +53,10 @@ export default function MentorDashboardPage() {
       try { const p = await mentorsApi.getMyProfile(); setProfile(p); } catch { setProfile(null); }
       try { const o = await mentorsApi.getMyOfferings(); setOfferings(o ?? []); } catch { setOfferings([]); }
       try { const e = await earningsApi.getSummary(); setEarnings(e); } catch { setEarnings(null); }
+      try {
+        const t = await availabilityApi.getTemplate();
+        setHasAvailability(!!(t && t.rules && t.rules.length > 0));
+      } catch { setHasAvailability(false); }
       setLoading(false);
     })();
   }, []);
@@ -115,29 +121,38 @@ export default function MentorDashboardPage() {
     router.push(`/mentor/classroom/${bookingId}`);
   };
 
-  /* ── Profile completion score ── */
+  /* ── Profile completion checklist ── */
+  const profileChecklist = useMemo(() => {
+    const hasBioHeadline = !!(profile?.bio && profile?.headline);
+    return [
+      { key: 'profile', label: 'Profil olustur', done: hasProfile, href: '/mentor/settings' },
+      { key: 'bio', label: 'Bio ve baslik ekle', done: hasBioHeadline, href: '/mentor/settings' },
+      { key: 'offering', label: 'Ders paketi olustur', done: hasOfferings, href: '/mentor/offerings' },
+      { key: 'availability', label: 'Uygunluk takvimi ekle', done: hasAvailability, href: '/mentor/availability' },
+      { key: 'listed', label: 'Profili yayina al', done: !!profile?.isListed, href: '/mentor/settings' },
+    ];
+  }, [hasProfile, hasOfferings, hasAvailability, profile]);
+
   const profileScore = useMemo(() => {
-    let score = 0;
-    const total = 3;
-    if (hasProfile) score++;
-    if (hasOfferings) score++;
-    if (profile?.isListed) score++;
-    return Math.round((score / total) * 100);
-  }, [hasProfile, hasOfferings, profile]);
+    const done = profileChecklist.filter((c) => c.done).length;
+    return Math.round((done / profileChecklist.length) * 100);
+  }, [profileChecklist]);
 
   /* ── Hero context ── */
   const getContextText = () => {
     if (!hasProfile) return 'Hemen profilini olusturarak baslayalim!';
     if (!hasOfferings) return 'Ders paketlerini olustur, ogrenci kabul etmeye basla.';
+    if (!hasAvailability) return 'Uygunluk takvimini ekle, ogrenciler seni bulsun.';
     const sessionCount = upcomingBookings.length;
     if (sessionCount > 0) return `${sessionCount} yaklasan dersin var.`;
-    return 'Takvimini guncelle, yeni ogrenci kazan.';
+    if (!profile?.isListed) return 'Profilini yayina al, ogrenciler seni gorsun.';
+    return 'Harika! Profilin yayinda, ogrencilerini bekliyorsun.';
   };
 
   const getHeroCTA = () => {
     if (!hasProfile) {
       return (
-        <Link href="/auth/onboarding/mentor?step=profile">
+        <Link href="/mentor/settings">
           <Button className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg" size="sm">
             <Plus className="w-4 h-4 mr-1.5" />
             Profil Olustur
@@ -151,6 +166,16 @@ export default function MentorDashboardPage() {
           <Button className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg" size="sm">
             <Package className="w-4 h-4 mr-1.5" />
             Ders Paketi Olustur
+          </Button>
+        </Link>
+      );
+    }
+    if (!hasAvailability) {
+      return (
+        <Link href="/mentor/availability">
+          <Button className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg" size="sm">
+            <Calendar className="w-4 h-4 mr-1.5" />
+            Uygunluk Ekle
           </Button>
         </Link>
       );
@@ -169,14 +194,18 @@ export default function MentorDashboardPage() {
         </Button>
       );
     }
-    return (
-      <Link href="/mentor/availability">
-        <Button className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg" size="sm">
-          <Calendar className="w-4 h-4 mr-1.5" />
-          Uygunluk Ekle
-        </Button>
-      </Link>
-    );
+    // Uygunluk var, ders yok — profili paylaşma yönlendirmesi
+    if (!profile?.isListed) {
+      return (
+        <Link href="/mentor/settings">
+          <Button className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg" size="sm">
+            <Eye className="w-4 h-4 mr-1.5" />
+            Profili Yayina Al
+          </Button>
+        </Link>
+      );
+    }
+    return null;
   };
 
   /* ── Loading state ── */
@@ -264,13 +293,21 @@ export default function MentorDashboardPage() {
                   )}
                 </div>
 
+                {/* Checklist — eksik adımları göster */}
                 {profileScore < 100 && (
-                  <Link href="/auth/onboarding/mentor">
-                    <Button variant="outline" size="sm" className="w-full text-xs border-teal-200 text-teal-700 hover:bg-teal-50">
-                      <Zap className="w-3.5 h-3.5 mr-1" />
-                      Profili Tamamla
-                    </Button>
-                  </Link>
+                  <div className="space-y-1.5">
+                    {profileChecklist.filter(c => !c.done).map((item) => (
+                      <Link
+                        key={item.key}
+                        href={item.href}
+                        className="flex items-center gap-2 text-xs text-teal-700 hover:text-teal-900 hover:bg-teal-100/50 rounded-md px-2 py-1.5 transition-colors"
+                      >
+                        <div className="w-4 h-4 rounded-full border-2 border-teal-300 flex-shrink-0" />
+                        <span>{item.label}</span>
+                        <ArrowRight className="w-3 h-3 ml-auto text-teal-400" />
+                      </Link>
+                    ))}
+                  </div>
                 )}
               </div>
             </Card>
@@ -493,14 +530,20 @@ export default function MentorDashboardPage() {
                       </div>
                       <div>
                         <p className="font-medium text-gray-900 text-sm">Yaklasan dersin yok</p>
-                        <p className="text-xs text-gray-500">Takviminde uygun saatleri ekle</p>
+                        <p className="text-xs text-gray-500">
+                          {hasAvailability
+                            ? 'Ogrenciler seanslarina kayit olunca burada gorunecek'
+                            : 'Takviminde uygun saatleri ekle'}
+                        </p>
                       </div>
                     </div>
-                    <Link href="/mentor/availability">
-                      <Button size="sm" className="bg-teal-600 hover:bg-teal-700 text-white text-xs">
-                        Uygunluk Ekle <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                      </Button>
-                    </Link>
+                    {!hasAvailability && (
+                      <Link href="/mentor/availability">
+                        <Button size="sm" className="bg-teal-600 hover:bg-teal-700 text-white text-xs">
+                          Uygunluk Ekle <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                        </Button>
+                      </Link>
+                    )}
                   </CardContent>
                 </Card>
               )}
