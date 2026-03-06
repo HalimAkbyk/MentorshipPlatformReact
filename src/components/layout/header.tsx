@@ -19,6 +19,7 @@ import { UserRole } from '@/lib/types/enums';
 import { cn } from '@/lib/utils/cn';
 import { UserNotificationsDropdown } from '../features/notifications/user-notifications-dropdown';
 import { stopConnection } from '@/lib/signalr/chat-connection';
+import { useFeatureFlag } from '@/lib/hooks/use-feature-flags';
 
 type NavLink = { href: string; label: string; icon?: React.ReactNode };
 
@@ -73,6 +74,7 @@ export function Header() {
   const { data: unreadData } = useUnreadCount();
   const totalUnread = unreadData?.totalUnread ?? 0;
   const messagesHref = isMentor ? '/mentor/messages' : '/student/messages';
+  const externalMentorRegistration = useFeatureFlag('EXTERNAL_MENTOR_REGISTRATION');
 
   const isActive = (href: string) => pathname === href || pathname?.startsWith(href + '/');
 
@@ -84,7 +86,7 @@ export function Header() {
 
   // --- Nav links ---
   const publicLinks: NavLink[] = [
-    { href: '/public/mentors', label: 'Mentorler' },
+    { href: '/public/mentors', label: 'Eğitmenler' },
     { href: '/public/courses', label: 'Eğitimler' },
     { href: '/public/how-it-works', label: 'Nasıl Çalışır' },
     { href: '/public/pricing', label: 'Fiyatlandırma' },
@@ -93,7 +95,7 @@ export function Header() {
   // Unified authenticated links — same for Student & Mentor
   const authenticatedLinks: NavLink[] = [
     { href: '/student/explore-courses', label: 'Eğitimler', icon: <PlayCircle className="w-4 h-4" /> },
-    { href: '/public/mentors', label: 'Mentor Bul', icon: <Search className="w-4 h-4" /> },
+    { href: '/public/mentors', label: 'Eğitmen Bul', icon: <Search className="w-4 h-4" /> },
     { href: '/student/explore-classes', label: 'Grup Dersleri', icon: <Users className="w-4 h-4" /> },
   ];
 
@@ -183,11 +185,11 @@ export function Header() {
         <SectionLabel>Hesap</SectionLabel>
         <DropdownLink href="/student/payments" icon={<CreditCard className="w-4 h-4 text-gray-400" />} label="Ödemelerim" onClick={onClose} />
         <DropdownLink href={settingsHref} icon={<Settings className="w-4 h-4 text-gray-400" />} label="Ayarlar" onClick={onClose} />
-        {isStudent && !isMentor && (
+        {isStudent && !isMentor && externalMentorRegistration && (
           <DropdownLink
             href="/auth/onboarding/mentor?source=student"
             icon={<Sparkles className="w-4 h-4 text-amber-500" />}
-            label="Mentor Ol"
+            label="Eğitmen Ol"
             onClick={onClose}
             className="text-amber-600 hover:bg-amber-50"
           />

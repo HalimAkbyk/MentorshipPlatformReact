@@ -30,6 +30,7 @@ import { updateTokensAfterRoleChange } from '@/lib/api/auth';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { onboardingApi, type MentorOnboardingData } from '@/lib/api/onboarding';
 import type { MentorVerification } from '@/lib/types/mentor';
+import { FeatureGate } from '@/components/feature-gate';
 
 // ===== TYPES =====
 type MentorType = 'professional' | 'student' | '';
@@ -460,6 +461,7 @@ export default function MentorOnboardingPage() {
   const suggestedTopics = selectedCategories.flatMap((c) => SUGGESTED_SUBTOPICS[c] || []);
 
   return (
+    <FeatureGate flag="EXTERNAL_MENTOR_REGISTRATION" fallbackMessage="Eğitmen başvuruları şu anda kapalıdır. Eğitmen atamaları admin tarafından yapılmaktadır.">
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-teal-50/30">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 md:py-10">
         {/* Student Upgrade Banner */}
@@ -952,5 +954,6 @@ export default function MentorOnboardingPage() {
       {/* Delete Confirmation Modal */}
       <ConfirmDialog open={deleteModal.open} onClose={closeDeleteModal} onConfirm={confirmDeleteVerification} title="Belgeyi Sil" description="Bu belgeyi silmek istediginizden emin misiniz?" confirmText="Evet, Sil" cancelText="Iptal" variant="danger" isLoading={deleteModal.isDeleting} />
     </div>
+    </FeatureGate>
   );
 }

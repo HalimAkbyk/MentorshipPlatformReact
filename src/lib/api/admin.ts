@@ -1467,4 +1467,17 @@ export const adminApi = {
   // Pending Counts (for sidebar badges)
   getPendingCounts: (): Promise<{ pendingVerifications: number; pendingCourseReviews: number }> =>
     apiClient.get('/admin/pending-counts'),
+
+  // ---------------------------------------------------------------------------
+  // Instructor Management (Faz 2)
+  // ---------------------------------------------------------------------------
+
+  assignInstructor: (userId: string): Promise<void> =>
+    apiClient.post(`/admin/users/${userId}/assign-instructor`),
+
+  setOwner: (userId: string, isOwner: boolean): Promise<void> =>
+    apiClient.post(`/admin/users/${userId}/set-owner`, { isOwner }),
+
+  updateInstructorStatus: (userId: string, status: string): Promise<void> =>
+    apiClient.post(`/admin/users/${userId}/instructor-status`, { status }),
 };

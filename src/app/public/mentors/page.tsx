@@ -82,10 +82,10 @@ export default function MentorsPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-5">
             <h1 className="text-2xl md:text-3xl font-bold text-white mb-1.5">
-              Mentor Bul
+              Eğitmen Bul
             </h1>
             <p className="text-teal-100 text-sm md:text-base max-w-lg mx-auto">
-              Alanında uzman mentorlerle tanışarak kariyerine yön ver
+              Alanında uzman eğitmenlerle tanışarak kariyerine yön ver
             </p>
           </div>
 
@@ -400,7 +400,7 @@ export default function MentorsPage() {
                 <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
                   <Search className="w-6 h-6 text-gray-400" />
                 </div>
-                <h3 className="text-base font-semibold text-gray-900 mb-1">Mentor bulunamadı</h3>
+                <h3 className="text-base font-semibold text-gray-900 mb-1">Eğitmen bulunamadı</h3>
                 <p className="text-gray-500 text-sm mb-3">Farklı anahtar kelimeler ya da filtre ayarları deneyin</p>
                 {activeFilterCount > 0 && (
                   <Button variant="outline" size="sm" onClick={clearAllFilters}>
