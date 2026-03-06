@@ -13,5 +13,6 @@ export function useMentor(id: string) {
     queryKey: ['mentor', id],
     queryFn: () => mentorsApi.getById(id),
     enabled: !!id,
+    retry: false,
   });
 }

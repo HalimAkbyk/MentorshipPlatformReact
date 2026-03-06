@@ -71,9 +71,9 @@ export default function MentorProfilePage() {
     }
   }, [isAuthenticated, mentorId, router, user, startDirectConversation]);
 
-  // Fetch enriched offerings with questions, descriptions, etc.
+  // Fetch enriched offerings only when mentor data is loaded
   useEffect(() => {
-    if (!mentorId) return;
+    if (!mentor) return;
     setOfferingsLoading(true);
     offeringsApi.getMentorOfferings(mentorId)
       .then(data => {
@@ -85,7 +85,7 @@ export default function MentorProfilePage() {
       })
       .catch(() => setEnrichedOfferings([]))
       .finally(() => setOfferingsLoading(false));
-  }, [mentorId]);
+  }, [mentor, mentorId]);
 
   if (isLoading) {
     return (
