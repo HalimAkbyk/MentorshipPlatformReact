@@ -310,7 +310,7 @@ export default function StudentDashboardPage() {
                   </section>
                 ))}
               </>
-            ) : hasAnyPurchase || profileComplete ? (
+            ) : hasAnyPurchase || profileComplete || profilePercent === 100 ? (
               /* ══════ DYNAMIC HORIZONTAL BARS (profil tamam veya satin alma var) ══════ */
               <>
                 {/* ── BAR 1: Birebir Randevular ── */}
