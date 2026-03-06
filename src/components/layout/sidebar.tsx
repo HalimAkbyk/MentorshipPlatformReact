@@ -43,6 +43,7 @@ export function Sidebar() {
       title: 'Kazanç',
       items: [
         { label: 'Kazançlarım', href: '/mentor/earnings' },
+        { label: 'Performansım', href: '/mentor/performance' },
       ],
     });
   }
@@ -88,6 +89,7 @@ export function Sidebar() {
     // Hesap
     const hesapItems: Item[] = [
       { label: 'Ödemelerim', href: '/student/payments' },
+      { label: 'Kredilerim', href: '/student/credits' },
     ];
     if (!isMentor) {
       hesapItems.push({ label: 'Ayarlar', href: '/student/settings' });

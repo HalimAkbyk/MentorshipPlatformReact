@@ -1480,4 +1480,96 @@ export const adminApi = {
 
   updateInstructorStatus: (userId: string, status: string): Promise<void> =>
     apiClient.post(`/admin/users/${userId}/instructor-status`, { status }),
+
+  // ---------------------------------------------------------------------------
+  // Education - Course Create & Instructor (Faz 3)
+  // ---------------------------------------------------------------------------
+
+  adminCreateCourse: (data: {
+    title: string;
+    shortDescription?: string;
+    description?: string;
+    price: number;
+    category?: string;
+    language?: string;
+    level?: string;
+    instructorId?: string;
+  }): Promise<{ id: string }> =>
+    apiClient.post('/admin/education/courses', data),
+
+  setCourseInstructor: (courseId: string, instructorId: string | null): Promise<void> =>
+    apiClient.post(`/admin/education/courses/${courseId}/set-instructor`, { instructorId }),
+
+  // ---------------------------------------------------------------------------
+  // Package Management (Faz 4)
+  // ---------------------------------------------------------------------------
+
+  getPackages: (includeInactive?: boolean): Promise<import('./packages').PackageDto[]> =>
+    apiClient.get('/admin/packages', { includeInactive }),
+
+  createPackage: (data: {
+    name: string;
+    description?: string;
+    price: number;
+    privateLessonCredits: number;
+    groupLessonCredits: number;
+    videoAccessCredits: number;
+    validityDays?: number;
+    sortOrder?: number;
+  }): Promise<{ id: string }> =>
+    apiClient.post('/admin/packages', data),
+
+  updatePackage: (id: string, data: {
+    name: string;
+    description?: string;
+    price: number;
+    privateLessonCredits: number;
+    groupLessonCredits: number;
+    videoAccessCredits: number;
+    validityDays?: number;
+    sortOrder?: number;
+  }): Promise<void> =>
+    apiClient.put(`/admin/packages/${id}`, data),
+
+  togglePackage: (id: string, isActive: boolean): Promise<void> =>
+    apiClient.post(`/admin/packages/${id}/toggle`, { isActive }),
+
+  // ---------------------------------------------------------------------------
+  // Instructor Performance (Faz 5)
+  // ---------------------------------------------------------------------------
+
+  getInstructorPerformance: (params?: {
+    instructorId?: string;
+    periodType?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  }): Promise<import('./instructor-performance').PerformanceSummaryDto[]> =>
+    apiClient.get('/admin/instructor-performance/summary', params),
+
+  getInstructorAccruals: (params?: {
+    instructorId?: string;
+    status?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<PagedResult<import('./instructor-performance').AccrualDto>> =>
+    apiClient.get('/admin/instructor-performance/accruals', params),
+
+  approveAccrual: (id: string): Promise<void> =>
+    apiClient.post(`/admin/instructor-performance/accruals/${id}/approve`),
+
+  cancelAccrual: (id: string, notes?: string): Promise<void> =>
+    apiClient.post(`/admin/instructor-performance/accruals/${id}/cancel`, { notes }),
+
+  getAccrualParameters: (): Promise<import('./instructor-performance').AccrualParameterDto[]> =>
+    apiClient.get('/admin/instructor-performance/accrual-parameters'),
+
+  saveAccrualParameter: (data: {
+    instructorId?: string;
+    privateLessonRate: number;
+    groupLessonRate: number;
+    videoContentRate: number;
+    bonusThresholdLessons?: number;
+    bonusPercentage?: number;
+  }): Promise<void> =>
+    apiClient.post('/admin/instructor-performance/accrual-parameters', data),
 };

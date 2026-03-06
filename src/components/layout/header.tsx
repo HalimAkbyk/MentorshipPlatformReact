@@ -8,7 +8,7 @@ import {
   Menu, X, Settings, LogOut, ChevronDown, Search, BookOpen,
   LayoutDashboard, Eye, PlayCircle, Sparkles, CreditCard,
   GraduationCap, Package, Calendar, DollarSign, MessageSquare,
-  Users,
+  Users, Coins,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -97,6 +97,7 @@ export function Header() {
     { href: '/student/explore-courses', label: 'Eğitimler', icon: <PlayCircle className="w-4 h-4" /> },
     { href: '/public/mentors', label: 'Eğitmen Bul', icon: <Search className="w-4 h-4" /> },
     { href: '/student/explore-classes', label: 'Grup Dersleri', icon: <Users className="w-4 h-4" /> },
+    { href: '/public/packages', label: 'Paketler', icon: <Package className="w-4 h-4" /> },
   ];
 
   const navLinks = isAuthenticated && !isAdmin ? authenticatedLinks : publicLinks;
@@ -169,6 +170,7 @@ export function Header() {
         <div className="border-t border-gray-200 py-1">
           <SectionLabel>Kazanç</SectionLabel>
           <DropdownLink href="/mentor/earnings" icon={<DollarSign className="w-4 h-4 text-gray-400" />} label="Kazançlarım" onClick={onClose} />
+          <DropdownLink href="/mentor/performance" icon={<Eye className="w-4 h-4 text-gray-400" />} label="Performansım" onClick={onClose} />
         </div>
       )}
 
@@ -184,6 +186,7 @@ export function Header() {
       <div className="border-t border-gray-200 py-1">
         <SectionLabel>Hesap</SectionLabel>
         <DropdownLink href="/student/payments" icon={<CreditCard className="w-4 h-4 text-gray-400" />} label="Ödemelerim" onClick={onClose} />
+        <DropdownLink href="/student/credits" icon={<Coins className="w-4 h-4 text-gray-400" />} label="Kredilerim" onClick={onClose} />
         <DropdownLink href={settingsHref} icon={<Settings className="w-4 h-4 text-gray-400" />} label="Ayarlar" onClick={onClose} />
         {isStudent && !isMentor && externalMentorRegistration && (
           <DropdownLink
