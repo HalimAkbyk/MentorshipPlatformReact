@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
+import { Sidebar } from '@/components/layout/sidebar';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { UserRole } from '@/lib/types/enums';
 
@@ -18,6 +19,8 @@ export default function MentorLayout({
 
   // Classroom sayfalarında Header/Footer gösterme (tam ekran deneyim)
   const isClassroomPage = pathname.includes('/classroom/') || pathname.includes('/group-classroom/');
+  // Dashboard kendi layout'unu kullanır (3 sütunlu), sidebar layout'a dahil değil
+  const isDashboardPage = pathname === '/mentor/dashboard';
 
   useEffect(() => {
     if (!isLoading) {
@@ -47,7 +50,14 @@ export default function MentorLayout({
     <>
       <Header />
       <div className="min-h-screen bg-gray-50">
-        <main>{children}</main>
+        {isDashboardPage ? (
+          <main>{children}</main>
+        ) : (
+          <div className="flex">
+            <Sidebar />
+            <main className="flex-1 min-w-0">{children}</main>
+          </div>
+        )}
       </div>
       <Footer />
     </>

@@ -89,7 +89,7 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="w-full md:w-64 border-r bg-white">
+    <aside className="hidden md:block w-64 border-r bg-white sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto flex-shrink-0">
       <div className="p-4">
         {sections.length === 0 ? (
           <div className="text-sm text-gray-500">Menü için giriş yapmalısın.</div>
