@@ -282,32 +282,6 @@ export default function AvailabilityPage() {
     );
   }
 
-  if (!isApproved) {
-    return (
-      <div className="container mx-auto px-4 py-6 max-w-6xl">
-        <Card className="max-w-2xl mx-auto border-yellow-200 bg-yellow-50">
-          <CardHeader>
-            <div className="flex items-start gap-3">
-              <Lock className="w-6 h-6 text-yellow-600 mt-0.5" />
-              <div className="flex-1">
-                <CardTitle className="text-yellow-900 mb-2">Uygunluk Ayarları Kilitli</CardTitle>
-                <CardDescription className="text-yellow-800">
-                  Doğrulama belgelerinizin admin tarafından onaylanması gerekmektedir.
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-3">
-              <Button onClick={() => router.push('/mentor/dashboard')}>Dashboard&apos;a Dön</Button>
-              <Button variant="outline" onClick={() => router.push('/auth/onboarding/mentor?step=verification')}>Belgeleri Yükle</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
       {/* Header */}
