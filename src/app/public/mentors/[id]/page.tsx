@@ -276,14 +276,10 @@ export default function MentorProfilePage() {
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <h1 className="text-2xl font-bold text-gray-900">{mentor.displayName}</h1>
-                    {mentor.badges.some(b => b.isVerified) && (
-                      <span className="px-3 py-1 bg-gradient-to-r from-teal-500 to-green-500 text-white rounded-full text-xs flex items-center gap-1">
-                        <Award className="w-3 h-3" /> Doğrulanmış
-                      </span>
-                    )}
                   </div>
-                  <p className="text-teal-600 font-medium mb-1">{mentor.university}</p>
-                  <p className="text-sm text-gray-500 mb-3">{mentor.department}</p>
+                  {mentor.headline && (
+                    <p className="text-teal-600 font-medium mb-3">{mentor.headline}</p>
+                  )}
 
                   <div className="flex flex-wrap items-center gap-4 text-sm">
                     <div className="flex items-center gap-1">
@@ -301,15 +297,7 @@ export default function MentorProfilePage() {
                 </div>
               </div>
 
-              {/* Verification Badges */}
-              <div className="mt-5 flex flex-wrap gap-2">
-                {mentor.badges.filter(b => b.isVerified).map((badge) => (
-                  <span key={badge.type} className="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-sm border border-teal-200 flex items-center gap-1">
-                    <CheckCircle className="w-3 h-3" />
-                    {verificationLabels[badge.type]}
-                  </span>
-                ))}
-              </div>
+              {/* Spacer */}
             </Card>
 
             {/* Tabs */}
@@ -337,39 +325,7 @@ export default function MentorProfilePage() {
                     {mentor.headline && (
                       <h3 className="text-lg font-semibold text-gray-900 mb-3">{mentor.headline}</h3>
                     )}
-                    <p className="text-gray-600 leading-relaxed whitespace-pre-wrap mb-6">{mentor.bio}</p>
-
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Eğitim</h3>
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center">
-                        <GraduationCap className="w-5 h-5 text-teal-600" />
-                      </div>
-                      <div>
-                        <p className="text-gray-900 font-medium">{mentor.university}</p>
-                        <p className="text-sm text-gray-500">{mentor.department}</p>
-                        {mentor.graduationYear && (
-                          <p className="text-xs text-gray-400">Mezuniyet: {mentor.graduationYear}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Doğrulamalar */}
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Doğrulamalar</h3>
-                    <div className="space-y-2">
-                      {mentor.badges.map((badge) => (
-                        <div
-                          key={badge.type}
-                          className="flex items-center justify-between text-sm p-3 rounded-lg bg-gray-50"
-                        >
-                          <span className="text-gray-700">{verificationLabels[badge.type]}</span>
-                          {badge.isVerified ? (
-                            <CheckCircle className="w-5 h-5 text-green-600" />
-                          ) : (
-                            <span className="text-gray-400 text-xs">Bekliyor</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                    <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{mentor.bio}</p>
                   </div>
                 )}
 
