@@ -118,19 +118,17 @@ export default function MentorDashboardPage() {
   /* ── Profile completion score ── */
   const profileScore = useMemo(() => {
     let score = 0;
-    const total = 5;
+    const total = 3;
     if (hasProfile) score++;
     if (hasOfferings) score++;
-    if (hasVerifications) score++;
-    if (isApproved) score++;
     if (profile?.isListed) score++;
     return Math.round((score / total) * 100);
-  }, [hasProfile, hasOfferings, hasVerifications, isApproved, profile]);
+  }, [hasProfile, hasOfferings, profile]);
 
   /* ── Hero context ── */
   const getContextText = () => {
     if (!hasProfile) return 'Hemen profilini olusturarak baslayalim!';
-    if (!isApproved) return 'Dogrulama surecini tamamla, ogrenci kabul etmeye basla.';
+    if (!hasOfferings) return 'Ders paketlerini olustur, ogrenci kabul etmeye basla.';
     const sessionCount = upcomingBookings.length;
     if (sessionCount > 0) return `${sessionCount} yaklasan dersin var.`;
     return 'Takvimini guncelle, yeni ogrenci kazan.';
@@ -147,12 +145,12 @@ export default function MentorDashboardPage() {
         </Link>
       );
     }
-    if (!isApproved) {
+    if (!hasOfferings) {
       return (
-        <Link href="/auth/onboarding/mentor?step=verification">
+        <Link href="/mentor/offerings">
           <Button className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg" size="sm">
-            <Shield className="w-4 h-4 mr-1.5" />
-            Dogrulama Yap
+            <Package className="w-4 h-4 mr-1.5" />
+            Ders Paketi Olustur
           </Button>
         </Link>
       );
@@ -254,17 +252,9 @@ export default function MentorDashboardPage() {
 
                 {/* Status Badges */}
                 <div className="flex flex-wrap gap-1.5 mb-3">
-                  {isApproved ? (
+                  {hasProfile && (
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-green-300 text-green-700 bg-green-50">
-                      <CheckCircle className="w-2.5 h-2.5 mr-0.5" /> Onayli
-                    </Badge>
-                  ) : hasVerifications ? (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-yellow-300 text-yellow-700 bg-yellow-50">
-                      <Clock className="w-2.5 h-2.5 mr-0.5" /> Onay Bekliyor
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-red-300 text-red-700 bg-red-50">
-                      <AlertCircle className="w-2.5 h-2.5 mr-0.5" /> Dogrulama Gerekli
+                      <CheckCircle className="w-2.5 h-2.5 mr-0.5" /> Profil Tamam
                     </Badge>
                   )}
                   {profile?.isListed && (
@@ -345,7 +335,7 @@ export default function MentorDashboardPage() {
           <main className="flex-1 min-w-0 space-y-6">
 
             {/* ── Setup Steps (if not fully set up) ── */}
-            {(!hasProfile || !hasOfferings || !hasVerifications || !isApproved) && (
+            {(!hasProfile || !hasOfferings) && (
               <section>
                 <Card className="border-0 shadow-sm overflow-hidden">
                   <CardContent className="p-5">
@@ -360,35 +350,16 @@ export default function MentorDashboardPage() {
                         {
                           done: hasProfile,
                           label: 'Profil Olustur',
-                          desc: 'Universite, bolum ve biyografi bilgilerini ekle',
+                          desc: 'Biyografi ve uzmanlik bilgilerini ekle',
                           href: '/auth/onboarding/mentor?step=profile',
                           icon: Star,
                         },
                         {
                           done: hasOfferings,
-                          label: 'Ucretlendirme Belirle',
-                          desc: 'Seans ucretini ve suresini ayarla',
-                          href: '/auth/onboarding/mentor?step=pricing',
+                          label: 'Ders Paketi Olustur',
+                          desc: 'Ders icerigini ve suresini belirle',
+                          href: '/mentor/offerings',
                           icon: Package,
-                        },
-                        {
-                          done: hasVerifications,
-                          label: 'Dogrulama Belgesi Yukle',
-                          desc: 'Universite veya sinav belgelerini yukle',
-                          href: '/auth/onboarding/mentor?step=verification',
-                          icon: Shield,
-                        },
-                        {
-                          done: isApproved,
-                          label: 'Admin Onayi',
-                          desc: isApproved
-                            ? 'Belgelerin onaylandi!'
-                            : hasVerifications
-                            ? 'Belgeler inceleniyor, yakinda onaylanacak'
-                            : 'Belgeleri yukledikten sonra admin inceleyecek',
-                          href: '#',
-                          icon: CheckCircle,
-                          isWaiting: hasVerifications && !isApproved,
                         },
                       ].map((step, i) => (
                         <Link key={i} href={step.done || step.href === '#' ? '#' : step.href} className="block">
@@ -522,26 +493,14 @@ export default function MentorDashboardPage() {
                       </div>
                       <div>
                         <p className="font-medium text-gray-900 text-sm">Yaklasan dersin yok</p>
-                        <p className="text-xs text-gray-500">
-                          {isApproved
-                            ? 'Takviminde uygun saatleri ekle'
-                            : 'Onay surecini tamamla, ogrenci kabul et'}
-                        </p>
+                        <p className="text-xs text-gray-500">Takviminde uygun saatleri ekle</p>
                       </div>
                     </div>
-                    {isApproved ? (
-                      <Link href="/mentor/availability">
-                        <Button size="sm" className="bg-teal-600 hover:bg-teal-700 text-white text-xs">
-                          Uygunluk Ekle <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                        </Button>
-                      </Link>
-                    ) : (
-                      <Link href="/auth/onboarding/mentor?step=verification">
-                        <Button size="sm" className="bg-teal-600 hover:bg-teal-700 text-white text-xs">
-                          Dogrulama <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                        </Button>
-                      </Link>
-                    )}
+                    <Link href="/mentor/availability">
+                      <Button size="sm" className="bg-teal-600 hover:bg-teal-700 text-white text-xs">
+                        Uygunluk Ekle <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                      </Button>
+                    </Link>
                   </CardContent>
                 </Card>
               )}
