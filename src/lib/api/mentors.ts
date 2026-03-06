@@ -38,32 +38,32 @@ export const mentorsApi = {
 
   // ✅ Student → Mentor role upgrade
   becomeMentor: async (data: {
-    university: string;
-    department: string;
     bio: string;
-    graduationYear?: number;
     headline?: string;
+    university?: string;
+    department?: string;
+    graduationYear?: number;
   }): Promise<{ accessToken: string; refreshToken: string; roles: string[] }> => {
     return apiClient.post('/mentors/become-mentor', data);
   },
 
   // ✅ Profil oluştur (ilk kez)
   createProfile: async (data: {
-    university: string;
-    department: string;
     bio: string;
-    graduationYear?: number;
     headline?: string;
+    university?: string;
+    department?: string;
+    graduationYear?: number;
   }) => {
     return apiClient.post('/mentors/me/profile', data);
   },
 
   // ✅ Profil güncelle (varsa)
   updateProfile: async (data: {
-    university?: string;
-    department?: string;
     bio?: string;
     headline?: string;
+    university?: string;
+    department?: string;
     graduationYear?: number;
   }) => {
     return apiClient.patch('/mentors/me/profile', data);
