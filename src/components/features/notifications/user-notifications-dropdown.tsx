@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Bell, Check, CheckCheck, Loader2, AlertTriangle, BookOpen, PlayCircle, MessageSquare, Info, ChevronRight, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
@@ -239,10 +240,10 @@ export function UserNotificationsDropdown() {
           </div>
         </div>
       )}
-      {/* Cross-role switch confirmation dialog */}
-      {roleSwitchConfirm && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-sm mx-4 w-full">
+      {/* Cross-role switch confirmation dialog — portal to body to avoid header overflow clipping */}
+      {roleSwitchConfirm && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full">
             <h3 className="text-base font-semibold text-gray-900 mb-2">
               Rol degistirilecek
             </h3>
@@ -270,7 +271,8 @@ export function UserNotificationsDropdown() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

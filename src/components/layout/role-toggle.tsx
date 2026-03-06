@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { UserRole } from '@/lib/types/enums';
@@ -91,10 +92,10 @@ export function RoleToggle() {
         </button>
       </div>
 
-      {/* Unsaved work confirmation dialog */}
-      {showConfirm && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-sm mx-4 w-full">
+      {/* Unsaved work confirmation dialog — portal to body to avoid header overflow clipping */}
+      {showConfirm && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full">
             <h3 className="text-base font-semibold text-gray-900 mb-2">
               Rol degistirmek istiyor musunuz?
             </h3>
@@ -117,7 +118,8 @@ export function RoleToggle() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
