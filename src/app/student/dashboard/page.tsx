@@ -310,8 +310,8 @@ export default function StudentDashboardPage() {
                   </section>
                 ))}
               </>
-            ) : hasAnyPurchase ? (
-              /* ══════ DYNAMIC HORIZONTAL BARS ══════ */
+            ) : hasAnyPurchase || profileComplete ? (
+              /* ══════ DYNAMIC HORIZONTAL BARS (profil tamam veya satin alma var) ══════ */
               <>
                 {/* ── BAR 1: Birebir Randevular ── */}
                 <section>
