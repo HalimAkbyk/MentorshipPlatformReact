@@ -345,13 +345,6 @@ export default function MentorOfferingsPage() {
                           </div>
                         )}
                         <div>
-                          <span className="font-medium text-gray-700">Randevu Ayarları:</span>
-                          <ul className="text-gray-600 mt-1 space-y-1">
-                            <li>En fazla {offering.maxBookingDaysAhead} gün ilerisi için randevu</li>
-                            <li>En az {offering.minNoticeHours} saat önceden bildirim</li>
-                          </ul>
-                        </div>
-                        <div>
                           <span className="font-medium text-gray-700">Müsaitlik Programı:</span>
                           <p className="text-gray-600 mt-1">
                             {offering.availabilityTemplateId
@@ -600,23 +593,6 @@ function OfferingFormModal({
             placeholder="Paketin içeriğini, kazanımları, hedef kitleyi detaylı anlatın"
             {...form.register('detailedDescription')}
           />
-        </div>
-
-        {/* Booking Settings */}
-        <div className="border-t pt-4">
-          <h4 className="text-sm font-semibold mb-3 text-gray-700">Randevu Ayarları</h4>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium mb-1">Max İleri Gün</label>
-              <Input type="number" min={1} max={365} {...form.register('maxBookingDaysAhead')} />
-              <p className="text-xs text-gray-500 mt-1">Kaç gün ilerisi için randevu alınabilir</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Min Bildirim (saat)</label>
-              <Input type="number" min={0} max={72} {...form.register('minNoticeHours')} />
-              <p className="text-xs text-gray-500 mt-1">En az kaç saat önceden alınmalı</p>
-            </div>
-          </div>
         </div>
 
         {/* Cover Image */}
