@@ -10,6 +10,7 @@ import {
   useMarkNotificationRead,
   useMarkAllNotificationsRead,
 } from '@/lib/hooks/use-notifications';
+import { useAuthStore } from '@/lib/stores/auth-store';
 import type { UserNotificationDto } from '@/lib/api/notifications';
 
 const DROPDOWN_MAX_ITEMS = 15;
@@ -67,6 +68,12 @@ export function getNavigationUrl(notif: UserNotificationDto, isMentor?: boolean)
 
 export { timeAgo };
 
+function getUrlTargetRole(url: string): 'student' | 'mentor' | null {
+  if (url.startsWith('/mentor')) return 'mentor';
+  if (url.startsWith('/student')) return 'student';
+  return null;
+}
+
 function useNotificationsPageUrl(): string {
   const pathname = usePathname();
   if (pathname.startsWith('/student')) return '/student/notifications';
@@ -78,9 +85,11 @@ export function UserNotificationsDropdown() {
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [roleSwitchConfirm, setRoleSwitchConfirm] = useState<{ url: string; targetRole: 'student' | 'mentor' } | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notificationsPageUrl = useNotificationsPageUrl();
-  const isMentor = pathname.startsWith('/mentor');
+  const { activeView, setActiveView } = useAuthStore();
+  const isMentor = activeView === 'mentor';
 
   const { data: countData } = useNotificationCount();
   const unreadCount = countData?.count ?? 0;
@@ -109,10 +118,30 @@ export function UserNotificationsDropdown() {
       markReadMutation.mutate(notif.id);
     }
     const url = getNavigationUrl(notif, isMentor);
-    if (url) {
-      setOpen(false);
-      router.push(url);
+    if (!url) return;
+
+    const targetRole = getUrlTargetRole(url);
+    // If notification targets a different role, show confirmation
+    if (targetRole && targetRole !== activeView) {
+      setRoleSwitchConfirm({ url, targetRole });
+      return;
     }
+
+    setOpen(false);
+    router.push(url);
+  };
+
+  const confirmRoleSwitch = () => {
+    if (roleSwitchConfirm) {
+      setActiveView(roleSwitchConfirm.targetRole);
+      setOpen(false);
+      router.push(roleSwitchConfirm.url);
+    }
+    setRoleSwitchConfirm(null);
+  };
+
+  const cancelRoleSwitch = () => {
+    setRoleSwitchConfirm(null);
   };
 
   return (
@@ -207,6 +236,39 @@ export function UserNotificationsDropdown() {
               Bildirimleri Gor
               <ChevronRight className="h-3.5 w-3.5" />
             </Link>
+          </div>
+        </div>
+      )}
+      {/* Cross-role switch confirmation dialog */}
+      {roleSwitchConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-sm mx-4 w-full">
+            <h3 className="text-base font-semibold text-gray-900 mb-2">
+              Rol degistirilecek
+            </h3>
+            <p className="text-sm text-gray-600 mb-5">
+              Bu bildirim{' '}
+              <span className="font-medium">
+                {roleSwitchConfirm.targetRole === 'mentor' ? 'Egitmen' : 'Ogrenci'}
+              </span>{' '}
+              rolune ait. Devam ederseniz{' '}
+              {roleSwitchConfirm.targetRole === 'mentor' ? 'egitmen' : 'ogrenci'} gorunumune
+              gecilecektir.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={cancelRoleSwitch}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Iptal
+              </button>
+              <button
+                onClick={confirmRoleSwitch}
+                className="px-4 py-2 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition-colors"
+              >
+                Degistir ve Git
+              </button>
+            </div>
           </div>
         </div>
       )}
