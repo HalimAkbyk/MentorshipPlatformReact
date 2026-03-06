@@ -2,12 +2,27 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import {
+  LayoutDashboard, MessageSquare, Package, BookOpen, Clock,
+  Zap, Users, PlayCircle, DollarSign, BarChart3, CreditCard,
+  Wallet, Settings, Search, GraduationCap, Calendar,
+} from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { UserRole } from '@/lib/types/enums';
+import type { LucideIcon } from 'lucide-react';
 
-type Item = { label: string; href: string };
-type Section = { title: string; items: Item[] };
+type NavItem = {
+  label: string;
+  href: string;
+  icon: LucideIcon;
+  color: string;
+};
+
+type NavSection = {
+  title: string;
+  items: NavItem[];
+};
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -19,35 +34,43 @@ export function Sidebar() {
   const isDualRole = isMentor && isStudent;
   const viewAsMentor = isDualRole ? activeView === 'mentor' : isMentor;
 
-  const sections: Section[] = [];
+  const sections: NavSection[] = [];
 
   // ── Mentor sections ──
   if (viewAsMentor) {
     sections.push({
       title: 'Genel',
       items: [
-        { label: 'Panel', href: '/mentor/dashboard' },
-        { label: 'Mesajlarım', href: '/mentor/messages' },
+        { label: 'Panel', href: '/mentor/dashboard', icon: LayoutDashboard, color: 'text-teal-600' },
+        { label: 'Mesajlarım', href: '/mentor/messages', icon: MessageSquare, color: 'text-blue-600' },
       ],
     });
 
     sections.push({
-      title: 'İçerik Yönetimi',
+      title: 'Icerik Yonetimi',
       items: [
-        { label: '1:1 Paketlerim', href: '/mentor/offerings' },
-        { label: 'Bire Bir Seanslarım', href: '/mentor/bookings' },
-        { label: 'Seans Talepleri', href: '/mentor/session-requests' },
-        { label: 'Anlık Seans', href: '/mentor/free-session' },
-        { label: 'Çoklu Seanslarım', href: '/mentor/group-classes' },
-        { label: 'Video Eğitimlerim', href: '/mentor/courses' },
+        { label: '1:1 Paketlerim', href: '/mentor/offerings', icon: Package, color: 'text-purple-600' },
+        { label: 'Seanslarım', href: '/mentor/bookings', icon: BookOpen, color: 'text-blue-600' },
+        { label: 'Seans Talepleri', href: '/mentor/session-requests', icon: Clock, color: 'text-amber-600' },
+        { label: 'Anlık Seans', href: '/mentor/free-session', icon: Zap, color: 'text-orange-500' },
+        { label: 'Grup Dersleri', href: '/mentor/group-classes', icon: Users, color: 'text-indigo-600' },
+        { label: 'Video Egitimlerim', href: '/mentor/courses', icon: PlayCircle, color: 'text-green-600' },
       ],
     });
 
     sections.push({
-      title: 'Kazanç',
+      title: 'Kazanc',
       items: [
-        { label: 'Kazançlarım', href: '/mentor/earnings' },
-        { label: 'Performansım', href: '/mentor/performance' },
+        { label: 'Kazanclarım', href: '/mentor/earnings', icon: DollarSign, color: 'text-green-600' },
+        { label: 'Performansım', href: '/mentor/performance', icon: BarChart3, color: 'text-purple-600' },
+      ],
+    });
+
+    sections.push({
+      title: 'Hesap',
+      items: [
+        { label: 'Uygunluk', href: '/mentor/availability', icon: Calendar, color: 'text-teal-600' },
+        { label: 'Ayarlar', href: '/mentor/settings', icon: Settings, color: 'text-gray-500' },
       ],
     });
   }
@@ -57,70 +80,69 @@ export function Sidebar() {
     sections.push({
       title: 'Genel',
       items: [
-        { label: 'Panel', href: '/student/dashboard' },
-        { label: 'Mesajlarım', href: '/student/messages' },
+        { label: 'Panel', href: '/student/dashboard', icon: LayoutDashboard, color: 'text-teal-600' },
+        { label: 'Mesajlarım', href: '/student/messages', icon: MessageSquare, color: 'text-blue-600' },
       ],
     });
 
-    const katilimItems: Item[] = [
-      { label: 'Eğitim Keşfet', href: '/student/explore-courses' },
-      { label: 'Grup Dersleri Keşfet', href: '/student/explore-classes' },
-      { label: 'Bire Bir Seanslarım', href: '/student/bookings' },
-      { label: 'Seans Taleplerim', href: '/student/session-requests' },
-      { label: 'Çoklu Seanslarım', href: '/student/my-classes' },
-      { label: 'Video Eğitimlerim', href: '/student/courses' },
-    ];
+    sections.push({
+      title: 'Kesfet',
+      items: [
+        { label: 'Egitim Kesfet', href: '/student/explore-courses', icon: Search, color: 'text-teal-600' },
+        { label: 'Grup Dersleri', href: '/student/explore-classes', icon: Users, color: 'text-indigo-600' },
+      ],
+    });
 
     sections.push({
       title: 'Katılımlarım',
-      items: katilimItems,
+      items: [
+        { label: 'Seanslarım', href: '/student/bookings', icon: BookOpen, color: 'text-blue-600' },
+        { label: 'Seans Taleplerim', href: '/student/session-requests', icon: Clock, color: 'text-amber-600' },
+        { label: 'Grup Derslerim', href: '/student/my-classes', icon: GraduationCap, color: 'text-indigo-600' },
+        { label: 'Video Egitimlerim', href: '/student/courses', icon: PlayCircle, color: 'text-green-600' },
+      ],
     });
-
-    const hesapItems: Item[] = [
-      { label: 'Ödemelerim', href: '/student/payments' },
-      { label: 'Kredilerim', href: '/student/credits' },
-      { label: 'Ayarlar', href: viewAsMentor ? '/mentor/settings' : '/student/settings' },
-    ];
 
     sections.push({
       title: 'Hesap',
-      items: hesapItems,
+      items: [
+        { label: 'Odemelerim', href: '/student/payments', icon: Wallet, color: 'text-green-600' },
+        { label: 'Kredilerim', href: '/student/credits', icon: CreditCard, color: 'text-purple-600' },
+        { label: 'Ayarlar', href: '/student/settings', icon: Settings, color: 'text-gray-500' },
+      ],
     });
   }
 
   return (
-    <aside className="hidden md:block w-64 border-r bg-white sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto flex-shrink-0">
-      <div className="p-4">
-        {sections.length === 0 ? (
-          <div className="text-sm text-gray-500">Menü için giriş yapmalısın.</div>
-        ) : (
-          <nav className="flex flex-col gap-4">
-            {sections.map((section) => (
-              <div key={section.title}>
-                <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 px-3 mb-1">
-                  {section.title}
-                </div>
-                <div className="flex flex-col gap-0.5">
-                  {section.items.map((it) => {
-                    const active = pathname === it.href || pathname?.startsWith(it.href + '/');
-                    return (
-                      <Link
-                        key={it.href}
-                        href={it.href}
-                        className={cn(
-                          'px-3 py-2 rounded-md text-sm hover:bg-gray-100',
-                          active && 'bg-gray-100 font-medium'
-                        )}
-                      >
-                        {it.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </nav>
-        )}
+    <aside className="hidden md:block w-60 xl:w-64 border-r bg-white sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto flex-shrink-0">
+      <div className="p-3 space-y-4">
+        {sections.map((section) => (
+          <div key={section.title}>
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 px-3 mb-1.5">
+              {section.title}
+            </div>
+            <nav className="space-y-0.5">
+              {section.items.map((item) => {
+                const active = pathname === item.href || pathname?.startsWith(item.href + '/');
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors',
+                      active
+                        ? 'bg-teal-50 text-teal-700 font-medium'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    )}
+                  >
+                    <item.icon className={cn('w-4 h-4 flex-shrink-0', active ? 'text-teal-600' : item.color)} />
+                    <span className="truncate">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        ))}
       </div>
     </aside>
   );
