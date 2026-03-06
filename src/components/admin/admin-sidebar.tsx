@@ -21,6 +21,7 @@ import {
   ChevronRight,
   X,
   Ticket,
+  BookOpen,
   type LucideIcon,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -156,6 +157,14 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Sistem Sagligi', href: '/admin/system/health' },
       { label: 'Arka Plan Isleri', href: '/admin/system/jobs' },
       { label: 'Ozellik Bayraklari', href: '/admin/system/feature-flags' },
+    ],
+  },
+  {
+    id: 'wiki',
+    label: 'Dokumantasyon',
+    icon: BookOpen,
+    items: [
+      { label: 'Platform Wiki', href: '/admin/wiki' },
     ],
   },
 ];
