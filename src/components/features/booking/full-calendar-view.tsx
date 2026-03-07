@@ -84,7 +84,7 @@ export function FullCalendarView({ mentorId, offeringId, onSlotClick }: FullCale
       case 'Available':
         return 'bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer border-green-200';
       case 'Booked':
-        return 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed';
+        return 'bg-red-50 text-red-400 border-red-200 cursor-not-allowed';
       case 'Unavailable':
         return 'bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer border-blue-200';
       default:
@@ -122,7 +122,7 @@ export function FullCalendarView({ mentorId, offeringId, onSlotClick }: FullCale
           <span className="text-gray-600">Talep edilebilir</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-gray-100 border border-gray-200" />
+          <div className="w-3 h-3 rounded bg-red-50 border border-red-200" />
           <span className="text-gray-600">Dolu</span>
         </div>
       </div>

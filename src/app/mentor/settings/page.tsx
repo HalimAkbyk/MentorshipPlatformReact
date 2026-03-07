@@ -20,6 +20,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { userApi } from '@/lib/api/user';
+import { mentorsApi } from '@/lib/api/mentors';
 import { onboardingApi, type MentorOnboardingData } from '@/lib/api/onboarding';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils/cn';
@@ -154,6 +155,9 @@ export default function MentorSettingsPage() {
   const [showConfirmPw, setShowConfirmPw] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  /* ── Mentor profile state ── */
+  const [isListed, setIsListed] = useState(false);
+
   /* ── Mentor onboarding state ── */
   const [onboardingLoading, setOnboardingLoading] = useState(true);
   const [savingOnboarding, setSavingOnboarding] = useState(false);
@@ -176,6 +180,11 @@ export default function MentorSettingsPage() {
   const [mentoringTypes, setMentoringTypes] = useState<string[]>([]);
   const [sessionFormats, setSessionFormats] = useState<string[]>([]);
   const [offerFreeIntro, setOfferFreeIntro] = useState(true);
+
+  /* ── Load mentor profile (isListed) ── */
+  useEffect(() => {
+    mentorsApi.getMyProfile().then(p => setIsListed(p.isListed)).catch(() => {});
+  }, []);
 
   /* ── Load mentor onboarding data ── */
   useEffect(() => {
@@ -448,32 +457,9 @@ export default function MentorSettingsPage() {
                     <Card className="border-0 shadow-sm">
                       <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2"><Globe className="w-5 h-5 text-teal-600" />Genel Bilgiler</CardTitle>
-                        <CardDescription>Mentor tipiniz, konum ve dil bilgileriniz</CardDescription>
+                        <CardDescription>Konum ve dil bilgileriniz</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        {/* Mentor Type */}
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Mentor Tipi</label>
-                          <div className="grid grid-cols-2 gap-3">
-                            {[
-                              { id: 'professional', label: 'Profesyonel', desc: 'Is hayatinda aktif' },
-                              { id: 'student', label: 'Ogrenci Mentor', desc: 'Universite ogrencisi' },
-                            ].map((type) => (
-                              <button
-                                key={type.id}
-                                onClick={() => setMentorType(type.id)}
-                                className={cn(
-                                  'p-3 rounded-xl border text-left transition-all',
-                                  mentorType === type.id ? 'border-teal-300 bg-teal-50' : 'border-gray-200 hover:border-teal-200'
-                                )}
-                              >
-                                <p className={cn('text-sm font-medium', mentorType === type.id ? 'text-teal-700' : 'text-gray-700')}>{type.label}</p>
-                                <p className="text-xs text-gray-500">{type.desc}</p>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
                         {/* City */}
                         <div>
                           <label className="block text-sm font-medium mb-2">Sehir</label>
@@ -660,7 +646,7 @@ export default function MentorSettingsPage() {
                           <div>
                             <label className="block text-sm font-medium mb-2">Egitim Durumu</label>
                             <Select value={educationStatus} onValueChange={setEducationStatus}>
-                              <SelectTrigger><SelectValue placeholder="Secin" /></SelectTrigger>
+                              <SelectTrigger><SelectValue placeholder="Secin">{educationStatus ? EDUCATION_STATUS.find(s => s.id === educationStatus)?.label : 'Secin'}</SelectValue></SelectTrigger>
                               <SelectContent>
                                 {EDUCATION_STATUS.map(s => <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>)}
                               </SelectContent>
@@ -766,6 +752,32 @@ export default function MentorSettingsPage() {
                             <p className="text-xs text-gray-500">15 dakika ucretsiz tanitim gorusmesi sun</p>
                           </div>
                           <Switch checked={offerFreeIntro} onCheckedChange={setOfferFreeIntro} />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Publish Status */}
+                    <Card className={cn('shadow-sm', isListed ? 'border-green-200 bg-green-50/50' : 'border-amber-200 bg-amber-50/50')}>
+                      <CardContent className="py-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={cn('w-10 h-10 rounded-full flex items-center justify-center', isListed ? 'bg-green-100' : 'bg-amber-100')}>
+                              {isListed ? <Check className="w-5 h-5 text-green-600" /> : <Eye className="w-5 h-5 text-amber-600" />}
+                            </div>
+                            <div>
+                              <p className={cn('text-sm font-semibold', isListed ? 'text-green-800' : 'text-amber-800')}>
+                                {isListed ? 'Profiliniz Yayinda' : 'Profiliniz Yayinda Degil'}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {isListed
+                                  ? 'Ogrenciler profilinizi gorebilir ve randevu alabilir.'
+                                  : 'Profilinizi tamamlayip kaydedin. Admin onayindan sonra yayina alinacaktir.'}
+                              </p>
+                            </div>
+                          </div>
+                          {!isListed && (
+                            <Badge className="bg-amber-100 text-amber-700 border-amber-200">Admin Onayi Bekleniyor</Badge>
+                          )}
                         </div>
                       </CardContent>
                     </Card>

@@ -507,15 +507,10 @@ export default function MentorProfilePage() {
                                 <Clock className="w-4 h-4 text-teal-600" />
                                 {offering.durationMin} dakika
                               </span>
-                              <span className="flex items-center gap-1">
+                              <span className="flex items-center gap-1 text-xs text-gray-500">
                                 <Calendar className="w-4 h-4 text-teal-600" />
-                                {offering.maxBookingDaysAhead} gün ilerisi
+                                En erken 2 saat oncesine randevu alinabilir
                               </span>
-                              {offering.minNoticeHours > 0 && (
-                                <span className="text-xs text-gray-500">
-                                  (en az {offering.minNoticeHours} saat önce)
-                                </span>
-                              )}
                             </div>
 
                             {offering.questions && offering.questions.length > 0 && (
