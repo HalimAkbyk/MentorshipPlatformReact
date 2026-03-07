@@ -21,6 +21,7 @@ export type VerificationDto = {
 export type PendingMentorDto = {
   userId: string;
   fullName: string;
+  avatarUrl?: string | null;
   email: string;
   university?: string | null;
   department?: string | null;
@@ -30,6 +31,18 @@ export type PendingMentorDto = {
   hourlyRate?: number | null;
   isListed: boolean;
   createdAt: string;
+  city?: string | null;
+  educationStatus?: string | null;
+  categories?: string | null;
+  subtopics?: string | null;
+  languages?: string | null;
+  certifications?: string | null;
+  linkedinUrl?: string | null;
+  githubUrl?: string | null;
+  portfolioUrl?: string | null;
+  sessionFormats?: string | null;
+  offeringCount: number;
+  hasAvailability: boolean;
   verifications: VerificationDto[];
 };
 

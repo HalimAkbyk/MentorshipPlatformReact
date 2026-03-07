@@ -850,6 +850,10 @@ export const adminApi = {
     return apiClient.post<void>(`/admin/mentors/${userId}/unpublish`);
   },
 
+  sendMentorNotification: async (userId: string, title: string, message: string): Promise<void> => {
+    return apiClient.post<void>(`/admin/mentors/${userId}/notify`, { title, message });
+  },
+
   // Legacy Refunds (old system — kept for backward compat)
   getPendingRefunds: async (): Promise<PendingRefundDto[]> => {
     return apiClient.get<PendingRefundDto[]>('/admin/refunds', { status: 'Pending' });
