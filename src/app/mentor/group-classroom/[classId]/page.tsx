@@ -132,6 +132,13 @@ export default function MentorGroupClassroomPage() {
   const currentUser = useAuthStore(s => s.user);
   const localDisplayName = currentUser?.displayName || 'Mentor';
 
+  // If current user is NOT the mentor of this class, redirect to student classroom
+  useEffect(() => {
+    if (groupClass && currentUser?.id && groupClass.mentorUserId !== currentUser.id) {
+      router.replace(`/student/group-classroom/${classId}`);
+    }
+  }, [groupClass, currentUser?.id, classId, router]);
+
   // State
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);

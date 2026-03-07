@@ -55,7 +55,9 @@ export function getNavigationUrl(notif: UserNotificationDto, isMentor?: boolean)
     case 'Course':
       return `/mentor/courses/${notif.referenceId}/edit`;
     case 'Booking':
-      return `/student/bookings/${notif.referenceId}`;
+      return isMentor
+        ? `/mentor/bookings/${notif.referenceId}`
+        : `/student/bookings/${notif.referenceId}`;
     case 'Order':
       return '/student/payments';
     case 'Conversation':

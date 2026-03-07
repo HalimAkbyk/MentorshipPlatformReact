@@ -7,6 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Clock, User, MapPin, AlertCircle, Video, MessageSquare, CheckCircle, HelpCircle, RefreshCw, X, Mail, Info, RotateCcw } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '../../../../lib/stores/auth-store';
 import { Button } from '../../../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../../components/ui/avatar';
@@ -37,6 +38,7 @@ export default function BookingDetailPage() {
   const router = useRouter();
   const bookingId = params.id as string;
 
+  const { user } = useAuthStore();
   const { data: booking, isLoading, refetch } = useBooking(bookingId);
   const cancelBooking = useCancelBooking();
   const rescheduleBooking = useRescheduleBooking();
@@ -176,6 +178,12 @@ export default function BookingDetailPage() {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600" />
       </div>
     );
+  }
+
+  // If current user is the mentor (not student) of this booking, redirect to mentor view
+  if (booking && user?.id && booking.studentUserId !== user.id && booking.mentorUserId === user.id) {
+    router.replace(`/mentor/bookings/${bookingId}`);
+    return null;
   }
 
   if (!booking) {

@@ -26,11 +26,13 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useSessionJoinSettings, getSessionJoinStatus } from '../../../../lib/hooks/use-platform-settings';
+import { useAuthStore } from '../../../../lib/stores/auth-store';
 
 export default function MentorBookingDetailPage() {
   const params = useParams();
   const router = useRouter();
   const bookingId = params.id as string;
+  const { user } = useAuthStore();
 
   const [booking, setBooking] = useState<BookingDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -172,6 +174,12 @@ export default function MentorBookingDetailPage() {
         </div>
       </div>
     );
+  }
+
+  // If current user is the student (not mentor) of this booking, redirect to student view
+  if (booking && user?.id && booking.mentorUserId !== user.id && booking.studentUserId === user.id) {
+    router.replace(`/student/bookings/${bookingId}`);
+    return null;
   }
 
   if (!booking) {

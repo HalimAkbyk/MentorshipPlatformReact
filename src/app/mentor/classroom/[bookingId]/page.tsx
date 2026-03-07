@@ -195,6 +195,12 @@ export default function MentorClassroomPage() {
       try {
         const resp = await apiClient.get(`/bookings/${bookingId}`);
         const data = (resp as any)?.data ?? resp;
+        // If current user is NOT the mentor of this booking, redirect to student classroom
+        const currentUserId = useAuthStore.getState().user?.id;
+        if (currentUserId && data?.mentorUserId !== currentUserId && data?.studentUserId === currentUserId) {
+          router.replace(`/student/classroom/${bookingId}`);
+          return;
+        }
         const status = data?.status;
         if (status && status !== 'Confirmed') {
           toast.error('Bu seans iptal edilmiş veya tamamlanmış.');
