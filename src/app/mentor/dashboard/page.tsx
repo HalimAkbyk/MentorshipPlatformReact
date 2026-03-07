@@ -129,7 +129,6 @@ export default function MentorDashboardPage() {
       { key: 'bio', label: 'Bio ve baslik ekle', done: hasBioHeadline, href: '/mentor/settings' },
       { key: 'offering', label: 'Ders paketi olustur', done: hasOfferings, href: '/mentor/offerings' },
       { key: 'availability', label: 'Uygunluk takvimi ekle', done: hasAvailability, href: '/mentor/availability' },
-      { key: 'listed', label: 'Profili yayina al', done: !!profile?.isListed, href: '/mentor/settings' },
     ];
   }, [hasProfile, hasOfferings, hasAvailability, profile]);
 
