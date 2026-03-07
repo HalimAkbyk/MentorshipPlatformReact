@@ -46,39 +46,35 @@ type PasswordForm = z.infer<typeof passwordSchema>;
 
 /* ── Constants for mentor onboarding fields ── */
 const CATEGORIES = [
-  { id: 'software', label: 'Yazilim Gelistirme', emoji: '\u{1F4BB}' },
-  { id: 'data-science', label: 'Veri Bilimi & AI', emoji: '\u{1F916}' },
-  { id: 'design', label: 'Tasarim (UI/UX)', emoji: '\u{1F3A8}' },
-  { id: 'business', label: 'Is & Girisimcilik', emoji: '\u{1F4CA}' },
-  { id: 'marketing', label: 'Dijital Pazarlama', emoji: '\u{1F4F1}' },
-  { id: 'education', label: 'Egitim & Sinavlar', emoji: '\u{1F4DA}' },
-  { id: 'finance', label: 'Finans & Muhasebe', emoji: '\u{1F4B0}' },
-  { id: 'career', label: 'Kariyer Koclugu', emoji: '\u{1F3AF}' },
-  { id: 'product', label: 'Urun Yonetimi', emoji: '\u{1F680}' },
-  { id: 'devops', label: 'DevOps & Cloud', emoji: '\u{2601}\u{FE0F}' },
+  { id: 'matematik', label: 'Matematik', emoji: '\u{1F4D0}' },
+  { id: 'fizik', label: 'Fizik', emoji: '\u{269B}\u{FE0F}' },
+  { id: 'kimya', label: 'Kimya', emoji: '\u{1F9EA}' },
+  { id: 'biyoloji', label: 'Biyoloji', emoji: '\u{1F9EC}' },
+  { id: 'turkce', label: 'Turkce & Edebiyat', emoji: '\u{1F4D6}' },
+  { id: 'tarih', label: 'Tarih & Cografya', emoji: '\u{1F30D}' },
+  { id: 'ingilizce', label: 'Ingilizce', emoji: '\u{1F1EC}\u{1F1E7}' },
+  { id: 'yazilim', label: 'Yazilim & Teknoloji', emoji: '\u{1F4BB}' },
+  { id: 'genel-kultur', label: 'Genel Kultur', emoji: '\u{1F4DA}' },
 ];
 
 const SUGGESTED_SUBTOPICS: Record<string, string[]> = {
-  'software': ['React', 'Node.js', '.NET', 'Python', 'Java', 'TypeScript', 'Go', 'Swift', 'Flutter', 'React Native'],
-  'data-science': ['Machine Learning', 'Deep Learning', 'NLP', 'Computer Vision', 'Python', 'TensorFlow', 'PyTorch', 'SQL', 'Power BI', 'Tableau'],
-  'design': ['Figma', 'UI Design', 'UX Research', 'Design Systems', 'Prototyping', 'Adobe XD'],
-  'business': ['Startup', 'Business Plan', 'Strateji', 'Yonetim', 'Liderlik'],
-  'marketing': ['SEO', 'Google Ads', 'Social Media', 'Content Marketing', 'Growth Hacking'],
-  'education': ['YKS', 'TYT', 'AYT', 'KPSS', 'Matematik', 'Fizik', 'Kimya', 'Biyoloji', 'Turkce', 'Geometri', 'Ingilizce', 'IELTS', 'TOEFL'],
-  'finance': ['Muhasebe', 'Vergi', 'Yatirim', 'Kripto', 'Borsa', 'Finansal Analiz'],
-  'career': ['CV Hazirlama', 'Mulakat Hazirlik', 'Kariyer Gecisi', 'LinkedIn Optimizasyon'],
-  'product': ['Agile', 'Scrum', 'Product Discovery', 'User Story', 'Roadmap'],
-  'devops': ['Docker', 'Kubernetes', 'AWS', 'Azure', 'CI/CD', 'Terraform', 'Linux'],
+  'matematik': ['TYT Matematik', 'AYT Matematik', 'Geometri', 'Analitik Geometri', 'Temel Kavramlar', 'Problem Cozme'],
+  'fizik': ['TYT Fizik', 'AYT Fizik', 'Mekanik', 'Elektrik', 'Optik', 'Dalgalar'],
+  'kimya': ['TYT Kimya', 'AYT Kimya', 'Organik Kimya', 'Analitik Kimya', 'Genel Kimya'],
+  'biyoloji': ['TYT Biyoloji', 'AYT Biyoloji', 'Hucre', 'Genetik', 'Ekoloji', 'Insan Fizyolojisi'],
+  'turkce': ['TYT Turkce', 'AYT Edebiyat', 'Paragraf', 'Dil Bilgisi', 'Edebi Akimlar'],
+  'tarih': ['TYT Tarih', 'AYT Tarih', 'Cografya', 'Inkilap Tarihi', 'Osmanli', 'Dunya Tarihi'],
+  'ingilizce': ['YDS', 'YDT', 'IELTS', 'TOEFL', 'Grammar', 'Speaking', 'Writing'],
+  'yazilim': ['Python', 'JavaScript', 'React', 'Web Gelistirme', 'Mobil Uygulama', 'Algoritma'],
+  'genel-kultur': ['Felsefe', 'Din Kulturu', 'Vatandaslik', 'Mantik'],
 };
 
 const TARGET_AUDIENCES = [
   { id: 'high-school', label: 'Lise Ogrencileri' },
-  { id: 'exam-prep', label: 'Sinav Hazirlik' },
+  { id: 'exam-prep', label: 'TYT/AYT Hazirlik' },
   { id: 'students', label: 'Universite Ogrencileri' },
-  { id: 'juniors', label: 'Junior Profesyoneller' },
-  { id: 'switchers', label: 'Kariyer Degistirenler' },
-  { id: 'seniors', label: 'Deneyimli Profesyoneller' },
-  { id: 'entrepreneurs', label: 'Girisimciler' },
+  { id: 'yds-prep', label: 'YDS/YDT Hazirlik' },
+  { id: 'kpss-prep', label: 'KPSS Hazirlik' },
 ];
 
 const EXPERIENCE_LEVELS = [
@@ -131,12 +127,11 @@ const TIMEZONES = [
   'Asia/Dubai (UTC+4)',
 ];
 
-const YEARS_OF_EXPERIENCE = [
-  { id: '1-2', label: '1-2 yil' },
-  { id: '3-5', label: '3-5 yil' },
-  { id: '5-10', label: '5-10 yil' },
-  { id: '10-15', label: '10-15 yil' },
-  { id: '15+', label: '15+ yil' },
+const EDUCATION_STATUS = [
+  { id: 'high-school', label: 'Lise Ogrencisi' },
+  { id: 'university', label: 'Universite Ogrencisi' },
+  { id: 'graduate', label: 'Mezun' },
+  { id: 'masters', label: 'Yuksek Lisans / Doktora' },
 ];
 
 /* ── Tab definitions ── */
@@ -171,11 +166,9 @@ export default function MentorSettingsPage() {
   const [subtopicInput, setSubtopicInput] = useState('');
   const [targetAudience, setTargetAudience] = useState<string[]>([]);
   const [experienceLevels, setExperienceLevels] = useState<string[]>([]);
-  const [yearsOfExperience, setYearsOfExperience] = useState('');
-  const [currentRole, setCurrentRole] = useState('');
-  const [currentCompany, setCurrentCompany] = useState('');
-  const [previousCompanies, setPreviousCompanies] = useState('');
-  const [education, setEducation] = useState('');
+  const [educationStatus, setEducationStatus] = useState('');
+  const [university, setUniversity] = useState('');
+  const [department, setDepartment] = useState('');
   const [certifications, setCertifications] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [githubUrl, setGithubUrl] = useState('');
@@ -196,11 +189,9 @@ export default function MentorSettingsPage() {
       if (existing.subtopics) try { setSubtopics(JSON.parse(existing.subtopics)); } catch {}
       if (existing.targetAudience) try { setTargetAudience(JSON.parse(existing.targetAudience)); } catch {}
       if (existing.experienceLevels) try { setExperienceLevels(JSON.parse(existing.experienceLevels)); } catch {}
-      if (existing.yearsOfExperience) setYearsOfExperience(existing.yearsOfExperience);
-      if (existing.currentRole) setCurrentRole(existing.currentRole);
-      if (existing.currentCompany) setCurrentCompany(existing.currentCompany);
-      if (existing.previousCompanies) setPreviousCompanies(existing.previousCompanies);
-      if (existing.education) setEducation(existing.education);
+      if (existing.yearsOfExperience) setEducationStatus(existing.yearsOfExperience);
+      if (existing.currentRole) setUniversity(existing.currentRole);
+      if (existing.currentCompany) setDepartment(existing.currentCompany);
       if (existing.certifications) setCertifications(existing.certifications);
       if (existing.linkedinUrl) setLinkedinUrl(existing.linkedinUrl);
       if (existing.githubUrl) setGithubUrl(existing.githubUrl);
@@ -277,11 +268,11 @@ export default function MentorSettingsPage() {
         subtopics: JSON.stringify(subtopics),
         targetAudience: JSON.stringify(targetAudience),
         experienceLevels: JSON.stringify(experienceLevels),
-        yearsOfExperience,
-        currentRole,
-        currentCompany,
-        previousCompanies,
-        education,
+        yearsOfExperience: educationStatus,
+        currentRole: university,
+        currentCompany: department,
+        previousCompanies: '',
+        education: '',
         certifications,
         linkedinUrl,
         githubUrl,
@@ -658,46 +649,40 @@ export default function MentorSettingsPage() {
                       </CardContent>
                     </Card>
 
-                    {/* Professional Info */}
+                    {/* Education & Background Info */}
                     <Card className="border-0 shadow-sm">
                       <CardHeader>
-                        <CardTitle className="text-base flex items-center gap-2"><Briefcase className="w-5 h-5 text-blue-600" />Profesyonel Bilgiler</CardTitle>
-                        <CardDescription>Kariyer ve egitim bilgileriniz</CardDescription>
+                        <CardTitle className="text-base flex items-center gap-2"><GraduationCap className="w-5 h-5 text-blue-600" />Egitim Bilgileri</CardTitle>
+                        <CardDescription>Egitim durumunuz ve arka plan bilgileriniz</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium mb-2">Deneyim Suresi</label>
-                            <Select value={yearsOfExperience} onValueChange={setYearsOfExperience}>
+                            <label className="block text-sm font-medium mb-2">Egitim Durumu</label>
+                            <Select value={educationStatus} onValueChange={setEducationStatus}>
                               <SelectTrigger><SelectValue placeholder="Secin" /></SelectTrigger>
                               <SelectContent>
-                                {YEARS_OF_EXPERIENCE.map(y => <SelectItem key={y.id} value={y.id}>{y.label}</SelectItem>)}
+                                {EDUCATION_STATUS.map(s => <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>)}
                               </SelectContent>
                             </Select>
                           </div>
                           <div>
-                            <label className="block text-sm font-medium mb-2">Mevcut Pozisyon</label>
-                            <Input value={currentRole} onChange={(e) => setCurrentRole(e.target.value)} placeholder="ornegin: Senior Developer" />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium mb-2">Mevcut Sirket</label>
-                            <Input value={currentCompany} onChange={(e) => setCurrentCompany(e.target.value)} placeholder="Sirket adi" />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium mb-2">Onceki Sirketler</label>
-                            <Input value={previousCompanies} onChange={(e) => setPreviousCompanies(e.target.value)} placeholder="Google, Microsoft..." />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium mb-2">Egitim</label>
-                            <Input value={education} onChange={(e) => setEducation(e.target.value)} placeholder="Universite, Bolum" />
-                          </div>
-                          <div>
                             <label className="block text-sm font-medium mb-2">Sertifikalar</label>
-                            <Input value={certifications} onChange={(e) => setCertifications(e.target.value)} placeholder="AWS, PMP..." />
+                            <Input value={certifications} onChange={(e) => setCertifications(e.target.value)} placeholder="YDS, IELTS, TOEFL..." />
                           </div>
                         </div>
+                        {(educationStatus === 'university' || educationStatus === 'graduate' || educationStatus === 'masters') && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium mb-2">Universite</label>
+                              <Input value={university} onChange={(e) => setUniversity(e.target.value)} placeholder="Universite adi" />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium mb-2">Bolum</label>
+                              <Input value={department} onChange={(e) => setDepartment(e.target.value)} placeholder="Bolum adi" />
+                            </div>
+                          </div>
+                        )}
 
                         {/* Social Links */}
                         <div className="pt-2">
