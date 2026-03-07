@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAssignment, useSubmitAssignment } from '@/lib/hooks/use-assignments';
+import { libraryApi } from '@/lib/api/library';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +25,8 @@ import {
   CheckCircle,
   RotateCcw,
   XCircle,
+  Upload,
+  Loader2,
 } from 'lucide-react';
 import type { AssignmentMaterialDto, SubmissionDto } from '@/lib/api/assignments';
 
@@ -61,6 +64,7 @@ export default function StudentAssignmentDetailPage() {
   const [submissionText, setSubmissionText] = useState('');
   const [fileUrl, setFileUrl] = useState('');
   const [originalFileName, setOriginalFileName] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   if (isLoading) {
     return (
@@ -330,31 +334,60 @@ export default function StudentAssignmentDetailPage() {
               </div>
 
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Dosya URL (opsiyonel)</label>
-                <Input
-                  value={fileUrl}
-                  onChange={(e) => setFileUrl(e.target.value)}
-                  placeholder="https://..."
-                  className="text-sm"
-                />
+                <label className="text-xs text-gray-500 mb-1 block">Dosya Yukle (opsiyonel)</label>
+                {fileUrl ? (
+                  <div className="flex items-center gap-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                    <FileCheck className="w-4 h-4 text-green-600 flex-shrink-0" />
+                    <span className="text-sm text-green-700 font-medium truncate flex-1">{originalFileName || 'Dosya yuklendi'}</span>
+                    <button
+                      type="button"
+                      onClick={() => { setFileUrl(''); setOriginalFileName(''); }}
+                      className="text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      <XCircle className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-teal-300 hover:bg-teal-50/30 transition-colors">
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 text-teal-600 animate-spin" />
+                        <span className="text-sm text-gray-500">Yukleniyor...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm text-gray-500">Dosya sec veya surukle</span>
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      className="hidden"
+                      disabled={isUploading}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setIsUploading(true);
+                        try {
+                          const res = await libraryApi.upload(file);
+                          setFileUrl(res.fileUrl);
+                          setOriginalFileName(res.originalFileName);
+                          toast.success('Dosya yuklendi');
+                        } catch {
+                          toast.error('Dosya yuklenemedi');
+                        } finally {
+                          setIsUploading(false);
+                        }
+                      }}
+                    />
+                  </label>
+                )}
               </div>
-
-              {fileUrl && (
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Dosya Adi</label>
-                  <Input
-                    value={originalFileName}
-                    onChange={(e) => setOriginalFileName(e.target.value)}
-                    placeholder="odev.pdf"
-                    className="text-sm"
-                  />
-                </div>
-              )}
 
               <div className="flex justify-end pt-2">
                 <Button
                   onClick={handleSubmit}
-                  disabled={submitMutation.isPending}
+                  disabled={submitMutation.isPending || isUploading}
                   className="text-sm bg-gradient-to-r from-teal-600 to-green-600 text-white"
                 >
                   <Send className="w-4 h-4 mr-1" />
