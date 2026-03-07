@@ -95,15 +95,23 @@ export function Header() {
     { href: '/public/pricing', label: 'Fiyatlandırma' },
   ];
 
-  // Unified authenticated links — same for Student & Mentor
-  const authenticatedLinks: NavLink[] = [
+  // Student-facing nav links (explore & buy)
+  const studentLinks: NavLink[] = [
     { href: '/student/explore-courses', label: 'Eğitimler', icon: <PlayCircle className="w-4 h-4" /> },
     { href: '/public/mentors', label: 'Eğitmen Bul', icon: <Search className="w-4 h-4" /> },
     { href: '/student/explore-classes', label: 'Grup Dersleri', icon: <Users className="w-4 h-4" /> },
     { href: '/public/packages', label: 'Paketler', icon: <Package className="w-4 h-4" /> },
   ];
 
-  const navLinks = isAuthenticated && !isAdmin ? authenticatedLinks : publicLinks;
+  // Mentor-facing nav links (manage content)
+  const mentorLinks: NavLink[] = [
+    { href: '/mentor/offerings', label: '1:1 Paketlerim', icon: <Package className="w-4 h-4" /> },
+    { href: '/mentor/group-classes', label: 'Grup Dersleri', icon: <Users className="w-4 h-4" /> },
+    { href: '/mentor/courses', label: 'Eğitimlerim', icon: <PlayCircle className="w-4 h-4" /> },
+    { href: '/mentor/exams', label: 'Sınavlarım', icon: <GraduationCap className="w-4 h-4" /> },
+  ];
+
+  const navLinks = !isAuthenticated || isAdmin ? publicLinks : viewAsMentor ? mentorLinks : studentLinks;
 
   // Scroll detection
   useEffect(() => {
@@ -191,8 +199,12 @@ export function Header() {
       {/* Hesap */}
       <div className="border-t border-gray-200 py-1">
         <SectionLabel>Hesap</SectionLabel>
-        <DropdownLink href="/student/payments" icon={<CreditCard className="w-4 h-4 text-gray-400" />} label="Ödemelerim" onClick={onClose} />
-        <DropdownLink href="/student/credits" icon={<Coins className="w-4 h-4 text-gray-400" />} label="Kredilerim" onClick={onClose} />
+        {!viewAsMentor && (
+          <>
+            <DropdownLink href="/student/payments" icon={<CreditCard className="w-4 h-4 text-gray-400" />} label="Ödemelerim" onClick={onClose} />
+            <DropdownLink href="/student/credits" icon={<Coins className="w-4 h-4 text-gray-400" />} label="Kredilerim" onClick={onClose} />
+          </>
+        )}
         <DropdownLink href={settingsHref} icon={<Settings className="w-4 h-4 text-gray-400" />} label="Ayarlar" onClick={onClose} />
         {isStudent && !isMentor && externalMentorRegistration && (
           <DropdownLink

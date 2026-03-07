@@ -7,6 +7,7 @@ import { AnnouncementBar } from '@/components/layout/announcement-bar';
 import { TopBanner } from '@/components/layout/top-banner';
 import { Sidebar } from '@/components/layout/sidebar';
 import { useAuthStore } from '@/lib/stores/auth-store';
+import { UserRole } from '@/lib/types/enums';
 
 const sidebarPages = ['/public/packages', '/public/mentors'];
 
@@ -16,8 +17,13 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { isAuthenticated, isLoading } = useAuthStore();
-  const showSidebar = !isLoading && isAuthenticated && sidebarPages.some(p => pathname?.startsWith(p));
+  const { isAuthenticated, isLoading, user, activeView } = useAuthStore();
+  const isMentor = user?.roles?.includes(UserRole.Mentor);
+  const isStudent = user?.roles?.includes(UserRole.Student);
+  const isDualRole = isMentor && isStudent;
+  const viewAsMentor = isDualRole ? activeView === 'mentor' : !!isMentor;
+  // Only show sidebar on specific pages AND only when viewing as student
+  const showSidebar = !isLoading && isAuthenticated && !viewAsMentor && sidebarPages.some(p => pathname?.startsWith(p));
 
   return (
     <>
