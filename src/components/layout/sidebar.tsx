@@ -1,12 +1,13 @@
 'use client';
 
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, MessageSquare, Package, BookOpen, Clock,
   Zap, Users, PlayCircle, DollarSign, BarChart3, CreditCard,
   Wallet, Settings, Search, GraduationCap, Calendar, FileText,
-  FolderOpen, ClipboardList, FileCheck, Copy,
+  FolderOpen, ClipboardList, FileCheck, Copy, PanelLeftClose, PanelLeft,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useAuthStore } from '@/lib/stores/auth-store';
@@ -25,9 +26,44 @@ type NavSection = {
   items: NavItem[];
 };
 
+const SIDEBAR_PIN_KEY = 'sidebar-pinned';
+
 export function Sidebar() {
   const pathname = usePathname();
   const { user, activeView } = useAuthStore();
+  const [pinned, setPinned] = useState(true);
+  const [hovered, setHovered] = useState(false);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Load pinned state from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem(SIDEBAR_PIN_KEY);
+    if (stored !== null) {
+      setPinned(stored === 'true');
+    }
+  }, []);
+
+  const togglePin = () => {
+    const next = !pinned;
+    setPinned(next);
+    localStorage.setItem(SIDEBAR_PIN_KEY, String(next));
+    if (next) setHovered(false);
+  };
+
+  const handleMouseEnter = () => {
+    if (pinned) return;
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => setHovered(true), 80);
+  };
+
+  const handleMouseLeave = () => {
+    if (pinned) return;
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => setHovered(false), 200);
+  };
+
+  // Expanded = pinned OR hovered
+  const expanded = pinned || hovered;
 
   const roles = user?.roles ?? [];
   const isMentor = roles.includes(UserRole.Mentor as any);
@@ -137,36 +173,93 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="hidden md:block w-60 xl:w-64 border-r bg-white sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto flex-shrink-0">
-      <div className="p-3 space-y-4">
-        {sections.map((section) => (
-          <div key={section.title}>
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 px-3 mb-1.5">
-              {section.title}
+    <>
+      {/* Spacer: reserves layout space — collapsed or pinned width */}
+      <div
+        className={cn(
+          'hidden md:block flex-shrink-0 transition-all duration-200',
+          pinned ? 'w-60 xl:w-64' : 'w-[56px]'
+        )}
+      />
+
+      {/* Actual sidebar: absolutely positioned so it can expand on hover without pushing content */}
+      <aside
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className={cn(
+          'hidden md:flex flex-col fixed top-[65px] left-0 h-[calc(100vh-65px)] bg-white border-r overflow-hidden z-30 transition-all duration-200',
+          expanded ? 'w-60 xl:w-64' : 'w-[56px]',
+          !pinned && hovered && 'shadow-xl'
+        )}
+      >
+        {/* Pin toggle */}
+        <div className={cn(
+          'flex items-center border-b border-gray-100 flex-shrink-0',
+          expanded ? 'justify-end px-3 py-2' : 'justify-center py-2'
+        )}>
+          <button
+            onClick={togglePin}
+            className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            title={pinned ? 'Menuyu daralt' : 'Menuyu sabitle'}
+          >
+            {pinned ? (
+              <PanelLeftClose className="w-4 h-4" />
+            ) : (
+              <PanelLeft className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+
+        {/* Nav content */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 space-y-3">
+          {sections.map((section) => (
+            <div key={section.title}>
+              {expanded ? (
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 px-3 mb-1.5">
+                  {section.title}
+                </div>
+              ) : (
+                <div className="h-px bg-gray-100 mx-2 my-1.5" />
+              )}
+              <nav className="space-y-0.5">
+                {section.items.map((item) => {
+                  const active = pathname === item.href || pathname?.startsWith(item.href + '/');
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      title={!expanded ? item.label : undefined}
+                      className={cn(
+                        'flex items-center rounded-lg transition-colors relative group',
+                        expanded ? 'gap-2.5 px-3 py-2 text-sm' : 'justify-center px-0 py-2',
+                        active
+                          ? 'bg-teal-50 text-teal-700 font-medium'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      )}
+                    >
+                      <item.icon
+                        className={cn(
+                          'flex-shrink-0 transition-colors',
+                          expanded ? 'w-4 h-4' : 'w-[18px] h-[18px]',
+                          active ? 'text-teal-600' : item.color
+                        )}
+                      />
+                      {expanded && <span className="truncate">{item.label}</span>}
+
+                      {/* Tooltip for collapsed mode */}
+                      {!expanded && (
+                        <span className="absolute left-full ml-2 px-2 py-1 rounded-md bg-gray-900 text-white text-xs whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                          {item.label}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </nav>
             </div>
-            <nav className="space-y-0.5">
-              {section.items.map((item) => {
-                const active = pathname === item.href || pathname?.startsWith(item.href + '/');
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      'flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors',
-                      active
-                        ? 'bg-teal-50 text-teal-700 font-medium'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    )}
-                  >
-                    <item.icon className={cn('w-4 h-4 flex-shrink-0', active ? 'text-teal-600' : item.color)} />
-                    <span className="truncate">{item.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        ))}
-      </div>
-    </aside>
+          ))}
+        </div>
+      </aside>
+    </>
   );
 }
