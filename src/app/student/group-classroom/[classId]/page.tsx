@@ -12,7 +12,7 @@ import { useAuthStore } from '@/lib/stores/auth-store';
 import {
   Video, VideoOff, Mic, MicOff, Hand, Monitor, MonitorOff,
   MessageSquare, Users, PhoneOff, Settings, X, Image as ImageIcon,
-  Clock, RefreshCw, AlertTriangle,
+  Clock, RefreshCw, AlertTriangle, ClipboardList,
 } from 'lucide-react';
 
 import { GroupClassroomLayout } from '@/components/classroom/GroupClassroomLayout';
@@ -20,6 +20,7 @@ import { ParticipantsPanel } from '@/components/classroom/ParticipantsPanel';
 import { SessionTimerBanner } from '@/components/classroom/SessionTimerBanner';
 import { useSessionTimer } from '@/lib/hooks/use-session-timer';
 import { useSessionLifecycleSettings } from '@/lib/hooks/use-platform-settings';
+import { ClassroomPlanPanel } from '@/components/features/session-plans/classroom-plan-panel';
 import {
   RemoteTile, ChatMessage, BgMode, ScreenShareState,
   VIRTUAL_BACKGROUNDS, parseIdentity, isScreenShareTrack,
@@ -144,6 +145,7 @@ export default function StudentGroupClassroomPage() {
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isHandRaised, setIsHandRaised] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isPlanOpen, setIsPlanOpen] = useState(false);
   const [isParticipantsOpen, setIsParticipantsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -957,6 +959,14 @@ export default function StudentGroupClassroomPage() {
           <ParticipantsPanel remoteTiles={remoteTiles} localDisplayName={localDisplayName} localIsAudioEnabled={isAudioEnabled} localIsVideoEnabled={isVideoEnabled}
             isMentor={false} onClose={() => setIsParticipantsOpen(false)} />
         )}
+
+        {/* Session Plan Sidebar (read-only for student) */}
+        <ClassroomPlanPanel
+          groupClassId={classId}
+          isOpen={isPlanOpen}
+          onClose={() => setIsPlanOpen(false)}
+          readOnly={true}
+        />
       </div>
 
       {/* Controls */}
@@ -984,6 +994,9 @@ export default function StudentGroupClassroomPage() {
           </Button>
           <Button variant={isParticipantsOpen ? 'default' : 'secondary'} size="sm" onClick={() => { setIsParticipantsOpen(!isParticipantsOpen); if (!isParticipantsOpen) setIsChatOpen(false); }} className="rounded-full w-11 h-11 px-0">
             <Users className="w-4 h-4" />
+          </Button>
+          <Button variant={isPlanOpen ? 'default' : 'secondary'} size="sm" onClick={() => { setIsPlanOpen(!isPlanOpen); if (!isPlanOpen) { setIsChatOpen(false); setIsParticipantsOpen(false); } }} className="rounded-full w-11 h-11 px-0" title="Ders Plani">
+            <ClipboardList className="w-4 h-4" />
           </Button>
           <Button variant={isSettingsOpen ? 'default' : 'secondary'} size="sm" onClick={() => setIsSettingsOpen(!isSettingsOpen)} className="rounded-full w-11 h-11 px-0">
             <Settings className="w-4 h-4" />

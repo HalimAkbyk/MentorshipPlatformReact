@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Calendar, Clock, User, MapPin, AlertCircle, Video, MessageSquare, CheckCircle, HelpCircle, RefreshCw, X, Mail, Info, RotateCcw } from 'lucide-react';
+import { Calendar, Clock, User, MapPin, AlertCircle, Video, MessageSquare, CheckCircle, HelpCircle, RefreshCw, X, Mail, Info, RotateCcw, ClipboardList } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../../../lib/stores/auth-store';
 import { Button } from '../../../../components/ui/button';
@@ -22,6 +22,7 @@ import { ROUTES } from '../../../../lib/constants/routes';
 import { apiClient } from '../../../../lib/api/client';
 import { type ComputedTimeSlot } from '../../../../lib/api/availability';
 import { RescheduleCalendar } from '../../../../components/features/bookings/reschedule-calendar';
+import { StudentSessionPlanView } from '../../../../components/features/session-plans/student-session-plan-view';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -414,6 +415,19 @@ export default function BookingDetailPage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Ders Plani */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ClipboardList className="w-5 h-5 text-amber-500" />
+                  Ders Plani
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <StudentSessionPlanView bookingId={bookingId} />
+              </CardContent>
+            </Card>
           </div>
 
           {/* Right Column */}

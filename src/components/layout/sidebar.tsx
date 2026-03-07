@@ -6,7 +6,7 @@ import {
   LayoutDashboard, MessageSquare, Package, BookOpen, Clock,
   Zap, Users, PlayCircle, DollarSign, BarChart3, CreditCard,
   Wallet, Settings, Search, GraduationCap, Calendar, FileText,
-  FolderOpen, ClipboardList, FileCheck,
+  FolderOpen, ClipboardList, FileCheck, Copy,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useAuthStore } from '@/lib/stores/auth-store';
@@ -67,6 +67,8 @@ export function Sidebar() {
         { label: 'Mufredatlarim', href: '/mentor/curriculums', icon: BookOpen, color: 'text-indigo-600' },
         { label: 'Oturum Planlari', href: '/mentor/session-plans', icon: ClipboardList, color: 'text-amber-600' },
         { label: 'Odevler', href: '/mentor/assignments', icon: FileCheck, color: 'text-emerald-600' },
+        { label: 'Sablonlarim', href: '/mentor/templates', icon: Copy, color: 'text-amber-600' },
+        { label: 'Ogrenci Ilerlemeleri', href: '/mentor/curriculums/students', icon: Users, color: 'text-violet-600' },
       ],
     });
 

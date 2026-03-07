@@ -5,6 +5,7 @@ import type {
   UpdateAssignmentRequest,
   SubmitAssignmentRequest,
   ReviewSubmissionRequest,
+  CreateAssignmentFromTemplateRequest,
 } from '../api/assignments';
 
 // ── Queries ──
@@ -172,6 +173,36 @@ export function useReviewSubmission() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assignment'] });
       queryClient.invalidateQueries({ queryKey: ['assignment-submissions'] });
+    },
+  });
+}
+
+// Template hooks
+export function useAssignmentTemplates() {
+  return useQuery({
+    queryKey: ['assignment-templates'],
+    queryFn: () => assignmentsApi.getTemplates(),
+  });
+}
+
+export function useSaveAssignmentAsTemplate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, templateName }: { id: string; templateName: string }) =>
+      assignmentsApi.saveAsTemplate(id, templateName),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assignment-templates'] });
+    },
+  });
+}
+
+export function useCreateAssignmentFromTemplate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ templateId, data }: { templateId: string; data: CreateAssignmentFromTemplateRequest }) =>
+      assignmentsApi.createFromTemplate(templateId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assignments'] });
     },
   });
 }

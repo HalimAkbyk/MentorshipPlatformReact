@@ -7,7 +7,8 @@ import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft, Calendar, Clock, User, CreditCard,
   AlertCircle, CheckCircle, XCircle, Video,
-  UserX, AlertTriangle, HelpCircle, RefreshCw, X, MessageSquare
+  UserX, AlertTriangle, HelpCircle, RefreshCw, X, MessageSquare,
+  ClipboardList,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '../../../../components/ui/button';
@@ -22,6 +23,8 @@ import { BookingStatus } from '../../../../lib/types/enums';
 import type { BookingDetail } from '../../../../lib/types/models';
 import { type ComputedTimeSlot } from '../../../../lib/api/availability';
 import { RescheduleCalendar } from '../../../../components/features/bookings/reschedule-calendar';
+import { StudentSessionPlanView } from '../../../../components/features/session-plans/student-session-plan-view';
+import { useSessionPlanByBooking } from '../../../../lib/hooks/use-session-plans';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -38,6 +41,7 @@ export default function MentorBookingDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showMessages, setShowMessages] = useState(false);
   const { data: unreadData } = useUnreadCount();
+  const { data: sessionPlan } = useSessionPlanByBooking(bookingId);
 
   const { devMode, earlyJoinMinutes } = useSessionJoinSettings();
 
@@ -372,6 +376,32 @@ export default function MentorBookingDetailPage() {
               {booking.status === BookingStatus.Confirmed && (
                 <div className="text-xs text-gray-500 pt-2 border-t">
                   Kalan saat değişikliği hakkı: {2 - (booking.rescheduleCountMentor ?? 0)}/2
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Session Plan */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardList className="w-5 h-5 text-amber-500" />
+                Ders Plani
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {sessionPlan ? (
+                <StudentSessionPlanView bookingId={bookingId} />
+              ) : (
+                <div className="text-center py-6">
+                  <ClipboardList className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 text-sm mb-3">Bu seans icin henuz plan olusturulmadi.</p>
+                  <Link href={`/mentor/session-plans/create?bookingId=${bookingId}`}>
+                    <Button variant="outline" size="sm">
+                      <ClipboardList className="w-4 h-4 mr-2" />
+                      Plan Olustur
+                    </Button>
+                  </Link>
                 </div>
               )}
             </CardContent>

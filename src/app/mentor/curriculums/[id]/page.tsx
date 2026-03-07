@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useMemo } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   useCurriculum,
   useUpdateCurriculum,
@@ -15,6 +15,9 @@ import {
   useAddTopicMaterial,
   useRemoveTopicMaterial,
   useAssignCurriculum,
+  useStudentProgress,
+  useUpdateTopicProgress,
+  useSaveCurriculumAsTemplate,
 } from '@/lib/hooks/use-curriculum';
 import { useLibraryItems } from '@/lib/hooks/use-library';
 import { Button } from '@/components/ui/button';
@@ -45,6 +48,12 @@ import {
   File,
   Check,
   Calendar,
+  Copy,
+  Users,
+  CheckCircle2,
+  CircleDot,
+  Circle,
+  SkipForward,
 } from 'lucide-react';
 
 // ── Helpers ──
@@ -369,11 +378,17 @@ function TopicCard({
   onDelete,
   onAddMaterial,
   onRemoveMaterial,
+  topicProgress,
+  onChangeTopicStatus,
+  isUpdatingProgress,
 }: {
   topic: CurriculumTopicDto;
   onDelete: (topicId: string) => void;
   onAddMaterial: (topicId: string) => void;
   onRemoveMaterial: (topicId: string, itemId: string) => void;
+  topicProgress?: { status: string; completedAt?: string; mentorNote?: string };
+  onChangeTopicStatus?: (topicId: string, status: string) => void;
+  isUpdatingProgress?: boolean;
 }) {
   return (
     <div className="bg-gray-50 rounded-lg p-3 space-y-2">
@@ -387,6 +402,13 @@ function TopicCard({
                 {topic.estimatedMinutes} dk
               </span>
             )}
+            {onChangeTopicStatus && (
+              <TopicProgressDropdown
+                currentStatus={topicProgress?.status}
+                onChangeStatus={(status) => onChangeTopicStatus(topic.id, status)}
+                isPending={isUpdatingProgress ?? false}
+              />
+            )}
           </div>
           {topic.description && (
             <p className="text-[11px] text-gray-500 mt-0.5">{topic.description}</p>
@@ -395,6 +417,11 @@ function TopicCard({
             <div className="flex items-center gap-1 mt-1">
               <Target className="w-3 h-3 text-indigo-500" />
               <span className="text-[10px] text-indigo-600">{topic.objectiveText}</span>
+            </div>
+          )}
+          {topicProgress?.mentorNote && (
+            <div className="mt-1 text-[10px] text-teal-700 bg-teal-50 rounded px-2 py-1">
+              Not: {topicProgress.mentorNote}
             </div>
           )}
         </div>
@@ -451,6 +478,9 @@ function WeekAccordion({
   onDeleteTopic,
   onAddMaterial,
   onRemoveMaterial,
+  topicProgressMap,
+  onChangeTopicStatus,
+  isUpdatingProgress,
 }: {
   week: CurriculumWeekDto;
   isOpen: boolean;
@@ -460,6 +490,9 @@ function WeekAccordion({
   onDeleteTopic: (topicId: string) => void;
   onAddMaterial: (topicId: string) => void;
   onRemoveMaterial: (topicId: string, itemId: string) => void;
+  topicProgressMap?: Map<string, { status: string; completedAt?: string; mentorNote?: string }>;
+  onChangeTopicStatus?: (topicId: string, status: string) => void;
+  isUpdatingProgress?: boolean;
 }) {
   const sortedTopics = [...(week.topics || [])].sort((a, b) => a.sortOrder - b.sortOrder);
 
@@ -507,6 +540,9 @@ function WeekAccordion({
                 onDelete={onDeleteTopic}
                 onAddMaterial={onAddMaterial}
                 onRemoveMaterial={onRemoveMaterial}
+                topicProgress={topicProgressMap?.get(topic.id)}
+                onChangeTopicStatus={onChangeTopicStatus}
+                isUpdatingProgress={isUpdatingProgress}
               />
             ))}
           </div>
@@ -528,12 +564,119 @@ function WeekAccordion({
   );
 }
 
+// ── Save As Template Dialog ──
+
+function SaveAsTemplateDialog({
+  open,
+  onClose,
+  onSubmit,
+  isPending,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (name: string) => void;
+  isPending: boolean;
+}) {
+  const [name, setName] = useState('');
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <Card className="w-full max-w-md mx-4 shadow-xl">
+        <CardContent className="p-5">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Sablon Olarak Kaydet</h3>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Sablon Adi</label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="ornegin: TYT Matematik Temel Mufredat"
+              className="text-sm"
+            />
+          </div>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" size="sm" onClick={onClose}>Iptal</Button>
+            <Button
+              size="sm"
+              disabled={!name.trim() || isPending}
+              onClick={() => { onSubmit(name.trim()); setName(''); }}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              {isPending ? 'Kaydediliyor...' : 'Kaydet'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ── Topic Progress Dropdown ──
+
+const TOPIC_STATUSES = [
+  { value: 'NotStarted', label: 'Baslanmadi', icon: Circle, color: 'text-gray-400' },
+  { value: 'InProgress', label: 'Devam Ediyor', icon: CircleDot, color: 'text-indigo-500' },
+  { value: 'Completed', label: 'Tamamlandi', icon: CheckCircle2, color: 'text-green-500' },
+  { value: 'Skipped', label: 'Atlandi', icon: SkipForward, color: 'text-amber-500' },
+];
+
+function TopicProgressDropdown({
+  currentStatus,
+  onChangeStatus,
+  isPending,
+}: {
+  currentStatus?: string;
+  onChangeStatus: (status: string) => void;
+  isPending: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const current = TOPIC_STATUSES.find((s) => s.value === currentStatus) ?? TOPIC_STATUSES[0];
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        disabled={isPending}
+        className={`text-[9px] px-1.5 py-0.5 rounded font-medium cursor-pointer hover:ring-1 hover:ring-indigo-300 transition-all ${
+          current.value === 'Completed' ? 'bg-green-50 text-green-700' :
+          current.value === 'InProgress' ? 'bg-indigo-50 text-indigo-700' :
+          current.value === 'Skipped' ? 'bg-amber-50 text-amber-700' :
+          'bg-gray-100 text-gray-500'
+        }`}
+      >
+        {current.label}
+      </button>
+      {open && (
+        <div className="absolute top-6 left-0 z-50 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[130px]">
+          {TOPIC_STATUSES.map((s) => (
+            <button
+              key={s.value}
+              onClick={() => {
+                onChangeStatus(s.value);
+                setOpen(false);
+              }}
+              className="flex items-center gap-1.5 w-full px-3 py-1.5 text-[11px] text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <s.icon className={`w-3 h-3 ${s.color}`} />
+              {s.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main Page ──
 
 export default function CurriculumDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const id = params.id as string;
+  const studentEnrollmentId = searchParams.get('studentId') ?? null;
 
   const { data: curriculum, isLoading } = useCurriculum(id);
   const updateMutation = useUpdateCurriculum();
@@ -545,12 +688,32 @@ export default function CurriculumDetailPage() {
   const addMaterialMutation = useAddTopicMaterial();
   const removeMaterialMutation = useRemoveTopicMaterial();
   const assignMutation = useAssignCurriculum();
+  const saveTemplateMutation = useSaveCurriculumAsTemplate();
+  const updateTopicProgressMutation = useUpdateTopicProgress();
+
+  // Student progress if viewing a specific student
+  const { data: studentProgress } = useStudentProgress(
+    studentEnrollmentId ? id : '',
+    studentEnrollmentId ?? ''
+  );
 
   const [openWeeks, setOpenWeeks] = useState<Set<string>>(new Set());
   const [showAddWeek, setShowAddWeek] = useState(false);
   const [addTopicWeekId, setAddTopicWeekId] = useState<string | null>(null);
   const [materialPickerTopicId, setMaterialPickerTopicId] = useState<string | null>(null);
   const [showAssign, setShowAssign] = useState(false);
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+
+  // Build topic progress map for student
+  const topicProgressMap = useMemo(() => {
+    const map = new Map<string, { status: string; completedAt?: string; mentorNote?: string }>();
+    if (studentProgress?.topicProgresses) {
+      for (const tp of studentProgress.topicProgresses) {
+        map.set(tp.topicId, tp);
+      }
+    }
+    return map;
+  }, [studentProgress]);
 
   const toggleWeek = (weekId: string) => {
     setOpenWeeks((prev) => {
@@ -655,6 +818,30 @@ export default function CurriculumDetailPage() {
     }
   };
 
+  const handleSaveTemplate = async (templateName: string) => {
+    try {
+      await saveTemplateMutation.mutateAsync({ id, templateName });
+      toast.success('Sablon olarak kaydedildi');
+      setShowSaveTemplate(false);
+    } catch {
+      // handled
+    }
+  };
+
+  const handleUpdateTopicProgress = async (topicId: string, status: string) => {
+    if (!studentEnrollmentId) return;
+    try {
+      await updateTopicProgressMutation.mutateAsync({
+        enrollmentId: studentEnrollmentId,
+        topicId,
+        status,
+      });
+      toast.success('Konu durumu guncellendi');
+    } catch {
+      // handled
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-6 max-w-4xl">
@@ -704,16 +891,36 @@ export default function CurriculumDetailPage() {
           )}
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs text-amber-600 border-amber-200 hover:bg-amber-50"
+            onClick={() => setShowSaveTemplate(true)}
+          >
+            <Copy className="w-3.5 h-3.5 mr-1" />
+            Sablon Kaydet
+          </Button>
           {curriculum.status === 'Published' && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs"
-              onClick={() => setShowAssign(true)}
-            >
-              <UserPlus className="w-3.5 h-3.5 mr-1" />
-              Ogrenciye Ata
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={() => router.push(`/mentor/curriculums/students`)}
+              >
+                <Users className="w-3.5 h-3.5 mr-1" />
+                Ogrenciler
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={() => setShowAssign(true)}
+              >
+                <UserPlus className="w-3.5 h-3.5 mr-1" />
+                Ogrenciye Ata
+              </Button>
+            </>
           )}
           {curriculum.status === 'Draft' && (
             <Button
@@ -753,6 +960,44 @@ export default function CurriculumDetailPage() {
         )}
       </div>
 
+      {/* Student Progress Banner */}
+      {studentEnrollmentId && studentProgress && (
+        <Card className="border-0 shadow-sm mb-4 bg-indigo-50/50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <span className="text-xs font-bold text-indigo-700">
+                    {studentProgress.studentName?.charAt(0)?.toUpperCase() ?? '?'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-900">{studentProgress.studentName}</span>
+                  <span className={`ml-2 text-[9px] px-1.5 py-0.5 rounded font-medium ${
+                    studentProgress.status === 'Active' ? 'bg-green-50 text-green-700' :
+                    studentProgress.status === 'Completed' ? 'bg-indigo-50 text-indigo-700' :
+                    'bg-gray-100 text-gray-500'
+                  }`}>
+                    {studentProgress.status === 'Active' ? 'Aktif' :
+                     studentProgress.status === 'Completed' ? 'Tamamlandi' : studentProgress.status}
+                  </span>
+                </div>
+              </div>
+              <span className="text-lg font-bold text-indigo-600">%{Math.round(studentProgress.completionPercentage)}</span>
+            </div>
+            <div className="w-full h-2 bg-white/60 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-indigo-500 to-teal-500 rounded-full transition-all duration-500"
+                style={{ width: `${studentProgress.completionPercentage}%` }}
+              />
+            </div>
+            <p className="text-[10px] text-gray-500 mt-1.5">
+              Konu durumunu degistirmek icin herhangi bir konunun durum etiketine tiklayin
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Weeks */}
       <div className="space-y-2">
         {sortedWeeks.map((week) => (
@@ -766,6 +1011,9 @@ export default function CurriculumDetailPage() {
             onDeleteTopic={handleDeleteTopic}
             onAddMaterial={(topicId) => setMaterialPickerTopicId(topicId)}
             onRemoveMaterial={handleRemoveMaterial}
+            topicProgressMap={studentEnrollmentId ? topicProgressMap : undefined}
+            onChangeTopicStatus={studentEnrollmentId ? handleUpdateTopicProgress : undefined}
+            isUpdatingProgress={updateTopicProgressMutation.isPending}
           />
         ))}
       </div>
@@ -818,6 +1066,12 @@ export default function CurriculumDetailPage() {
         onClose={() => setShowAssign(false)}
         onSubmit={handleAssign}
         isPending={assignMutation.isPending}
+      />
+      <SaveAsTemplateDialog
+        open={showSaveTemplate}
+        onClose={() => setShowSaveTemplate(false)}
+        onSubmit={handleSaveTemplate}
+        isPending={saveTemplateMutation.isPending}
       />
     </div>
   );

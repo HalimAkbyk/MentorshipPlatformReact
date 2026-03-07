@@ -76,6 +76,21 @@ export interface AddMaterialRequest {
   note?: string;
 }
 
+export interface SessionPlanTemplateDto {
+  id: string;
+  title: string;
+  sessionObjective?: string;
+  materialCount: number;
+  createdAt: string;
+  templateType: string;
+}
+
+export interface CreateSessionPlanFromTemplateRequest {
+  title?: string;
+  bookingId?: string;
+  groupClassId?: string;
+}
+
 // ── API ──
 
 export const sessionPlansApi = {
@@ -136,5 +151,26 @@ export const sessionPlansApi = {
       if (err?.response?.status === 404) return null;
       throw err;
     }
+  },
+
+  updateSessionNotes: async (planId: string, sessionNotes: string): Promise<void> => {
+    return apiClient.put(`/session-plans/${planId}`, { sessionNotes });
+  },
+
+  updateAgendaItems: async (planId: string, agendaItems: { text: string; completed: boolean }[]): Promise<void> => {
+    return apiClient.put(`/session-plans/${planId}`, { agendaItems });
+  },
+
+  // Template operations
+  saveAsTemplate: async (id: string, templateName: string): Promise<string> => {
+    return apiClient.post<string>(`/session-plans/${id}/save-as-template`, { templateName });
+  },
+
+  getTemplates: async (): Promise<SessionPlanTemplateDto[]> => {
+    return apiClient.get<SessionPlanTemplateDto[]>('/session-plans/templates');
+  },
+
+  createFromTemplate: async (templateId: string, data: CreateSessionPlanFromTemplateRequest): Promise<string> => {
+    return apiClient.post<string>(`/session-plans/from-template/${templateId}`, data);
   },
 };

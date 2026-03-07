@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useMyEnrollment, useMyProgress } from '@/lib/hooks/use-curriculum';
+import { useMyEnrollment, useMyProgress, useMyEnrolledCurriculums } from '@/lib/hooks/use-curriculum';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -20,8 +20,13 @@ import {
   Calendar,
   GraduationCap,
   ExternalLink,
+  BarChart3,
+  ArrowLeft,
 } from 'lucide-react';
-import type { CurriculumWeekDto, CurriculumTopicDto } from '@/lib/api/curriculum';
+import { Button } from '@/components/ui/button';
+import type { CurriculumWeekDto, CurriculumTopicDto, EnrolledCurriculumDto } from '@/lib/api/curriculum';
+import { curriculumApi } from '@/lib/api/curriculum';
+import { useQuery } from '@tanstack/react-query';
 
 function getMaterialIcon(itemType: string) {
   switch (itemType) {
@@ -38,6 +43,8 @@ function getTopicStatusIcon(status?: string) {
       return <CheckCircle2 className="w-4 h-4 text-green-500" />;
     case 'InProgress':
       return <CircleDot className="w-4 h-4 text-indigo-500" />;
+    case 'Skipped':
+      return <Circle className="w-4 h-4 text-amber-400" />;
     default:
       return <Circle className="w-4 h-4 text-gray-300" />;
   }
@@ -47,15 +54,38 @@ function getTopicStatusLabel(status?: string) {
   switch (status) {
     case 'Completed': return 'Tamamlandi';
     case 'InProgress': return 'Devam Ediyor';
+    case 'Skipped': return 'Atlandi';
     default: return 'Baslanmadi';
   }
+}
+
+function getProgressColor(pct: number) {
+  if (pct >= 80) return 'from-green-500 to-emerald-500';
+  if (pct >= 50) return 'from-indigo-500 to-teal-500';
+  if (pct >= 20) return 'from-amber-500 to-orange-500';
+  return 'from-gray-400 to-gray-500';
 }
 
 export default function StudentCurriculumPage() {
   const { data: curriculum, isLoading: loadingCurriculum } = useMyEnrollment();
   const { data: progress, isLoading: loadingProgress } = useMyProgress();
+  const { data: enrolledCurriculums, isLoading: loadingEnrolled } = useMyEnrolledCurriculums();
 
   const [openWeeks, setOpenWeeks] = useState<Set<string>>(new Set());
+  const [selectedCurriculumId, setSelectedCurriculumId] = useState<string | null>(null);
+
+  // If user selects a specific curriculum from the list, load its detail
+  const { data: selectedCurriculum } = useQuery({
+    queryKey: ['curriculum', selectedCurriculumId],
+    queryFn: () => curriculumApi.getById(selectedCurriculumId!),
+    enabled: !!selectedCurriculumId,
+  });
+
+  const { data: selectedProgress } = useQuery({
+    queryKey: ['my-curriculum-progress-specific', selectedCurriculumId],
+    queryFn: () => curriculumApi.getMyProgress(),
+    enabled: !!selectedCurriculumId,
+  });
 
   const toggleWeek = (weekId: string) => {
     setOpenWeeks((prev) => {
@@ -66,17 +96,20 @@ export default function StudentCurriculumPage() {
     });
   };
 
-  const isLoading = loadingCurriculum || loadingProgress;
+  const isLoading = loadingCurriculum || loadingProgress || loadingEnrolled;
 
   // Build a map of topicId -> progress status
+  const activeProgress = selectedCurriculumId ? selectedProgress : progress;
+  const activeCurriculum = selectedCurriculumId ? selectedCurriculum : curriculum;
+
   const topicProgressMap = new Map<string, { status: string; completedAt?: string; mentorNote?: string }>();
-  if (progress?.topicProgresses) {
-    for (const tp of progress.topicProgresses) {
+  if (activeProgress?.topicProgresses) {
+    for (const tp of activeProgress.topicProgresses) {
       topicProgressMap.set(tp.topicId, tp);
     }
   }
 
-  const completionPercentage = progress?.completionPercentage ?? 0;
+  const completionPercentage = activeProgress?.completionPercentage ?? 0;
 
   if (isLoading) {
     return (
@@ -94,7 +127,11 @@ export default function StudentCurriculumPage() {
     );
   }
 
-  if (!curriculum) {
+  // Show enrolled curriculums list if multiple
+  const enrollments = enrolledCurriculums ?? [];
+  const hasMultiple = enrollments.length > 1;
+
+  if (!curriculum && enrollments.length === 0) {
     return (
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         <Card className="border border-dashed border-indigo-200 bg-indigo-50/30">
@@ -114,10 +151,145 @@ export default function StudentCurriculumPage() {
     );
   }
 
-  const sortedWeeks = [...(curriculum.weeks || [])].sort((a, b) => a.sortOrder - b.sortOrder);
+  // If selectedCurriculumId is set, show detail view with back button
+  if (selectedCurriculumId && activeCurriculum) {
+    const sortedWeeks = [...(activeCurriculum.weeks || [])].sort((a, b) => a.sortOrder - b.sortOrder);
+
+    return (
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        {hasMultiple && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => { setSelectedCurriculumId(null); setOpenWeeks(new Set()); }}
+            className="mb-3 text-xs text-gray-500"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+            Tum Mufredatlar
+          </Button>
+        )}
+
+        <CurriculumDetail
+          curriculum={activeCurriculum}
+          completionPercentage={completionPercentage}
+          progressStatus={activeProgress?.status}
+          topicProgressMap={topicProgressMap}
+          openWeeks={openWeeks}
+          toggleWeek={toggleWeek}
+        />
+      </div>
+    );
+  }
+
+  // If multiple enrollments, show a list with progress cards
+  if (hasMultiple) {
+    return (
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center">
+            <BookOpen className="w-4 h-4 text-indigo-600" />
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900">Mufredatlarim</h1>
+            <p className="text-xs text-gray-500">Kayitli oldugunuz mufredatlar ve ilerlemeniz</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {enrollments.map((enrollment) => (
+            <Card
+              key={enrollment.enrollmentId}
+              className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer"
+              onClick={() => {
+                setSelectedCurriculumId(enrollment.curriculumId);
+                setOpenWeeks(new Set());
+              }}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-gray-900 truncate">{enrollment.curriculumTitle}</h3>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      {enrollment.subject && (
+                        <span className="text-[10px] font-medium bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded">
+                          {enrollment.subject}
+                        </span>
+                      )}
+                      {enrollment.level && (
+                        <span className="text-[10px] font-medium bg-teal-50 text-teal-700 px-1.5 py-0.5 rounded">
+                          {enrollment.level}
+                        </span>
+                      )}
+                      <span className="text-[10px] text-gray-400">{enrollment.totalWeeks} hafta</span>
+                    </div>
+                  </div>
+                  <span className="text-lg font-bold text-indigo-600 ml-2">
+                    {Math.round(enrollment.completionPercentage)}%
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full bg-gradient-to-r ${getProgressColor(enrollment.completionPercentage)} rounded-full transition-all duration-500`}
+                    style={{ width: `${enrollment.completionPercentage}%` }}
+                  />
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                    enrollment.status === 'Active' ? 'bg-green-50 text-green-700' :
+                    enrollment.status === 'Completed' ? 'bg-indigo-50 text-indigo-700' :
+                    'bg-gray-100 text-gray-500'
+                  }`}>
+                    {enrollment.status === 'Active' ? 'Aktif' :
+                     enrollment.status === 'Completed' ? 'Tamamlandi' : enrollment.status}
+                  </span>
+                  <span className="text-[10px] text-gray-400">
+                    {new Date(enrollment.startedAt).toLocaleDateString('tr-TR')}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Single enrollment: show directly (original behavior)
+  if (!activeCurriculum) return null;
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl">
+      <CurriculumDetail
+        curriculum={activeCurriculum}
+        completionPercentage={completionPercentage}
+        progressStatus={activeProgress?.status}
+        topicProgressMap={topicProgressMap}
+        openWeeks={openWeeks}
+        toggleWeek={toggleWeek}
+      />
+    </div>
+  );
+}
+
+function CurriculumDetail({
+  curriculum,
+  completionPercentage,
+  progressStatus,
+  topicProgressMap,
+  openWeeks,
+  toggleWeek,
+}: {
+  curriculum: any;
+  completionPercentage: number;
+  progressStatus?: string;
+  topicProgressMap: Map<string, { status: string; completedAt?: string; mentorNote?: string }>;
+  openWeeks: Set<string>;
+  toggleWeek: (weekId: string) => void;
+}) {
+  const sortedWeeks = [...(curriculum.weeks || [])].sort((a, b) => a.sortOrder - b.sortOrder);
+
+  return (
+    <>
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center">
@@ -164,13 +336,13 @@ export default function StudentCurriculumPage() {
           </div>
           <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-indigo-500 to-teal-500 rounded-full transition-all duration-500"
+              className={`h-full bg-gradient-to-r ${getProgressColor(completionPercentage)} rounded-full transition-all duration-500`}
               style={{ width: `${completionPercentage}%` }}
             />
           </div>
-          {progress?.status && (
+          {progressStatus && (
             <div className="mt-2 text-[10px] text-gray-400">
-              Durum: {progress.status === 'Active' ? 'Aktif' : progress.status === 'Completed' ? 'Tamamlandi' : progress.status}
+              Durum: {progressStatus === 'Active' ? 'Aktif' : progressStatus === 'Completed' ? 'Tamamlandi' : progressStatus}
             </div>
           )}
         </CardContent>
@@ -178,12 +350,13 @@ export default function StudentCurriculumPage() {
 
       {/* Weeks */}
       <div className="space-y-2">
-        {sortedWeeks.map((week) => {
+        {sortedWeeks.map((week: any) => {
           const isOpen = openWeeks.has(week.id);
-          const sortedTopics = [...(week.topics || [])].sort((a, b) => a.sortOrder - b.sortOrder);
+          const sortedTopics = [...(week.topics || [])].sort((a: any, b: any) => a.sortOrder - b.sortOrder);
           const completedCount = sortedTopics.filter(
-            (t) => topicProgressMap.get(t.id)?.status === 'Completed'
+            (t: any) => topicProgressMap.get(t.id)?.status === 'Completed'
           ).length;
+          const weekProgress = sortedTopics.length > 0 ? (completedCount / sortedTopics.length) * 100 : 0;
 
           return (
             <Card key={week.id} className="border-0 shadow-sm">
@@ -202,9 +375,17 @@ export default function StudentCurriculumPage() {
                   </span>
                   <span className="text-sm font-medium text-gray-900 truncate">{week.title}</span>
                 </div>
-                <span className="text-[10px] text-gray-400 flex-shrink-0">
-                  {completedCount}/{sortedTopics.length} tamamlandi
-                </span>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full bg-gradient-to-r ${getProgressColor(weekProgress)} rounded-full`}
+                      style={{ width: `${weekProgress}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] text-gray-400">
+                    {completedCount}/{sortedTopics.length}
+                  </span>
+                </div>
               </div>
 
               {isOpen && (
@@ -214,7 +395,7 @@ export default function StudentCurriculumPage() {
                   )}
 
                   <div className="space-y-2 ml-7">
-                    {sortedTopics.map((topic) => {
+                    {sortedTopics.map((topic: any) => {
                       const tp = topicProgressMap.get(topic.id);
                       return (
                         <div key={topic.id} className="bg-gray-50 rounded-lg p-3">
@@ -232,6 +413,7 @@ export default function StudentCurriculumPage() {
                                 <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
                                   tp?.status === 'Completed' ? 'bg-green-50 text-green-700' :
                                   tp?.status === 'InProgress' ? 'bg-indigo-50 text-indigo-700' :
+                                  tp?.status === 'Skipped' ? 'bg-amber-50 text-amber-700' :
                                   'bg-gray-100 text-gray-500'
                                 }`}>
                                   {getTopicStatusLabel(tp?.status)}
@@ -255,7 +437,7 @@ export default function StudentCurriculumPage() {
                               {/* Materials */}
                               {topic.materials && topic.materials.length > 0 && (
                                 <div className="mt-2 space-y-1">
-                                  {topic.materials.map((mat) => (
+                                  {topic.materials.map((mat: any) => (
                                     <div
                                       key={mat.libraryItemId}
                                       className="flex items-center gap-2 text-[11px] text-gray-600 hover:text-indigo-600 cursor-pointer"
@@ -295,6 +477,6 @@ export default function StudentCurriculumPage() {
           </CardContent>
         </Card>
       )}
-    </div>
+    </>
   );
 }

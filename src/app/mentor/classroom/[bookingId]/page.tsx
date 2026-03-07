@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import {
   Video, VideoOff, Mic, MicOff, Monitor, MonitorOff,
   MessageSquare, Users, PhoneOff, Settings, X, Image as ImageIcon,
-  LogOut, AlertTriangle,
+  LogOut, AlertTriangle, ClipboardList,
 } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Badge } from '../../../../components/ui/badge';
@@ -19,6 +19,7 @@ import { ParticipantsPanel } from '../../../../components/classroom/Participants
 import { SessionTimerBanner } from '../../../../components/classroom/SessionTimerBanner';
 import { useSessionTimer } from '../../../../lib/hooks/use-session-timer';
 import { useSessionLifecycleSettings } from '../../../../lib/hooks/use-platform-settings';
+import { ClassroomPlanPanel } from '../../../../components/features/session-plans/classroom-plan-panel';
 import {
   RemoteTile, ScreenShareState, ChatMessage, BgMode,
   VIRTUAL_BACKGROUNDS, parseIdentity, isScreenShareTrack,
@@ -134,6 +135,7 @@ export default function MentorClassroomPage() {
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(true);
+  const [isPlanOpen, setIsPlanOpen] = useState(false);
   const [isParticipantsOpen, setIsParticipantsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -881,6 +883,14 @@ export default function MentorClassroomPage() {
             onClose={() => setIsParticipantsOpen(false)}
           />
         )}
+
+        {/* Session Plan Sidebar */}
+        <ClassroomPlanPanel
+          bookingId={bookingId}
+          isOpen={isPlanOpen}
+          onClose={() => setIsPlanOpen(false)}
+          readOnly={false}
+        />
       </div>
 
       {/* Controls */}
@@ -907,6 +917,9 @@ export default function MentorClassroomPage() {
             </Button>
             <Button variant={isParticipantsOpen ? 'default' : 'secondary'} size="sm" onClick={() => { setIsParticipantsOpen(!isParticipantsOpen); if (!isParticipantsOpen) setIsChatOpen(false); }} className="rounded-full w-11 h-11 px-0">
               <Users className="w-4 h-4" />
+            </Button>
+            <Button variant={isPlanOpen ? 'default' : 'secondary'} size="sm" onClick={() => { setIsPlanOpen(!isPlanOpen); if (!isPlanOpen) { setIsChatOpen(false); setIsParticipantsOpen(false); } }} className="rounded-full w-11 h-11 px-0" title="Ders Plani">
+              <ClipboardList className="w-4 h-4" />
             </Button>
             <Button variant={isSettingsOpen ? 'default' : 'secondary'} size="sm" onClick={() => setIsSettingsOpen(!isSettingsOpen)} className="rounded-full w-11 h-11 px-0">
               <Settings className="w-4 h-4" />

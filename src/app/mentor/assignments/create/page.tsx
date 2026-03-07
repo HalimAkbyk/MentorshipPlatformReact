@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useCreateAssignment } from '@/lib/hooks/use-assignments';
+import { useCreateAssignment, useAssignmentTemplates, useCreateAssignmentFromTemplate } from '@/lib/hooks/use-assignments';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { ArrowLeft, FileCheck, Save } from 'lucide-react';
+import { ArrowLeft, FileCheck, Save, FileText, ChevronRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 const ASSIGNMENT_TYPES = [
@@ -26,9 +26,18 @@ const DIFFICULTY_LEVELS = [
   { value: 'Hard', label: 'Zor' },
 ];
 
+const TYPE_LABELS: Record<string, string> = {
+  Homework: 'Odev', Project: 'Proje', Practice: 'Pratik',
+  Quiz: 'Quiz', Reading: 'Okuma', Research: 'Arastirma',
+};
+
 export default function CreateAssignmentPage() {
   const router = useRouter();
   const createMutation = useCreateAssignment();
+  const createFromTemplateMutation = useCreateAssignmentFromTemplate();
+  const { data: templates } = useAssignmentTemplates();
+
+  const templateList = templates ?? [];
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -40,6 +49,7 @@ export default function CreateAssignmentPage() {
   const [maxScore, setMaxScore] = useState<number | ''>('');
   const [allowLateSubmission, setAllowLateSubmission] = useState(false);
   const [latePenaltyPercent, setLatePenaltyPercent] = useState<number | ''>('');
+  const [showTemplates, setShowTemplates] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +79,22 @@ export default function CreateAssignmentPage() {
     }
   };
 
+  const handleCreateFromTemplate = async (templateId: string) => {
+    try {
+      const id = await createFromTemplateMutation.mutateAsync({
+        templateId,
+        data: {
+          title: title.trim() || undefined,
+          dueDate: dueDate || undefined,
+        },
+      });
+      toast.success('Sablondan odev olusturuldu');
+      router.push(`/mentor/assignments/${id}`);
+    } catch {
+      // error handled by interceptor
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-6 max-w-3xl">
       {/* Header */}
@@ -88,6 +114,80 @@ export default function CreateAssignmentPage() {
           </div>
         </div>
       </div>
+
+      {/* Template Selection */}
+      {templateList.length > 0 && (
+        <Card className="border-0 shadow-sm mb-4">
+          <CardContent className="p-4">
+            <button
+              onClick={() => setShowTemplates(!showTemplates)}
+              className="flex items-center justify-between w-full"
+            >
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-amber-600" />
+                <span className="text-sm font-medium text-gray-900">Sablondan Baslat</span>
+                <span className="text-[10px] text-gray-400">({templateList.length} sablon)</span>
+              </div>
+              <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${showTemplates ? 'rotate-90' : ''}`} />
+            </button>
+
+            {showTemplates && (
+              <div className="mt-3 space-y-1.5">
+                {/* Optional overrides */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                  <div>
+                    <label className="text-[10px] text-gray-500">Yeni Baslik (opsiyonel)</label>
+                    <Input
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Bos birakilirsa sablon basligi kullanilir"
+                      className="text-sm h-7"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-gray-500">Son Teslim (opsiyonel)</label>
+                    <Input
+                      type="datetime-local"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                      className="text-sm h-7"
+                    />
+                  </div>
+                </div>
+
+                {templateList.map((tpl) => (
+                  <button
+                    key={tpl.id}
+                    onClick={() => handleCreateFromTemplate(tpl.id)}
+                    disabled={createFromTemplateMutation.isPending}
+                    className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-emerald-50 border border-gray-100 transition-colors text-left"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-4 h-4 text-amber-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 truncate">{tpl.title}</div>
+                      <div className="flex items-center gap-2 text-[10px] text-gray-400">
+                        <span>{TYPE_LABELS[tpl.assignmentType] ?? tpl.assignmentType}</span>
+                        {tpl.difficultyLevel && <span>- {tpl.difficultyLevel}</span>}
+                        {tpl.maxScore != null && <span>- {tpl.maxScore} puan</span>}
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
+                  </button>
+                ))}
+
+                {createFromTemplateMutation.isPending && (
+                  <div className="flex items-center justify-center py-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-emerald-600 mr-2" />
+                    <span className="text-xs text-gray-500">Olusturuluyor...</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <form onSubmit={handleSubmit}>
         <Card className="border-0 shadow-sm">

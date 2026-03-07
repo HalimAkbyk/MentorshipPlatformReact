@@ -124,3 +124,61 @@ export function useRemoveSessionPlanMaterial() {
     },
   });
 }
+
+export function useUpdateSessionNotes() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ planId, sessionNotes }: { planId: string; sessionNotes: string }) =>
+      sessionPlansApi.updateSessionNotes(planId, sessionNotes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['session-plan'] });
+      queryClient.invalidateQueries({ queryKey: ['session-plan-booking'] });
+      queryClient.invalidateQueries({ queryKey: ['session-plan-class'] });
+    },
+  });
+}
+
+export function useUpdateAgendaItems() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ planId, agendaItems }: { planId: string; agendaItems: { text: string; completed: boolean }[] }) =>
+      sessionPlansApi.updateAgendaItems(planId, agendaItems),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['session-plan'] });
+      queryClient.invalidateQueries({ queryKey: ['session-plan-booking'] });
+      queryClient.invalidateQueries({ queryKey: ['session-plan-class'] });
+    },
+  });
+}
+
+// Template hooks
+export function useSessionPlanTemplates() {
+  return useQuery({
+    queryKey: ['session-plan-templates'],
+    queryFn: () => sessionPlansApi.getTemplates(),
+  });
+}
+
+export function useSaveSessionPlanAsTemplate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, templateName }: { id: string; templateName: string }) =>
+      sessionPlansApi.saveAsTemplate(id, templateName),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['session-plan-templates'] });
+    },
+  });
+}
+
+export function useCreateSessionPlanFromTemplate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ templateId, data }: { templateId: string; data: { title?: string; bookingId?: string; groupClassId?: string } }) =>
+      sessionPlansApi.createFromTemplate(templateId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['session-plans'] });
+    },
+  });
+}

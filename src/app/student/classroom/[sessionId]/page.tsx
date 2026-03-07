@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import {
   Video, VideoOff, Mic, MicOff, Monitor, MonitorOff,
   MessageSquare, Users, PhoneOff, Settings, Hand, X, Image as ImageIcon,
-  AlertTriangle,
+  AlertTriangle, ClipboardList,
 } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Badge } from '../../../../components/ui/badge';
@@ -20,6 +20,7 @@ import { ParticipantsPanel } from '../../../../components/classroom/Participants
 import { SessionTimerBanner } from '../../../../components/classroom/SessionTimerBanner';
 import { useSessionTimer } from '../../../../lib/hooks/use-session-timer';
 import { useSessionLifecycleSettings } from '../../../../lib/hooks/use-platform-settings';
+import { ClassroomPlanPanel } from '../../../../components/features/session-plans/classroom-plan-panel';
 import {
   RemoteTile, ScreenShareState, ChatMessage, BgMode,
   VIRTUAL_BACKGROUNDS, parseIdentity, isScreenShareTrack,
@@ -135,6 +136,7 @@ export default function StudentClassroomPage() {
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(true);
+  const [isPlanOpen, setIsPlanOpen] = useState(false);
   const [isParticipantsOpen, setIsParticipantsOpen] = useState(false);
   const [isHandRaised, setIsHandRaised] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -985,6 +987,14 @@ export default function StudentClassroomPage() {
             onClose={() => setIsParticipantsOpen(false)}
           />
         )}
+
+        {/* Session Plan Sidebar (read-only for student) */}
+        <ClassroomPlanPanel
+          bookingId={sessionId}
+          isOpen={isPlanOpen}
+          onClose={() => setIsPlanOpen(false)}
+          readOnly={true}
+        />
       </div>
 
       {/* Controls */}
@@ -1013,6 +1023,9 @@ export default function StudentClassroomPage() {
           </Button>
           <Button variant={isHandRaised ? 'default' : 'secondary'} size="sm" onClick={toggleHandRaise} className="rounded-full w-11 h-11 px-0">
             <Hand className="w-4 h-4" />
+          </Button>
+          <Button variant={isPlanOpen ? 'default' : 'secondary'} size="sm" onClick={() => { setIsPlanOpen(!isPlanOpen); if (!isPlanOpen) { setIsChatOpen(false); setIsParticipantsOpen(false); } }} className="rounded-full w-11 h-11 px-0" title="Ders Plani">
+            <ClipboardList className="w-4 h-4" />
           </Button>
           <Button variant={isSettingsOpen ? 'default' : 'secondary'} size="sm" onClick={() => setIsSettingsOpen(!isSettingsOpen)} className="rounded-full w-11 h-11 px-0">
             <Settings className="w-4 h-4" />

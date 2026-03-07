@@ -131,6 +131,23 @@ export interface ReviewSubmissionRequest {
   status: string; // Approved, RevisionRequired, Rejected
 }
 
+export interface AssignmentTemplateDto {
+  id: string;
+  title: string;
+  assignmentType: string;
+  difficultyLevel?: string;
+  maxScore?: number;
+  createdAt: string;
+  templateType: string;
+}
+
+export interface CreateAssignmentFromTemplateRequest {
+  title?: string;
+  dueDate?: string;
+  bookingId?: string;
+  groupClassId?: string;
+}
+
 // ── API ──
 
 export const assignmentsApi = {
@@ -210,5 +227,18 @@ export const assignmentsApi = {
     pageSize?: number;
   }): Promise<StudentAssignmentListResponse> => {
     return apiClient.get<StudentAssignmentListResponse>('/assignments/student', params);
+  },
+
+  // Template operations
+  saveAsTemplate: async (id: string, templateName: string): Promise<string> => {
+    return apiClient.post<string>(`/assignments/${id}/save-as-template`, { templateName });
+  },
+
+  getTemplates: async (): Promise<AssignmentTemplateDto[]> => {
+    return apiClient.get<AssignmentTemplateDto[]>('/assignments/templates');
+  },
+
+  createFromTemplate: async (templateId: string, data: CreateAssignmentFromTemplateRequest): Promise<string> => {
+    return apiClient.post<string>(`/assignments/from-template/${templateId}`, data);
   },
 };

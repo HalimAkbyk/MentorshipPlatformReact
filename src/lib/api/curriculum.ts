@@ -73,6 +73,42 @@ export interface StudentProgressDto {
   }[];
 }
 
+export interface EnrolledCurriculumDto {
+  enrollmentId: string;
+  curriculumId: string;
+  curriculumTitle: string;
+  subject?: string;
+  level?: string;
+  totalWeeks: number;
+  completionPercentage: number;
+  status: string;
+  startedAt: string;
+}
+
+export interface UpdateTopicProgressRequest {
+  enrollmentId: string;
+  topicId: string;
+  status: string;
+  mentorNote?: string;
+  bookingId?: string;
+}
+
+export interface CurriculumTemplateDto {
+  id: string;
+  title: string;
+  description?: string;
+  subject?: string;
+  level?: string;
+  totalWeeks: number;
+  createdAt: string;
+  templateType: string;
+}
+
+export interface CreateCurriculumFromTemplateRequest {
+  title?: string;
+  description?: string;
+}
+
 export interface CurriculumListResponse {
   items: CurriculumListDto[];
   totalCount: number;
@@ -227,5 +263,37 @@ export const curriculumApi = {
     } catch {
       return null;
     }
+  },
+
+  // Multiple enrolled curriculums
+  getMyEnrolledCurriculums: async (): Promise<EnrolledCurriculumDto[]> => {
+    try {
+      return await apiClient.get<EnrolledCurriculumDto[]>('/curriculums/my-enrollments');
+    } catch {
+      return [];
+    }
+  },
+
+  // Mentor: get all students' progress
+  getMentorStudentsProgress: async (curriculumId?: string): Promise<StudentProgressDto[]> => {
+    return apiClient.get<StudentProgressDto[]>('/curriculums/students-progress', curriculumId ? { curriculumId } : undefined);
+  },
+
+  // Mentor: update topic progress
+  updateTopicProgress: async (data: UpdateTopicProgressRequest): Promise<void> => {
+    return apiClient.put(`/curriculums/progress/topics/${data.topicId}`, data);
+  },
+
+  // Template operations
+  saveAsTemplate: async (id: string, templateName: string): Promise<string> => {
+    return apiClient.post<string>(`/curriculums/${id}/save-as-template`, { templateName });
+  },
+
+  getTemplates: async (): Promise<CurriculumTemplateDto[]> => {
+    return apiClient.get<CurriculumTemplateDto[]>('/curriculums/templates');
+  },
+
+  createFromTemplate: async (templateId: string, data: CreateCurriculumFromTemplateRequest): Promise<string> => {
+    return apiClient.post<string>(`/curriculums/from-template/${templateId}`, data);
   },
 };

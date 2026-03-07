@@ -9,6 +9,7 @@ import {
   useCompleteSessionPlan,
   useAddSessionPlanMaterial,
   useRemoveSessionPlanMaterial,
+  useSaveSessionPlanAsTemplate,
 } from '@/lib/hooks/use-session-plans';
 import { useLibraryItems } from '@/lib/hooks/use-library';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,7 @@ import {
   CheckSquare,
   Search,
   GripVertical,
+  Copy,
 } from 'lucide-react';
 import type { SessionPlanMaterialDto } from '@/lib/api/session-plans';
 import type { LibraryItemDto } from '@/lib/api/library';
@@ -255,10 +257,13 @@ export default function SessionPlanDetailPage() {
   const shareMutation = useShareSessionPlan();
   const completeMutation = useCompleteSessionPlan();
   const addMaterialMutation = useAddSessionPlanMaterial();
+  const saveTemplateMutation = useSaveSessionPlanAsTemplate();
 
   const [activePhase, setActivePhase] = useState<PhaseTab>('pre');
   const [showPicker, setShowPicker] = useState(false);
   const [pickerPhase, setPickerPhase] = useState<string>('PreSession');
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+  const [templateName, setTemplateName] = useState('');
 
   // Form state
   const [title, setTitle] = useState('');
@@ -333,6 +338,18 @@ export default function SessionPlanDetailPage() {
         },
       });
       toast.success('Materyal eklendi');
+    } catch {
+      // error handled by interceptor
+    }
+  };
+
+  const handleSaveTemplate = async () => {
+    if (!templateName.trim()) return;
+    try {
+      await saveTemplateMutation.mutateAsync({ id: planId, templateName: templateName.trim() });
+      toast.success('Sablon olarak kaydedildi');
+      setShowSaveTemplate(false);
+      setTemplateName('');
     } catch {
       // error handled by interceptor
     }
@@ -413,6 +430,15 @@ export default function SessionPlanDetailPage() {
         {getStatusBadge(plan.status)}
 
         <div className="flex items-center gap-2 flex-shrink-0">
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-xs h-8 text-amber-600 border-amber-200 hover:bg-amber-50"
+            onClick={() => setShowSaveTemplate(true)}
+          >
+            <Copy className="w-3.5 h-3.5 mr-1" />
+            Sablon
+          </Button>
           <Button
             size="sm"
             variant="outline"
@@ -636,6 +662,39 @@ export default function SessionPlanDetailPage() {
         onClose={() => setShowPicker(false)}
         onSelect={handleAddMaterial}
       />
+
+      {/* Save as Template Dialog */}
+      {showSaveTemplate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <Card className="w-full max-w-md mx-4 shadow-xl">
+            <CardContent className="p-5">
+              <h3 className="text-sm font-semibold text-gray-900 mb-4">Sablon Olarak Kaydet</h3>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Sablon Adi</label>
+                <Input
+                  value={templateName}
+                  onChange={(e) => setTemplateName(e.target.value)}
+                  placeholder="ornegin: Matematik Ders Plani Sablonu"
+                  className="text-sm"
+                />
+              </div>
+              <div className="flex justify-end gap-2 mt-4">
+                <Button variant="outline" size="sm" onClick={() => { setShowSaveTemplate(false); setTemplateName(''); }}>
+                  Iptal
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={!templateName.trim() || saveTemplateMutation.isPending}
+                  onClick={handleSaveTemplate}
+                  className="bg-amber-600 hover:bg-amber-700"
+                >
+                  {saveTemplateMutation.isPending ? 'Kaydediliyor...' : 'Kaydet'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

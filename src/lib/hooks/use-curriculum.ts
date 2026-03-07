@@ -8,6 +8,8 @@ import type {
   CreateTopicRequest,
   UpdateTopicRequest,
   AddTopicMaterialRequest,
+  UpdateTopicProgressRequest,
+  CreateCurriculumFromTemplateRequest,
 } from '../api/curriculum';
 
 // ── Queries ──
@@ -51,6 +53,27 @@ export function useMyProgress() {
   return useQuery({
     queryKey: ['my-curriculum-progress'],
     queryFn: () => curriculumApi.getMyProgress(),
+  });
+}
+
+export function useMyEnrolledCurriculums() {
+  return useQuery({
+    queryKey: ['my-enrolled-curriculums'],
+    queryFn: () => curriculumApi.getMyEnrolledCurriculums(),
+  });
+}
+
+export function useMentorStudentsProgress(curriculumId?: string) {
+  return useQuery({
+    queryKey: ['mentor-students-progress', curriculumId],
+    queryFn: () => curriculumApi.getMentorStudentsProgress(curriculumId),
+  });
+}
+
+export function useCurriculumTemplates() {
+  return useQuery({
+    queryKey: ['curriculum-templates'],
+    queryFn: () => curriculumApi.getTemplates(),
   });
 }
 
@@ -184,6 +207,42 @@ export function useRemoveTopicMaterial() {
       curriculumApi.removeTopicMaterial(topicId, itemId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['curriculum'] });
+    },
+  });
+}
+
+// Topic Progress
+export function useUpdateTopicProgress() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateTopicProgressRequest) => curriculumApi.updateTopicProgress(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['curriculum-progress'] });
+      queryClient.invalidateQueries({ queryKey: ['mentor-students-progress'] });
+      queryClient.invalidateQueries({ queryKey: ['my-curriculum-progress'] });
+    },
+  });
+}
+
+// Templates
+export function useSaveCurriculumAsTemplate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, templateName }: { id: string; templateName: string }) =>
+      curriculumApi.saveAsTemplate(id, templateName),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['curriculum-templates'] });
+    },
+  });
+}
+
+export function useCreateCurriculumFromTemplate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ templateId, data }: { templateId: string; data: CreateCurriculumFromTemplateRequest }) =>
+      curriculumApi.createFromTemplate(templateId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['curriculums'] });
     },
   });
 }

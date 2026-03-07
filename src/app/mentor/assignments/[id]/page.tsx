@@ -12,6 +12,7 @@ import {
   useAddAssignmentMaterial,
   useRemoveAssignmentMaterial,
   useReviewSubmission,
+  useSaveAssignmentAsTemplate,
 } from '@/lib/hooks/use-assignments';
 import { useLibraryItems } from '@/lib/hooks/use-library';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ import {
   ChevronUp,
   FileText,
   ExternalLink,
+  Copy,
 } from 'lucide-react';
 import type { SubmissionDto, AssignmentMaterialDto } from '@/lib/api/assignments';
 
@@ -90,10 +92,13 @@ export default function MentorAssignmentDetailPage() {
   const addMaterialMutation = useAddAssignmentMaterial();
   const removeMaterialMutation = useRemoveAssignmentMaterial();
   const reviewMutation = useReviewSubmission();
+  const saveTemplateMutation = useSaveAssignmentAsTemplate();
 
   const [activeTab, setActiveTab] = useState<'detail' | 'submissions'>('detail');
   const [showMaterialPicker, setShowMaterialPicker] = useState(false);
   const [expandedSubmission, setExpandedSubmission] = useState<string | null>(null);
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+  const [templateName, setTemplateName] = useState('');
 
   // Review form state
   const [reviewForms, setReviewForms] = useState<Record<string, { score: string; feedback: string; status: string }>>({});
@@ -150,6 +155,16 @@ export default function MentorAssignmentDetailPage() {
       await deleteMutation.mutateAsync(id);
       toast.success('Odev silindi');
       router.push('/mentor/assignments');
+    } catch { /* interceptor */ }
+  };
+
+  const handleSaveTemplate = async () => {
+    if (!templateName.trim()) return;
+    try {
+      await saveTemplateMutation.mutateAsync({ id, templateName: templateName.trim() });
+      toast.success('Sablon olarak kaydedildi');
+      setShowSaveTemplate(false);
+      setTemplateName('');
     } catch { /* interceptor */ }
   };
 
@@ -228,6 +243,14 @@ export default function MentorAssignmentDetailPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-xs text-amber-600 border-amber-200 hover:bg-amber-50"
+            onClick={() => setShowSaveTemplate(true)}
+          >
+            <Copy className="w-3 h-3 mr-1" /> Sablon
+          </Button>
           {isDraft && (
             <Button size="sm" className="text-xs bg-green-600 hover:bg-green-700" onClick={handlePublish} disabled={publishMutation.isPending}>
               <Send className="w-3 h-3 mr-1" /> Yayinla
@@ -298,6 +321,39 @@ export default function MentorAssignmentDetailPage() {
           onClose={() => setShowMaterialPicker(false)}
           isPending={addMaterialMutation.isPending}
         />
+      )}
+
+      {/* Save as Template Dialog */}
+      {showSaveTemplate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <Card className="w-full max-w-md mx-4 shadow-xl">
+            <CardContent className="p-5">
+              <h3 className="text-sm font-semibold text-gray-900 mb-4">Sablon Olarak Kaydet</h3>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Sablon Adi</label>
+                <Input
+                  value={templateName}
+                  onChange={(e) => setTemplateName(e.target.value)}
+                  placeholder="ornegin: Haftalik Odev Sablonu"
+                  className="text-sm"
+                />
+              </div>
+              <div className="flex justify-end gap-2 mt-4">
+                <Button variant="outline" size="sm" onClick={() => { setShowSaveTemplate(false); setTemplateName(''); }}>
+                  Iptal
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={!templateName.trim() || saveTemplateMutation.isPending}
+                  onClick={handleSaveTemplate}
+                  className="bg-amber-600 hover:bg-amber-700"
+                >
+                  {saveTemplateMutation.isPending ? 'Kaydediliyor...' : 'Kaydet'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );
