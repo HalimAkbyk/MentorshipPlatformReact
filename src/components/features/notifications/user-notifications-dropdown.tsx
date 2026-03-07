@@ -62,6 +62,8 @@ export function getNavigationUrl(notif: UserNotificationDto, isMentor?: boolean)
       return isMentor
         ? `/mentor/messages?conversationId=${notif.referenceId}`
         : `/student/messages?conversationId=${notif.referenceId}`;
+    case 'MentorApproval':
+      return '/mentor/settings';
     default:
       return null;
   }
