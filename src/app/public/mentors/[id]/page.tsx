@@ -321,11 +321,58 @@ export default function MentorProfilePage() {
               <div className="p-6">
                 {/* About Tab */}
                 {selectedTab === 'about' && (
-                  <div>
+                  <div className="space-y-6">
                     {mentor.headline && (
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">{mentor.headline}</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">{mentor.headline}</h3>
                     )}
                     <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{mentor.bio}</p>
+
+                    {/* Profile details */}
+                    {(mentor.university || mentor.department || mentor.graduationYear) && (
+                      <div className="border-t pt-5">
+                        <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <GraduationCap className="w-4 h-4 text-teal-600" />
+                          Egitim Bilgileri
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {mentor.university && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <Building2 className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                              <span className="text-gray-600">{mentor.university}</span>
+                            </div>
+                          )}
+                          {mentor.department && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <Award className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                              <span className="text-gray-600">{mentor.department}</span>
+                            </div>
+                          )}
+                          {mentor.graduationYear && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                              <span className="text-gray-600">Mezuniyet: {mentor.graduationYear}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Offerings summary */}
+                    {enrichedOfferings.length > 0 && (
+                      <div className="border-t pt-5">
+                        <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <Package className="w-4 h-4 text-purple-600" />
+                          Verdigi Dersler
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {enrichedOfferings.map((o) => (
+                            <Badge key={o.id} variant="outline" className="border-teal-200 text-teal-700 text-xs">
+                              {o.title}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
