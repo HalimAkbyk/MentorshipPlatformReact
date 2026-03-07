@@ -144,7 +144,7 @@ export default function MentorDashboardPage() {
     if (!hasAvailability) return 'Uygunluk takvimini ekle, ogrenciler seni bulsun.';
     const sessionCount = upcomingBookings.length;
     if (sessionCount > 0) return `${sessionCount} yaklasan dersin var.`;
-    if (!profile?.isListed) return 'Profilini yayina al, ogrenciler seni gorsun.';
+    if (!profile?.isListed) return 'Profilin admin onayi bekliyor. Onaylandiktan sonra ogrenciler seni gorebilecek.';
     return 'Harika! Profilin yayinda, ogrencilerini bekliyorsun.';
   };
 
@@ -193,15 +193,11 @@ export default function MentorDashboardPage() {
         </Button>
       );
     }
-    // Uygunluk var, ders yok — profili paylaşma yönlendirmesi
     if (!profile?.isListed) {
       return (
-        <Link href="/mentor/settings">
-          <Button className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg" size="sm">
-            <Eye className="w-4 h-4 mr-1.5" />
-            Profili Yayina Al
-          </Button>
-        </Link>
+        <span className="text-xs text-white/80 bg-white/20 rounded-full px-3 py-1">
+          Admin onayi bekleniyor
+        </span>
       );
     }
     return null;
@@ -285,11 +281,15 @@ export default function MentorDashboardPage() {
                       <CheckCircle className="w-2.5 h-2.5 mr-0.5" /> Profil Tamam
                     </Badge>
                   )}
-                  {profile?.isListed && (
+                  {profile?.isListed ? (
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-teal-300 text-teal-700 bg-teal-50">
                       <Eye className="w-2.5 h-2.5 mr-0.5" /> Yayinda
                     </Badge>
-                  )}
+                  ) : hasProfile ? (
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-700 bg-amber-50">
+                      <Clock className="w-2.5 h-2.5 mr-0.5" /> Admin Onayi Bekleniyor
+                    </Badge>
+                  ) : null}
                 </div>
 
                 {/* Checklist — eksik adımları göster */}
