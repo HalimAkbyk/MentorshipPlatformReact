@@ -169,7 +169,8 @@ export const assignmentsApi = {
 
   // Create assignment
   create: async (data: CreateAssignmentRequest): Promise<string> => {
-    return apiClient.post<string>('/assignments', data);
+    const res = await apiClient.post<{ id: string }>('/assignments', data);
+    return res.id;
   },
 
   // Update assignment
@@ -231,7 +232,8 @@ export const assignmentsApi = {
 
   // Template operations
   saveAsTemplate: async (id: string, templateName: string): Promise<string> => {
-    return apiClient.post<string>(`/assignments/${id}/save-as-template`, { templateName });
+    const res = await apiClient.post<{ id: string }>(`/assignments/${id}/save-as-template`, { templateName });
+    return res.id;
   },
 
   getTemplates: async (): Promise<AssignmentTemplateDto[]> => {
@@ -240,6 +242,7 @@ export const assignmentsApi = {
   },
 
   createFromTemplate: async (templateId: string, data: CreateAssignmentFromTemplateRequest): Promise<string> => {
-    return apiClient.post<string>(`/assignments/from-template/${templateId}`, data);
+    const res = await apiClient.post<{ id: string }>(`/assignments/from-template/${templateId}`, data);
+    return res.id;
   },
 };

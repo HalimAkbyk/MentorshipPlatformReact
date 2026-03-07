@@ -108,7 +108,8 @@ export const sessionPlansApi = {
   },
 
   create: async (data: CreateSessionPlanRequest): Promise<string> => {
-    return apiClient.post<string>('/session-plans', data);
+    const res = await apiClient.post<{ id: string }>('/session-plans', data);
+    return res.id;
   },
 
   update: async (id: string, data: UpdateSessionPlanRequest): Promise<void> => {
@@ -128,7 +129,8 @@ export const sessionPlansApi = {
   },
 
   addMaterial: async (planId: string, data: AddMaterialRequest): Promise<string> => {
-    return apiClient.post<string>(`/session-plans/${planId}/materials`, data);
+    const res = await apiClient.post<{ id: string }>(`/session-plans/${planId}/materials`, data);
+    return res.id;
   },
 
   removeMaterial: async (planId: string, materialId: string): Promise<void> => {
@@ -163,7 +165,8 @@ export const sessionPlansApi = {
 
   // Template operations
   saveAsTemplate: async (id: string, templateName: string): Promise<string> => {
-    return apiClient.post<string>(`/session-plans/${id}/save-as-template`, { templateName });
+    const res = await apiClient.post<{ id: string }>(`/session-plans/${id}/save-as-template`, { templateName });
+    return res.id;
   },
 
   getTemplates: async (): Promise<SessionPlanTemplateDto[]> => {
@@ -172,6 +175,7 @@ export const sessionPlansApi = {
   },
 
   createFromTemplate: async (templateId: string, data: CreateSessionPlanFromTemplateRequest): Promise<string> => {
-    return apiClient.post<string>(`/session-plans/from-template/${templateId}`, data);
+    const res = await apiClient.post<{ id: string }>(`/session-plans/from-template/${templateId}`, data);
+    return res.id;
   },
 };

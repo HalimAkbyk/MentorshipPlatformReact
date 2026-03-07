@@ -93,7 +93,8 @@ export const libraryApi = {
   },
 
   create: async (data: CreateLibraryItemRequest): Promise<string> => {
-    return apiClient.post<string>('/library', data);
+    const res = await apiClient.post<{ id: string }>('/library', data);
+    return res.id;
   },
 
   update: async (id: string, data: UpdateLibraryItemRequest): Promise<void> => {

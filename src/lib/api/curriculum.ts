@@ -188,7 +188,8 @@ export const curriculumApi = {
   },
 
   create: async (data: CreateCurriculumRequest): Promise<string> => {
-    return apiClient.post<string>('/curriculums', data);
+    const res = await apiClient.post<{ id: string }>('/curriculums', data);
+    return res.id;
   },
 
   update: async (id: string, data: UpdateCurriculumRequest): Promise<void> => {
@@ -205,37 +206,39 @@ export const curriculumApi = {
 
   // Week operations
   addWeek: async (curriculumId: string, data: CreateWeekRequest): Promise<string> => {
-    return apiClient.post<string>(`/curriculums/${curriculumId}/weeks`, data);
+    const res = await apiClient.post<{ id: string }>(`/curriculums/${curriculumId}/weeks`, data);
+    return res.id;
   },
 
   updateWeek: async (weekId: string, data: UpdateWeekRequest): Promise<void> => {
-    return apiClient.put(`/curriculum-weeks/${weekId}`, data);
+    return apiClient.put(`/curriculums/weeks/${weekId}`, data);
   },
 
   deleteWeek: async (weekId: string): Promise<void> => {
-    return apiClient.delete(`/curriculum-weeks/${weekId}`);
+    return apiClient.delete(`/curriculums/weeks/${weekId}`);
   },
 
   // Topic operations
   addTopic: async (weekId: string, data: CreateTopicRequest): Promise<string> => {
-    return apiClient.post<string>(`/curriculum-weeks/${weekId}/topics`, data);
+    const res = await apiClient.post<{ id: string }>(`/curriculums/weeks/${weekId}/topics`, data);
+    return res.id;
   },
 
   updateTopic: async (topicId: string, data: UpdateTopicRequest): Promise<void> => {
-    return apiClient.put(`/curriculum-topics/${topicId}`, data);
+    return apiClient.put(`/curriculums/topics/${topicId}`, data);
   },
 
   deleteTopic: async (topicId: string): Promise<void> => {
-    return apiClient.delete(`/curriculum-topics/${topicId}`);
+    return apiClient.delete(`/curriculums/topics/${topicId}`);
   },
 
   // Topic material operations
   addTopicMaterial: async (topicId: string, data: AddTopicMaterialRequest): Promise<void> => {
-    return apiClient.post(`/curriculum-topics/${topicId}/materials`, data);
+    return apiClient.post(`/curriculums/topics/${topicId}/materials`, data);
   },
 
   removeTopicMaterial: async (topicId: string, itemId: string): Promise<void> => {
-    return apiClient.delete(`/curriculum-topics/${topicId}/materials/${itemId}`);
+    return apiClient.delete(`/curriculums/topics/${topicId}/materials/${itemId}`);
   },
 
   // Assignment
@@ -286,7 +289,8 @@ export const curriculumApi = {
 
   // Template operations
   saveAsTemplate: async (id: string, templateName: string): Promise<string> => {
-    return apiClient.post<string>(`/curriculums/${id}/save-as-template`, { templateName });
+    const res = await apiClient.post<{ id: string }>(`/curriculums/${id}/save-as-template`, { templateName });
+    return res.id;
   },
 
   getTemplates: async (): Promise<CurriculumTemplateDto[]> => {
@@ -295,6 +299,7 @@ export const curriculumApi = {
   },
 
   createFromTemplate: async (templateId: string, data: CreateCurriculumFromTemplateRequest): Promise<string> => {
-    return apiClient.post<string>(`/curriculums/from-template/${templateId}`, data);
+    const res = await apiClient.post<{ id: string }>(`/curriculums/from-template/${templateId}`, data);
+    return res.id;
   },
 };
