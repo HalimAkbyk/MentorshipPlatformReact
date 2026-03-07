@@ -6,6 +6,7 @@ import {
   LayoutDashboard, MessageSquare, Package, BookOpen, Clock,
   Zap, Users, PlayCircle, DollarSign, BarChart3, CreditCard,
   Wallet, Settings, Search, GraduationCap, Calendar, FileText,
+  FolderOpen, ClipboardList, FileCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useAuthStore } from '@/lib/stores/auth-store';
@@ -60,6 +61,16 @@ export function Sidebar() {
     });
 
     sections.push({
+      title: 'Icerik & Mufredat',
+      items: [
+        { label: 'Kutuphanem', href: '/mentor/library', icon: FolderOpen, color: 'text-cyan-600' },
+        { label: 'Mufredatlarim', href: '/mentor/curriculums', icon: BookOpen, color: 'text-indigo-600' },
+        { label: 'Oturum Planlari', href: '/mentor/session-plans', icon: ClipboardList, color: 'text-amber-600' },
+        { label: 'Odevler', href: '/mentor/assignments', icon: FileCheck, color: 'text-emerald-600' },
+      ],
+    });
+
+    sections.push({
       title: 'Kazanc',
       items: [
         { label: 'Kazanclarım', href: '/mentor/earnings', icon: DollarSign, color: 'text-green-600' },
@@ -102,6 +113,14 @@ export function Sidebar() {
         { label: 'Grup Derslerim', href: '/student/my-classes', icon: GraduationCap, color: 'text-indigo-600' },
         { label: 'Video Egitimlerim', href: '/student/courses', icon: PlayCircle, color: 'text-green-600' },
         { label: 'Sinavlarim', href: '/student/exams', icon: FileText, color: 'text-rose-600' },
+      ],
+    });
+
+    sections.push({
+      title: 'Ders Takibi',
+      items: [
+        { label: 'Mufredatim', href: '/student/curriculum', icon: BookOpen, color: 'text-indigo-600' },
+        { label: 'Odevlerim', href: '/student/assignments', icon: FileCheck, color: 'text-emerald-600' },
       ],
     });
 
