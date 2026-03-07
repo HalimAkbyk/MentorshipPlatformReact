@@ -35,7 +35,7 @@ export default function StudentMyAttemptsPage() {
     : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto px-4 py-6 max-w-6xl space-y-6">
       <div>
         <h1 className="text-2xl text-gray-900">Gecmis Denemelerim</h1>
         <p className="text-sm text-gray-500 mt-1">Tum sinav denemelerinizi goruntuleyin</p>

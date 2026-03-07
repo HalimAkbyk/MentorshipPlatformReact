@@ -45,7 +45,7 @@ export default function StudentExamsPage() {
     : allExams;
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto px-4 py-6 max-w-6xl space-y-6">
       <div>
         <h1 className="text-2xl text-gray-900">Sinavlar</h1>
         <p className="text-sm text-gray-500 mt-1">Mevcut sinavlari gor ve cozmeye basla</p>

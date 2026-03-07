@@ -60,7 +60,7 @@ export default function MentorExamsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto px-4 py-6 max-w-6xl space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl text-gray-900 font-semibold">Sinavlarim</h1>
         <Link href="/mentor/exams/create">

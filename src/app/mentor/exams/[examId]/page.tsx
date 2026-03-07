@@ -220,7 +220,7 @@ export default function MentorExamEditPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-4xl">
+      <div className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
         <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
         <Card className="p-6 border border-gray-200">
           <div className="h-6 w-64 bg-gray-200 rounded animate-pulse mb-4" />

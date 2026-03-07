@@ -172,7 +172,7 @@ export default function MentorExamCreatePage() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
       <button
         onClick={() => router.push('/mentor/exams')}
         className="flex items-center gap-1 text-sm text-gray-500 hover:text-teal-600 transition-colors"

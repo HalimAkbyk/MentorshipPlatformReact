@@ -64,7 +64,7 @@ export default function MentorExamResultsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-5xl">
+      <div className="container mx-auto px-4 py-6 max-w-5xl space-y-6">
         <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {Array.from({ length: 5 }).map((_, i) => (
