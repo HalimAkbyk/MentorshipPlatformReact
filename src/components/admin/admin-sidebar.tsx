@@ -22,6 +22,9 @@ import {
   X,
   Ticket,
   BookOpen,
+  Package,
+  TrendingUp,
+  Calendar,
   type LucideIcon,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -58,7 +61,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: Users,
     items: [
       { label: 'Tum Kullanicilar', href: '/admin/users' },
-      { label: 'Mentor Onaylari', href: '/admin/verifications', badgeKey: 'pendingVerifications' },
+      { label: 'Egitmen Onaylari', href: '/admin/verifications', badgeKey: 'pendingVerifications' },
       { label: 'Roller & Izinler', href: '/admin/roles' },
     ],
   },
@@ -67,11 +70,22 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Egitim Yonetimi',
     icon: GraduationCap,
     items: [
-      { label: '1:1 Dersler', href: '/admin/bookings' },
+      { label: '1:1 Seanslar', href: '/admin/bookings' },
+      { label: 'Seans Talepleri', href: '/admin/session-requests', badgeKey: 'pendingSessionRequests' },
       { label: 'Grup Dersleri', href: '/admin/group-classes' },
-      { label: 'Video Kurslar', href: '/admin/courses' },
-      { label: 'Kurs Incelemeleri', href: '/admin/course-reviews', badgeKey: 'pendingCourseReviews' },
+      { label: 'Video Egitimler', href: '/admin/courses' },
+      { label: 'Egitim Incelemeleri', href: '/admin/course-reviews', badgeKey: 'pendingCourseReviews' },
       { label: 'Sinav Modulu', href: '/admin/exams' },
+      { label: 'Takvim', href: '/admin/calendar' },
+    ],
+  },
+  {
+    id: 'packages',
+    label: 'Paket & Fiyat',
+    icon: Package,
+    items: [
+      { label: 'Paket Yonetimi', href: '/admin/packages' },
+      { label: 'Fiyat Onaylari', href: '/admin/offering-approvals', badgeKey: 'pendingOfferingApprovals' },
     ],
   },
   {
@@ -81,7 +95,8 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'Siparisler', href: '/admin/orders' },
       { label: 'Iadeler', href: '/admin/refunds' },
-      { label: 'Mentor Odemeleri', href: '/admin/payouts' },
+      { label: 'Egitmen Odemeleri', href: '/admin/payouts' },
+      { label: 'Egitmen Performans', href: '/admin/instructor-performance' },
       { label: 'Gelir Raporu', href: '/admin/revenue' },
       { label: 'Kuponlar', href: '/admin/coupons' },
     ],
@@ -218,6 +233,8 @@ export function AdminSidebar({
   const badgeCounts: Record<string, number> = {
     pendingVerifications: pendingCounts?.pendingVerifications ?? 0,
     pendingCourseReviews: pendingCounts?.pendingCourseReviews ?? 0,
+    pendingSessionRequests: pendingCounts?.pendingSessionRequests ?? 0,
+    pendingOfferingApprovals: pendingCounts?.pendingOfferingApprovals ?? 0,
   };
 
   // ── Sidebar inner content ──────────────────────────────

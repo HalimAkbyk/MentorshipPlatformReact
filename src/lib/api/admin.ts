@@ -1473,7 +1473,7 @@ export const adminApi = {
     apiClient.get(`/admin/education/courses/${courseId}/notes`),
 
   // Pending Counts (for sidebar badges)
-  getPendingCounts: (): Promise<{ pendingVerifications: number; pendingCourseReviews: number }> =>
+  getPendingCounts: (): Promise<{ pendingVerifications: number; pendingCourseReviews: number; pendingSessionRequests: number; pendingOfferingApprovals: number }> =>
     apiClient.get('/admin/pending-counts'),
 
   // ---------------------------------------------------------------------------
