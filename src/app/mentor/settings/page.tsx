@@ -159,7 +159,8 @@ export default function MentorSettingsPage() {
   const [isListed, setIsListed] = useState(false);
 
   /* ── Review request state ── */
-  const [reviewStatus, setReviewStatus] = useState<{ hasPendingReview: boolean; adminTitle?: string | null; adminMessage?: string | null }>({ hasPendingReview: false });
+  const [reviewStatus, setReviewStatus] = useState<{ hasPendingReview: boolean }>({ hasPendingReview: false });
+  const [reviewNotes, setReviewNotes] = useState<{ id: string; senderRole: string; message: string; createdAt: string }[]>([]);
   const [reviewResponse, setReviewResponse] = useState('');
   const [sendingReviewResponse, setSendingReviewResponse] = useState(false);
 
@@ -186,10 +187,11 @@ export default function MentorSettingsPage() {
   const [sessionFormats, setSessionFormats] = useState<string[]>([]);
   const [offerFreeIntro, setOfferFreeIntro] = useState(true);
 
-  /* ── Load mentor profile (isListed) + review status ── */
+  /* ── Load mentor profile (isListed) + review status + notes ── */
   useEffect(() => {
     mentorsApi.getMyProfile().then(p => setIsListed(p.isListed)).catch(() => {});
     onboardingApi.getReviewStatus().then(setReviewStatus).catch(() => {});
+    onboardingApi.getReviewNotes().then(setReviewNotes).catch(() => {});
   }, []);
 
   /* ── Load mentor onboarding data ── */
@@ -271,10 +273,12 @@ export default function MentorSettingsPage() {
 
   const suggestedSubtopics = selectedCategories.flatMap(cat => SUGGESTED_SUBTOPICS[cat] || []).filter(s => !subtopics.includes(s));
 
-  const handleReviewResponse = async (withMessage: boolean) => {
+  const handleReviewResponse = async () => {
+    if (!reviewResponse.trim()) { toast.error('Mesaj bos olamaz'); return; }
     try {
       setSendingReviewResponse(true);
-      await onboardingApi.respondToReview(withMessage ? reviewResponse : undefined);
+      const newNote = await onboardingApi.respondToReview(reviewResponse.trim());
+      setReviewNotes(prev => [...prev, newNote]);
       setReviewStatus({ hasPendingReview: false });
       setReviewResponse('');
       toast.success('Yanitiniz admine iletildi');
@@ -467,57 +471,81 @@ export default function MentorSettingsPage() {
             {/* ═══ TAB: MENTORING INFO (Onboarding Data) ═══ */}
             {activeTab === 'mentoring' && (
               <>
-                {/* Review Request Banner */}
-                {reviewStatus.hasPendingReview && (
+                {/* Review Notes Thread */}
+                {reviewNotes.length > 0 && (
+                  <Card className={cn(
+                    "shadow-sm mb-4",
+                    reviewStatus.hasPendingReview ? "border-amber-200 bg-amber-50" : "border-gray-200"
+                  )}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <MessageCircle className="w-5 h-5 text-amber-600" />
+                        Admin Iletisimi
+                        {reviewStatus.hasPendingReview && (
+                          <Badge className="bg-amber-100 text-amber-700 text-xs ml-auto">Yanit Bekleniyor</Badge>
+                        )}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {/* Conversation Thread */}
+                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                        {reviewNotes.map((note) => (
+                          <div
+                            key={note.id}
+                            className={cn(
+                              "rounded-lg p-3 text-sm",
+                              note.senderRole === 'Admin'
+                                ? "bg-white border border-amber-200 text-gray-800"
+                                : "bg-teal-50 border border-teal-200 text-gray-800 ml-6"
+                            )}
+                          >
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className={cn(
+                                "text-xs font-semibold",
+                                note.senderRole === 'Admin' ? "text-amber-700" : "text-teal-700"
+                              )}>
+                                {note.senderRole === 'Admin' ? 'Admin' : 'Siz'}
+                              </span>
+                              <span className="text-[10px] text-gray-400">
+                                {new Date(note.createdAt).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            <p>{note.message}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Reply input */}
+                      <div className="flex items-center gap-2 pt-2 border-t border-gray-200">
+                        <Input
+                          value={reviewResponse}
+                          onChange={(e) => setReviewResponse(e.target.value)}
+                          placeholder="Admine mesaj yazin..."
+                          className="flex-1 bg-white text-sm"
+                          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleReviewResponse(); } }}
+                        />
+                        <Button
+                          size="sm"
+                          onClick={handleReviewResponse}
+                          disabled={sendingReviewResponse || !reviewResponse.trim()}
+                          className="bg-teal-600 hover:bg-teal-700 text-white shrink-0"
+                        >
+                          {sendingReviewResponse ? 'Gonderiliyor...' : 'Gonder'}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Pending review banner (when notes empty but flag is set — edge case) */}
+                {reviewStatus.hasPendingReview && reviewNotes.length === 0 && (
                   <Card className="border-amber-200 bg-amber-50 shadow-sm mb-4">
                     <CardContent className="pt-5 pb-4">
-                      <div className="flex items-start gap-3">
-                        <div className="shrink-0 mt-0.5">
-                          <AlertTriangle className="h-5 w-5 text-amber-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-semibold text-amber-800 mb-1">Admin Duzenleme Talep Etti</h4>
-                          {reviewStatus.adminMessage && (
-                            <p className="text-sm text-amber-700 mb-3 bg-white/60 rounded-lg p-3 border border-amber-200">
-                              {reviewStatus.adminMessage}
-                            </p>
-                          )}
-                          <p className="text-xs text-amber-600 mb-3">
-                            Degisiklikleri yaptiktan sonra &quot;Tamamladim&quot; butonuna basin veya mesaj ile cevap verin.
-                          </p>
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <Input
-                                value={reviewResponse}
-                                onChange={(e) => setReviewResponse(e.target.value)}
-                                placeholder="Admine mesaj yazin (opsiyonel)..."
-                                className="flex-1 bg-white text-sm"
-                              />
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                onClick={() => handleReviewResponse(false)}
-                                disabled={sendingReviewResponse}
-                                className="bg-teal-600 hover:bg-teal-700 text-white"
-                              >
-                                <Check className="h-4 w-4 mr-1" />
-                                {sendingReviewResponse ? 'Gonderiliyor...' : 'Degisiklikleri Tamamladim'}
-                              </Button>
-                              {reviewResponse.trim() && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleReviewResponse(true)}
-                                  disabled={sendingReviewResponse}
-                                  className="border-amber-300 text-amber-700 hover:bg-amber-100"
-                                >
-                                  <MessageCircle className="h-4 w-4 mr-1" />
-                                  Mesaj ile Yanit Ver
-                                </Button>
-                              )}
-                            </div>
-                          </div>
+                      <div className="flex items-center gap-3">
+                        <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+                        <div>
+                          <h4 className="text-sm font-semibold text-amber-800">Admin duzenleme talep etti</h4>
+                          <p className="text-xs text-amber-600">Bildirimlerinizi kontrol edin.</p>
                         </div>
                       </div>
                     </CardContent>

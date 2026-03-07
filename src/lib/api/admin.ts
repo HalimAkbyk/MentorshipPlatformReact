@@ -854,6 +854,10 @@ export const adminApi = {
     return apiClient.post<void>(`/admin/mentors/${userId}/notify`, { title, message });
   },
 
+  getMentorReviewNotes: async (userId: string): Promise<{ id: string; senderRole: string; message: string; createdAt: string }[]> => {
+    return apiClient.get(`/admin/mentors/${userId}/review-notes`);
+  },
+
   // Legacy Refunds (old system — kept for backward compat)
   getPendingRefunds: async (): Promise<PendingRefundDto[]> => {
     return apiClient.get<PendingRefundDto[]>('/admin/refunds', { status: 'Pending' });

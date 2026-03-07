@@ -49,11 +49,16 @@ export interface MentorOnboardingData {
   offerFreeIntro?: boolean;
 }
 
-// ===== Review Status =====
+// ===== Review Status & Notes =====
 export interface ReviewStatus {
   hasPendingReview: boolean;
-  adminTitle?: string | null;
-  adminMessage?: string | null;
+}
+
+export interface ReviewNote {
+  id: string;
+  senderRole: 'Admin' | 'Mentor';
+  message: string;
+  createdAt: string;
 }
 
 // ===== API =====
@@ -80,12 +85,16 @@ export const onboardingApi = {
     return res;
   },
 
-  // Review request
+  // Review request & notes
   getReviewStatus: async (): Promise<ReviewStatus> => {
     return apiClient.get<ReviewStatus>('/onboarding/mentor/review-status');
   },
 
-  respondToReview: async (message?: string): Promise<void> => {
-    return apiClient.post<void>('/onboarding/mentor/review-response', { message });
+  getReviewNotes: async (): Promise<ReviewNote[]> => {
+    return apiClient.get<ReviewNote[]>('/onboarding/mentor/review-notes');
+  },
+
+  respondToReview: async (message: string): Promise<ReviewNote> => {
+    return apiClient.post<ReviewNote>('/onboarding/mentor/review-response', { message });
   },
 };

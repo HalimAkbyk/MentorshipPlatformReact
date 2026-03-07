@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Check, X, ExternalLink, Clock, User, GraduationCap, FileText, EyeOff,
@@ -47,11 +47,12 @@ export default function AdminVerificationsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTab, setFilterTab] = useState<'all' | 'pending' | 'listed'>('all');
 
-  // Notification state
-  const [showNotifyForm, setShowNotifyForm] = useState(false);
+  // Notification / review notes state
   const [notifyTitle, setNotifyTitle] = useState('');
   const [notifyMessage, setNotifyMessage] = useState('');
   const [sendingNotify, setSendingNotify] = useState(false);
+  const [reviewNotes, setReviewNotes] = useState<{ id: string; senderRole: string; message: string; createdAt: string }[]>([]);
+  const [loadingNotes, setLoadingNotes] = useState(false);
 
   // Modals
   const [verificationModal, setVerificationModal] = useState<{
@@ -65,6 +66,16 @@ export default function AdminVerificationsPage() {
   const [unpublishModal, setUnpublishModal] = useState<{
     open: boolean; userId: string | null; isProcessing: boolean;
   }>({ open: false, userId: null, isProcessing: false });
+
+  // Load review notes when mentor is selected
+  useEffect(() => {
+    if (!selectedMentor) { setReviewNotes([]); return; }
+    setLoadingNotes(true);
+    adminApi.getMentorReviewNotes(selectedMentor.userId)
+      .then(setReviewNotes)
+      .catch(() => setReviewNotes([]))
+      .finally(() => setLoadingNotes(false));
+  }, [selectedMentor?.userId]);
 
   // Filtering
   const filteredMentors = (mentors || []).filter(m => {
@@ -138,16 +149,19 @@ export default function AdminVerificationsPage() {
   };
 
   const handleSendNotification = async () => {
-    if (!selectedMentor || !notifyTitle.trim() || !notifyMessage.trim()) return;
+    if (!selectedMentor || !notifyMessage.trim()) return;
     try {
       setSendingNotify(true);
-      await adminApi.sendMentorNotification(selectedMentor.userId, notifyTitle.trim(), notifyMessage.trim());
-      toast.success('Bildirim gonderildi');
+      const title = notifyTitle.trim() || 'Duzenleme talebi';
+      await adminApi.sendMentorNotification(selectedMentor.userId, title, notifyMessage.trim());
+      // Refresh notes
+      const notes = await adminApi.getMentorReviewNotes(selectedMentor.userId);
+      setReviewNotes(notes);
+      toast.success('Mesaj gonderildi');
       setNotifyTitle('');
       setNotifyMessage('');
-      setShowNotifyForm(false);
     } catch {
-      toast.error('Bildirim gonderilemedi');
+      toast.error('Mesaj gonderilemedi');
     } finally {
       setSendingNotify(false);
     }
@@ -264,7 +278,7 @@ export default function AdminVerificationsPage() {
               return (
                 <button
                   key={mentor.userId}
-                  onClick={() => { setSelectedMentor(mentor); setShowNotifyForm(false); }}
+                  onClick={() => { setSelectedMentor(mentor); setNotifyTitle(''); setNotifyMessage(''); }}
                   className={`w-full text-left p-4 rounded-xl border transition-all ${
                     isSelected
                       ? 'border-blue-400 bg-blue-50 shadow-sm'
@@ -505,74 +519,94 @@ export default function AdminVerificationsPage() {
                 </Card>
               )}
 
-              {/* Send Notification */}
+              {/* Review Notes Conversation */}
               <Card className="border-0 shadow-sm">
                 <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                      <MessageSquare className="w-4 h-4 text-blue-600" />
-                      Egitmene Mesaj Gonder
-                    </CardTitle>
-                    {!showNotifyForm && (
-                      <Button size="sm" variant="outline" className="text-xs" onClick={() => setShowNotifyForm(true)}>
-                        <Send className="w-3.5 h-3.5 mr-1" /> Mesaj Yaz
-                      </Button>
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-blue-600" />
+                    Egitmen Iletisimi
+                    {reviewNotes.length > 0 && (
+                      <Badge className="bg-blue-100 text-blue-700 text-[10px] ml-1">{reviewNotes.length}</Badge>
                     )}
-                  </div>
+                  </CardTitle>
                   <CardDescription className="text-xs">Duzenleme talebi veya bilgilendirme gonderin</CardDescription>
                 </CardHeader>
-                {showNotifyForm && (
-                  <CardContent className="space-y-3">
-                    <div>
-                      <p className="text-xs font-medium text-gray-600 mb-1">Baslik</p>
-                      <Input
-                        value={notifyTitle}
-                        onChange={(e) => setNotifyTitle(e.target.value)}
-                        placeholder="Orn: Profil bilgilerinizi guncelleyin"
-                        className="text-sm"
-                      />
+                <CardContent className="space-y-3">
+                  {/* Conversation Thread */}
+                  {loadingNotes ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
                     </div>
-                    <div>
-                      <p className="text-xs font-medium text-gray-600 mb-1">Mesaj</p>
+                  ) : reviewNotes.length > 0 ? (
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {reviewNotes.map(note => (
+                        <div
+                          key={note.id}
+                          className={`rounded-lg p-2.5 text-xs ${
+                            note.senderRole === 'Admin'
+                              ? 'bg-blue-50 border border-blue-100 text-gray-800'
+                              : 'bg-gray-50 border border-gray-200 text-gray-800 ml-4'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className={`font-semibold ${note.senderRole === 'Admin' ? 'text-blue-700' : 'text-teal-700'}`}>
+                              {note.senderRole === 'Admin' ? 'Admin' : 'Egitmen'}
+                            </span>
+                            <span className="text-[10px] text-gray-400">
+                              {new Date(note.createdAt).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <p>{note.message}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 text-center py-2">Henuz mesaj yok</p>
+                  )}
+
+                  {/* Quick templates */}
+                  <div className="flex gap-1 flex-wrap">
+                    {[
+                      { label: 'Bio eksik', title: 'Biyografinizi tamamlayin', msg: 'Profilinizin onaylanmasi icin biyografi alaninizi doldurmaniz gerekmektedir. Lutfen ayarlar sayfasindan guncelleyin.' },
+                      { label: 'Belge iste', title: 'Dogrulama belgesi gerekli', msg: 'Profilinizin yayinlanmasi icin ogrenci belgesi veya transkript yuklemeniz gerekmektedir.' },
+                    ].map(tpl => (
+                      <button
+                        key={tpl.label}
+                        onClick={() => { setNotifyTitle(tpl.title); setNotifyMessage(tpl.msg); }}
+                        className="text-[10px] px-2 py-1 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+                      >
+                        {tpl.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Send form */}
+                  <div className="space-y-2 pt-1 border-t border-gray-100">
+                    <Input
+                      value={notifyTitle}
+                      onChange={(e) => setNotifyTitle(e.target.value)}
+                      placeholder="Baslik (opsiyonel)"
+                      className="text-xs h-8"
+                    />
+                    <div className="flex items-center gap-2">
                       <Textarea
                         value={notifyMessage}
                         onChange={(e) => setNotifyMessage(e.target.value)}
-                        placeholder="Egitmene iletmek istediginiz mesaji yazin..."
-                        rows={3}
-                        className="text-sm"
+                        placeholder="Egitmene mesaj yazin..."
+                        rows={2}
+                        className="text-xs flex-1"
                       />
-                    </div>
-                    <div className="flex items-center gap-2">
                       <Button
                         size="sm"
                         onClick={handleSendNotification}
-                        disabled={sendingNotify || !notifyTitle.trim() || !notifyMessage.trim()}
-                        className="bg-blue-600 hover:bg-blue-700 text-xs"
+                        disabled={sendingNotify || !notifyMessage.trim()}
+                        className="bg-blue-600 hover:bg-blue-700 text-xs shrink-0 h-14"
                       >
-                        {sendingNotify ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <Send className="w-3.5 h-3.5 mr-1" />}
-                        Gonder
+                        {sendingNotify ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                       </Button>
-                      <Button size="sm" variant="ghost" className="text-xs" onClick={() => { setShowNotifyForm(false); setNotifyTitle(''); setNotifyMessage(''); }}>
-                        Iptal
-                      </Button>
-                      {/* Quick templates */}
-                      <div className="ml-auto flex gap-1">
-                        {[
-                          { label: 'Bio eksik', title: 'Biyografinizi tamamlayin', msg: 'Profilinizin onaylanmasi icin biyografi alaninizi doldurmaniz gerekmektedir. Lutfen ayarlar sayfasindan guncelleyin.' },
-                          { label: 'Belge iste', title: 'Dogrulama belgesi gerekli', msg: 'Profilinizin yayinlanmasi icin ogrenci belgesi veya transkript yuklemeniz gerekmektedir.' },
-                        ].map(tpl => (
-                          <button
-                            key={tpl.label}
-                            onClick={() => { setNotifyTitle(tpl.title); setNotifyMessage(tpl.msg); }}
-                            className="text-[10px] px-2 py-1 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
-                          >
-                            {tpl.label}
-                          </button>
-                        ))}
-                      </div>
                     </div>
-                  </CardContent>
-                )}
+                  </div>
+                </CardContent>
               </Card>
 
               {/* Action Buttons */}
