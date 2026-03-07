@@ -28,6 +28,18 @@ export interface MentorListItem {
   categories?: string[];
 }
 
+export interface MentorProfileInfo {
+  city?: string;
+  educationStatus?: string;
+  categories?: string;
+  subtopics?: string;
+  languages?: string;
+  certifications?: string;
+  linkedinUrl?: string;
+  githubUrl?: string;
+  portfolioUrl?: string;
+}
+
 export interface MentorDetail {
   userId: string;
   displayName: string;
@@ -45,6 +57,7 @@ export interface MentorDetail {
   offerings: Offering[];
   badges: VerificationBadge[];
   availableSlots: AvailabilitySlot[];
+  profileInfo?: MentorProfileInfo;
 }
 
 export interface Offering {

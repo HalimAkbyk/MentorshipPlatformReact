@@ -7,7 +7,8 @@ import Link from 'next/link';
 import {
   Calendar, Star, CheckCircle, Video, Clock, HelpCircle, Tag, AlertTriangle,
   ArrowLeft, Users, Award, Shield, Globe, GraduationCap, Building2,
-  MessageSquare, Heart, Share2, TrendingUp, Play, Settings, Package, Eye, BarChart3
+  MessageSquare, Heart, Share2, TrendingUp, Play, Settings, Package, Eye, BarChart3,
+  MapPin, Languages, ExternalLink, Linkedin, Github
 } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../../components/ui/card';
@@ -190,63 +191,29 @@ export default function MentorProfilePage() {
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Kendi profili ama henüz yayında değil uyarısı */}
-      {mentor.isOwnProfile && !mentor.isListed && (() => {
-        const vs = mentor.verificationStatus;
-        const bannerConfig = vs === 'PendingApproval'
-          ? {
-              title: 'Belgeleriniz inceleniyor.',
-              desc: 'Bu sayfa yalnızca size gösteriliyor. Admin onayından sonra profiliniz herkese açık olacaktır.',
-              btnText: 'Belge Durumunu Gör',
-              btnHref: '/auth/onboarding/mentor',
-              color: 'blue' as const,
-            }
-          : vs === 'Rejected'
-          ? {
-              title: 'Belgeleriniz reddedildi.',
-              desc: 'Lütfen belgelerinizi kontrol edip tekrar yükleyin. Red sebebini belge detaylarında görebilirsiniz.',
-              btnText: 'Belgeleri Düzenle',
-              btnHref: '/auth/onboarding/mentor',
-              color: 'red' as const,
-            }
-          : {
-              title: 'Profiliniz henüz herkese açık değil.',
-              desc: 'Bu sayfa yalnızca size gösteriliyor. Doğrulama belgelerinizi yükleyip admin onayı aldıktan sonra profiliniz yayına alınacaktır.',
-              btnText: 'Belgeleri Yükle',
-              btnHref: '/auth/onboarding/mentor',
-              color: 'amber' as const,
-            };
-
-        const colorMap = {
-          amber: { bg: 'bg-amber-50', border: 'border-amber-200', icon: 'text-amber-600', title: 'text-amber-800', desc: 'text-amber-600', btn: 'border-amber-300 text-amber-700 hover:bg-amber-100' },
-          blue:  { bg: 'bg-blue-50',  border: 'border-blue-200',  icon: 'text-blue-600',  title: 'text-blue-800',  desc: 'text-blue-600',  btn: 'border-blue-300 text-blue-700 hover:bg-blue-100' },
-          red:   { bg: 'bg-red-50',   border: 'border-red-200',   icon: 'text-red-600',   title: 'text-red-800',   desc: 'text-red-600',   btn: 'border-red-300 text-red-700 hover:bg-red-100' },
-        };
-        const c = colorMap[bannerConfig.color];
-
-        return (
-          <div className={`${c.bg} border-b ${c.border}`}>
-            <div className="container mx-auto px-4 py-3 flex items-center gap-3">
-              <AlertTriangle className={`w-5 h-5 ${c.icon} shrink-0`} />
-              <div className="flex-1">
-                <p className={`text-sm ${c.title} font-medium`}>
-                  {bannerConfig.title}
-                </p>
-                <p className={`text-xs ${c.desc}`}>
-                  {bannerConfig.desc}
-                </p>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className={`${c.btn} shrink-0`}
-                onClick={() => router.push(bannerConfig.btnHref)}
-              >
-                {bannerConfig.btnText}
-              </Button>
+      {mentor.isOwnProfile && !mentor.isListed && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="container mx-auto px-4 py-3 flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm text-amber-800 font-medium">
+                Profiliniz henuz herkese acik degil.
+              </p>
+              <p className="text-xs text-amber-600">
+                Bu sayfa yalnizca size gosteriliyor. Profil bilgilerinizi tamamlayip ayarlardan yayina alin. Admin onayi sonrasinda ogrencilere gorunur olacaktir.
+              </p>
             </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-amber-300 text-amber-700 hover:bg-amber-100 shrink-0"
+              onClick={() => router.push('/mentor/settings')}
+            >
+              Profil Ayarlari
+            </Button>
           </div>
-        );
-      })()}
+        </div>
+      )}
 
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-teal-600 to-green-600 pt-8 pb-32">
@@ -320,61 +287,167 @@ export default function MentorProfilePage() {
 
               <div className="p-6">
                 {/* About Tab */}
-                {selectedTab === 'about' && (
-                  <div className="space-y-6">
-                    {mentor.headline && (
-                      <h3 className="text-lg font-semibold text-gray-900">{mentor.headline}</h3>
-                    )}
-                    <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{mentor.bio}</p>
+                {selectedTab === 'about' && (() => {
+                  const info = mentor.profileInfo;
+                  const categories = info?.categories ? (() => { try { return JSON.parse(info.categories) as string[]; } catch { return []; } })() : [];
+                  const subtopics = info?.subtopics ? (() => { try { return JSON.parse(info.subtopics) as string[]; } catch { return []; } })() : [];
+                  const langs = info?.languages ? (() => { try { return JSON.parse(info.languages) as string[]; } catch { return []; } })() : [];
 
-                    {/* Profile details */}
-                    {(mentor.university || mentor.department || mentor.graduationYear) && (
-                      <div className="border-t pt-5">
-                        <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                          <GraduationCap className="w-4 h-4 text-teal-600" />
-                          Egitim Bilgileri
-                        </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {mentor.university && (
-                            <div className="flex items-center gap-2 text-sm">
-                              <Building2 className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                              <span className="text-gray-600">{mentor.university}</span>
+                  const EDUCATION_LABELS: Record<string, string> = {
+                    'high-school': 'Lise Ogrencisi',
+                    'university': 'Universite Ogrencisi',
+                    'graduate': 'Mezun',
+                    'masters': 'Yuksek Lisans / Doktora',
+                  };
+                  const CATEGORY_LABELS: Record<string, string> = {
+                    'matematik': 'Matematik', 'fizik': 'Fizik', 'kimya': 'Kimya', 'biyoloji': 'Biyoloji',
+                    'turkce': 'Turkce & Edebiyat', 'tarih': 'Tarih & Cografya', 'ingilizce': 'Ingilizce',
+                    'yazilim': 'Yazilim & Teknoloji', 'genel-kultur': 'Genel Kultur',
+                  };
+
+                  return (
+                    <div className="space-y-6">
+                      {mentor.headline && (
+                        <h3 className="text-lg font-semibold text-gray-900">{mentor.headline}</h3>
+                      )}
+                      <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{mentor.bio}</p>
+
+                      {/* Quick info grid */}
+                      {(info?.city || info?.educationStatus || mentor.university || langs.length > 0) && (
+                        <div className="border-t pt-5">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {info?.city && (
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
+                                  <MapPin className="w-4 h-4 text-teal-600" />
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-400">Sehir</p>
+                                  <p className="text-sm text-gray-900">{info.city}</p>
+                                </div>
+                              </div>
+                            )}
+                            {info?.educationStatus && (
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                  <GraduationCap className="w-4 h-4 text-blue-600" />
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-400">Egitim Durumu</p>
+                                  <p className="text-sm text-gray-900">{EDUCATION_LABELS[info.educationStatus] || info.educationStatus}</p>
+                                </div>
+                              </div>
+                            )}
+                            {mentor.university && (
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
+                                  <Building2 className="w-4 h-4 text-purple-600" />
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-400">Universite</p>
+                                  <p className="text-sm text-gray-900">
+                                    {mentor.university}{mentor.department ? ` — ${mentor.department}` : ''}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                            {mentor.graduationYear && (
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                                  <Award className="w-4 h-4 text-green-600" />
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-400">Mezuniyet</p>
+                                  <p className="text-sm text-gray-900">{mentor.graduationYear}</p>
+                                </div>
+                              </div>
+                            )}
+                            {langs.length > 0 && (
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                                  <Languages className="w-4 h-4 text-indigo-600" />
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-400">Diller</p>
+                                  <p className="text-sm text-gray-900">{langs.join(', ')}</p>
+                                </div>
+                              </div>
+                            )}
+                            {info?.certifications && (
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
+                                  <Shield className="w-4 h-4 text-amber-600" />
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-400">Sertifikalar</p>
+                                  <p className="text-sm text-gray-900">{info.certifications}</p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Categories & Subtopics */}
+                      {(categories.length > 0 || subtopics.length > 0) && (
+                        <div className="border-t pt-5">
+                          <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <Tag className="w-4 h-4 text-teal-600" />
+                            Uzmanlik Alanlari
+                          </h4>
+                          {categories.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              {categories.map((cat) => (
+                                <Badge key={cat} className="bg-teal-50 text-teal-700 border border-teal-200 text-xs">
+                                  {CATEGORY_LABELS[cat] || cat}
+                                </Badge>
+                              ))}
                             </div>
                           )}
-                          {mentor.department && (
-                            <div className="flex items-center gap-2 text-sm">
-                              <Award className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                              <span className="text-gray-600">{mentor.department}</span>
-                            </div>
-                          )}
-                          {mentor.graduationYear && (
-                            <div className="flex items-center gap-2 text-sm">
-                              <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                              <span className="text-gray-600">Mezuniyet: {mentor.graduationYear}</span>
+                          {subtopics.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {subtopics.map((sub) => (
+                                <Badge key={sub} variant="outline" className="text-xs text-gray-600 border-gray-200">
+                                  {sub}
+                                </Badge>
+                              ))}
                             </div>
                           )}
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* Offerings summary */}
-                    {enrichedOfferings.length > 0 && (
-                      <div className="border-t pt-5">
-                        <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                          <Package className="w-4 h-4 text-purple-600" />
-                          Verdigi Dersler
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {enrichedOfferings.map((o) => (
-                            <Badge key={o.id} variant="outline" className="border-teal-200 text-teal-700 text-xs">
-                              {o.title}
-                            </Badge>
-                          ))}
+                      {/* Social Links */}
+                      {(info?.linkedinUrl || info?.githubUrl || info?.portfolioUrl) && (
+                        <div className="border-t pt-5">
+                          <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <Globe className="w-4 h-4 text-blue-600" />
+                            Sosyal Baglantilar
+                          </h4>
+                          <div className="flex flex-wrap gap-3">
+                            {info?.linkedinUrl && (
+                              <a href={info.linkedinUrl.startsWith('http') ? info.linkedinUrl : `https://${info.linkedinUrl}`} target="_blank" rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 hover:border-blue-300 hover:text-blue-700 transition-colors">
+                                <Linkedin className="w-4 h-4 text-blue-600" /> LinkedIn
+                              </a>
+                            )}
+                            {info?.githubUrl && (
+                              <a href={info.githubUrl.startsWith('http') ? info.githubUrl : `https://${info.githubUrl}`} target="_blank" rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-colors">
+                                <Github className="w-4 h-4" /> GitHub
+                              </a>
+                            )}
+                            {info?.portfolioUrl && (
+                              <a href={info.portfolioUrl.startsWith('http') ? info.portfolioUrl : `https://${info.portfolioUrl}`} target="_blank" rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 hover:border-teal-300 hover:text-teal-700 transition-colors">
+                                <ExternalLink className="w-4 h-4 text-teal-600" /> Portfolyo
+                              </a>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Offerings Tab */}
                 {selectedTab === 'offerings' && (
