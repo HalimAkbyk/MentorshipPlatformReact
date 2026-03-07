@@ -290,7 +290,8 @@ export const curriculumApi = {
   },
 
   getTemplates: async (): Promise<CurriculumTemplateDto[]> => {
-    return apiClient.get<CurriculumTemplateDto[]>('/curriculums/templates');
+    const res = await apiClient.get<{ items: CurriculumTemplateDto[] }>('/curriculums/templates');
+    return res.items ?? [];
   },
 
   createFromTemplate: async (templateId: string, data: CreateCurriculumFromTemplateRequest): Promise<string> => {

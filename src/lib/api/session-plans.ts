@@ -167,7 +167,8 @@ export const sessionPlansApi = {
   },
 
   getTemplates: async (): Promise<SessionPlanTemplateDto[]> => {
-    return apiClient.get<SessionPlanTemplateDto[]>('/session-plans/templates');
+    const res = await apiClient.get<{ items: SessionPlanTemplateDto[] }>('/session-plans/templates');
+    return res.items ?? [];
   },
 
   createFromTemplate: async (templateId: string, data: CreateSessionPlanFromTemplateRequest): Promise<string> => {

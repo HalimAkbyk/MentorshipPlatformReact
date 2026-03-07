@@ -235,7 +235,8 @@ export const assignmentsApi = {
   },
 
   getTemplates: async (): Promise<AssignmentTemplateDto[]> => {
-    return apiClient.get<AssignmentTemplateDto[]>('/assignments/templates');
+    const res = await apiClient.get<{ items: AssignmentTemplateDto[] }>('/assignments/templates');
+    return res.items ?? [];
   },
 
   createFromTemplate: async (templateId: string, data: CreateAssignmentFromTemplateRequest): Promise<string> => {
