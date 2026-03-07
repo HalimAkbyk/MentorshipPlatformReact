@@ -36,6 +36,8 @@ export function AdminNotificationIcon({ type }: { type: string }) {
   switch (type) {
     case 'MentorVerification':
       return <UserCheck className="h-4 w-4 text-indigo-500" />;
+    case 'MentorProfileUpdate':
+      return <UserCheck className="h-4 w-4 text-teal-500" />;
     case 'CourseReview':
       return <PlayCircle className="h-4 w-4 text-lime-500" />;
     case 'RefundRequest':
@@ -53,6 +55,8 @@ export function getAdminNavUrl(notif: AdminNotificationItem): string | null {
   if (!notif.referenceType) return null;
   switch (notif.referenceType) {
     case 'MentorVerification':
+      return '/admin/verifications';
+    case 'MentorApproval':
       return '/admin/verifications';
     case 'CourseReview':
       return '/admin/course-reviews';

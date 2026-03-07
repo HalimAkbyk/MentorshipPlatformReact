@@ -9,7 +9,7 @@ import {
   User, Lock, Bell, Shield, Trash2, Upload, Check, Camera,
   Eye, EyeOff, Target, Briefcase, BookOpen, MessageSquare, Calendar,
   Settings, ChevronRight, Users, DollarSign, Clock, Plus, X, Video, Mic, MessageCircle,
-  Globe, Linkedin, Github, ExternalLink, GraduationCap, Award, Star, Package,
+  Globe, Linkedin, Github, ExternalLink, GraduationCap, Award, Star, Package, AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -158,6 +158,11 @@ export default function MentorSettingsPage() {
   /* ── Mentor profile state ── */
   const [isListed, setIsListed] = useState(false);
 
+  /* ── Review request state ── */
+  const [reviewStatus, setReviewStatus] = useState<{ hasPendingReview: boolean; adminTitle?: string | null; adminMessage?: string | null }>({ hasPendingReview: false });
+  const [reviewResponse, setReviewResponse] = useState('');
+  const [sendingReviewResponse, setSendingReviewResponse] = useState(false);
+
   /* ── Mentor onboarding state ── */
   const [onboardingLoading, setOnboardingLoading] = useState(true);
   const [savingOnboarding, setSavingOnboarding] = useState(false);
@@ -181,9 +186,10 @@ export default function MentorSettingsPage() {
   const [sessionFormats, setSessionFormats] = useState<string[]>([]);
   const [offerFreeIntro, setOfferFreeIntro] = useState(true);
 
-  /* ── Load mentor profile (isListed) ── */
+  /* ── Load mentor profile (isListed) + review status ── */
   useEffect(() => {
     mentorsApi.getMyProfile().then(p => setIsListed(p.isListed)).catch(() => {});
+    onboardingApi.getReviewStatus().then(setReviewStatus).catch(() => {});
   }, []);
 
   /* ── Load mentor onboarding data ── */
@@ -264,6 +270,20 @@ export default function MentorSettingsPage() {
   };
 
   const suggestedSubtopics = selectedCategories.flatMap(cat => SUGGESTED_SUBTOPICS[cat] || []).filter(s => !subtopics.includes(s));
+
+  const handleReviewResponse = async (withMessage: boolean) => {
+    try {
+      setSendingReviewResponse(true);
+      await onboardingApi.respondToReview(withMessage ? reviewResponse : undefined);
+      setReviewStatus({ hasPendingReview: false });
+      setReviewResponse('');
+      toast.success('Yanitiniz admine iletildi');
+    } catch {
+      toast.error('Yanit gonderilirken hata olustu');
+    } finally {
+      setSendingReviewResponse(false);
+    }
+  };
 
   const saveOnboarding = async () => {
     try {
@@ -447,6 +467,63 @@ export default function MentorSettingsPage() {
             {/* ═══ TAB: MENTORING INFO (Onboarding Data) ═══ */}
             {activeTab === 'mentoring' && (
               <>
+                {/* Review Request Banner */}
+                {reviewStatus.hasPendingReview && (
+                  <Card className="border-amber-200 bg-amber-50 shadow-sm mb-4">
+                    <CardContent className="pt-5 pb-4">
+                      <div className="flex items-start gap-3">
+                        <div className="shrink-0 mt-0.5">
+                          <AlertTriangle className="h-5 w-5 text-amber-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-semibold text-amber-800 mb-1">Admin Duzenleme Talep Etti</h4>
+                          {reviewStatus.adminMessage && (
+                            <p className="text-sm text-amber-700 mb-3 bg-white/60 rounded-lg p-3 border border-amber-200">
+                              {reviewStatus.adminMessage}
+                            </p>
+                          )}
+                          <p className="text-xs text-amber-600 mb-3">
+                            Degisiklikleri yaptiktan sonra &quot;Tamamladim&quot; butonuna basin veya mesaj ile cevap verin.
+                          </p>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Input
+                                value={reviewResponse}
+                                onChange={(e) => setReviewResponse(e.target.value)}
+                                placeholder="Admine mesaj yazin (opsiyonel)..."
+                                className="flex-1 bg-white text-sm"
+                              />
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => handleReviewResponse(false)}
+                                disabled={sendingReviewResponse}
+                                className="bg-teal-600 hover:bg-teal-700 text-white"
+                              >
+                                <Check className="h-4 w-4 mr-1" />
+                                {sendingReviewResponse ? 'Gonderiliyor...' : 'Degisiklikleri Tamamladim'}
+                              </Button>
+                              {reviewResponse.trim() && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleReviewResponse(true)}
+                                  disabled={sendingReviewResponse}
+                                  className="border-amber-300 text-amber-700 hover:bg-amber-100"
+                                >
+                                  <MessageCircle className="h-4 w-4 mr-1" />
+                                  Mesaj ile Yanit Ver
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {onboardingLoading ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600" />

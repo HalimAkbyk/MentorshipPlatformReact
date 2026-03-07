@@ -49,6 +49,13 @@ export interface MentorOnboardingData {
   offerFreeIntro?: boolean;
 }
 
+// ===== Review Status =====
+export interface ReviewStatus {
+  hasPendingReview: boolean;
+  adminTitle?: string | null;
+  adminMessage?: string | null;
+}
+
 // ===== API =====
 export const onboardingApi = {
   // Student
@@ -71,5 +78,14 @@ export const onboardingApi = {
   saveMentorOnboarding: async (data: MentorOnboardingData): Promise<MentorOnboardingData> => {
     const res = await apiClient.put<MentorOnboardingData>('/onboarding/mentor', data);
     return res;
+  },
+
+  // Review request
+  getReviewStatus: async (): Promise<ReviewStatus> => {
+    return apiClient.get<ReviewStatus>('/onboarding/mentor/review-status');
+  },
+
+  respondToReview: async (message?: string): Promise<void> => {
+    return apiClient.post<void>('/onboarding/mentor/review-response', { message });
   },
 };

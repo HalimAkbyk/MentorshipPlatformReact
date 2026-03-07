@@ -86,11 +86,12 @@ SelectTrigger.displayName = "SelectTrigger";
 // ===== SelectValue =====
 interface SelectValueProps {
   placeholder?: string;
+  children?: React.ReactNode;
 }
 
-function SelectValue({ placeholder }: SelectValueProps) {
+function SelectValue({ placeholder, children }: SelectValueProps) {
   const { value } = useSelectContext();
-  return <span className={cn(!value && "text-gray-400")}>{value || placeholder || "Seçin..."}</span>;
+  return <span className={cn(!value && "text-gray-400")}>{(value ? children ?? value : null) || placeholder || "Seçin..."}</span>;
 }
 
 // ===== SelectContent =====
