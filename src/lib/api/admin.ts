@@ -260,6 +260,30 @@ export interface AdminGroupClassDto {
   createdAt: string;
 }
 
+// Admin Offering List Types
+export interface AdminOfferingListDto {
+  id: string;
+  mentorUserId: string;
+  mentorName: string;
+  type: string;
+  title: string;
+  description: string | null;
+  durationMin: number;
+  price: number;
+  currency: string;
+  isActive: boolean;
+  category: string | null;
+  subtitle: string | null;
+  detailedDescription: string | null;
+  sessionType: string | null;
+  maxBookingDaysAhead: number;
+  minNoticeHours: number;
+  sortOrder: number;
+  approvalStatus: string;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
 // Session Report Types
 export interface ParticipantSegment {
   segmentId: string;
@@ -1097,6 +1121,17 @@ export const adminApi = {
   getEducationCourseDetail: (id: string): Promise<any> =>
     apiClient.get(`/admin/education/courses/${id}`),
 
+  // Education - Offerings
+  getEducationOfferings: (params: {
+    page?: number;
+    pageSize?: number;
+    category?: string;
+    search?: string;
+    mentorId?: string;
+    isActive?: boolean;
+  }): Promise<PagedResult<AdminOfferingListDto>> =>
+    apiClient.get('/admin/education/offerings', params),
+
   getEducationBookingDetail: (id: string): Promise<any> =>
     apiClient.get(`/admin/education/bookings/${id}`),
 
@@ -1645,6 +1680,11 @@ export const adminApi = {
     durationMin?: number;
     category?: string;
     isActive?: boolean;
+    subtitle?: string;
+    detailedDescription?: string;
+    sessionType?: string;
+    maxBookingDaysAhead?: number;
+    minNoticeHours?: number;
     reason?: string;
   }): Promise<{ ok: boolean; changes: string[] }> =>
     apiClient.put(`/admin/education/offerings/${id}`, data),

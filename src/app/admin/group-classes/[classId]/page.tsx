@@ -11,7 +11,9 @@ import { adminApi } from '@/lib/api/admin';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { useCategoryNames } from '@/lib/hooks/use-categories';
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -33,6 +35,7 @@ export default function AdminGroupClassDetailPage() {
   const { classId } = useParams<{ classId: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const categoryNames = useCategoryNames('GroupClass');
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
@@ -158,7 +161,16 @@ export default function AdminGroupClassDetailPage() {
             </div>
             <div>
               <label className="text-xs font-medium text-slate-600">Kategori</label>
-              <Input value={editCategory} onChange={(e) => setEditCategory(e.target.value)} />
+              <select
+                value={editCategory}
+                onChange={(e) => setEditCategory(e.target.value)}
+                className="w-full h-10 rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="">Kategori Secin</option>
+                {categoryNames.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="text-xs font-medium text-slate-600">Durum</label>
@@ -185,11 +197,21 @@ export default function AdminGroupClassDetailPage() {
           </div>
           <div className="mb-4">
             <label className="text-xs font-medium text-slate-600">Aciklama</label>
-            <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm resize-none h-20" />
+            <Textarea
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              className="min-h-[80px] resize-none"
+              placeholder="Ders hakkinda aciklama..."
+            />
           </div>
-          <div className="mb-4">
-            <label className="text-xs font-medium text-slate-600">Degisiklik Sebebi</label>
-            <Input value={editReason} onChange={(e) => setEditReason(e.target.value)} placeholder="Neden degisiklik yapildi?" />
+          <div className="mb-4 bg-amber-100/50 rounded-lg p-3">
+            <label className="text-xs font-medium text-amber-800">Degisiklik Sebebi (kayda gecer)</label>
+            <Textarea
+              value={editReason}
+              onChange={(e) => setEditReason(e.target.value)}
+              placeholder="Neden degisiklik yapildi? (opsiyonel)"
+              className="min-h-[50px] resize-none mt-1 bg-white"
+            />
           </div>
           <div className="flex gap-2">
             <Button size="sm" onClick={handleSave} disabled={updateMutation.isPending} className="bg-amber-600 hover:bg-amber-700 text-white">

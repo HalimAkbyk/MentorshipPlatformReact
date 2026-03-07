@@ -75,6 +75,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Grup Dersleri', href: '/admin/group-classes' },
       { label: 'Video Egitimler', href: '/admin/courses' },
       { label: 'Egitim Incelemeleri', href: '/admin/course-reviews', badgeKey: 'pendingCourseReviews' },
+      { label: '1:1 Paketler', href: '/admin/offerings' },
       { label: 'Sinav Modulu', href: '/admin/exams' },
       { label: 'Takvim', href: '/admin/calendar' },
     ],
