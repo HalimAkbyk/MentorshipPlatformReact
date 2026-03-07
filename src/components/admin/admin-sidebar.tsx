@@ -162,6 +162,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'Oturum Raporlari', href: '/admin/reports/sessions' },
       { label: 'Islem Gecmisi', href: '/admin/reports/audit-log' },
+      { label: 'Degisiklik Gecmisi', href: '/admin/change-log' },
     ],
   },
   {

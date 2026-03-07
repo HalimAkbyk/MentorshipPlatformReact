@@ -1,14 +1,17 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import {
   ArrowLeft, BookOpen, User, Clock, Calendar, DollarSign,
-  Video, MessageSquare, AlertTriangle, RefreshCw,
+  Video, MessageSquare, AlertTriangle, RefreshCw, Pencil, Save, X,
 } from 'lucide-react';
 import { adminApi } from '@/lib/api/admin';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -19,15 +22,61 @@ function formatCurrency(value: number, currency?: string): string {
   return `${symbol}${value.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
 }
 
+function toLocalDatetime(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}T${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+const BOOKING_STATUSES = ['PendingPayment', 'Confirmed', 'Completed', 'Cancelled', 'Disputed', 'NoShow', 'StudentNoShow', 'MentorNoShow', 'Expired'];
+
 export default function AdminBookingDetailPage() {
   const { bookingId } = useParams<{ bookingId: string }>();
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [editStartAt, setEditStartAt] = useState('');
+  const [editDuration, setEditDuration] = useState(0);
+  const [editStatus, setEditStatus] = useState('');
+  const [editReason, setEditReason] = useState('');
 
   const { data: booking, isLoading, error } = useQuery({
     queryKey: ['admin-booking-detail', bookingId],
     queryFn: () => adminApi.getEducationBookingDetail(bookingId),
     enabled: !!bookingId,
   });
+
+  const updateMutation = useMutation({
+    mutationFn: (data: { startAt?: string; durationMin?: number; status?: string; reason?: string }) =>
+      adminApi.updateEducationBooking(bookingId, data),
+    onSuccess: (res) => {
+      toast.success(`Booking guncellendi: ${res.changes.join(', ')}`);
+      queryClient.invalidateQueries({ queryKey: ['admin-booking-detail', bookingId] });
+      setEditing(false);
+    },
+    onError: () => toast.error('Guncelleme basarisiz'),
+  });
+
+  const openEdit = () => {
+    if (!booking) return;
+    setEditStartAt(toLocalDatetime(booking.startAt));
+    setEditDuration(booking.durationMin);
+    setEditStatus(booking.status);
+    setEditReason('');
+    setEditing(true);
+  };
+
+  const handleSave = () => {
+    const data: any = {};
+    if (editStartAt !== toLocalDatetime(booking.startAt)) data.startAt = new Date(editStartAt).toISOString();
+    if (editDuration !== booking.durationMin) data.durationMin = editDuration;
+    if (editStatus !== booking.status) data.status = editStatus;
+    if (editReason.trim()) data.reason = editReason;
+    if (Object.keys(data).length === 0 || (Object.keys(data).length === 1 && data.reason)) {
+      toast.error('Degisiklik yapilmadi');
+      return;
+    }
+    updateMutation.mutate(data);
+  };
 
   if (isLoading) {
     return (
@@ -57,19 +106,63 @@ export default function AdminBookingDetailPage() {
   return (
     <div className="container mx-auto px-4 py-10 max-w-6xl">
       {/* Header */}
-      <div className="mb-8">
-        <button onClick={() => router.back()} className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-3 transition-colors">
-          <ArrowLeft className="h-4 w-4" /> Derslere Don
-        </button>
-        <div className="flex items-center gap-3">
-          <BookOpen className="h-6 w-6 text-indigo-500" />
-          <h1 className="text-2xl font-bold text-slate-800">{booking.offeringTitle}</h1>
-          <StatusBadge status={booking.status} />
+      <div className="flex items-start justify-between mb-8">
+        <div>
+          <button onClick={() => router.back()} className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-3 transition-colors">
+            <ArrowLeft className="h-4 w-4" /> Derslere Don
+          </button>
+          <div className="flex items-center gap-3">
+            <BookOpen className="h-6 w-6 text-indigo-500" />
+            <h1 className="text-2xl font-bold text-slate-800">{booking.offeringTitle}</h1>
+            <StatusBadge status={booking.status} />
+          </div>
+          <p className="text-sm text-slate-500 mt-1">
+            Booking ID: <span className="font-mono text-xs">{booking.id?.slice(0, 8)}...</span>
+          </p>
         </div>
-        <p className="text-sm text-slate-500 mt-1">
-          Booking ID: <span className="font-mono text-xs">{booking.id?.slice(0, 8)}...</span>
-        </p>
+        {!editing && (
+          <Button variant="outline" size="sm" onClick={openEdit} className="text-indigo-600 border-indigo-200 hover:bg-indigo-50">
+            <Pencil className="h-4 w-4 mr-1.5" /> Duzenle
+          </Button>
+        )}
       </div>
+
+      {/* Edit Form */}
+      {editing && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-8">
+          <h3 className="text-sm font-semibold text-amber-800 mb-4 flex items-center gap-2">
+            <Pencil className="h-4 w-4" /> Booking Duzenle
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label className="text-xs font-medium text-slate-600">Baslangic Tarihi</label>
+              <Input type="datetime-local" value={editStartAt} onChange={(e) => setEditStartAt(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-600">Sure (dk)</label>
+              <Input type="number" value={editDuration} onChange={(e) => setEditDuration(Number(e.target.value))} min={15} step={15} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-600">Durum</label>
+              <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                {BOOKING_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="mb-4">
+            <label className="text-xs font-medium text-slate-600">Degisiklik Sebebi</label>
+            <Input value={editReason} onChange={(e) => setEditReason(e.target.value)} placeholder="Neden degisiklik yapildi?" />
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" onClick={handleSave} disabled={updateMutation.isPending} className="bg-amber-600 hover:bg-amber-700 text-white">
+              <Save className="h-4 w-4 mr-1" /> {updateMutation.isPending ? 'Kaydediliyor...' : 'Kaydet'}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setEditing(false)} disabled={updateMutation.isPending}>
+              <X className="h-4 w-4 mr-1" /> Iptal
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

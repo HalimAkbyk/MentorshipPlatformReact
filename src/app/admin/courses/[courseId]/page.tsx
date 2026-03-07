@@ -25,10 +25,13 @@ import {
   Ban,
   CheckCircle2,
   X,
+  Pencil,
+  Save,
 } from 'lucide-react';
 import { adminApi, type CourseAdminNoteDto } from '@/lib/api/admin';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -290,6 +293,14 @@ export default function AdminCourseDetailPage() {
   const [toggleTarget, setToggleTarget] = useState<{ lectureId: string; name: string; isActive: boolean } | null>(null);
   const [videoTarget, setVideoTarget] = useState<{ url: string; title: string } | null>(null);
 
+  // Edit states
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editPrice, setEditPrice] = useState(0);
+  const [editCategory, setEditCategory] = useState('');
+  const [editShortDesc, setEditShortDesc] = useState('');
+  const [editReason, setEditReason] = useState('');
+
   const { data: course, isLoading, error } = useQuery({
     queryKey: ['admin-course-detail', courseId],
     queryFn: () => adminApi.getEducationCourseDetail(courseId),
@@ -331,6 +342,38 @@ export default function AdminCourseDetailPage() {
     onSuccess: () => { toast.success('Ders durumu guncellendi'); setToggleTarget(null); invalidate(); },
     onError: () => toast.error('Ders durumu guncellenemedi'),
   });
+
+  const courseUpdateMutation = useMutation({
+    mutationFn: (data: any) => adminApi.updateEducationCourse(courseId, data),
+    onSuccess: (res) => {
+      toast.success(`Kurs guncellendi: ${res.changes.join(', ')}`);
+      setEditing(false);
+      invalidate();
+    },
+    onError: () => toast.error('Kurs guncellenemedi'),
+  });
+
+  const openCourseEdit = () => {
+    if (!course) return;
+    setEditTitle(course.title);
+    setEditPrice(course.price);
+    setEditCategory(course.category || '');
+    setEditShortDesc(course.shortDescription || '');
+    setEditReason('');
+    setEditing(true);
+  };
+
+  const handleCourseEditSave = () => {
+    const data: any = {};
+    if (editTitle !== course.title) data.title = editTitle;
+    if (editPrice !== course.price) data.price = editPrice;
+    if (editCategory !== (course.category || '')) data.category = editCategory;
+    if (editShortDesc !== (course.shortDescription || '')) data.shortDescription = editShortDesc;
+    if (editReason.trim()) data.reason = editReason;
+    const changeKeys = Object.keys(data).filter(k => k !== 'reason');
+    if (changeKeys.length === 0) { toast.error('Degisiklik yapilmadi'); return; }
+    courseUpdateMutation.mutate(data);
+  };
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections((prev) => {
@@ -410,6 +453,17 @@ export default function AdminCourseDetailPage() {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 shrink-0">
+          {!editing && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={openCourseEdit}
+              className="text-amber-600 border-amber-200 hover:bg-amber-50"
+            >
+              <Pencil className="h-4 w-4 mr-1.5" />
+              Duzenle
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -441,6 +495,45 @@ export default function AdminCourseDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Edit Form */}
+      {editing && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-8">
+          <h3 className="text-sm font-semibold text-amber-800 mb-4 flex items-center gap-2">
+            <Pencil className="h-4 w-4" /> Kurs Bilgilerini Duzenle
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label className="text-xs font-medium text-slate-600">Baslik</label>
+              <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-600">Fiyat</label>
+              <Input type="number" value={editPrice} onChange={(e) => setEditPrice(Number(e.target.value))} min={0} step={0.01} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-600">Kategori</label>
+              <Input value={editCategory} onChange={(e) => setEditCategory(e.target.value)} />
+            </div>
+          </div>
+          <div className="mb-4">
+            <label className="text-xs font-medium text-slate-600">Kisa Aciklama</label>
+            <textarea value={editShortDesc} onChange={(e) => setEditShortDesc(e.target.value)} className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm resize-none h-20" />
+          </div>
+          <div className="mb-4">
+            <label className="text-xs font-medium text-slate-600">Degisiklik Sebebi</label>
+            <Input value={editReason} onChange={(e) => setEditReason(e.target.value)} placeholder="Neden degisiklik yapildi?" />
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" onClick={handleCourseEditSave} disabled={courseUpdateMutation.isPending} className="bg-amber-600 hover:bg-amber-700 text-white">
+              <Save className="h-4 w-4 mr-1" /> {courseUpdateMutation.isPending ? 'Kaydediliyor...' : 'Kaydet'}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setEditing(false)} disabled={courseUpdateMutation.isPending}>
+              <X className="h-4 w-4 mr-1" /> Iptal
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

@@ -802,6 +802,19 @@ export interface CourseReviewDetailDto {
   reviewRounds: ReviewRoundDto[];
 }
 
+// Education Change Log
+export interface EducationChangeLogDto {
+  id: string;
+  entityType: string;
+  entityId: string;
+  action: string;
+  description: string;
+  metadata: string | null;
+  createdAt: string;
+  performedByName: string | null;
+  performedByRole: string | null;
+}
+
 // Course Admin Note Types
 export interface CourseAdminNoteDto {
   id: string;
@@ -1587,4 +1600,63 @@ export const adminApi = {
     adminUsersKept: number;
     deletedRows: Record<string, number>;
   }> => apiClient.post('/admin/cleanup-database'),
+
+  // ---------------------------------------------------------------------------
+  // Education Admin Edit (with audit logging)
+  // ---------------------------------------------------------------------------
+
+  updateEducationBooking: (id: string, data: {
+    startAt?: string;
+    durationMin?: number;
+    status?: string;
+    reason?: string;
+  }): Promise<{ ok: boolean; changes: string[] }> =>
+    apiClient.put(`/admin/education/bookings/${id}`, data),
+
+  updateEducationGroupClass: (id: string, data: {
+    title?: string;
+    description?: string;
+    category?: string;
+    pricePerSeat?: number;
+    capacity?: number;
+    startAt?: string;
+    endAt?: string;
+    status?: string;
+    reason?: string;
+  }): Promise<{ ok: boolean; changes: string[] }> =>
+    apiClient.put(`/admin/education/group-classes/${id}`, data),
+
+  updateEducationCourse: (id: string, data: {
+    title?: string;
+    shortDescription?: string;
+    description?: string;
+    price?: number;
+    category?: string;
+    language?: string;
+    level?: number;
+    reason?: string;
+  }): Promise<{ ok: boolean; changes: string[] }> =>
+    apiClient.put(`/admin/education/courses/${id}`, data),
+
+  updateEducationOffering: (id: string, data: {
+    title?: string;
+    description?: string;
+    price?: number;
+    durationMin?: number;
+    category?: string;
+    isActive?: boolean;
+    reason?: string;
+  }): Promise<{ ok: boolean; changes: string[] }> =>
+    apiClient.put(`/admin/education/offerings/${id}`, data),
+
+  getEducationChangeLog: (params?: {
+    entityType?: string;
+    entityId?: string;
+    action?: string;
+    from?: string;
+    to?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<PagedResult<EducationChangeLogDto>> =>
+    apiClient.get('/admin/education/change-log', params),
 };
