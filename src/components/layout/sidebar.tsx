@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, MessageSquare, Package, BookOpen, Clock,
   Zap, Users, PlayCircle, DollarSign, BarChart3, CreditCard,
-  Wallet, Settings, Search, GraduationCap, Calendar,
+  Wallet, Settings, Search, GraduationCap, Calendar, FileText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useAuthStore } from '@/lib/stores/auth-store';
@@ -55,6 +55,7 @@ export function Sidebar() {
         { label: 'Anlık Seans', href: '/mentor/free-session', icon: Zap, color: 'text-orange-500' },
         { label: 'Grup Dersleri', href: '/mentor/group-classes', icon: Users, color: 'text-indigo-600' },
         { label: 'Video Egitimlerim', href: '/mentor/courses', icon: PlayCircle, color: 'text-green-600' },
+        { label: 'Sinavlarim', href: '/mentor/exams', icon: FileText, color: 'text-rose-600' },
       ],
     });
 
@@ -100,6 +101,7 @@ export function Sidebar() {
         { label: 'Seans Taleplerim', href: '/student/session-requests', icon: Clock, color: 'text-amber-600' },
         { label: 'Grup Derslerim', href: '/student/my-classes', icon: GraduationCap, color: 'text-indigo-600' },
         { label: 'Video Egitimlerim', href: '/student/courses', icon: PlayCircle, color: 'text-green-600' },
+        { label: 'Sinavlarim', href: '/student/exams', icon: FileText, color: 'text-rose-600' },
       ],
     });
 
