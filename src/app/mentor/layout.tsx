@@ -7,6 +7,7 @@ import { Footer } from '@/components/layout/footer';
 import { Sidebar } from '@/components/layout/sidebar';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { UserRole } from '@/lib/types/enums';
+import { RoleSwitchGuard } from '@/components/layout/role-switch-guard';
 
 export default function MentorLayout({
   children,
@@ -43,21 +44,23 @@ export default function MentorLayout({
 
   // Classroom pages: no Header/Footer, full viewport
   if (isClassroomPage) {
-    return <>{children}</>;
+    return <RoleSwitchGuard requiredView="mentor">{children}</RoleSwitchGuard>;
   }
 
   return (
     <>
       <Header />
       <div className="min-h-screen bg-gray-50">
-        {isDashboardPage ? (
-          <main>{children}</main>
-        ) : (
-          <div className="flex">
-            <Sidebar />
-            <main className="flex-1 min-w-0">{children}</main>
-          </div>
-        )}
+        <RoleSwitchGuard requiredView="mentor">
+          {isDashboardPage ? (
+            <main>{children}</main>
+          ) : (
+            <div className="flex">
+              <Sidebar />
+              <main className="flex-1 min-w-0">{children}</main>
+            </div>
+          )}
+        </RoleSwitchGuard>
       </div>
       <Footer />
     </>
