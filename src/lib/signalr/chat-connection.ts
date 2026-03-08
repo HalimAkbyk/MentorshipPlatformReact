@@ -99,10 +99,57 @@ export function onRoomStatusChanged(callback: (payload: RoomStatusPayload) => vo
   connection?.on('RoomStatusChanged', callback);
 }
 
+export type ClassroomMessagePayload = {
+  senderName: string;
+  text: string;
+  time: string;
+  senderId: string;
+};
+
+export type ClassroomSignalPayload = {
+  signalType: string;
+  data: string;
+  senderId: string;
+};
+
+export async function joinClassroom(roomName: string): Promise<void> {
+  if (connection?.state === HubConnectionState.Connected) {
+    await connection.invoke('JoinClassroom', roomName);
+  }
+}
+
+export async function leaveClassroom(roomName: string): Promise<void> {
+  if (connection?.state === HubConnectionState.Connected) {
+    await connection.invoke('LeaveClassroom', roomName);
+  }
+}
+
+export async function sendClassroomMessage(roomName: string, senderName: string, text: string): Promise<void> {
+  if (connection?.state === HubConnectionState.Connected) {
+    await connection.invoke('SendClassroomMessage', roomName, senderName, text);
+  }
+}
+
+export async function sendClassroomSignal(roomName: string, signalType: string, data: string = ''): Promise<void> {
+  if (connection?.state === HubConnectionState.Connected) {
+    await connection.invoke('SendClassroomSignal', roomName, signalType, data);
+  }
+}
+
+export function onClassroomMessage(callback: (payload: ClassroomMessagePayload) => void): void {
+  connection?.on('ClassroomMessage', callback);
+}
+
+export function onClassroomSignal(callback: (payload: ClassroomSignalPayload) => void): void {
+  connection?.on('ClassroomSignal', callback);
+}
+
 export function removeAllListeners(): void {
   connection?.off('ReceiveMessage');
   connection?.off('MessagesRead');
   connection?.off('MessageDelivered');
   connection?.off('NotificationCountUpdated');
   connection?.off('RoomStatusChanged');
+  connection?.off('ClassroomMessage');
+  connection?.off('ClassroomSignal');
 }

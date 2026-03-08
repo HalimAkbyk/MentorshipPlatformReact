@@ -139,7 +139,7 @@ function NormalLayout({
               <div className="absolute inset-0 flex items-center justify-center text-gray-400">
                 <div className="text-center">
                   <Users className="w-16 h-16 mx-auto mb-4" />
-                  <p>{isMentor ? 'Öğrenci bekleniyor...' : 'Mentör bekleniyor...'}</p>
+                  <p>{isMentor ? 'Öğrenci bekleniyor...' : 'Eğitmen bekleniyor...'}</p>
                   {isMentor && <p className="text-sm mt-2">Oda aktif, öğrenci katılabilir</p>}
                 </div>
               </div>
@@ -149,7 +149,7 @@ function NormalLayout({
               <div className="absolute inset-0 flex items-center justify-center text-gray-400">
                 <div className="text-center">
                   <Users className="w-16 h-16 mx-auto mb-4" />
-                  <p>Mentör bekleniyor...</p>
+                  <p>Eğitmen bekleniyor...</p>
                 </div>
               </div>
             )}

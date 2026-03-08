@@ -338,6 +338,14 @@ export function useAgoraClassroom({ roomName, isHost, displayName, peerDisplayNa
     };
   }, []);
 
+  // Force mute audio (called when mentor sends mute signal)
+  const muteAudio = useCallback(async () => {
+    const track = localAudioTrackRef.current;
+    if (!track) return;
+    await track.setEnabled(false);
+    setIsAudioEnabled(false);
+  }, []);
+
   return {
     // State
     isConnected,
@@ -346,7 +354,6 @@ export function useAgoraClassroom({ roomName, isHost, displayName, peerDisplayNa
     isAudioEnabled,
     isScreenSharing,
     remoteTiles,
-    messages,
     screenShareState,
     // Refs for layout
     localVideoRef: localVideoContainerRef,
@@ -356,13 +363,9 @@ export function useAgoraClassroom({ roomName, isHost, displayName, peerDisplayNa
     leave,
     toggleVideo,
     toggleAudio,
+    muteAudio,
     startScreenShare,
     stopScreenShare,
     replayLocalVideo,
-    sendMessage: (text: string) => {
-      // For now, messages go through existing SignalR chat
-      // Agora RTM can be added later
-      setMessages(prev => [...prev, { text, sender: displayName, time: new Date().toLocaleTimeString('tr-TR') }]);
-    },
   };
 }

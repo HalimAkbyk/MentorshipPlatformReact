@@ -196,6 +196,15 @@ export function ClassroomPlanPanel({
   const plan = query.data;
   const isLoading = query.isLoading;
 
+  // Auto-refresh plan for read-only viewers (students) every 10 seconds
+  useEffect(() => {
+    if (!readOnly || !isOpen || !plan) return;
+    const interval = setInterval(() => {
+      query.refetch();
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [readOnly, isOpen, plan, query]);
+
   const updateNotes = useUpdateSessionNotes();
   const updateAgenda = useUpdateAgendaItems();
   const [showPlanPicker, setShowPlanPicker] = useState(false);
