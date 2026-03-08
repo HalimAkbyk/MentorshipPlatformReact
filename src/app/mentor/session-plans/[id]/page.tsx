@@ -261,7 +261,7 @@ export default function SessionPlanDetailPage() {
 
   const [activePhase, setActivePhase] = useState<PhaseTab>('pre');
   const [showPicker, setShowPicker] = useState(false);
-  const [pickerPhase, setPickerPhase] = useState<string>('PreSession');
+  const [pickerPhase, setPickerPhase] = useState<string>('Pre');
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const [templateName, setTemplateName] = useState('');
 
@@ -521,8 +521,8 @@ export default function SessionPlanDetailPage() {
                 <MaterialList
                   materials={plan.preMaterials}
                   planId={planId}
-                  phase="PreSession"
-                  onAddClick={() => openPicker('PreSession')}
+                  phase="Pre"
+                  onAddClick={() => openPicker('Pre')}
                 />
               </CardContent>
             </Card>
@@ -616,8 +616,8 @@ export default function SessionPlanDetailPage() {
                 <MaterialList
                   materials={plan.duringMaterials}
                   planId={planId}
-                  phase="DuringSession"
-                  onAddClick={() => openPicker('DuringSession')}
+                  phase="During"
+                  onAddClick={() => openPicker('During')}
                 />
               </CardContent>
             </Card>
@@ -647,8 +647,8 @@ export default function SessionPlanDetailPage() {
                 <MaterialList
                   materials={plan.postMaterials}
                   planId={planId}
-                  phase="PostSession"
-                  onAddClick={() => openPicker('PostSession')}
+                  phase="Post"
+                  onAddClick={() => openPicker('Post')}
                 />
               </CardContent>
             </Card>
