@@ -14,6 +14,7 @@ export function AgoraWhiteboard({ roomName, userId, isWriter }: AgoraWhiteboardP
   const [fastboardApp, setFastboardApp] = useState<any>(null);
   const [FastboardComponent, setFastboardComponent] = useState<any>(null);
   const mountedRef = useRef(true);
+  const appRef = useRef<any>(null);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -46,9 +47,13 @@ export function AgoraWhiteboard({ roomName, userId, isWriter }: AgoraWhiteboardP
         });
 
         if (mountedRef.current) {
+          appRef.current = app;
           setFastboardApp(app);
           setFastboardComponent(() => Fastboard);
           setIsLoading(false);
+        } else {
+          // Component unmounted during init — destroy immediately
+          app.destroy?.();
         }
       } catch (err: any) {
         console.error('Whiteboard init error:', err);
@@ -63,7 +68,10 @@ export function AgoraWhiteboard({ roomName, userId, isWriter }: AgoraWhiteboardP
 
     return () => {
       mountedRef.current = false;
-      fastboardApp?.destroy?.();
+      if (appRef.current) {
+        appRef.current.destroy?.();
+        appRef.current = null;
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomName, userId, isWriter]);

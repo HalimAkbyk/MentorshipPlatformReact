@@ -139,7 +139,7 @@ export const sessionPlansApi = {
 
   getByBooking: async (bookingId: string): Promise<SessionPlanDetailDto | null> => {
     try {
-      return await apiClient.get<SessionPlanDetailDto>(`/session-plans/by-booking/${bookingId}`);
+      return await apiClient.get<SessionPlanDetailDto>(`/session-plans/booking/${bookingId}`);
     } catch (err: any) {
       if (err?.response?.status === 404) return null;
       throw err;
@@ -148,7 +148,7 @@ export const sessionPlansApi = {
 
   getByGroupClass: async (classId: string): Promise<SessionPlanDetailDto | null> => {
     try {
-      return await apiClient.get<SessionPlanDetailDto>(`/session-plans/by-group-class/${classId}`);
+      return await apiClient.get<SessionPlanDetailDto>(`/session-plans/group-class/${classId}`);
     } catch (err: any) {
       if (err?.response?.status === 404) return null;
       throw err;
