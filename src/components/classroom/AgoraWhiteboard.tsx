@@ -24,13 +24,15 @@ export function AgoraWhiteboard({ roomName, userId, isWriter }: AgoraWhiteboardP
         // 1. Create whiteboard room
         const { roomUuid } = await videoApi.createWhiteboardRoom(roomName);
 
-        // 2. Get room token
-        const { token } = await videoApi.getWhiteboardToken(roomUuid, userId, isWriter);
+        // 2. Get room token (always request writer token so WindowManager works)
+        const { token } = await videoApi.getWhiteboardToken(roomUuid, userId, true);
 
         // 3. Dynamic import fastboard
         const fastboardModule = await import('@netless/fastboard-react');
         const { createFastboard, Fastboard } = fastboardModule;
 
+        // Always join as writable so WindowManager initializes properly.
+        // For non-writers (students), we disable device inputs after joining.
         const app = await createFastboard({
           sdkConfig: {
             appIdentifier: process.env.NEXT_PUBLIC_AGORA_WHITEBOARD_APP_ID || 'ow10IBqAEfGq3-09281LNg/eakbV1sklxJczw',
@@ -40,12 +42,17 @@ export function AgoraWhiteboard({ roomName, userId, isWriter }: AgoraWhiteboardP
             uid: userId,
             uuid: roomUuid,
             roomToken: token,
-            isWritable: isWriter,
+            isWritable: true,
           },
           managerConfig: {
             cursor: true,
           },
         });
+
+        // Disable drawing for non-writers (students) after WindowManager loads
+        if (!isWriter && app.room) {
+          app.room.disableDeviceInputs = true;
+        }
 
         if (mountedRef.current) {
           appRef.current = app;

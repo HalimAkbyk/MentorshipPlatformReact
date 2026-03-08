@@ -59,40 +59,40 @@ export default function BookingDetailPage() {
   // Reschedule state
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
 
-  // Room status via SignalR (real-time) + initial fetch on mount
-  // SignalR updates are pushed to queryClient cache key ['room-status', bookingId]
-  const roomStatus = queryClient.getQueryData<RoomStatus>(['room-status', bookingId]) ?? null;
+  // Room status via SignalR (real-time) + polling fallback
+  const [roomStatus, setRoomStatus] = useState<RoomStatus | null>(null);
 
-  // Subscribe to cache changes for re-renders
-  const [, forceUpdate] = useState(0);
+  // Fetch room status and update local state + cache
+  useEffect(() => {
+    if (!booking || booking.status !== BookingStatus.Confirmed) return;
+
+    const fetchStatus = async () => {
+      try {
+        const response = await apiClient.get<RoomStatus>(`/video/room/${bookingId}/status`);
+        setRoomStatus(response);
+        queryClient.setQueryData(['room-status', bookingId], response);
+      } catch {
+        // ignore fetch errors
+      }
+    };
+
+    // Initial fetch
+    fetchStatus();
+    // Poll every 10s as fallback (SignalR may miss notifications)
+    const interval = setInterval(fetchStatus, 10000);
+    return () => clearInterval(interval);
+  }, [booking, bookingId, queryClient]);
+
+  // Also listen for SignalR cache updates for instant response
   useEffect(() => {
     const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
       if (event?.query?.queryKey?.[0] === 'room-status' && event?.query?.queryKey?.[1] === bookingId) {
-        forceUpdate((c) => c + 1);
+        const data = queryClient.getQueryData<RoomStatus>(['room-status', bookingId]);
+        if (data) setRoomStatus(data);
       }
     });
     return () => unsubscribe();
   }, [queryClient, bookingId]);
-
-  // Initial room status fetch on mount (one-time, no polling)
-  useEffect(() => {
-    if (!booking || booking.status !== BookingStatus.Confirmed) return;
-
-    const fetchInitialStatus = async () => {
-      try {
-        const response = await apiClient.get<RoomStatus>(`/video/room/${bookingId}/status`);
-        queryClient.setQueryData(['room-status', bookingId], response);
-      } catch {
-        queryClient.setQueryData(['room-status', bookingId], {
-          isActive: false,
-          hostConnected: false,
-          participantCount: 0,
-        });
-      }
-    };
-
-    fetchInitialStatus();
-  }, [booking, bookingId, queryClient]);
 
   // Reschedule handler moved to RescheduleCalendar component
 
