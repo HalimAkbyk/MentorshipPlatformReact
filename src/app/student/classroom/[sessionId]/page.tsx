@@ -16,6 +16,7 @@ import { ROUTES } from '@/lib/constants/routes';
 import { useAuthStore } from '../../../../lib/stores/auth-store';
 import { useVideoProvider } from '../../../../lib/hooks/use-video-provider';
 import { AgoraClassroom } from '../../../../components/classroom/AgoraClassroom';
+import { bookingsApi } from '../../../../lib/api/bookings';
 
 import { ClassroomLayout } from '../../../../components/classroom/ClassroomLayout';
 import { ParticipantsPanel } from '../../../../components/classroom/ParticipantsPanel';
@@ -131,6 +132,11 @@ export default function StudentClassroomPageSwitch() {
   const sessionId = params.sessionId as string;
   const currentUser = useAuthStore(s => s.user);
   const { provider, isLoading: providerLoading } = useVideoProvider();
+  const [peerName, setPeerName] = useState<string | undefined>();
+
+  useEffect(() => {
+    bookingsApi.getById(sessionId).then(b => setPeerName(b.mentorName)).catch(() => {});
+  }, [sessionId]);
 
   if (providerLoading) {
     return (
@@ -148,6 +154,7 @@ export default function StudentClassroomPageSwitch() {
         resourceId={sessionId}
         isHost={false}
         displayName={currentUser?.displayName || 'Ogrenci'}
+        peerDisplayName={peerName}
         onEndSession={() => router.push('/student/bookings')}
         onLeaveRoom={() => router.push('/student/bookings')}
       />

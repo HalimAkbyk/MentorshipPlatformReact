@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { useAuthStore } from '../../../../lib/stores/auth-store';
 import { useVideoProvider } from '../../../../lib/hooks/use-video-provider';
 import { AgoraClassroom } from '../../../../components/classroom/AgoraClassroom';
+import { bookingsApi } from '../../../../lib/api/bookings';
 
 import { ClassroomLayout } from '../../../../components/classroom/ClassroomLayout';
 import { ParticipantsPanel } from '../../../../components/classroom/ParticipantsPanel';
@@ -130,6 +131,11 @@ export default function MentorClassroomPageSwitch() {
   const bookingId = params.bookingId as string;
   const currentUser = useAuthStore(s => s.user);
   const { provider, isLoading: providerLoading } = useVideoProvider();
+  const [peerName, setPeerName] = useState<string | undefined>();
+
+  useEffect(() => {
+    bookingsApi.getById(bookingId).then(b => setPeerName(b.studentName)).catch(() => {});
+  }, [bookingId]);
 
   if (providerLoading) {
     return (
@@ -147,6 +153,7 @@ export default function MentorClassroomPageSwitch() {
         resourceId={bookingId}
         isHost={true}
         displayName={currentUser?.displayName || 'Egitmen'}
+        peerDisplayName={peerName}
         onEndSession={() => router.push('/mentor/bookings')}
         onLeaveRoom={() => router.push('/mentor/bookings')}
       />

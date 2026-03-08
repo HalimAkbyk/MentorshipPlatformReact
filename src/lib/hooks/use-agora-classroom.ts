@@ -12,10 +12,11 @@ interface UseAgoraClassroomOptions {
   roomName: string;
   isHost: boolean;
   displayName: string;
+  peerDisplayName?: string;
   enabled: boolean;
 }
 
-export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: UseAgoraClassroomOptions) {
+export function useAgoraClassroom({ roomName, isHost, displayName, peerDisplayName, enabled }: UseAgoraClassroomOptions) {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
@@ -58,6 +59,72 @@ export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: Us
 
       console.log('[Agora] Joining channel:', roomName, 'appId:', appId, 'token prefix:', token?.substring(0, 40));
 
+      // For 1:1 sessions, use the provided peer name; for multi-user, fall back to generic
+      const getPeerName = (): string => {
+        return peerDisplayName || (isHost ? 'Ogrenci' : 'Egitmen');
+      };
+
+      // Helper: handle remote video published
+      const handleRemoteVideo = async (user: IAgoraRTCRemoteUser) => {
+        await client.subscribe(user, 'video');
+        const remoteVideoTrack = user.videoTrack;
+        if (!remoteVideoTrack) return;
+
+        const name = getPeerName();
+
+        setRemoteTiles(prev => {
+          const existing = prev.find(t => t.identity === String(user.uid));
+          if (existing) {
+            return prev.map(t => {
+              if (t.identity !== String(user.uid)) return t;
+              const el = document.createElement('video');
+              el.autoplay = true; el.playsInline = true;
+              remoteVideoTrack.play(el);
+              return { ...t, cameraVideoEl: el, isVideoEnabled: true, displayName: name };
+            });
+          }
+          const el = document.createElement('video');
+          el.autoplay = true; el.playsInline = true;
+          remoteVideoTrack.play(el);
+          return [...prev, {
+            identity: String(user.uid),
+            displayName: name,
+            isHandRaised: false,
+            isAudioEnabled: true,
+            isVideoEnabled: true,
+            cameraVideoEl: el,
+            screenVideoEl: null,
+            audioEls: [],
+          }];
+        });
+      };
+
+      // Set up event listeners BEFORE joining (critical: catches already-published users)
+      client.on('user-published', async (user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => {
+        if (mediaType === 'video') {
+          await handleRemoteVideo(user);
+        }
+        if (mediaType === 'audio') {
+          await client.subscribe(user, 'audio');
+          user.audioTrack?.play();
+        }
+      });
+
+      client.on('user-unpublished', (user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => {
+        if (mediaType === 'video') {
+          setRemoteTiles(prev => prev.map(t =>
+            t.identity === String(user.uid)
+              ? { ...t, cameraVideoEl: null, isVideoEnabled: false }
+              : t
+          ));
+        }
+      });
+
+      client.on('user-left', (user: IAgoraRTCRemoteUser) => {
+        setRemoteTiles(prev => prev.filter(t => t.identity !== String(user.uid)));
+      });
+
+      // NOW join the channel (listeners are already set up)
       await client.join(appId, roomName, token, 0);
 
       // Create local tracks
@@ -86,59 +153,16 @@ export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: Us
         });
       });
 
-      // Listen for remote users
-      client.on('user-published', async (user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => {
-        await client.subscribe(user, mediaType);
-
-        if (mediaType === 'video') {
-          const remoteVideoTrack = user.videoTrack;
-          if (!remoteVideoTrack) return;
-
-          setRemoteTiles(prev => {
-            const existing = prev.find(t => t.identity === String(user.uid));
-            if (existing) {
-              return prev.map(t => {
-                if (t.identity !== String(user.uid)) return t;
-                const el = document.createElement('video');
-                el.autoplay = true; el.playsInline = true;
-                remoteVideoTrack.play(el);
-                return { ...t, cameraVideoEl: el, isVideoEnabled: true };
-              });
-            }
-            const el = document.createElement('video');
-            el.autoplay = true; el.playsInline = true;
-            remoteVideoTrack.play(el);
-            return [...prev, {
-              identity: String(user.uid),
-              displayName: `Katilimci ${user.uid}`,
-              isHandRaised: false,
-              isAudioEnabled: true,
-              isVideoEnabled: true,
-              cameraVideoEl: el,
-              screenVideoEl: null,
-              audioEls: [],
-            }];
-          });
+      // Handle already-published remote users (joined before us)
+      for (const remoteUser of client.remoteUsers) {
+        if (remoteUser.hasVideo) {
+          await handleRemoteVideo(remoteUser);
         }
-
-        if (mediaType === 'audio') {
-          user.audioTrack?.play();
+        if (remoteUser.hasAudio) {
+          await client.subscribe(remoteUser, 'audio');
+          remoteUser.audioTrack?.play();
         }
-      });
-
-      client.on('user-unpublished', (user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => {
-        if (mediaType === 'video') {
-          setRemoteTiles(prev => prev.map(t =>
-            t.identity === String(user.uid)
-              ? { ...t, cameraVideoEl: null, isVideoEnabled: false }
-              : t
-          ));
-        }
-      });
-
-      client.on('user-left', (user: IAgoraRTCRemoteUser) => {
-        setRemoteTiles(prev => prev.filter(t => t.identity !== String(user.uid)));
-      });
+      }
     } catch (err: any) {
       console.error('Agora join error:', err);
       toast.error('Video baglantisi kurulamadi: ' + (err.message || 'Bilinmeyen hata'));

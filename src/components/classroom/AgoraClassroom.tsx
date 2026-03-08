@@ -31,6 +31,7 @@ interface AgoraClassroomProps {
   resourceId: string;
   isHost: boolean;
   displayName: string;
+  peerDisplayName?: string;
   bookingTimes?: { startAt: string; endAt: string } | null;
   sessionTimer?: any;
   onEndSession?: () => void;
@@ -43,6 +44,7 @@ export function AgoraClassroom({
   resourceId,
   isHost,
   displayName,
+  peerDisplayName,
   bookingTimes,
   sessionTimer,
   onEndSession,
@@ -67,6 +69,7 @@ export function AgoraClassroom({
     roomName,
     isHost,
     displayName,
+    peerDisplayName,
     enabled: true,
   });
 
