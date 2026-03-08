@@ -199,12 +199,25 @@ export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: Us
       screenTrackRef.current.close();
       screenTrackRef.current = null;
     }
+    // Re-publish camera track
+    if (localVideoTrackRef.current && clientRef.current) {
+      try {
+        await clientRef.current.publish(localVideoTrackRef.current);
+      } catch (e) {
+        console.warn('[Agora] Failed to re-publish camera after screen share:', e);
+      }
+    }
     setIsScreenSharing(false);
     setScreenShareState({ active: false, sharerIdentity: null, screenVideoEl: null, isLocal: false });
     if (localScreenContainerRef.current) {
       localScreenContainerRef.current.innerHTML = '';
     }
-  }, []);
+    // Re-play local video
+    if (localVideoContainerRef.current && localVideoTrackRef.current && isVideoEnabled) {
+      localVideoContainerRef.current.innerHTML = '';
+      localVideoTrackRef.current.play(localVideoContainerRef.current, { fit: 'cover', mirror: true });
+    }
+  }, [isVideoEnabled]);
 
   // Keep ref in sync for use inside track-ended callback
   stopScreenShareRef.current = stopScreenShare;
@@ -220,6 +233,11 @@ export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: Us
       // Handle both single track and [video, audio] return
       const videoTrack = Array.isArray(screenTrack) ? screenTrack[0] : screenTrack;
       screenTrackRef.current = videoTrack;
+
+      // Agora doesn't allow multiple video tracks — unpublish camera first
+      if (localVideoTrackRef.current) {
+        await clientRef.current.unpublish(localVideoTrackRef.current);
+      }
 
       await clientRef.current.publish(videoTrack);
       setIsScreenSharing(true);
