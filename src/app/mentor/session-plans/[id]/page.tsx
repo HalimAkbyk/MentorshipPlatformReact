@@ -273,22 +273,24 @@ export default function SessionPlanDetailPage() {
   const [postSessionSummary, setPostSessionSummary] = useState('');
   const [agendaItems, setAgendaItems] = useState<{ text: string; completed: boolean }[]>([]);
   const [dirty, setDirty] = useState(false);
+  const dirtyRef = useRef(false);
 
   // Populate form when plan loads — only if not dirty (avoid overwriting unsaved edits)
-  const initializedRef = useRef(false);
   useEffect(() => {
-    if (plan && !dirty) {
+    if (plan && !dirtyRef.current) {
       setTitle(plan.title || '');
       setPreSessionNote(plan.preSessionNote || '');
       setSessionObjective(plan.sessionObjective || '');
       setSessionNotes(plan.sessionNotes || '');
       setPostSessionSummary(plan.postSessionSummary || '');
       setAgendaItems(plan.agendaItems || []);
-      initializedRef.current = true;
     }
-  }, [plan, dirty]);
+  }, [plan]);
 
-  const markDirty = useCallback(() => setDirty(true), []);
+  const markDirty = useCallback(() => {
+    setDirty(true);
+    dirtyRef.current = true;
+  }, []);
 
   const handleSave = async () => {
     try {
@@ -304,6 +306,7 @@ export default function SessionPlanDetailPage() {
         },
       });
       setDirty(false);
+      dirtyRef.current = false;
       toast.success('Plan kaydedildi');
     } catch {
       // error handled by interceptor
@@ -331,21 +334,6 @@ export default function SessionPlanDetailPage() {
 
   const handleAddMaterial = async (item: LibraryItemDto) => {
     try {
-      // Auto-save unsaved form changes before adding material
-      if (dirty) {
-        await updateMutation.mutateAsync({
-          id: planId,
-          data: {
-            title: title.trim() || undefined,
-            preSessionNote: preSessionNote.trim() || undefined,
-            sessionObjective: sessionObjective.trim() || undefined,
-            sessionNotes: sessionNotes.trim() || undefined,
-            postSessionSummary: postSessionSummary.trim() || undefined,
-            agendaItems: agendaItems.length > 0 ? agendaItems : undefined,
-          },
-        });
-        setDirty(false);
-      }
       await addMaterialMutation.mutateAsync({
         planId,
         data: {
