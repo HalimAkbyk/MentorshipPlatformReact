@@ -89,130 +89,85 @@ function NormalLayout({
   localDisplayName?: string;
   remoteTiles: RemoteTile[];
 }) {
-  const remoteColsClass = useMemo(() => {
-    const n = remoteTiles.length;
-    if (n <= 1) return 'grid-cols-1';
-    if (n === 2) return 'grid-cols-2';
-    return 'grid-cols-2 md:grid-cols-3';
-  }, [remoteTiles.length]);
+  // 1:1 layout: remote full-screen center, local PiP bottom-left
+  const tile = remoteTiles[0];
 
   return (
-    <div className="grid grid-cols-2 gap-2 h-full">
-      {/* Local Video */}
-      <Card className="bg-gray-800 border-gray-700 relative overflow-hidden">
-        <CardContent className="p-0 h-full">
-          <div className="relative w-full h-full bg-gray-900">
-            <div ref={localVideoRef} className="absolute inset-0" />
-            <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 text-white px-3 py-1.5 rounded text-sm">
-              {localLabel}
+    <div className="relative w-full h-full bg-gray-900 rounded-lg overflow-hidden">
+      {/* Remote video — full area */}
+      {tile && (
+        <div className="absolute inset-0">
+          <RemoteVideoMount videoEl={tile.cameraVideoEl} objectFit="cover" />
+          {/* Remote name badge */}
+          <div className="absolute bottom-4 left-4 flex items-center gap-1.5 z-10">
+            <div className="bg-black/60 text-white text-sm px-3 py-1.5 rounded">
+              {tile.displayName}
             </div>
-            {!isVideoEnabled && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 z-10">
-                <Avatar className="w-24 h-24">
-                  <AvatarFallback className="bg-gray-700 text-white text-3xl">
-                    {localDisplayName ? getInitials(localDisplayName) : (isMentor ? 'M' : 'S')}
-                  </AvatarFallback>
-                </Avatar>
-                {localDisplayName && (
-                  <span className="text-gray-300 text-sm mt-2">{localDisplayName}</span>
-                )}
-              </div>
-            )}
-            {isMentor && !isRoomActive && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-90 z-20">
-                <div className="text-center text-white">
-                  <Video className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium mb-2">Oda Aktif Değil</p>
-                  <p className="text-sm text-gray-400">Odayı aktifleştirin</p>
-                </div>
+            {!tile.isAudioEnabled && (
+              <div className="bg-red-600/80 rounded p-1" title="Mikrofon kapalı">
+                <MicOff className="w-3 h-3 text-white" />
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Remote Tiles */}
-      <Card className="bg-gray-800 border-gray-700 relative overflow-hidden">
-        <CardContent className="p-0 h-full">
-          <div className="relative w-full h-full bg-gray-900 p-3">
-            {remoteTiles.length === 0 && isRoomActive && (
-              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                <div className="text-center">
-                  <Users className="w-16 h-16 mx-auto mb-4" />
-                  <p>{isMentor ? 'Öğrenci bekleniyor...' : 'Eğitmen bekleniyor...'}</p>
-                  {isMentor && <p className="text-sm mt-2">Oda aktif, öğrenci katılabilir</p>}
-                </div>
+          {tile.isHandRaised && (
+            <div className="absolute top-4 right-4 bg-yellow-500 text-white px-2 py-1 rounded-full flex items-center gap-1 animate-bounce z-20">
+              <span className="text-xs">✋</span>
+            </div>
+          )}
+          {(!tile.cameraVideoEl || !tile.isVideoEnabled) && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 z-[5]">
+              <Avatar className="w-28 h-28 mb-3">
+                <AvatarFallback className="bg-gray-700 text-white text-4xl">
+                  {getInitials(tile.displayName)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-gray-300 text-lg">{tile.displayName}</span>
+              <div className="flex items-center gap-1 mt-2 text-gray-500">
+                <VideoOff className="w-4 h-4" />
+                <span className="text-sm">Kamera kapalı</span>
               </div>
-            )}
+            </div>
+          )}
+        </div>
+      )}
 
-            {!isMentor && remoteTiles.length === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                <div className="text-center">
-                  <Users className="w-16 h-16 mx-auto mb-4" />
-                  <p>Eğitmen bekleniyor...</p>
-                </div>
-              </div>
-            )}
-
-            {isMentor && !isRoomActive && (
-              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                <div className="text-center">
-                  <Users className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p>Öğrenci katılamaz</p>
-                  <p className="text-sm mt-2">Önce odayı aktifleştirin</p>
-                </div>
-              </div>
-            )}
-
-            {remoteTiles.length > 0 && (
-              <div className={`grid ${remoteColsClass} gap-3 h-full`}>
-                {remoteTiles.map(tile => (
-                  <div
-                    key={tile.identity}
-                    className="relative bg-gray-950 rounded-lg overflow-hidden border border-gray-700 h-full"
-                  >
-                    <div className="relative w-full h-full bg-black">
-                      <div className="absolute inset-0">
-                        <RemoteVideoMount videoEl={tile.cameraVideoEl} objectFit="cover" />
-                      </div>
-                      {/* Name + muted indicator */}
-                      <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
-                        <div className="bg-black/60 text-white text-xs px-2 py-1 rounded">
-                          {tile.displayName}
-                        </div>
-                        {!tile.isAudioEnabled && (
-                          <div className="bg-red-600/80 rounded p-1" title="Mikrofon kapalı">
-                            <MicOff className="w-3 h-3 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      {tile.isHandRaised && (
-                        <div className="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded-full flex items-center gap-1 animate-bounce z-20">
-                          <span className="text-xs">✋</span>
-                        </div>
-                      )}
-                      {(!tile.cameraVideoEl || !tile.isVideoEnabled) && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 z-[5]">
-                          <Avatar className="w-20 h-20 mb-2">
-                            <AvatarFallback className="bg-gray-700 text-white text-2xl">
-                              {getInitials(tile.displayName)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-gray-300 text-sm">{tile.displayName}</span>
-                          <div className="flex items-center gap-1 mt-1 text-gray-500">
-                            <VideoOff className="w-3.5 h-3.5" />
-                            <span className="text-xs">Kamera kapalı</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+      {/* Waiting states (no remote participant) */}
+      {!tile && isRoomActive && (
+        <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+          <div className="text-center">
+            <Users className="w-16 h-16 mx-auto mb-4" />
+            <p>{isMentor ? 'Öğrenci bekleniyor...' : 'Eğitmen bekleniyor...'}</p>
+            {isMentor && <p className="text-sm mt-2">Oda aktif, öğrenci katılabilir</p>}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
+
+      {isMentor && !isRoomActive && (
+        <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+          <div className="text-center">
+            <Video className="w-16 h-16 mx-auto mb-4 opacity-50" />
+            <p className="text-lg font-medium mb-2">Oda Aktif Değil</p>
+            <p className="text-sm text-gray-400">Odayı aktifleştirin</p>
+          </div>
+        </div>
+      )}
+
+      {/* Local video — PiP overlay bottom-left */}
+      <div className="absolute bottom-4 left-4 w-[200px] h-[140px] rounded-lg overflow-hidden border-2 border-gray-700 shadow-xl z-20 bg-gray-800">
+        <div ref={localVideoRef} className="w-full h-full" />
+        <div className="absolute bottom-1.5 left-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded">
+          {localLabel}
+        </div>
+        {!isVideoEnabled && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800">
+            <Avatar className="w-12 h-12">
+              <AvatarFallback className="bg-gray-700 text-white text-sm">
+                {localDisplayName ? getInitials(localDisplayName) : (isMentor ? 'M' : 'S')}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
