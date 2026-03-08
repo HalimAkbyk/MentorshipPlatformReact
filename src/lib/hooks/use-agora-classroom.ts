@@ -294,6 +294,16 @@ export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: Us
     }
   }, [isVideoEnabled]);
 
+  // Re-play local video into the current container ref (call after layout changes)
+  const replayLocalVideo = useCallback(() => {
+    setTimeout(() => {
+      if (localVideoContainerRef.current && localVideoTrackRef.current && isVideoEnabled) {
+        localVideoContainerRef.current.innerHTML = '';
+        localVideoTrackRef.current.play(localVideoContainerRef.current, { fit: 'cover', mirror: true });
+      }
+    }, 100);
+  }, [isVideoEnabled]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -324,6 +334,7 @@ export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: Us
     toggleAudio,
     startScreenShare,
     stopScreenShare,
+    replayLocalVideo,
     sendMessage: (text: string) => {
       // For now, messages go through existing SignalR chat
       // Agora RTM can be added later

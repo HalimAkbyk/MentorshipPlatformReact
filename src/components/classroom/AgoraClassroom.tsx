@@ -395,7 +395,11 @@ export function AgoraClassroom({
         <Button
           size="sm"
           variant={isWhiteboardOpen ? 'default' : 'secondary'}
-          onClick={() => setIsWhiteboardOpen(!isWhiteboardOpen)}
+          onClick={() => {
+            setIsWhiteboardOpen(!isWhiteboardOpen);
+            // Re-play local video after layout change (whiteboard ↔ normal)
+            agora.replayLocalVideo();
+          }}
           className="gap-1.5"
         >
           <PenTool className="w-4 h-4" />
