@@ -21,8 +21,9 @@ export function AgoraWhiteboard({ roomName, userId, isWriter }: AgoraWhiteboardP
 
     const initWhiteboard = async () => {
       try {
-        // 1. Create whiteboard room
+        // 1. Create/get whiteboard room (backend caches roomUuid per roomName)
         const { roomUuid } = await videoApi.createWhiteboardRoom(roomName);
+        console.log('[Whiteboard] roomName:', roomName, 'roomUuid:', roomUuid, 'isWriter:', isWriter);
 
         // 2. Get room token (always request writer token so WindowManager works)
         const { token } = await videoApi.getWhiteboardToken(roomUuid, userId, true);

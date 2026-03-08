@@ -499,6 +499,7 @@ export function AgoraClassroom({
               localIsVideoEnabled={agora.isVideoEnabled}
               isMentor={isHost}
               onMuteParticipant={handleMuteParticipant}
+              onUnmuteParticipant={handleMuteParticipant}
               onKickParticipant={handleKickParticipant}
               onClose={() => setIsParticipantsOpen(false)}
             />
