@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useCreateSessionPlan, useSessionPlanTemplates, useCreateSessionPlanFromTemplate } from '@/lib/hooks/use-session-plans';
+import { useBookings } from '@/lib/hooks/use-bookings';
+import { useMyGroupClasses } from '@/lib/hooks/use-classes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { X, Loader2, FileText, ChevronRight } from 'lucide-react';
+import { X, Loader2, FileText, ChevronRight, Search } from 'lucide-react';
 
 interface CreatePlanDialogProps {
   open: boolean;
@@ -21,8 +23,16 @@ export function CreatePlanDialog({ open, onClose, onCreated, defaultBookingId, d
   const createFromTemplateMutation = useCreateSessionPlanFromTemplate();
   const { data: templates } = useSessionPlanTemplates();
 
+  // Fetch bookings and classes for dropdown (only when no defaults)
+  const { data: bookingsData } = useBookings(undefined, 1, 50, 'mentor');
+  const { data: classesData } = useMyGroupClasses(undefined, 1, 50);
+
   const [activeTab, setActiveTab] = useState<'new' | 'template'>('new');
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [resourceSearch, setResourceSearch] = useState('');
+  const [resourceType, setResourceType] = useState<'booking' | 'class' | 'none'>(
+    defaultBookingId ? 'booking' : defaultGroupClassId ? 'class' : 'none'
+  );
 
   const [form, setForm] = useState({
     title: '',
@@ -42,11 +52,52 @@ export function CreatePlanDialog({ open, onClose, onCreated, defaultBookingId, d
     });
     setSelectedTemplateId(null);
     setActiveTab('new');
+    setResourceSearch('');
+    setResourceType(defaultBookingId ? 'booking' : defaultGroupClassId ? 'class' : 'none');
   };
 
   if (!open) return null;
 
   const templateList = templates ?? [];
+
+  // Filter bookings: Confirmed status, future or recent
+  const bookingOptions = useMemo(() => {
+    if (!bookingsData?.items) return [];
+    return bookingsData.items
+      .filter((b: any) => b.status === 'Confirmed' || b.status === 'Completed')
+      .filter((b: any) => {
+        if (!resourceSearch) return true;
+        const search = resourceSearch.toLowerCase();
+        return b.studentName?.toLowerCase().includes(search) ||
+          b.startAt?.includes(search);
+      })
+      .slice(0, 20);
+  }, [bookingsData, resourceSearch]);
+
+  const classOptions = useMemo(() => {
+    if (!classesData?.items) return [];
+    return classesData.items
+      .filter((c: any) => c.status === 'Published' || c.status === 'Completed')
+      .filter((c: any) => {
+        if (!resourceSearch) return true;
+        const search = resourceSearch.toLowerCase();
+        return c.title?.toLowerCase().includes(search) ||
+          c.category?.toLowerCase().includes(search);
+      })
+      .slice(0, 20);
+  }, [classesData, resourceSearch]);
+
+  const handleSelectBooking = (id: string) => {
+    setForm({ ...form, bookingId: id, groupClassId: '' });
+    setResourceType('booking');
+    setResourceSearch('');
+  };
+
+  const handleSelectClass = (id: string) => {
+    setForm({ ...form, groupClassId: id, bookingId: '' });
+    setResourceType('class');
+    setResourceSearch('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,9 +117,9 @@ export function CreatePlanDialog({ open, onClose, onCreated, defaultBookingId, d
       });
 
       toast.success('Oturum plani olusturuldu');
+      onCreated?.(id);
       resetForm();
       onClose();
-      onCreated?.(id);
     } catch {
       // error handled by interceptor
     }
@@ -85,13 +136,27 @@ export function CreatePlanDialog({ open, onClose, onCreated, defaultBookingId, d
         },
       });
       toast.success('Sablondan plan olusturuldu');
+      onCreated?.(id);
       resetForm();
       onClose();
-      onCreated?.(id);
     } catch {
       // error handled by interceptor
     }
   };
+
+  const formatDate = (iso: string) => {
+    try {
+      return new Date(iso).toLocaleDateString('tr-TR', {
+        day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+      });
+    } catch { return iso; }
+  };
+
+  const hasDefaults = !!defaultBookingId || !!defaultGroupClassId;
+
+  // Find selected resource label
+  const selectedBooking = bookingsData?.items?.find((b: any) => b.id === form.bookingId);
+  const selectedClass = classesData?.items?.find((c: any) => c.id === form.groupClassId);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -129,7 +194,6 @@ export function CreatePlanDialog({ open, onClose, onCreated, defaultBookingId, d
             <div className="space-y-3">
               <p className="text-xs text-gray-500 mb-2">Mevcut sablonlarinizdan birini secin:</p>
 
-              {/* Optional title override for template */}
               <div>
                 <label className="text-xs font-medium text-gray-600">Yeni Baslik (opsiyonel)</label>
                 <Input
@@ -174,56 +238,124 @@ export function CreatePlanDialog({ open, onClose, onCreated, defaultBookingId, d
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Title */}
               <div>
-                <label className="text-sm font-medium">Baslik *</label>
+                <label className="text-sm font-medium text-gray-700">Baslik *</label>
                 <Input
                   placeholder="Ornegin: Matematik - Turev Konusu"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   maxLength={200}
+                  className="text-gray-900"
                 />
               </div>
 
-              {/* Booking ID — hide if pre-filled from classroom */}
-              {!defaultBookingId && (
+              {/* Resource picker — searchable dropdown (hide if pre-filled) */}
+              {!hasDefaults && (
                 <div>
-                  <label className="text-sm font-medium">Seans ID (Opsiyonel)</label>
-                  <Input
-                    placeholder="Bir seansa baglamak icin seans ID girin"
-                    value={form.bookingId}
-                    onChange={(e) => setForm({ ...form, bookingId: e.target.value })}
-                  />
-                  <p className="text-xs text-gray-400 mt-1">Bos birakilabilir, sonra baglanabilir</p>
-                </div>
-              )}
+                  <label className="text-sm font-medium text-gray-700">Seansa / Derse Bagla (Opsiyonel)</label>
 
-              {/* Group Class ID — hide if pre-filled from classroom */}
-              {!defaultGroupClassId && (
-                <div>
-                  <label className="text-sm font-medium">Grup Ders ID (Opsiyonel)</label>
-                  <Input
-                    placeholder="Bir grup dersine baglamak icin ID girin"
-                    value={form.groupClassId}
-                    onChange={(e) => setForm({ ...form, groupClassId: e.target.value })}
-                  />
+                  {/* Show selected resource */}
+                  {form.bookingId && selectedBooking && (
+                    <div className="mt-1 flex items-center gap-2 p-2 bg-teal-50 border border-teal-200 rounded-lg">
+                      <span className="text-xs text-teal-700 flex-1">
+                        1:1 Seans — {(selectedBooking as any).studentName} — {formatDate((selectedBooking as any).startAt)}
+                      </span>
+                      <button type="button" onClick={() => setForm({ ...form, bookingId: '', groupClassId: '' })} className="text-teal-500 hover:text-teal-700">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+                  {form.groupClassId && selectedClass && (
+                    <div className="mt-1 flex items-center gap-2 p-2 bg-teal-50 border border-teal-200 rounded-lg">
+                      <span className="text-xs text-teal-700 flex-1">
+                        Grup Dersi — {(selectedClass as any).title} — {formatDate((selectedClass as any).startAt)}
+                      </span>
+                      <button type="button" onClick={() => setForm({ ...form, bookingId: '', groupClassId: '' })} className="text-teal-500 hover:text-teal-700">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Search input + dropdown */}
+                  {!form.bookingId && !form.groupClassId && (
+                    <div className="mt-1 relative">
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-gray-400" />
+                        <Input
+                          placeholder="Seans veya ders ara..."
+                          value={resourceSearch}
+                          onChange={(e) => setResourceSearch(e.target.value)}
+                          className="pl-8 text-sm text-gray-900"
+                        />
+                      </div>
+
+                      {/* Dropdown results */}
+                      <div className="mt-1 max-h-[200px] overflow-y-auto border border-gray-200 rounded-lg">
+                        {bookingOptions.length > 0 && (
+                          <>
+                            <div className="px-3 py-1.5 bg-gray-50 text-[10px] font-semibold text-gray-500 uppercase tracking-wider sticky top-0">
+                              1:1 Seanslar
+                            </div>
+                            {bookingOptions.map((b: any) => (
+                              <button
+                                key={b.id}
+                                type="button"
+                                onClick={() => handleSelectBooking(b.id)}
+                                className="w-full text-left px-3 py-2 hover:bg-teal-50 text-sm border-b border-gray-50"
+                              >
+                                <div className="font-medium text-gray-800">{b.studentName}</div>
+                                <div className="text-[10px] text-gray-400">{formatDate(b.startAt)} — {b.durationMin} dk</div>
+                              </button>
+                            ))}
+                          </>
+                        )}
+
+                        {classOptions.length > 0 && (
+                          <>
+                            <div className="px-3 py-1.5 bg-gray-50 text-[10px] font-semibold text-gray-500 uppercase tracking-wider sticky top-0">
+                              Grup Dersleri
+                            </div>
+                            {classOptions.map((c: any) => (
+                              <button
+                                key={c.id}
+                                type="button"
+                                onClick={() => handleSelectClass(c.id)}
+                                className="w-full text-left px-3 py-2 hover:bg-teal-50 text-sm border-b border-gray-50"
+                              >
+                                <div className="font-medium text-gray-800">{c.title}</div>
+                                <div className="text-[10px] text-gray-400">{formatDate(c.startAt)} — {c.category}</div>
+                              </button>
+                            ))}
+                          </>
+                        )}
+
+                        {bookingOptions.length === 0 && classOptions.length === 0 && (
+                          <div className="px-3 py-4 text-center text-xs text-gray-400">
+                            Seans veya ders bulunamadi
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Session Objective */}
               <div>
-                <label className="text-sm font-medium">Seans Hedefi</label>
+                <label className="text-sm font-medium text-gray-700">Seans Hedefi</label>
                 <Input
                   placeholder="Bu seansin hedefi nedir?"
                   value={form.sessionObjective}
                   onChange={(e) => setForm({ ...form, sessionObjective: e.target.value })}
                   maxLength={500}
+                  className="text-gray-900"
                 />
               </div>
 
               {/* Pre Session Note */}
               <div>
-                <label className="text-sm font-medium">Seans Oncesi Notu</label>
+                <label className="text-sm font-medium text-gray-700">Seans Oncesi Notu</label>
                 <textarea
-                  className="w-full border rounded-md px-3 py-2 text-sm mt-1 min-h-[80px]"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 min-h-[80px] text-gray-900 placeholder-gray-400"
                   placeholder="Ogrenci seanstan once neler hazirlamali?"
                   value={form.preSessionNote}
                   onChange={(e) => setForm({ ...form, preSessionNote: e.target.value })}

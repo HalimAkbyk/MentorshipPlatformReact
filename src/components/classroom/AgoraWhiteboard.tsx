@@ -88,8 +88,8 @@ export function AgoraWhiteboard({ roomName, userId, isWriter }: AgoraWhiteboardP
   }
 
   return (
-    <div className="h-full w-full">
-      {fastboardApp && FastboardComponent && <FastboardComponent app={fastboardApp} />}
+    <div className="h-full w-full bg-white">
+      {fastboardApp && FastboardComponent && <FastboardComponent app={fastboardApp} theme="light" />}
     </div>
   );
 }

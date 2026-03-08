@@ -207,8 +207,9 @@ export function ClassroomPlanPanel({
             defaultBookingId={bookingId}
             defaultGroupClassId={groupClassId}
             onCreated={() => {
-              setShowCreateDialog(false);
+              // Refetch plan data, then close dialog
               query.refetch();
+              setShowCreateDialog(false);
             }}
           />
         )}

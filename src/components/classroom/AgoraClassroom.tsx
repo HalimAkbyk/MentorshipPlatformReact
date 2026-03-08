@@ -1,9 +1,9 @@
 'use client';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import {
   Video, VideoOff, Mic, MicOff, Monitor, MonitorOff,
-  MessageSquare, Users, PhoneOff, ClipboardList, LogOut, PenTool,
+  MessageSquare, Users, PhoneOff, ClipboardList, LogOut, PenTool, Clock,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
@@ -60,6 +60,8 @@ export function AgoraClassroom({
   const [isCheckingStatus, setIsCheckingStatus] = useState(!isHost);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const userId = useAuthStore(s => s.user?.id) || '';
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const sessionStartRef = useRef<number | null>(null);
 
   const agora = useAgoraClassroom({
     roomName,
@@ -113,6 +115,32 @@ export function AgoraClassroom({
       setIsActivating(false);
     }
   };
+
+  // Elapsed session timer — starts when connected
+  useEffect(() => {
+    if (agora.isConnected && !sessionStartRef.current) {
+      sessionStartRef.current = Date.now();
+    }
+    if (!agora.isConnected) {
+      sessionStartRef.current = null;
+      setElapsedSeconds(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      if (sessionStartRef.current) {
+        setElapsedSeconds(Math.floor((Date.now() - sessionStartRef.current) / 1000));
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [agora.isConnected]);
+
+  const formatElapsed = useCallback((secs: number) => {
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }, []);
 
   // Auto-scroll chat
   useEffect(() => {
@@ -335,6 +363,14 @@ export function AgoraClassroom({
 
       {/* Bottom toolbar */}
       <div className="h-16 bg-gray-900 border-t border-gray-800 flex items-center justify-center gap-2 px-4">
+        {/* Elapsed timer */}
+        {agora.isConnected && (
+          <div className="flex items-center gap-1.5 text-gray-400 text-sm font-mono mr-2">
+            <Clock className="w-3.5 h-3.5" />
+            <span>{formatElapsed(elapsedSeconds)}</span>
+          </div>
+        )}
+
         <Button
           size="sm"
           variant={agora.isAudioEnabled ? 'secondary' : 'destructive'}
