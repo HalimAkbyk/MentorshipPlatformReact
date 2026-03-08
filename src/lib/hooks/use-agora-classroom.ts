@@ -47,7 +47,7 @@ export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: Us
         AgoraRTC = mod.default || mod;
       }
 
-      // Get token from backend
+      // Get token from backend (007 AccessToken2 format)
       const { token } = await videoApi.getToken({ roomName, isHost });
 
       // Create client
@@ -56,16 +56,9 @@ export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: Us
 
       const appId = process.env.NEXT_PUBLIC_AGORA_APP_ID || '4f16b462827d4dcfafa8038eb06b6743';
 
-      console.log('[Agora] Joining channel:', roomName, 'appId:', appId, 'token:', token?.substring(0, 20) + '...');
+      console.log('[Agora] Joining channel:', roomName, 'appId:', appId, 'token prefix:', token?.substring(0, 40));
 
-      // Try with token first, fallback to null token (App ID only mode)
-      try {
-        await client.join(appId, roomName, token, 0);
-      } catch (tokenErr: any) {
-        console.warn('[Agora] Token join failed, trying App ID only mode:', tokenErr.message);
-        // If token auth fails, try without token (App ID only / testing mode)
-        await client.join(appId, roomName, null, 0);
-      }
+      await client.join(appId, roomName, token, 0);
 
       // Create local tracks
       const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks(
