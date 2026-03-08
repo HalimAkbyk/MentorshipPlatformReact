@@ -1,0 +1,95 @@
+'use client';
+import { useEffect, useRef, useState } from 'react';
+import { videoApi } from '../../lib/api/video';
+
+interface AgoraWhiteboardProps {
+  roomName: string;
+  userId: string;
+  isWriter: boolean;
+}
+
+export function AgoraWhiteboard({ roomName, userId, isWriter }: AgoraWhiteboardProps) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [fastboardApp, setFastboardApp] = useState<any>(null);
+  const [FastboardComponent, setFastboardComponent] = useState<any>(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    const initWhiteboard = async () => {
+      try {
+        // 1. Create whiteboard room
+        const { roomUuid } = await videoApi.createWhiteboardRoom(roomName);
+
+        // 2. Get room token
+        const { token } = await videoApi.getWhiteboardToken(roomUuid, userId, isWriter);
+
+        // 3. Dynamic import fastboard
+        const fastboardModule = await import('@netless/fastboard-react');
+        const { createFastboard, Fastboard } = fastboardModule;
+
+        const app = await createFastboard({
+          sdkConfig: {
+            appIdentifier: process.env.NEXT_PUBLIC_AGORA_WHITEBOARD_APP_ID || 'ow10IBqAEfGq3-09281LNg/eakbV1sklxJczw',
+            region: 'eu',
+          },
+          joinRoom: {
+            uid: userId,
+            uuid: roomUuid,
+            roomToken: token,
+          },
+          managerConfig: {
+            cursor: true,
+          },
+        });
+
+        if (mountedRef.current) {
+          setFastboardApp(app);
+          setFastboardComponent(() => Fastboard);
+          setIsLoading(false);
+        }
+      } catch (err: any) {
+        console.error('Whiteboard init error:', err);
+        if (mountedRef.current) {
+          setError(err.message || 'Whiteboard yuklenemedi');
+          setIsLoading(false);
+        }
+      }
+    };
+
+    initWhiteboard();
+
+    return () => {
+      mountedRef.current = false;
+      fastboardApp?.destroy?.();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomName, userId, isWriter]);
+
+  if (isLoading) {
+    return (
+      <div className="h-full flex items-center justify-center bg-gray-900">
+        <div className="text-center space-y-2">
+          <div className="w-8 h-8 border-2 border-teal-400 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-gray-400 text-sm">Whiteboard yukleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full flex items-center justify-center bg-gray-900">
+        <p className="text-red-400 text-sm">{error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full w-full">
+      {fastboardApp && FastboardComponent && <FastboardComponent app={fastboardApp} />}
+    </div>
+  );
+}

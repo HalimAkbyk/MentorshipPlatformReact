@@ -13,6 +13,8 @@ import { Badge } from '../../../../components/ui/badge';
 import { apiClient } from '../../../../lib/api/client';
 import { toast } from 'sonner';
 import { useAuthStore } from '../../../../lib/stores/auth-store';
+import { useVideoProvider } from '../../../../lib/hooks/use-video-provider';
+import { AgoraClassroom } from '../../../../components/classroom/AgoraClassroom';
 
 import { ClassroomLayout } from '../../../../components/classroom/ClassroomLayout';
 import { ParticipantsPanel } from '../../../../components/classroom/ParticipantsPanel';
@@ -122,7 +124,39 @@ class VirtualBackgroundProcessor {
 }
 
 // ─── Page Component ─────────────────────────────────────────
-export default function MentorClassroomPage() {
+export default function MentorClassroomPageSwitch() {
+  const params = useParams();
+  const router = useRouter();
+  const bookingId = params.bookingId as string;
+  const currentUser = useAuthStore(s => s.user);
+  const { provider, isLoading: providerLoading } = useVideoProvider();
+
+  if (providerLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-950 text-white">
+        <div className="w-8 h-8 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (provider === 'agora') {
+    return (
+      <AgoraClassroom
+        roomName={`Booking-${bookingId}`}
+        resourceType="Booking"
+        resourceId={bookingId}
+        isHost={true}
+        displayName={currentUser?.displayName || 'Egitmen'}
+        onEndSession={() => router.push('/mentor/bookings')}
+        onLeaveRoom={() => router.push('/mentor/bookings')}
+      />
+    );
+  }
+
+  return <TwilioMentorClassroomPage />;
+}
+
+function TwilioMentorClassroomPage() {
   const params = useParams();
   const router = useRouter();
   const bookingId = params.bookingId as string;

@@ -14,6 +14,8 @@ import { apiClient } from '../../../../lib/api/client';
 import { toast } from 'sonner';
 import { ROUTES } from '@/lib/constants/routes';
 import { useAuthStore } from '../../../../lib/stores/auth-store';
+import { useVideoProvider } from '../../../../lib/hooks/use-video-provider';
+import { AgoraClassroom } from '../../../../components/classroom/AgoraClassroom';
 
 import { ClassroomLayout } from '../../../../components/classroom/ClassroomLayout';
 import { ParticipantsPanel } from '../../../../components/classroom/ParticipantsPanel';
@@ -123,7 +125,39 @@ class VirtualBackgroundProcessor {
 }
 
 // ─── Page Component ─────────────────────────────────────────
-export default function StudentClassroomPage() {
+export default function StudentClassroomPageSwitch() {
+  const params = useParams();
+  const router = useRouter();
+  const sessionId = params.sessionId as string;
+  const currentUser = useAuthStore(s => s.user);
+  const { provider, isLoading: providerLoading } = useVideoProvider();
+
+  if (providerLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-950 text-white">
+        <div className="w-8 h-8 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (provider === 'agora') {
+    return (
+      <AgoraClassroom
+        roomName={`Booking-${sessionId}`}
+        resourceType="Booking"
+        resourceId={sessionId}
+        isHost={false}
+        displayName={currentUser?.displayName || 'Ogrenci'}
+        onEndSession={() => router.push('/student/bookings')}
+        onLeaveRoom={() => router.push('/student/bookings')}
+      />
+    );
+  }
+
+  return <TwilioStudentClassroomPage />;
+}
+
+function TwilioStudentClassroomPage() {
   const params = useParams();
   const router = useRouter();
   const sessionId = params.sessionId as string;

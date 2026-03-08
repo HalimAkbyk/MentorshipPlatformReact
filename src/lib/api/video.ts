@@ -46,4 +46,16 @@ export const videoApi = {
   endSession: async (roomName: string): Promise<void> => {
     return apiClient.post(`/video/room/${roomName}/end`);
   },
+
+  getProvider: async (): Promise<{ provider: string; whiteboardEnabled: boolean }> => {
+    return apiClient.get('/video/provider');
+  },
+
+  createWhiteboardRoom: async (roomName: string): Promise<{ roomUuid: string }> => {
+    return apiClient.post('/video/whiteboard/room', { roomName });
+  },
+
+  getWhiteboardToken: async (roomUuid: string, userId: string, isWriter: boolean): Promise<{ token: string }> => {
+    return apiClient.post('/video/whiteboard/token', { roomUuid, userId, isWriter });
+  },
 };

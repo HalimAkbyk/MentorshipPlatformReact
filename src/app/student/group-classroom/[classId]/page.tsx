@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/lib/stores/auth-store';
+import { useVideoProvider } from '@/lib/hooks/use-video-provider';
+import { AgoraClassroom } from '@/components/classroom/AgoraClassroom';
 import {
   Video, VideoOff, Mic, MicOff, Hand, Monitor, MonitorOff,
   MessageSquare, Users, PhoneOff, Settings, X, Image as ImageIcon,
@@ -123,7 +125,39 @@ class VirtualBackgroundProcessor {
 }
 
 // ─── Page Component ─────────────────────────────────────────
-export default function StudentGroupClassroomPage() {
+export default function StudentGroupClassroomPageSwitch() {
+  const params = useParams();
+  const router = useRouter();
+  const classId = params.classId as string;
+  const currentUser = useAuthStore(s => s.user);
+  const { provider, isLoading: providerLoading } = useVideoProvider();
+
+  if (providerLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-950 text-white">
+        <div className="w-8 h-8 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (provider === 'agora') {
+    return (
+      <AgoraClassroom
+        roomName={`GroupClass-${classId}`}
+        resourceType="GroupClass"
+        resourceId={classId}
+        isHost={false}
+        displayName={currentUser?.displayName || 'Ogrenci'}
+        onEndSession={() => router.push('/student/my-classes')}
+        onLeaveRoom={() => router.push('/student/my-classes')}
+      />
+    );
+  }
+
+  return <TwilioStudentGroupClassroomPage />;
+}
+
+function TwilioStudentGroupClassroomPage() {
   const params = useParams();
   const router = useRouter();
   const classId = params.classId as string;
