@@ -200,15 +200,18 @@ export function ClassroomPlanPanel({
         )}
 
         {/* Create plan dialog — opens as modal overlay, doesn't leave classroom */}
-        <CreatePlanDialog
-          open={showCreateDialog}
-          onClose={() => setShowCreateDialog(false)}
-          defaultBookingId={bookingId}
-          defaultGroupClassId={groupClassId}
-          onCreated={() => {
-            query.refetch();
-          }}
-        />
+        {showCreateDialog && (
+          <CreatePlanDialog
+            open={showCreateDialog}
+            onClose={() => setShowCreateDialog(false)}
+            defaultBookingId={bookingId}
+            defaultGroupClassId={groupClassId}
+            onCreated={() => {
+              setShowCreateDialog(false);
+              query.refetch();
+            }}
+          />
+        )}
 
         {!isLoading && plan && (
           <div className="px-4 py-3 space-y-4">
