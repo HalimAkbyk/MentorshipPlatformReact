@@ -34,6 +34,7 @@ export interface SessionPlanDetailDto {
   preSessionNote?: string;
   sessionObjective?: string;
   sessionNotes?: string;
+  studentNotes?: string;
   agendaItems?: { text: string; completed: boolean }[];
   postSessionSummary?: string;
   linkedAssignmentId?: string;
@@ -65,6 +66,7 @@ export interface UpdateSessionPlanRequest {
   preSessionNote?: string;
   sessionObjective?: string;
   sessionNotes?: string;
+  studentNotes?: string;
   agendaItems?: { text: string; completed: boolean }[];
   postSessionSummary?: string;
   linkedAssignmentId?: string;
@@ -159,6 +161,10 @@ export const sessionPlansApi = {
 
   updateSessionNotes: async (planId: string, sessionNotes: string): Promise<void> => {
     return apiClient.put(`/session-plans/${planId}`, { sessionNotes });
+  },
+
+  updateStudentNotes: async (planId: string, studentNotes: string): Promise<void> => {
+    return apiClient.put(`/session-plans/${planId}`, { studentNotes });
   },
 
   updateAgendaItems: async (planId: string, agendaItems: { text: string; completed: boolean }[]): Promise<void> => {

@@ -6,6 +6,7 @@ import {
   useSessionPlanByGroupClass,
   useSessionPlans,
   useUpdateSessionNotes,
+  useUpdateStudentNotes,
   useUpdateAgendaItems,
 } from '@/lib/hooks/use-session-plans';
 import { sessionPlansApi } from '@/lib/api/session-plans';
@@ -206,12 +207,17 @@ export function ClassroomPlanPanel({
   }, [readOnly, isOpen, plan, query]);
 
   const updateNotes = useUpdateSessionNotes();
+  const updateStudentNotes = useUpdateStudentNotes();
   const updateAgenda = useUpdateAgendaItems();
   const [showPlanPicker, setShowPlanPicker] = useState(false);
 
-  // Local state for debounced notes editing
+  // Local state for debounced notes editing (mentor notes)
   const [localNotes, setLocalNotes] = useState('');
   const notesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Local state for debounced student notes editing
+  const [localStudentNotes, setLocalStudentNotes] = useState('');
+  const studentNotesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync local notes when plan loads
   useEffect(() => {
@@ -220,7 +226,13 @@ export function ClassroomPlanPanel({
     }
   }, [plan?.sessionNotes]);
 
-  // Debounced save for notes
+  useEffect(() => {
+    if (plan?.studentNotes !== undefined) {
+      setLocalStudentNotes(plan.studentNotes || '');
+    }
+  }, [plan?.studentNotes]);
+
+  // Debounced save for mentor notes
   const handleNotesChange = useCallback(
     (value: string) => {
       setLocalNotes(value);
@@ -233,10 +245,24 @@ export function ClassroomPlanPanel({
     [plan?.id, updateNotes]
   );
 
-  // Cleanup timer
+  // Debounced save for student notes
+  const handleStudentNotesChange = useCallback(
+    (value: string) => {
+      setLocalStudentNotes(value);
+      if (!plan?.id) return;
+      if (studentNotesTimerRef.current) clearTimeout(studentNotesTimerRef.current);
+      studentNotesTimerRef.current = setTimeout(() => {
+        updateStudentNotes.mutate({ planId: plan.id, studentNotes: value });
+      }, 1000);
+    },
+    [plan?.id, updateStudentNotes]
+  );
+
+  // Cleanup timers
   useEffect(() => {
     return () => {
       if (notesTimerRef.current) clearTimeout(notesTimerRef.current);
+      if (studentNotesTimerRef.current) clearTimeout(studentNotesTimerRef.current);
     };
   }, []);
 
@@ -412,20 +438,20 @@ export function ClassroomPlanPanel({
               </div>
             )}
 
-            {/* Session Notes (editable for mentor) */}
+            {/* Eğitmen Notları */}
             <div>
               <div className="flex items-center gap-1.5 mb-1.5">
-                <StickyNote className="w-3 h-3 text-gray-400" />
-                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-                  Seans Notlari
+                <StickyNote className="w-3 h-3 text-amber-400" />
+                <span className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider">
+                  Egitmen Notlari
                 </span>
-                {updateNotes.isPending && (
+                {!readOnly && updateNotes.isPending && (
                   <Loader2 className="w-3 h-3 animate-spin text-gray-500 ml-auto" />
                 )}
               </div>
               {readOnly ? (
-                <p className="text-sm text-gray-300 whitespace-pre-wrap">
-                  {plan.sessionNotes || 'Not eklenmedi.'}
+                <p className="text-sm text-gray-300 whitespace-pre-wrap bg-gray-700/30 rounded-lg px-3 py-2">
+                  {plan.sessionNotes || 'Egitmen henuz not eklemedi.'}
                 </p>
               ) : (
                 <textarea
@@ -435,6 +461,32 @@ export function ClassroomPlanPanel({
                   rows={4}
                   className="w-full bg-gray-700 text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none placeholder-gray-500"
                 />
+              )}
+            </div>
+
+            {/* Öğrenci Notları */}
+            <div>
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <StickyNote className="w-3 h-3 text-blue-400" />
+                <span className="text-[10px] font-semibold text-blue-400 uppercase tracking-wider">
+                  Ogrenci Notlari
+                </span>
+                {readOnly && updateStudentNotes.isPending && (
+                  <Loader2 className="w-3 h-3 animate-spin text-gray-500 ml-auto" />
+                )}
+              </div>
+              {readOnly ? (
+                <textarea
+                  value={localStudentNotes}
+                  onChange={(e) => handleStudentNotesChange(e.target.value)}
+                  placeholder="Notlarinizi buraya yazin..."
+                  rows={4}
+                  className="w-full bg-gray-700 text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none placeholder-gray-500"
+                />
+              ) : (
+                <p className="text-sm text-gray-300 whitespace-pre-wrap bg-gray-700/30 rounded-lg px-3 py-2">
+                  {plan.studentNotes || 'Ogrenci henuz not eklemedi.'}
+                </p>
               )}
             </div>
 

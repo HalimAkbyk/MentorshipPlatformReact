@@ -21,6 +21,7 @@ interface UseClassroomSignalingOptions {
   isHost: boolean;
   enabled: boolean;
   onMuted?: () => void;
+  onUnmuted?: () => void;
   onKicked?: () => void;
   onWhiteboardToggle?: (open: boolean) => void;
   onRemoteScreenShare?: (active: boolean) => void;
@@ -33,6 +34,7 @@ export function useClassroomSignaling({
   isHost,
   enabled,
   onMuted,
+  onUnmuted,
   onKicked,
   onWhiteboardToggle,
   onRemoteScreenShare,
@@ -109,6 +111,11 @@ export function useClassroomSignaling({
             onMuted?.();
           }
           break;
+        case 'unmute-participant':
+          if (!isHost) {
+            onUnmuted?.();
+          }
+          break;
         case 'kick-participant':
           if (!isHost) {
             onKicked?.();
@@ -125,7 +132,7 @@ export function useClassroomSignaling({
       conn?.off('ClassroomMessage', handleMessage);
       conn?.off('ClassroomSignal', handleSignal);
     };
-  }, [enabled, userId, isHost, onMuted, onKicked, onWhiteboardToggle, onRemoteScreenShare]);
+  }, [enabled, userId, isHost, onMuted, onUnmuted, onKicked, onWhiteboardToggle, onRemoteScreenShare]);
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -152,6 +159,13 @@ export function useClassroomSignaling({
   const signalMuteParticipant = useCallback(
     async (targetIdentity: string) => {
       await sendClassroomSignal(roomName, 'mute-participant', targetIdentity);
+    },
+    [roomName]
+  );
+
+  const signalUnmuteParticipant = useCallback(
+    async (targetIdentity: string) => {
+      await sendClassroomSignal(roomName, 'unmute-participant', targetIdentity);
     },
     [roomName]
   );
@@ -187,6 +201,7 @@ export function useClassroomSignaling({
     signalWhiteboard,
     signalScreenShare,
     signalMuteParticipant,
+    signalUnmuteParticipant,
     signalKickParticipant,
     openChat,
     closeChat,

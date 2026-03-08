@@ -338,12 +338,33 @@ export function useAgoraClassroom({ roomName, isHost, displayName, peerDisplayNa
     };
   }, []);
 
+  // Re-attach local video after layout changes (remoteTiles changes can cause re-render)
+  useEffect(() => {
+    if (!isConnected || !isVideoEnabled) return;
+    const timer = setTimeout(() => {
+      if (localVideoContainerRef.current && localVideoTrackRef.current) {
+        localVideoContainerRef.current.innerHTML = '';
+        localVideoTrackRef.current.play(localVideoContainerRef.current, { fit: 'cover', mirror: true });
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remoteTiles]);
+
   // Force mute audio (called when mentor sends mute signal)
   const muteAudio = useCallback(async () => {
     const track = localAudioTrackRef.current;
     if (!track) return;
     await track.setEnabled(false);
     setIsAudioEnabled(false);
+  }, []);
+
+  // Force unmute audio (called when mentor sends unmute signal)
+  const unmuteAudio = useCallback(async () => {
+    const track = localAudioTrackRef.current;
+    if (!track) return;
+    await track.setEnabled(true);
+    setIsAudioEnabled(true);
   }, []);
 
   return {
@@ -364,6 +385,7 @@ export function useAgoraClassroom({ roomName, isHost, displayName, peerDisplayNa
     toggleVideo,
     toggleAudio,
     muteAudio,
+    unmuteAudio,
     startScreenShare,
     stopScreenShare,
     replayLocalVideo,

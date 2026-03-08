@@ -92,6 +92,10 @@ export function AgoraClassroom({
       agora.muteAudio();
       toast.info('Eğitmen mikrofonunuzu kapattı');
     }, [agora.muteAudio]),
+    onUnmuted: useCallback(() => {
+      agora.unmuteAudio();
+      toast.info('Eğitmen mikrofonunuzu açtı');
+    }, [agora.unmuteAudio]),
     onKicked: useCallback(() => {
       agora.leave();
       toast.info('Eğitmen sizi seanstan çıkardı');
@@ -122,6 +126,12 @@ export function AgoraClassroom({
     }
     return agora.screenShareState;
   })();
+
+  // When remote screen share is active, filter the sharer from filmstrip
+  // (the same HTMLVideoElement can't be in two DOM parents)
+  const displayRemoteTiles = effectiveScreenShareState.active && !effectiveScreenShareState.isLocal && effectiveScreenShareState.sharerIdentity
+    ? agora.remoteTiles.filter(t => t.identity !== effectiveScreenShareState.sharerIdentity)
+    : agora.remoteTiles;
 
   // For students: check room status (is mentor active?)
   useEffect(() => {
@@ -237,9 +247,15 @@ export function AgoraClassroom({
 
   // FIX #3: Mute & kick handlers
   const handleMuteParticipant = (identity: string) => {
-    signaling.signalMuteParticipant(identity);
-    // Update local tile state to reflect muted
-    toast.success('Katılımcının mikrofonu kapatıldı');
+    // Toggle mute/unmute based on current state
+    const tile = agora.remoteTiles.find(t => t.identity === identity);
+    if (tile?.isAudioEnabled) {
+      signaling.signalMuteParticipant(identity);
+      toast.success('Katılımcının mikrofonu kapatıldı');
+    } else {
+      signaling.signalUnmuteParticipant(identity);
+      toast.success('Katılımcının mikrofonu açıldı');
+    }
   };
 
   const handleKickParticipant = (identity: string) => {
@@ -327,7 +343,7 @@ export function AgoraClassroom({
                     {localLabel}
                   </div>
                 </div>
-                {agora.remoteTiles.map(tile => (
+                {displayRemoteTiles.map(tile => (
                   <div key={tile.identity} className="relative w-[160px] shrink-0 bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
                     {tile.cameraVideoEl ? (
                       <div className="w-full h-full" ref={el => {
@@ -360,7 +376,7 @@ export function AgoraClassroom({
               isMentor={isHost}
               localLabel={localLabel}
               localDisplayName={displayName}
-              remoteTiles={agora.remoteTiles}
+              remoteTiles={displayRemoteTiles}
               screenShareState={effectiveScreenShareState}
             />
           )}

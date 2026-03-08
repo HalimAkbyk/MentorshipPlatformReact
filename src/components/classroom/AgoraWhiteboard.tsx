@@ -40,6 +40,7 @@ export function AgoraWhiteboard({ roomName, userId, isWriter }: AgoraWhiteboardP
             uid: userId,
             uuid: roomUuid,
             roomToken: token,
+            isWritable: isWriter,
           },
           managerConfig: {
             cursor: true,

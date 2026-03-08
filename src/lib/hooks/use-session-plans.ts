@@ -139,6 +139,20 @@ export function useUpdateSessionNotes() {
   });
 }
 
+export function useUpdateStudentNotes() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ planId, studentNotes }: { planId: string; studentNotes: string }) =>
+      sessionPlansApi.updateStudentNotes(planId, studentNotes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['session-plan'] });
+      queryClient.invalidateQueries({ queryKey: ['session-plan-booking'] });
+      queryClient.invalidateQueries({ queryKey: ['session-plan-class'] });
+    },
+  });
+}
+
 export function useUpdateAgendaItems() {
   const queryClient = useQueryClient();
 
