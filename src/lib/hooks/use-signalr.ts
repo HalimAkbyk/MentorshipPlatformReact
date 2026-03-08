@@ -144,11 +144,18 @@ export function useSignalR() {
 
       // Real-time room status updates (replaces polling)
       onRoomStatusChanged((payload: RoomStatusPayload) => {
-        queryClient.setQueryData(['room-status', payload.roomName], {
+        const statusData = {
           isActive: payload.isActive,
           hostConnected: payload.hostConnected,
           participantCount: payload.participantCount,
-        });
+        };
+        // Write to cache with full roomName
+        queryClient.setQueryData(['room-status', payload.roomName], statusData);
+        // Also write with extracted ID (handles "Booking-{id}" and "group-class-{id}" formats)
+        const idMatch = payload.roomName.match(/^(?:Booking-|group-class-)(.+)$/i);
+        if (idMatch) {
+          queryClient.setQueryData(['room-status', idMatch[1]], statusData);
+        }
       });
     };
 
