@@ -212,11 +212,15 @@ export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: Us
     if (localScreenContainerRef.current) {
       localScreenContainerRef.current.innerHTML = '';
     }
-    // Re-play local video
-    if (localVideoContainerRef.current && localVideoTrackRef.current && isVideoEnabled) {
-      localVideoContainerRef.current.innerHTML = '';
-      localVideoTrackRef.current.play(localVideoContainerRef.current, { fit: 'cover', mirror: true });
-    }
+    // Wait for React to render NormalLayout (which remounts localVideoContainerRef)
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (localVideoContainerRef.current && localVideoTrackRef.current && isVideoEnabled) {
+          localVideoContainerRef.current.innerHTML = '';
+          localVideoTrackRef.current.play(localVideoContainerRef.current, { fit: 'cover', mirror: true });
+        }
+      });
+    });
   }, [isVideoEnabled]);
 
   // Keep ref in sync for use inside track-ended callback
@@ -255,11 +259,20 @@ export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: Us
         isLocal: true,
       });
 
-      // Also play in the screen preview container if available
-      if (localScreenContainerRef.current) {
-        localScreenContainerRef.current.innerHTML = '';
-        videoTrack.play(localScreenContainerRef.current);
-      }
+      // Wait for React to render ScreenShareLayout (which mounts localScreenContainerRef)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (localScreenContainerRef.current && videoTrack) {
+            localScreenContainerRef.current.innerHTML = '';
+            videoTrack.play(localScreenContainerRef.current);
+          }
+          // Re-play camera into filmstrip thumbnail (localVideoRef moves to filmstrip in ScreenShareLayout)
+          if (localVideoContainerRef.current && localVideoTrackRef.current && isVideoEnabled) {
+            localVideoContainerRef.current.innerHTML = '';
+            localVideoTrackRef.current.play(localVideoContainerRef.current, { fit: 'cover', mirror: true });
+          }
+        });
+      });
 
       // Listen for track ended (user clicks "Stop sharing" in browser)
       videoTrack.on('track-ended', () => {
@@ -273,7 +286,7 @@ export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: Us
       }
       toast.error('Ekran paylasimi baslatilamadi: ' + (err.message || ''));
     }
-  }, []);
+  }, [isVideoEnabled]);
 
   // Cleanup on unmount
   useEffect(() => {
