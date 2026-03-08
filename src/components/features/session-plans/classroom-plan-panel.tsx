@@ -27,9 +27,10 @@ import {
   Target,
   StickyNote,
   CheckSquare,
+  Plus,
 } from 'lucide-react';
 import type { SessionPlanDetailDto, SessionPlanMaterialDto } from '@/lib/api/session-plans';
-import Link from 'next/link';
+import { CreatePlanDialog } from './create-plan-dialog';
 
 interface ClassroomPlanPanelProps {
   bookingId?: string;
@@ -114,6 +115,7 @@ export function ClassroomPlanPanel({
 
   const updateNotes = useUpdateSessionNotes();
   const updateAgenda = useUpdateAgendaItems();
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   // Local state for debounced notes editing
   const [localNotes, setLocalNotes] = useState('');
@@ -185,24 +187,28 @@ export function ClassroomPlanPanel({
           <div className="px-4 py-8 text-center">
             <ClipboardList className="w-10 h-10 text-gray-600 mx-auto mb-3" />
             <p className="text-gray-400 text-sm mb-3">Oturum plani yok</p>
-            {!readOnly && bookingId && (
-              <Link
-                href={`/mentor/session-plans/create?bookingId=${bookingId}`}
-                className="text-teal-400 hover:text-teal-300 text-sm underline"
+            {!readOnly && (bookingId || groupClassId) && (
+              <button
+                onClick={() => setShowCreateDialog(true)}
+                className="inline-flex items-center gap-1.5 text-teal-400 hover:text-teal-300 text-sm"
               >
+                <Plus className="w-3.5 h-3.5" />
                 Plan Olustur
-              </Link>
-            )}
-            {!readOnly && groupClassId && (
-              <Link
-                href={`/mentor/session-plans/create?groupClassId=${groupClassId}`}
-                className="text-teal-400 hover:text-teal-300 text-sm underline"
-              >
-                Plan Olustur
-              </Link>
+              </button>
             )}
           </div>
         )}
+
+        {/* Create plan dialog — opens as modal overlay, doesn't leave classroom */}
+        <CreatePlanDialog
+          open={showCreateDialog}
+          onClose={() => setShowCreateDialog(false)}
+          defaultBookingId={bookingId}
+          defaultGroupClassId={groupClassId}
+          onCreated={() => {
+            query.refetch();
+          }}
+        />
 
         {!isLoading && plan && (
           <div className="px-4 py-3 space-y-4">

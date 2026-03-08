@@ -12,9 +12,11 @@ interface CreatePlanDialogProps {
   open: boolean;
   onClose: () => void;
   onCreated?: (id: string) => void;
+  defaultBookingId?: string;
+  defaultGroupClassId?: string;
 }
 
-export function CreatePlanDialog({ open, onClose, onCreated }: CreatePlanDialogProps) {
+export function CreatePlanDialog({ open, onClose, onCreated, defaultBookingId, defaultGroupClassId }: CreatePlanDialogProps) {
   const createMutation = useCreateSessionPlan();
   const createFromTemplateMutation = useCreateSessionPlanFromTemplate();
   const { data: templates } = useSessionPlanTemplates();
@@ -24,8 +26,8 @@ export function CreatePlanDialog({ open, onClose, onCreated }: CreatePlanDialogP
 
   const [form, setForm] = useState({
     title: '',
-    bookingId: '',
-    groupClassId: '',
+    bookingId: defaultBookingId || '',
+    groupClassId: defaultGroupClassId || '',
     preSessionNote: '',
     sessionObjective: '',
   });
@@ -33,8 +35,8 @@ export function CreatePlanDialog({ open, onClose, onCreated }: CreatePlanDialogP
   const resetForm = () => {
     setForm({
       title: '',
-      bookingId: '',
-      groupClassId: '',
+      bookingId: defaultBookingId || '',
+      groupClassId: defaultGroupClassId || '',
       preSessionNote: '',
       sessionObjective: '',
     });
@@ -181,26 +183,30 @@ export function CreatePlanDialog({ open, onClose, onCreated }: CreatePlanDialogP
                 />
               </div>
 
-              {/* Booking ID */}
-              <div>
-                <label className="text-sm font-medium">Seans ID (Opsiyonel)</label>
-                <Input
-                  placeholder="Bir seansa baglamak icin seans ID girin"
-                  value={form.bookingId}
-                  onChange={(e) => setForm({ ...form, bookingId: e.target.value })}
-                />
-                <p className="text-xs text-gray-400 mt-1">Bos birakilabilir, sonra baglanabilir</p>
-              </div>
+              {/* Booking ID — hide if pre-filled from classroom */}
+              {!defaultBookingId && (
+                <div>
+                  <label className="text-sm font-medium">Seans ID (Opsiyonel)</label>
+                  <Input
+                    placeholder="Bir seansa baglamak icin seans ID girin"
+                    value={form.bookingId}
+                    onChange={(e) => setForm({ ...form, bookingId: e.target.value })}
+                  />
+                  <p className="text-xs text-gray-400 mt-1">Bos birakilabilir, sonra baglanabilir</p>
+                </div>
+              )}
 
-              {/* Group Class ID */}
-              <div>
-                <label className="text-sm font-medium">Grup Ders ID (Opsiyonel)</label>
-                <Input
-                  placeholder="Bir grup dersine baglamak icin ID girin"
-                  value={form.groupClassId}
-                  onChange={(e) => setForm({ ...form, groupClassId: e.target.value })}
-                />
-              </div>
+              {/* Group Class ID — hide if pre-filled from classroom */}
+              {!defaultGroupClassId && (
+                <div>
+                  <label className="text-sm font-medium">Grup Ders ID (Opsiyonel)</label>
+                  <Input
+                    placeholder="Bir grup dersine baglamak icin ID girin"
+                    value={form.groupClassId}
+                    onChange={(e) => setForm({ ...form, groupClassId: e.target.value })}
+                  />
+                </div>
+              )}
 
               {/* Session Objective */}
               <div>

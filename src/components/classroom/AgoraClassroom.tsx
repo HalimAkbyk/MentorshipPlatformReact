@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import {
   Video, VideoOff, Mic, MicOff, Monitor, MonitorOff,
-  MessageSquare, Users, PhoneOff, ClipboardList, LogOut,
+  MessageSquare, Users, PhoneOff, ClipboardList, LogOut, PenTool,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
@@ -10,7 +10,9 @@ import { ClassroomLayout } from './ClassroomLayout';
 import { ParticipantsPanel } from './ParticipantsPanel';
 import { SessionTimerBanner } from './SessionTimerBanner';
 import { ClassroomPlanPanel } from '../features/session-plans/classroom-plan-panel';
+import { AgoraWhiteboard } from './AgoraWhiteboard';
 import { useAgoraClassroom } from '../../lib/hooks/use-agora-classroom';
+import { useAuthStore } from '../../lib/stores/auth-store';
 import { videoApi } from '../../lib/api/video';
 
 interface AgoraClassroomProps {
@@ -39,6 +41,7 @@ export function AgoraClassroom({
   const [isChatOpen, setIsChatOpen] = useState(true);
   const [isPlanOpen, setIsPlanOpen] = useState(false);
   const [isParticipantsOpen, setIsParticipantsOpen] = useState(false);
+  const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);
   const [newMessage, setNewMessage] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
   const [isRoomActivated, setIsRoomActivated] = useState(false);
@@ -46,6 +49,7 @@ export function AgoraClassroom({
   const [roomStatus, setRoomStatus] = useState<{ isActive: boolean; hostConnected: boolean } | null>(null);
   const [isCheckingStatus, setIsCheckingStatus] = useState(!isHost);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const userId = useAuthStore(s => s.user?.id) || '';
 
   const agora = useAgoraClassroom({
     roomName,
@@ -191,13 +195,55 @@ export function AgoraClassroom({
 
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Video area */}
+        {/* Video / Whiteboard area */}
         <div className="flex-1 p-3">
           {agora.isConnecting ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center space-y-3">
                 <div className="w-10 h-10 border-2 border-teal-400 border-t-transparent rounded-full animate-spin mx-auto" />
                 <p className="text-gray-400 text-sm">Agora&apos;ya baglaniliyor...</p>
+              </div>
+            </div>
+          ) : isWhiteboardOpen ? (
+            <div className="h-full flex flex-col gap-2">
+              {/* Whiteboard takes most space */}
+              <div className="flex-1 rounded-lg overflow-hidden border border-gray-700">
+                <AgoraWhiteboard
+                  roomName={roomName}
+                  userId={userId}
+                  isWriter={isHost}
+                />
+              </div>
+              {/* Small video filmstrip at bottom */}
+              <div className="h-[100px] shrink-0 flex gap-2 overflow-x-auto">
+                <div className="relative w-[160px] shrink-0 bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
+                  <div ref={agora.localVideoRef as any} className="w-full h-full" />
+                  <div className="absolute bottom-1 left-1 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded">
+                    {isHost ? 'Siz (Egitmen)' : 'Siz'}
+                  </div>
+                </div>
+                {agora.remoteTiles.map(tile => (
+                  <div key={tile.identity} className="relative w-[160px] shrink-0 bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
+                    {tile.cameraVideoEl ? (
+                      <div className="w-full h-full" ref={el => {
+                        if (el && tile.cameraVideoEl && !el.contains(tile.cameraVideoEl)) {
+                          el.innerHTML = '';
+                          el.appendChild(tile.cameraVideoEl);
+                          tile.cameraVideoEl.style.width = '100%';
+                          tile.cameraVideoEl.style.height = '100%';
+                          tile.cameraVideoEl.style.objectFit = 'cover';
+                        }
+                      }} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">
+                        Kamera kapali
+                      </div>
+                    )}
+                    <div className="absolute bottom-1 left-1 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded">
+                      {tile.displayName}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           ) : (
@@ -334,6 +380,16 @@ export function AgoraClassroom({
         >
           <ClipboardList className="w-4 h-4" />
           <span className="hidden sm:inline">Plan</span>
+        </Button>
+
+        <Button
+          size="sm"
+          variant={isWhiteboardOpen ? 'default' : 'secondary'}
+          onClick={() => setIsWhiteboardOpen(!isWhiteboardOpen)}
+          className="gap-1.5"
+        >
+          <PenTool className="w-4 h-4" />
+          <span className="hidden sm:inline">Tahta</span>
         </Button>
 
         <Button
