@@ -513,6 +513,7 @@ export interface FeatureFlagDto {
   key: string;
   isEnabled: boolean;
   description: string | null;
+  value: string | null;
   updatedAt: string;
 }
 
@@ -1397,8 +1398,8 @@ export const adminApi = {
   getFeatureFlags: (): Promise<FeatureFlagDto[]> =>
     apiClient.get('/admin/system/feature-flags'),
 
-  updateFeatureFlag: (key: string, isEnabled: boolean): Promise<FeatureFlagDto> =>
-    apiClient.put(`/admin/system/feature-flags/${key}`, { isEnabled }),
+  updateFeatureFlag: (key: string, isEnabled: boolean, value?: string | null): Promise<FeatureFlagDto> =>
+    apiClient.put(`/admin/system/feature-flags/${key}`, { isEnabled, value: value ?? undefined }),
 
   seedFeatureFlags: (): Promise<FeatureFlagDto[]> =>
     apiClient.post('/admin/system/feature-flags/seed'),

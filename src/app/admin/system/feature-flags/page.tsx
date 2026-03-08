@@ -27,6 +27,18 @@ const flagDescriptions: Record<string, string> = {
   chat_enabled: 'Mesajlasma',
   video_enabled: 'Video gorusme',
   maintenance_mode: 'Bakim modu',
+  VIDEO_PROVIDER: 'Video saglayici secimi (twilio / agora)',
+  SESSION_REQUEST_ENABLED: 'Seans talep sistemi',
+  PRICE_APPROVAL_REQUIRED: 'Fiyat onay zorunlulugu',
+  FREE_SESSION_ENABLED: 'Serbest seans',
+};
+
+// Flags with dropdown value selection instead of just on/off
+const flagValueOptions: Record<string, { label: string; value: string }[]> = {
+  VIDEO_PROVIDER: [
+    { label: 'Twilio', value: 'twilio' },
+    { label: 'Agora', value: 'agora' },
+  ],
 };
 
 // ---------------------------------------------------------------------------
@@ -36,14 +48,17 @@ const flagDescriptions: Record<string, string> = {
 function FlagCard({
   flag,
   onToggle,
+  onValueChange,
   isToggling,
 }: {
   flag: FeatureFlagDto;
   onToggle: (key: string, isEnabled: boolean) => void;
+  onValueChange: (key: string, value: string) => void;
   isToggling: boolean;
 }) {
   const isMaintenance = flag.key === 'maintenance_mode';
   const description = flagDescriptions[flag.key] || flag.description || 'Aciklama bulunamadi';
+  const valueOptions = flagValueOptions[flag.key];
 
   return (
     <Card
@@ -77,27 +92,45 @@ function FlagCard({
             </p>
           </div>
 
-          {/* Toggle Switch */}
-          <button
-            onClick={() => onToggle(flag.key, !flag.isEnabled)}
-            disabled={isToggling}
-            className={cn(
-              'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500',
-              flag.isEnabled
-                ? isMaintenance
-                  ? 'bg-red-500'
-                  : 'bg-green-500'
-                : 'bg-gray-300',
-              isToggling && 'opacity-50 cursor-not-allowed'
+          <div className="flex items-center gap-3">
+            {/* Value Dropdown (for flags like VIDEO_PROVIDER) */}
+            {valueOptions && (
+              <select
+                value={flag.value || valueOptions[0].value}
+                onChange={(e) => onValueChange(flag.key, e.target.value)}
+                disabled={isToggling}
+                className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                {valueOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
             )}
-          >
-            <span
+
+            {/* Toggle Switch */}
+            <button
+              onClick={() => onToggle(flag.key, !flag.isEnabled)}
+              disabled={isToggling}
               className={cn(
-                'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200',
-                flag.isEnabled ? 'translate-x-6' : 'translate-x-1'
+                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500',
+                flag.isEnabled
+                  ? isMaintenance
+                    ? 'bg-red-500'
+                    : 'bg-green-500'
+                  : 'bg-gray-300',
+                isToggling && 'opacity-50 cursor-not-allowed'
               )}
-            />
-          </button>
+            >
+              <span
+                className={cn(
+                  'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200',
+                  flag.isEnabled ? 'translate-x-6' : 'translate-x-1'
+                )}
+              />
+            </button>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -118,10 +151,10 @@ export default function FeatureFlagsPage() {
     queryFn: () => adminApi.getFeatureFlags(),
   });
 
-  // Mutation: Toggle flag
+  // Mutation: Toggle flag (or update value)
   const toggleMutation = useMutation({
-    mutationFn: ({ key, isEnabled }: { key: string; isEnabled: boolean }) =>
-      adminApi.updateFeatureFlag(key, isEnabled),
+    mutationFn: ({ key, isEnabled, value }: { key: string; isEnabled: boolean; value?: string }) =>
+      adminApi.updateFeatureFlag(key, isEnabled, value),
     onSuccess: () => {
       toast.success('Ozellik bayragi guncellendi.');
       queryClient.invalidateQueries({ queryKey: ['admin', 'system', 'feature-flags'] });
@@ -146,6 +179,12 @@ export default function FeatureFlagsPage() {
 
   const handleToggle = (key: string, isEnabled: boolean) => {
     toggleMutation.mutate({ key, isEnabled });
+  };
+
+  const handleValueChange = (key: string, value: string) => {
+    // Find the current flag to preserve isEnabled state
+    const currentFlag = flags.find((f) => f.key === key);
+    toggleMutation.mutate({ key, isEnabled: currentFlag?.isEnabled ?? true, value });
   };
 
   return (
@@ -182,6 +221,7 @@ export default function FeatureFlagsPage() {
               key={flag.id}
               flag={flag}
               onToggle={handleToggle}
+              onValueChange={handleValueChange}
               isToggling={toggleMutation.isPending}
             />
           ))}
