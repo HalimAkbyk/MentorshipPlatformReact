@@ -246,33 +246,39 @@ export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: Us
       await clientRef.current.publish(videoTrack);
       setIsScreenSharing(true);
 
-      // Create a video element for the screen preview
-      const screenEl = document.createElement('video');
-      screenEl.autoplay = true;
-      screenEl.playsInline = true;
-      videoTrack.play(screenEl);
-
+      // For local screen share, ScreenShareLayout uses localScreenPreviewRef (not screenVideoEl)
+      // So we set screenVideoEl: null and only play into the ref container after React renders
       setScreenShareState({
         active: true,
         sharerIdentity: null,
-        screenVideoEl: screenEl,
+        screenVideoEl: null,
         isLocal: true,
       });
 
       // Wait for React to render ScreenShareLayout (which mounts localScreenContainerRef)
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (localScreenContainerRef.current && videoTrack) {
-            localScreenContainerRef.current.innerHTML = '';
-            videoTrack.play(localScreenContainerRef.current);
-          }
-          // Re-play camera into filmstrip thumbnail (localVideoRef moves to filmstrip in ScreenShareLayout)
-          if (localVideoContainerRef.current && localVideoTrackRef.current && isVideoEnabled) {
-            localVideoContainerRef.current.innerHTML = '';
-            localVideoTrackRef.current.play(localVideoContainerRef.current, { fit: 'cover', mirror: true });
-          }
-        });
-      });
+      // Use setTimeout to ensure layout is fully painted (rAF alone can be too early)
+      setTimeout(() => {
+        if (localScreenContainerRef.current && videoTrack) {
+          localScreenContainerRef.current.innerHTML = '';
+          videoTrack.play(localScreenContainerRef.current);
+          console.log('[Agora] Screen track playing into localScreenContainer');
+        } else {
+          console.warn('[Agora] localScreenContainer not ready, retrying...');
+          // Retry once more after another frame
+          setTimeout(() => {
+            if (localScreenContainerRef.current && videoTrack) {
+              localScreenContainerRef.current.innerHTML = '';
+              videoTrack.play(localScreenContainerRef.current);
+              console.log('[Agora] Screen track playing into localScreenContainer (retry)');
+            }
+          }, 200);
+        }
+        // Re-play camera into filmstrip thumbnail
+        if (localVideoContainerRef.current && localVideoTrackRef.current && isVideoEnabled) {
+          localVideoContainerRef.current.innerHTML = '';
+          localVideoTrackRef.current.play(localVideoContainerRef.current, { fit: 'cover', mirror: true });
+        }
+      }, 100);
 
       // Listen for track ended (user clicks "Stop sharing" in browser)
       videoTrack.on('track-ended', () => {
