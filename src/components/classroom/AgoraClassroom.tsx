@@ -63,6 +63,9 @@ export function AgoraClassroom({
   const userId = useAuthStore(s => s.user?.id) || '';
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const sessionStartRef = useRef<number | null>(null);
+  const [mentorLeftCountdown, setMentorLeftCountdown] = useState<number | null>(null);
+  const mentorLeftTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mentorWasConnectedRef = useRef(false);
 
   // FIX #1: Proper display name labels
   const localLabel = `${displayName} (Siz)`;
@@ -201,6 +204,52 @@ export function AgoraClassroom({
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }, []);
 
+  // Student: detect mentor leaving and start 10-min countdown
+  useEffect(() => {
+    if (isHost || !agora.isConnected) return;
+
+    const hasMentor = agora.remoteTiles.length > 0;
+
+    if (hasMentor) {
+      mentorWasConnectedRef.current = true;
+      // Mentor came back — cancel countdown
+      if (mentorLeftCountdown !== null) {
+        if (mentorLeftTimerRef.current) clearInterval(mentorLeftTimerRef.current);
+        mentorLeftTimerRef.current = null;
+        setMentorLeftCountdown(null);
+        toast.success('Eğitmen odaya geri döndü');
+      }
+    } else if (mentorWasConnectedRef.current && mentorLeftCountdown === null) {
+      // Mentor was here but now left — start 10-min (600s) countdown
+      toast.warning('Eğitmen odadan ayrıldı. 10 dakika içinde dönmezse oturum sonlandırılacak.');
+      let remaining = 600;
+      setMentorLeftCountdown(remaining);
+      mentorLeftTimerRef.current = setInterval(() => {
+        remaining -= 1;
+        setMentorLeftCountdown(remaining);
+        if (remaining <= 0) {
+          if (mentorLeftTimerRef.current) clearInterval(mentorLeftTimerRef.current);
+          mentorLeftTimerRef.current = null;
+          toast.info('Eğitmen geri dönmedi, oturum sonlandırıldı.');
+          agora.leave();
+          onLeaveRoom?.();
+        }
+      }, 1000);
+    }
+
+    return () => {
+      // Don't clear timer on re-render — only on unmount
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHost, agora.isConnected, agora.remoteTiles.length]);
+
+  // Cleanup countdown on unmount
+  useEffect(() => {
+    return () => {
+      if (mentorLeftTimerRef.current) clearInterval(mentorLeftTimerRef.current);
+    };
+  }, []);
+
   // Auto-scroll chat
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -245,15 +294,16 @@ export function AgoraClassroom({
     }
   };
 
-  // FIX #3: Mute & kick handlers
+  // Mute & kick handlers
   const handleMuteParticipant = (identity: string) => {
-    // Toggle mute/unmute based on current state
     const tile = agora.remoteTiles.find(t => t.identity === identity);
     if (tile?.isAudioEnabled) {
       signaling.signalMuteParticipant(identity);
+      agora.updateRemoteTileAudio(identity, false);
       toast.success('Katılımcının mikrofonu kapatıldı');
     } else {
       signaling.signalUnmuteParticipant(identity);
+      agora.updateRemoteTileAudio(identity, true);
       toast.success('Katılımcının mikrofonu açıldı');
     }
   };
@@ -312,6 +362,13 @@ export function AgoraClassroom({
       {/* Top bar */}
       {sessionTimer && (
         <SessionTimerBanner {...sessionTimer} isRoomActive={agora.isConnected} />
+      )}
+
+      {/* Mentor-left countdown banner (student only) */}
+      {mentorLeftCountdown !== null && (
+        <div className="bg-red-600 text-white px-4 py-2 text-center text-sm font-medium animate-pulse">
+          ⚠️ Eğitmen odadan ayrıldı. Geri dönmezse oturum {Math.floor(mentorLeftCountdown / 60)}:{String(mentorLeftCountdown % 60).padStart(2, '0')} sonra sonlandırılacak.
+        </div>
       )}
 
       {/* Main content */}

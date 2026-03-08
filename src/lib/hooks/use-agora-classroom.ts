@@ -351,6 +351,13 @@ export function useAgoraClassroom({ roomName, isHost, displayName, peerDisplayNa
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remoteTiles]);
 
+  // Update a remote tile's audio state (used by mentor after sending mute/unmute signal)
+  const updateRemoteTileAudio = useCallback((identity: string, isEnabled: boolean) => {
+    setRemoteTiles(prev => prev.map(t =>
+      t.identity === identity ? { ...t, isAudioEnabled: isEnabled } : t
+    ));
+  }, []);
+
   // Force mute audio (called when mentor sends mute signal)
   const muteAudio = useCallback(async () => {
     const track = localAudioTrackRef.current;
@@ -386,6 +393,7 @@ export function useAgoraClassroom({ roomName, isHost, displayName, peerDisplayNa
     toggleAudio,
     muteAudio,
     unmuteAudio,
+    updateRemoteTileAudio,
     startScreenShare,
     stopScreenShare,
     replayLocalVideo,
