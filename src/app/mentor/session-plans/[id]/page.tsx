@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   useSessionPlan,
@@ -274,18 +274,19 @@ export default function SessionPlanDetailPage() {
   const [agendaItems, setAgendaItems] = useState<{ text: string; completed: boolean }[]>([]);
   const [dirty, setDirty] = useState(false);
 
-  // Populate form when plan loads
+  // Populate form when plan loads — only if not dirty (avoid overwriting unsaved edits)
+  const initializedRef = useRef(false);
   useEffect(() => {
-    if (plan) {
+    if (plan && !dirty) {
       setTitle(plan.title || '');
       setPreSessionNote(plan.preSessionNote || '');
       setSessionObjective(plan.sessionObjective || '');
       setSessionNotes(plan.sessionNotes || '');
       setPostSessionSummary(plan.postSessionSummary || '');
       setAgendaItems(plan.agendaItems || []);
-      setDirty(false);
+      initializedRef.current = true;
     }
-  }, [plan]);
+  }, [plan, dirty]);
 
   const markDirty = useCallback(() => setDirty(true), []);
 
@@ -330,6 +331,21 @@ export default function SessionPlanDetailPage() {
 
   const handleAddMaterial = async (item: LibraryItemDto) => {
     try {
+      // Auto-save unsaved form changes before adding material
+      if (dirty) {
+        await updateMutation.mutateAsync({
+          id: planId,
+          data: {
+            title: title.trim() || undefined,
+            preSessionNote: preSessionNote.trim() || undefined,
+            sessionObjective: sessionObjective.trim() || undefined,
+            sessionNotes: sessionNotes.trim() || undefined,
+            postSessionSummary: postSessionSummary.trim() || undefined,
+            agendaItems: agendaItems.length > 0 ? agendaItems : undefined,
+          },
+        });
+        setDirty(false);
+      }
       await addMaterialMutation.mutateAsync({
         planId,
         data: {
