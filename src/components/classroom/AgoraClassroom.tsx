@@ -41,6 +41,10 @@ export function AgoraClassroom({
   const [isParticipantsOpen, setIsParticipantsOpen] = useState(false);
   const [newMessage, setNewMessage] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isRoomActivated, setIsRoomActivated] = useState(false);
+  const [isActivating, setIsActivating] = useState(false);
+  const [roomStatus, setRoomStatus] = useState<{ isActive: boolean; hostConnected: boolean } | null>(null);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(!isHost);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const agora = useAgoraClassroom({
@@ -50,11 +54,51 @@ export function AgoraClassroom({
     enabled: true,
   });
 
-  // Auto-join on mount
+  // For students: check room status (is mentor active?)
   useEffect(() => {
-    agora.join();
+    if (isHost) return;
+    let cancelled = false;
+    const checkStatus = async () => {
+      try {
+        const status = await videoApi.getRoomStatus(roomName);
+        if (!cancelled) {
+          setRoomStatus(status);
+          setIsCheckingStatus(false);
+          if (status.isActive) {
+            // Room is active, auto-join
+            setIsRoomActivated(true);
+            agora.join();
+          }
+        }
+      } catch {
+        if (!cancelled) setIsCheckingStatus(false);
+      }
+    };
+    checkStatus();
+    // Poll every 5s until room is active
+    const interval = setInterval(() => {
+      if (!isRoomActivated) checkStatus();
+    }, 5000);
+    return () => { cancelled = true; clearInterval(interval); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isHost, roomName, isRoomActivated]);
+
+  const activateRoom = async () => {
+    setIsActivating(true);
+    try {
+      // Create session on backend first (like Twilio flow)
+      await videoApi.createSession(resourceType, resourceId);
+      // Then join Agora
+      await agora.join();
+      setIsRoomActivated(true);
+      toast.success('Oda aktif! Öğrenci artık katılabilir.');
+    } catch (err: any) {
+      console.error('Room activation error:', err);
+      toast.error('Oda aktifleştirilemedi: ' + (err?.message ?? ''));
+    } finally {
+      setIsActivating(false);
+    }
+  };
 
   // Auto-scroll chat
   useEffect(() => {
@@ -71,6 +115,7 @@ export function AgoraClassroom({
     try {
       await agora.leave();
       await videoApi.endSession(roomName);
+      setIsRoomActivated(false);
       onEndSession?.();
     } catch {
       toast.error('Seans sonlandirilamadi');
@@ -87,14 +132,61 @@ export function AgoraClassroom({
     }
   };
 
+  // Not yet activated — show activation screen
+  if (!isRoomActivated && !agora.isConnected) {
+    // Host: show "Activate Room" button
+    if (isHost) {
+      return (
+        <div className="h-screen flex flex-col bg-gray-950 text-white">
+          {sessionTimer && (
+            <SessionTimerBanner {...sessionTimer} isRoomActive={false} />
+          )}
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center space-y-4">
+              <Video className="w-16 h-16 text-gray-600 mx-auto" />
+              <h2 className="text-xl font-semibold">Oda Aktif Değil</h2>
+              <p className="text-gray-400 text-sm">Odayı aktifleştirin</p>
+              <Button
+                onClick={activateRoom}
+                disabled={isActivating}
+                size="sm"
+              >
+                <Video className="w-4 h-4 mr-2" />
+                {isActivating ? 'Aktifleştiriliyor...' : 'Odayı Aktifleştir'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Student: waiting for mentor
+    return (
+      <div className="h-screen flex flex-col bg-gray-950 text-white">
+        {sessionTimer && (
+          <SessionTimerBanner {...sessionTimer} isRoomActive={false} />
+        )}
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <Users className="w-16 h-16 text-gray-600 mx-auto" />
+            <h2 className="text-xl font-semibold">Öğrenci katılamaz</h2>
+            <p className="text-gray-400 text-sm">
+              {isCheckingStatus ? 'Oda durumu kontrol ediliyor...' : 'Önce odayı aktifleştirin'}
+            </p>
+            {isCheckingStatus && (
+              <div className="w-8 h-8 border-2 border-teal-400 border-t-transparent rounded-full animate-spin mx-auto" />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen flex flex-col bg-gray-950 text-white">
       {/* Top bar */}
-      {sessionTimer && bookingTimes && (
-        <SessionTimerBanner
-          sessionTimer={sessionTimer}
-          bookingTimes={bookingTimes}
-        />
+      {sessionTimer && (
+        <SessionTimerBanner {...sessionTimer} isRoomActive={agora.isConnected} />
       )}
 
       {/* Main content */}
@@ -165,6 +257,7 @@ export function AgoraClassroom({
             <ClassroomPlanPanel
               bookingId={resourceType === 'Booking' ? resourceId : undefined}
               groupClassId={resourceType === 'GroupClass' ? resourceId : undefined}
+              isOpen={isPlanOpen}
               onClose={() => setIsPlanOpen(false)}
             />
           </div>
@@ -174,8 +267,10 @@ export function AgoraClassroom({
           <div className="w-72 border-l border-gray-800 bg-gray-900">
             <ParticipantsPanel
               remoteTiles={agora.remoteTiles}
-              localLabel={displayName}
-              isHost={isHost}
+              localDisplayName={displayName}
+              localIsAudioEnabled={agora.isAudioEnabled}
+              localIsVideoEnabled={agora.isVideoEnabled}
+              isMentor={isHost}
               onClose={() => setIsParticipantsOpen(false)}
             />
           </div>
