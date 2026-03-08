@@ -48,7 +48,7 @@ export function AgoraClassroom({
   onEndSession,
   onLeaveRoom,
 }: AgoraClassroomProps) {
-  const [isChatOpen, setIsChatOpen] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [isPlanOpen, setIsPlanOpen] = useState(false);
   const [isParticipantsOpen, setIsParticipantsOpen] = useState(false);
   const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);

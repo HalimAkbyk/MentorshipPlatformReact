@@ -95,7 +95,7 @@ export function CreatePlanDialog({ open, onClose, onCreated, defaultBookingId, d
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <Card className="w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+      <Card className="w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto bg-white text-gray-900">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Yeni Oturum Plani</CardTitle>
           <Button variant="ghost" size="sm" onClick={() => { resetForm(); onClose(); }}>
