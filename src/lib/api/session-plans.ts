@@ -68,6 +68,8 @@ export interface UpdateSessionPlanRequest {
   agendaItems?: { text: string; completed: boolean }[];
   postSessionSummary?: string;
   linkedAssignmentId?: string;
+  bookingId?: string;
+  groupClassId?: string;
 }
 
 export interface AddMaterialRequest {

@@ -4,17 +4,16 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   useSessionPlanByBooking,
   useSessionPlanByGroupClass,
+  useSessionPlans,
   useUpdateSessionNotes,
   useUpdateAgendaItems,
 } from '@/lib/hooks/use-session-plans';
+import { sessionPlansApi } from '@/lib/api/session-plans';
 import {
   ClipboardList,
   X,
-  ChevronRight,
-  ChevronLeft,
   FileText,
   Check,
-  BookOpen,
   Download,
   ExternalLink,
   Video,
@@ -28,9 +27,11 @@ import {
   StickyNote,
   CheckSquare,
   Plus,
+  FolderOpen,
+  LinkIcon,
 } from 'lucide-react';
-import type { SessionPlanDetailDto, SessionPlanMaterialDto } from '@/lib/api/session-plans';
-import { CreatePlanDialog } from './create-plan-dialog';
+import type { SessionPlanDetailDto, SessionPlanMaterialDto, SessionPlanListDto } from '@/lib/api/session-plans';
+import { toast } from 'sonner';
 
 interface ClassroomPlanPanelProps {
   bookingId?: string;
@@ -99,6 +100,88 @@ function MaterialList({ materials, label }: { materials: SessionPlanMaterialDto[
   );
 }
 
+/** Popup to pick an existing plan and link it to this booking/class */
+function PlanPickerPopup({
+  bookingId,
+  groupClassId,
+  onClose,
+  onLinked,
+}: {
+  bookingId?: string;
+  groupClassId?: string;
+  onClose: () => void;
+  onLinked: () => void;
+}) {
+  const { data, isLoading } = useSessionPlans({ pageSize: 50 });
+  const [linking, setLinking] = useState<string | null>(null);
+
+  const plans = data?.items ?? [];
+
+  const handleLink = async (plan: SessionPlanListDto) => {
+    setLinking(plan.id);
+    try {
+      await sessionPlansApi.update(plan.id, {
+        ...(bookingId ? { bookingId } : {}),
+        ...(groupClassId ? { groupClassId } : {}),
+      } as any);
+      toast.success('Plan seansa baglandi');
+      onLinked();
+    } catch {
+      toast.error('Plan baglanamadi');
+    } finally {
+      setLinking(null);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[70vh] flex flex-col">
+        <div className="px-4 py-3 border-b flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-gray-900">Plan Sec</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-2">
+          {isLoading && (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+            </div>
+          )}
+          {!isLoading && plans.length === 0 && (
+            <div className="text-center py-8 text-sm text-gray-400">
+              Henuz plan olusturmadiniz
+            </div>
+          )}
+          {plans.map((plan) => (
+            <button
+              key={plan.id}
+              onClick={() => handleLink(plan)}
+              disabled={linking === plan.id}
+              className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-teal-50 text-left transition-colors"
+            >
+              <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
+                <ClipboardList className="w-4 h-4 text-amber-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-gray-900 truncate">{plan.title || 'Isimsiz Plan'}</div>
+                <div className="text-[10px] text-gray-400">
+                  {plan.materialCount} materyal &middot; {plan.status}
+                </div>
+              </div>
+              {linking === plan.id ? (
+                <Loader2 className="w-4 h-4 animate-spin text-teal-500 flex-shrink-0" />
+              ) : (
+                <LinkIcon className="w-4 h-4 text-gray-300 flex-shrink-0" />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ClassroomPlanPanel({
   bookingId,
   groupClassId,
@@ -115,7 +198,7 @@ export function ClassroomPlanPanel({
 
   const updateNotes = useUpdateSessionNotes();
   const updateAgenda = useUpdateAgendaItems();
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showPlanPicker, setShowPlanPicker] = useState(false);
 
   // Local state for debounced notes editing
   const [localNotes, setLocalNotes] = useState('');
@@ -170,10 +253,35 @@ export function ClassroomPlanPanel({
           <ClipboardList className="w-4 h-4 text-amber-400" />
           <h3 className="text-white font-semibold text-sm">Ders Plani</h3>
         </div>
-        <button onClick={onClose} className="text-gray-400 hover:text-white">
-          <X className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-1">
+          {/* Plan Getir (pick existing plan) */}
+          {!readOnly && !plan && (
+            <button
+              onClick={() => setShowPlanPicker(true)}
+              className="text-gray-400 hover:text-teal-400 p-1"
+              title="Mevcut plan bagla"
+            >
+              <FolderOpen className="w-4 h-4" />
+            </button>
+          )}
+          <button onClick={onClose} className="text-gray-400 hover:text-white p-1">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       </div>
+
+      {/* Plan Picker Popup */}
+      {showPlanPicker && (
+        <PlanPickerPopup
+          bookingId={bookingId}
+          groupClassId={groupClassId}
+          onClose={() => setShowPlanPicker(false)}
+          onLinked={() => {
+            setShowPlanPicker(false);
+            query.refetch();
+          }}
+        />
+      )}
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
@@ -187,31 +295,27 @@ export function ClassroomPlanPanel({
           <div className="px-4 py-8 text-center">
             <ClipboardList className="w-10 h-10 text-gray-600 mx-auto mb-3" />
             <p className="text-gray-400 text-sm mb-3">Oturum plani yok</p>
-            {!readOnly && (bookingId || groupClassId) && (
-              <button
-                onClick={() => setShowCreateDialog(true)}
-                className="inline-flex items-center gap-1.5 text-teal-400 hover:text-teal-300 text-sm"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Plan Olustur
-              </button>
+            {!readOnly && (
+              <div className="flex flex-col items-center gap-2">
+                <a
+                  href="/mentor/session-plans"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-teal-400 hover:text-teal-300 text-sm"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Plan Olustur
+                </a>
+                <button
+                  onClick={() => setShowPlanPicker(true)}
+                  className="inline-flex items-center gap-1.5 text-gray-400 hover:text-gray-300 text-xs"
+                >
+                  <FolderOpen className="w-3 h-3" />
+                  Mevcut Plan Bagla
+                </button>
+              </div>
             )}
           </div>
-        )}
-
-        {/* Create plan dialog — opens as modal overlay, doesn't leave classroom */}
-        {showCreateDialog && (
-          <CreatePlanDialog
-            open={showCreateDialog}
-            onClose={() => setShowCreateDialog(false)}
-            defaultBookingId={bookingId}
-            defaultGroupClassId={groupClassId}
-            onCreated={() => {
-              // Refetch plan data, then close dialog
-              query.refetch();
-              setShowCreateDialog(false);
-            }}
-          />
         )}
 
         {!isLoading && plan && (
