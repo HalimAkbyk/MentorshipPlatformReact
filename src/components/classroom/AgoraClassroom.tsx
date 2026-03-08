@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import {
   Video, VideoOff, Mic, MicOff, Monitor, MonitorOff,
-  MessageSquare, Users, PhoneOff, ClipboardList,
+  MessageSquare, Users, PhoneOff, ClipboardList, LogOut,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
@@ -349,15 +349,26 @@ export function AgoraClassroom({
         <div className="w-px h-8 bg-gray-700 mx-1" />
 
         {isHost ? (
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={handleEndSession}
-            className="gap-1.5"
-          >
-            <PhoneOff className="w-4 h-4" />
-            <span className="hidden sm:inline">Seansi Bitir</span>
-          </Button>
+          <>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleLeaveRoom}
+              className="gap-1.5 border-gray-600 text-gray-300 hover:bg-gray-800"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Ayril</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={handleEndSession}
+              className="gap-1.5"
+            >
+              <PhoneOff className="w-4 h-4" />
+              <span className="hidden sm:inline">Seansi Bitir</span>
+            </Button>
+          </>
         ) : (
           <Button
             size="sm"

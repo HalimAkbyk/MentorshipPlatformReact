@@ -72,11 +72,19 @@ export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: Us
       // Publish tracks
       await client.publish([audioTrack, videoTrack]);
 
-      // Play local video
-      if (localVideoContainerRef.current) {
-        localVideoContainerRef.current.innerHTML = '';
-        videoTrack.play(localVideoContainerRef.current, { fit: 'cover', mirror: true });
-      }
+      // Play local video — delay slightly to ensure DOM container is ready after state change
+      setIsConnected(true);
+      setIsConnecting(false);
+
+      // Use requestAnimationFrame to wait for React to render the connected state
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (localVideoContainerRef.current && videoTrack) {
+            localVideoContainerRef.current.innerHTML = '';
+            videoTrack.play(localVideoContainerRef.current, { fit: 'cover', mirror: true });
+          }
+        });
+      });
 
       // Listen for remote users
       client.on('user-published', async (user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => {
@@ -131,9 +139,6 @@ export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: Us
       client.on('user-left', (user: IAgoraRTCRemoteUser) => {
         setRemoteTiles(prev => prev.filter(t => t.identity !== String(user.uid)));
       });
-
-      setIsConnected(true);
-      setIsConnecting(false);
     } catch (err: any) {
       console.error('Agora join error:', err);
       toast.error('Video baglantisi kurulamadi: ' + (err.message || 'Bilinmeyen hata'));
@@ -207,9 +212,10 @@ export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: Us
   const startScreenShare = useCallback(async () => {
     if (!AgoraRTC || !clientRef.current) return;
     try {
+      // createScreenVideoTrack returns a single track when audio is 'disable'
       const screenTrack = await AgoraRTC.createScreenVideoTrack({
         encoderConfig: '1080p_1',
-      }, 'disable'); // disable audio for screen share
+      }, 'disable');
 
       // Handle both single track and [video, audio] return
       const videoTrack = Array.isArray(screenTrack) ? screenTrack[0] : screenTrack;
@@ -217,14 +223,21 @@ export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: Us
 
       await clientRef.current.publish(videoTrack);
       setIsScreenSharing(true);
+
+      // Create a video element for the screen preview
+      const screenEl = document.createElement('video');
+      screenEl.autoplay = true;
+      screenEl.playsInline = true;
+      videoTrack.play(screenEl);
+
       setScreenShareState({
         active: true,
         sharerIdentity: null,
-        screenVideoEl: null,
+        screenVideoEl: screenEl,
         isLocal: true,
       });
 
-      // Show local preview
+      // Also play in the screen preview container if available
       if (localScreenContainerRef.current) {
         localScreenContainerRef.current.innerHTML = '';
         videoTrack.play(localScreenContainerRef.current);
@@ -235,10 +248,12 @@ export function useAgoraClassroom({ roomName, isHost, displayName, enabled }: Us
         stopScreenShareRef.current?.();
       });
     } catch (err: any) {
-      if (err.message?.includes('Permission denied') || err.code === 'PERMISSION_DENIED') {
-        return; // User cancelled
+      console.error('[Agora] Screen share error:', err);
+      if (err.message?.includes('Permission denied') || err.code === 'PERMISSION_DENIED' ||
+          err.message?.includes('NotAllowedError') || err.code === 'NOT_READABLE') {
+        return; // User cancelled or denied
       }
-      toast.error('Ekran paylasimi baslatilamadi');
+      toast.error('Ekran paylasimi baslatilamadi: ' + (err.message || ''));
     }
   }, []);
 
