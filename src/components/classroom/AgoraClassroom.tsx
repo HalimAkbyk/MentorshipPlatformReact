@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Video, VideoOff, Mic, MicOff, Monitor, MonitorOff,
   MessageSquare, Users, PhoneOff, ClipboardList, LogOut, PenTool,
@@ -10,10 +11,19 @@ import { ClassroomLayout } from './ClassroomLayout';
 import { ParticipantsPanel } from './ParticipantsPanel';
 import { SessionTimerBanner } from './SessionTimerBanner';
 import { ClassroomPlanPanel } from '../features/session-plans/classroom-plan-panel';
-import { AgoraWhiteboard } from './AgoraWhiteboard';
 import { useAgoraClassroom } from '../../lib/hooks/use-agora-classroom';
 import { useAuthStore } from '../../lib/stores/auth-store';
 import { videoApi } from '../../lib/api/video';
+
+// Dynamic import — fastboard has native deps that can fail in SSR/serverless build
+const AgoraWhiteboard = dynamic(
+  () => import('./AgoraWhiteboard').then(m => m.AgoraWhiteboard),
+  { ssr: false, loading: () => (
+    <div className="h-full flex items-center justify-center bg-gray-900">
+      <div className="w-8 h-8 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
+    </div>
+  )}
+);
 
 interface AgoraClassroomProps {
   roomName: string;
