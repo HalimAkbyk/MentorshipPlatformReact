@@ -65,21 +65,19 @@ export function ParticipantsPanel({
 
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {/* Local participant */}
-        <div className="flex items-center justify-between bg-gray-700/50 rounded-lg p-3">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0">
-              {localDisplayName.charAt(0).toUpperCase()}
-            </div>
-            <div className="min-w-0">
-              <p className="text-white text-sm font-medium truncate">
-                {localDisplayName} (Siz)
-              </p>
-              <p className="text-gray-400 text-xs">
-                {isMentor ? 'Mentor' : 'Öğrenci'}
-              </p>
-            </div>
+        <div className="flex items-center gap-2 bg-gray-700/50 rounded-lg p-3">
+          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0">
+            {localDisplayName.charAt(0).toUpperCase()}
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="min-w-0 flex-1">
+            <p className="text-white text-sm font-medium truncate">
+              {localDisplayName} (Siz)
+            </p>
+            <p className="text-gray-400 text-xs">
+              {isMentor ? 'Mentor' : 'Öğrenci'}
+            </p>
+          </div>
+          <div className="flex items-center gap-1 shrink-0 ml-auto">
             {localIsAudioEnabled ? (
               <Mic className="w-4 h-4 text-green-400" />
             ) : (
@@ -97,27 +95,25 @@ export function ParticipantsPanel({
         {remoteTiles.map((tile) => (
           <div
             key={tile.identity}
-            className="flex items-center justify-between bg-gray-700/50 rounded-lg p-3"
+            className="flex items-center gap-2 bg-gray-700/50 rounded-lg p-3"
           >
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0">
-                {tile.displayName.charAt(0).toUpperCase()}
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <p className="text-white text-sm font-medium truncate">
-                    {tile.displayName}
-                  </p>
-                  {tile.isHandRaised && (
-                    <Hand className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
-                  )}
-                </div>
-                <p className="text-gray-400 text-xs">
-                  {isMentor ? 'Öğrenci' : 'Mentor'}
-                </p>
-              </div>
+            <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0">
+              {tile.displayName.charAt(0).toUpperCase()}
             </div>
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1">
+                <p className="text-white text-sm font-medium truncate">
+                  {tile.displayName}
+                </p>
+                {tile.isHandRaised && (
+                  <Hand className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
+                )}
+              </div>
+              <p className="text-gray-400 text-xs">
+                {isMentor ? 'Öğrenci' : 'Mentor'}
+              </p>
+            </div>
+            <div className="flex items-center gap-1 shrink-0 ml-auto">
               {tile.isAudioEnabled ? (
                 <Mic className="w-4 h-4 text-green-400" />
               ) : (
@@ -133,7 +129,7 @@ export function ParticipantsPanel({
                       className="p-1 rounded hover:bg-gray-600 text-gray-400 hover:text-yellow-400 transition-colors"
                       title="Sesini kapat"
                     >
-                      <VolumeX className="w-4 h-4" />
+                      <VolumeX className="w-3.5 h-3.5" />
                     </button>
                   ) : (
                     <button
@@ -141,7 +137,7 @@ export function ParticipantsPanel({
                       className="p-1 rounded hover:bg-gray-600 text-gray-400 hover:text-green-400 transition-colors"
                       title="Sesini aç"
                     >
-                      <Volume2 className="w-4 h-4" />
+                      <Volume2 className="w-3.5 h-3.5" />
                     </button>
                   )}
                   <button
@@ -149,7 +145,7 @@ export function ParticipantsPanel({
                     className="p-1 rounded hover:bg-gray-600 text-gray-400 hover:text-red-400 transition-colors"
                     title="Odadan çıkar"
                   >
-                    <UserMinus className="w-4 h-4" />
+                    <UserMinus className="w-3.5 h-3.5" />
                   </button>
                 </>
               )}
