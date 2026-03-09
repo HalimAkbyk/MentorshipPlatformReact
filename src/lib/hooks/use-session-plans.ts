@@ -196,3 +196,35 @@ export function useCreateSessionPlanFromTemplate() {
     },
   });
 }
+
+// Per-user, per-session notes
+export function useUserNotes(planId: string, resourceType: string, resourceId: string) {
+  return useQuery({
+    queryKey: ['session-plan-user-notes', planId, resourceType, resourceId],
+    queryFn: () => sessionPlansApi.getUserNotes(planId, resourceType, resourceId),
+    enabled: !!planId && !!resourceType && !!resourceId,
+  });
+}
+
+export function useUpdateUserNotes() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      planId,
+      resourceType,
+      resourceId,
+      notes,
+    }: {
+      planId: string;
+      resourceType: string;
+      resourceId: string;
+      notes: string;
+    }) => sessionPlansApi.updateUserNotes(planId, resourceType, resourceId, notes),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['session-plan-user-notes', variables.planId, variables.resourceType, variables.resourceId],
+      });
+    },
+  });
+}

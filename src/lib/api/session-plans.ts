@@ -185,4 +185,21 @@ export const sessionPlansApi = {
     const res = await apiClient.post<{ id: string }>(`/session-plans/from-template/${templateId}`, data);
     return res.id;
   },
+
+  // Per-user, per-session notes
+  getUserNotes: async (planId: string, resourceType: string, resourceId: string): Promise<string | null> => {
+    const res = await apiClient.get<{ notes: string | null }>(`/session-plans/${planId}/user-notes`, {
+      resourceType,
+      resourceId,
+    });
+    return res.notes;
+  },
+
+  updateUserNotes: async (planId: string, resourceType: string, resourceId: string, notes: string): Promise<void> => {
+    return apiClient.put(`/session-plans/${planId}/user-notes`, {
+      resourceType,
+      resourceId,
+      notes,
+    });
+  },
 };

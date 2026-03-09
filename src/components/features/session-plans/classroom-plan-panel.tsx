@@ -5,9 +5,9 @@ import {
   useSessionPlanByBooking,
   useSessionPlanByGroupClass,
   useSessionPlans,
-  useUpdateSessionNotes,
-  useUpdateStudentNotes,
   useUpdateAgendaItems,
+  useUserNotes,
+  useUpdateUserNotes,
 } from '@/lib/hooks/use-session-plans';
 import { sessionPlansApi } from '@/lib/api/session-plans';
 import {
@@ -206,63 +206,55 @@ export function ClassroomPlanPanel({
     return () => clearInterval(interval);
   }, [readOnly, isOpen, plan, query]);
 
-  const updateNotes = useUpdateSessionNotes();
-  const updateStudentNotes = useUpdateStudentNotes();
   const updateAgenda = useUpdateAgendaItems();
   const [showPlanPicker, setShowPlanPicker] = useState(false);
 
-  // Local state for debounced notes editing (mentor notes)
+  // Per-user, per-session notes
+  const resourceType = bookingId ? 'Booking' : 'GroupClass';
+  const resourceId = (bookingId || groupClassId) ?? '';
+  const userNotesQuery = useUserNotes(plan?.id ?? '', resourceType, resourceId);
+  const updateUserNotes = useUpdateUserNotes();
+
+  // Local state for debounced notes editing
   const [localNotes, setLocalNotes] = useState('');
   const notesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const notesInitRef = useRef(false);
 
-  // Local state for debounced student notes editing
-  const [localStudentNotes, setLocalStudentNotes] = useState('');
-  const studentNotesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Sync local notes when plan loads
+  // Sync local notes when user notes load
   useEffect(() => {
-    if (plan?.sessionNotes !== undefined) {
-      setLocalNotes(plan.sessionNotes || '');
+    if (userNotesQuery.data !== undefined && !notesInitRef.current) {
+      setLocalNotes(userNotesQuery.data || '');
+      notesInitRef.current = true;
     }
-  }, [plan?.sessionNotes]);
+  }, [userNotesQuery.data]);
 
+  // Reset init ref when plan changes
   useEffect(() => {
-    if (plan?.studentNotes !== undefined) {
-      setLocalStudentNotes(plan.studentNotes || '');
-    }
-  }, [plan?.studentNotes]);
+    notesInitRef.current = false;
+  }, [plan?.id, resourceId]);
 
-  // Debounced save for mentor notes
+  // Debounced save for per-user notes
   const handleNotesChange = useCallback(
     (value: string) => {
       setLocalNotes(value);
       if (!plan?.id) return;
       if (notesTimerRef.current) clearTimeout(notesTimerRef.current);
       notesTimerRef.current = setTimeout(() => {
-        updateNotes.mutate({ planId: plan.id, sessionNotes: value });
+        updateUserNotes.mutate({
+          planId: plan.id,
+          resourceType,
+          resourceId,
+          notes: value,
+        });
       }, 1000);
     },
-    [plan?.id, updateNotes]
+    [plan?.id, resourceType, resourceId, updateUserNotes]
   );
 
-  // Debounced save for student notes
-  const handleStudentNotesChange = useCallback(
-    (value: string) => {
-      setLocalStudentNotes(value);
-      if (!plan?.id) return;
-      if (studentNotesTimerRef.current) clearTimeout(studentNotesTimerRef.current);
-      studentNotesTimerRef.current = setTimeout(() => {
-        updateStudentNotes.mutate({ planId: plan.id, studentNotes: value });
-      }, 1000);
-    },
-    [plan?.id, updateStudentNotes]
-  );
-
-  // Cleanup timers
+  // Cleanup timer
   useEffect(() => {
     return () => {
       if (notesTimerRef.current) clearTimeout(notesTimerRef.current);
-      if (studentNotesTimerRef.current) clearTimeout(studentNotesTimerRef.current);
     };
   }, []);
 
@@ -438,39 +430,26 @@ export function ClassroomPlanPanel({
               </div>
             )}
 
-            {/* Seans Notları — her rol sadece kendi notlarını görür ve düzenler */}
+            {/* Seans Notları — per-user, per-session */}
             <div>
               <div className="flex items-center gap-1.5 mb-1.5">
                 <StickyNote className="w-3 h-3 text-amber-400" />
                 <span className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider">
                   Seans Notlarim
                 </span>
-                {!readOnly && updateNotes.isPending && (
-                  <Loader2 className="w-3 h-3 animate-spin text-gray-500 ml-auto" />
-                )}
-                {readOnly && updateStudentNotes.isPending && (
+                {updateUserNotes.isPending && (
                   <Loader2 className="w-3 h-3 animate-spin text-gray-500 ml-auto" />
                 )}
               </div>
-              {readOnly ? (
-                /* Student: edits studentNotes */
-                <textarea
-                  value={localStudentNotes}
-                  onChange={(e) => handleStudentNotesChange(e.target.value)}
-                  placeholder="Notlarinizi buraya yazin..."
-                  rows={4}
-                  className="w-full bg-gray-700 text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none placeholder-gray-500"
-                />
-              ) : (
-                /* Mentor: edits sessionNotes */
-                <textarea
-                  value={localNotes}
-                  onChange={(e) => handleNotesChange(e.target.value)}
-                  placeholder="Seans notlarinizi buraya yazin..."
-                  rows={4}
-                  className="w-full bg-gray-700 text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none placeholder-gray-500"
-                />
-              )}
+              <textarea
+                value={localNotes}
+                onChange={(e) => handleNotesChange(e.target.value)}
+                placeholder="Notlarinizi buraya yazin..."
+                rows={4}
+                className={`w-full bg-gray-700 text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none placeholder-gray-500 ${
+                  readOnly ? 'focus:ring-blue-500' : 'focus:ring-teal-500'
+                }`}
+              />
             </div>
 
             {/* Post-Session Summary */}
