@@ -13,6 +13,8 @@ interface ParticipantsPanelProps {
   onMuteParticipant?: (identity: string) => void;
   onUnmuteParticipant?: (identity: string) => void;
   onKickParticipant?: (identity: string) => void;
+  onMuteAll?: () => void;
+  onUnmuteAll?: () => void;
   onClose: () => void;
 }
 
@@ -25,8 +27,11 @@ export function ParticipantsPanel({
   onMuteParticipant,
   onUnmuteParticipant,
   onKickParticipant,
+  onMuteAll,
+  onUnmuteAll,
   onClose,
 }: ParticipantsPanelProps) {
+  const isGroupSession = remoteTiles.length > 1;
   return (
     <div className="w-80 bg-gray-800 border-l border-gray-700 flex flex-col">
       <div className="p-4 border-b border-gray-700 flex justify-between items-center">
@@ -37,6 +42,26 @@ export function ParticipantsPanel({
           <X className="w-5 h-5" />
         </button>
       </div>
+
+      {/* Mute All / Unmute All — mentor only, group sessions */}
+      {isMentor && isGroupSession && (
+        <div className="px-4 py-2 border-b border-gray-700 flex gap-2">
+          <button
+            onClick={onMuteAll}
+            className="flex-1 flex items-center justify-center gap-1.5 bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-400 text-xs font-medium py-1.5 rounded-lg transition-colors"
+          >
+            <VolumeX className="w-3.5 h-3.5" />
+            Tümünü Sustur
+          </button>
+          <button
+            onClick={onUnmuteAll}
+            className="flex-1 flex items-center justify-center gap-1.5 bg-green-600/20 hover:bg-green-600/40 text-green-400 text-xs font-medium py-1.5 rounded-lg transition-colors"
+          >
+            <Volume2 className="w-3.5 h-3.5" />
+            Tümünü Aç
+          </button>
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {/* Local participant */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { RefObject, useMemo } from 'react';
+import { RefObject, useMemo, useState } from 'react';
 import { Users, Monitor, Video, VideoOff, MicOff } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { Avatar, AvatarFallback } from '../ui/avatar';
@@ -70,7 +70,7 @@ export function ClassroomLayout({
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Normal Layout - Grid of equal tiles
+// Normal Layout - PiP for 1:1, Grid for group sessions
 // ═══════════════════════════════════════════════════════════════
 function NormalLayout({
   localVideoRef,
@@ -89,6 +89,22 @@ function NormalLayout({
   localDisplayName?: string;
   remoteTiles: RemoteTile[];
 }) {
+  const isGroup = remoteTiles.length > 1;
+
+  // Group layout: responsive grid
+  if (isGroup) {
+    return (
+      <GroupGridLayout
+        localVideoRef={localVideoRef}
+        isVideoEnabled={isVideoEnabled}
+        isMentor={isMentor}
+        localLabel={localLabel}
+        localDisplayName={localDisplayName}
+        remoteTiles={remoteTiles}
+      />
+    );
+  }
+
   // 1:1 layout: remote full-screen center, local PiP bottom-left
   const tile = remoteTiles[0];
 
@@ -168,6 +184,123 @@ function NormalLayout({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Group Grid Layout - Zoom/Teams style responsive grid
+// ═══════════════════════════════════════════════════════════════
+function GroupGridLayout({
+  localVideoRef,
+  isVideoEnabled,
+  isMentor,
+  localLabel,
+  localDisplayName,
+  remoteTiles,
+}: {
+  localVideoRef: RefObject<HTMLDivElement>;
+  isVideoEnabled: boolean;
+  isMentor: boolean;
+  localLabel: string;
+  localDisplayName?: string;
+  remoteTiles: RemoteTile[];
+}) {
+  const totalTiles = 1 + remoteTiles.length; // local + remotes
+
+  // Determine grid columns based on participant count
+  const gridCols = useMemo(() => {
+    if (totalTiles <= 2) return 'grid-cols-2';
+    if (totalTiles <= 4) return 'grid-cols-2';
+    if (totalTiles <= 9) return 'grid-cols-3';
+    if (totalTiles <= 16) return 'grid-cols-4';
+    return 'grid-cols-5'; // 17-25+
+  }, [totalTiles]);
+
+  // Paginate for very large groups (show max 20 per page)
+  const PAGE_SIZE = 20;
+  const [page, setPage] = useState(0);
+  const totalPages = Math.ceil(remoteTiles.length / PAGE_SIZE);
+  const pagedRemoteTiles = remoteTiles.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+  return (
+    <div className="relative w-full h-full bg-gray-900 rounded-lg overflow-hidden flex flex-col">
+      {/* Grid area */}
+      <div className={`flex-1 grid ${gridCols} gap-1 p-1 auto-rows-fr min-h-0`}>
+        {/* Local tile */}
+        <div className="relative bg-gray-800 rounded-lg overflow-hidden min-h-0">
+          <div ref={localVideoRef} className="w-full h-full" />
+          <div className="absolute bottom-1.5 left-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded z-10">
+            {localLabel}
+          </div>
+          {!isVideoEnabled && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800">
+              <Avatar className="w-12 h-12 mb-1">
+                <AvatarFallback className="bg-gray-700 text-white text-sm">
+                  {localDisplayName ? getInitials(localDisplayName) : (isMentor ? 'M' : 'S')}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-gray-400 text-[10px]">{localDisplayName || 'Siz'}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Remote tiles */}
+        {pagedRemoteTiles.map(tile => (
+          <div key={tile.identity} className="relative bg-gray-800 rounded-lg overflow-hidden min-h-0">
+            <RemoteVideoMount videoEl={tile.cameraVideoEl} objectFit="cover" />
+            {/* Name badge */}
+            <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 z-10">
+              <div className="bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                {tile.displayName}
+              </div>
+              {!tile.isAudioEnabled && (
+                <div className="bg-red-600/80 rounded p-0.5" title="Mikrofon kapalı">
+                  <MicOff className="w-2.5 h-2.5 text-white" />
+                </div>
+              )}
+            </div>
+            {tile.isHandRaised && (
+              <div className="absolute top-1 right-1 bg-yellow-500 text-white px-1.5 py-0.5 rounded-full text-[10px] animate-bounce z-20">
+                ✋
+              </div>
+            )}
+            {(!tile.cameraVideoEl || !tile.isVideoEnabled) && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 z-[5]">
+                <Avatar className="w-12 h-12 mb-1">
+                  <AvatarFallback className="bg-gray-700 text-white text-sm">
+                    {getInitials(tile.displayName)}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-gray-400 text-[10px]">{tile.displayName}</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Pagination controls for 20+ participants */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3 py-1.5 bg-gray-900/80">
+          <button
+            onClick={() => setPage(p => Math.max(0, p - 1))}
+            disabled={page === 0}
+            className="text-gray-400 hover:text-white disabled:opacity-30 text-xs px-2 py-1 rounded bg-gray-800"
+          >
+            ◀ Önceki
+          </button>
+          <span className="text-gray-400 text-xs">
+            {page + 1} / {totalPages}
+          </span>
+          <button
+            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+            disabled={page >= totalPages - 1}
+            className="text-gray-400 hover:text-white disabled:opacity-30 text-xs px-2 py-1 rounded bg-gray-800"
+          >
+            Sonraki ▶
+          </button>
+        </div>
+      )}
     </div>
   );
 }

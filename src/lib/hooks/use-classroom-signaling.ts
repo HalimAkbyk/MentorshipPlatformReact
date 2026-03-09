@@ -18,6 +18,8 @@ interface UseClassroomSignalingOptions {
   roomName: string;
   displayName: string;
   userId: string;
+  /** Local Agora UID (string) — used to check if mute/kick targets this user */
+  localAgoraUid?: string;
   isHost: boolean;
   enabled: boolean;
   onMuted?: () => void;
@@ -31,6 +33,7 @@ export function useClassroomSignaling({
   roomName,
   displayName,
   userId,
+  localAgoraUid,
   isHost,
   enabled,
   onMuted,
@@ -107,17 +110,18 @@ export function useClassroomSignaling({
           onRemoteScreenShare?.(false);
           break;
         case 'mute-participant':
-          if (!isHost) {
+          // data is empty = mute all; data matches local UID = target this user
+          if (!isHost && (!payload.data || payload.data === localAgoraUid)) {
             onMuted?.();
           }
           break;
         case 'unmute-participant':
-          if (!isHost) {
+          if (!isHost && (!payload.data || payload.data === localAgoraUid)) {
             onUnmuted?.();
           }
           break;
         case 'kick-participant':
-          if (!isHost) {
+          if (!isHost && payload.data === localAgoraUid) {
             onKicked?.();
           }
           break;
@@ -132,7 +136,7 @@ export function useClassroomSignaling({
       conn?.off('ClassroomMessage', handleMessage);
       conn?.off('ClassroomSignal', handleSignal);
     };
-  }, [enabled, userId, isHost, onMuted, onUnmuted, onKicked, onWhiteboardToggle, onRemoteScreenShare]);
+  }, [enabled, userId, isHost, localAgoraUid, onMuted, onUnmuted, onKicked, onWhiteboardToggle, onRemoteScreenShare]);
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -177,6 +181,20 @@ export function useClassroomSignaling({
     [roomName]
   );
 
+  const signalMuteAll = useCallback(
+    async () => {
+      await sendClassroomSignal(roomName, 'mute-participant', '');
+    },
+    [roomName]
+  );
+
+  const signalUnmuteAll = useCallback(
+    async () => {
+      await sendClassroomSignal(roomName, 'unmute-participant', '');
+    },
+    [roomName]
+  );
+
   const openChat = useCallback(() => {
     setIsChatOpen(true);
     setUnreadCount(0);
@@ -203,6 +221,8 @@ export function useClassroomSignaling({
     signalMuteParticipant,
     signalUnmuteParticipant,
     signalKickParticipant,
+    signalMuteAll,
+    signalUnmuteAll,
     openChat,
     closeChat,
     toggleChat,

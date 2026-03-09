@@ -89,6 +89,7 @@ export function AgoraClassroom({
     roomName,
     displayName,
     userId,
+    localAgoraUid: agora.localAgoraUid,
     isHost,
     enabled: agora.isConnected,
     onMuted: useCallback(() => {
@@ -313,6 +314,19 @@ export function AgoraClassroom({
     toast.success('Katılımcı seanstan çıkarıldı');
   };
 
+  const handleMuteAll = () => {
+    signaling.signalMuteAll();
+    // Update all remote tiles locally
+    agora.remoteTiles.forEach(t => agora.updateRemoteTileAudio(t.identity, false));
+    toast.success('Tüm katılımcıların mikrofonu kapatıldı');
+  };
+
+  const handleUnmuteAll = () => {
+    signaling.signalUnmuteAll();
+    agora.remoteTiles.forEach(t => agora.updateRemoteTileAudio(t.identity, true));
+    toast.success('Tüm katılımcıların mikrofonu açıldı');
+  };
+
   // Not yet activated — show activation screen
   if (!isRoomActivated && !agora.isConnected) {
     if (isHost) {
@@ -501,6 +515,8 @@ export function AgoraClassroom({
               onMuteParticipant={handleMuteParticipant}
               onUnmuteParticipant={handleMuteParticipant}
               onKickParticipant={handleKickParticipant}
+              onMuteAll={handleMuteAll}
+              onUnmuteAll={handleUnmuteAll}
               onClose={() => setIsParticipantsOpen(false)}
             />
           </div>

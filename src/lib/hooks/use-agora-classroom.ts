@@ -28,6 +28,7 @@ export function useAgoraClassroom({ roomName, isHost, displayName, peerDisplayNa
     active: false, sharerIdentity: null, screenVideoEl: null, isLocal: false,
   });
 
+  const [localAgoraUid, setLocalAgoraUid] = useState<string>('');
   const clientRef = useRef<IAgoraRTCClient | null>(null);
   const localVideoTrackRef = useRef<ICameraVideoTrack | null>(null);
   const localAudioTrackRef = useRef<IMicrophoneAudioTrack | null>(null);
@@ -125,7 +126,8 @@ export function useAgoraClassroom({ roomName, isHost, displayName, peerDisplayNa
       });
 
       // NOW join the channel (listeners are already set up)
-      await client.join(appId, roomName, token, 0);
+      const assignedUid = await client.join(appId, roomName, token, 0);
+      setLocalAgoraUid(String(assignedUid));
 
       // Create local tracks
       const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks(
@@ -383,6 +385,7 @@ export function useAgoraClassroom({ roomName, isHost, displayName, peerDisplayNa
     isScreenSharing,
     remoteTiles,
     screenShareState,
+    localAgoraUid,
     // Refs for layout
     localVideoRef: localVideoContainerRef,
     localScreenPreviewRef: localScreenContainerRef,
