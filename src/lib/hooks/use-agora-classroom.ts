@@ -360,6 +360,13 @@ export function useAgoraClassroom({ roomName, isHost, displayName, peerDisplayNa
     ));
   }, []);
 
+  // Update a remote tile's display name (used when user-announce signal arrives)
+  const updateRemoteTileDisplayName = useCallback((identity: string, name: string) => {
+    setRemoteTiles(prev => prev.map(t =>
+      t.identity === identity ? { ...t, displayName: name } : t
+    ));
+  }, []);
+
   // Force mute audio (called when mentor sends mute signal)
   const muteAudio = useCallback(async () => {
     const track = localAudioTrackRef.current;
@@ -397,6 +404,7 @@ export function useAgoraClassroom({ roomName, isHost, displayName, peerDisplayNa
     muteAudio,
     unmuteAudio,
     updateRemoteTileAudio,
+    updateRemoteTileDisplayName,
     startScreenShare,
     stopScreenShare,
     replayLocalVideo,

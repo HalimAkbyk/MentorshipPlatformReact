@@ -14,6 +14,13 @@ import {
 } from '../signalr/chat-connection';
 import type { ChatMessage } from '../../components/classroom/types';
 
+/** Parsed user-announce payload */
+export type AnnouncedUser = {
+  agoraUid: string;
+  displayName: string;
+  isHost: boolean;
+};
+
 interface UseClassroomSignalingOptions {
   roomName: string;
   displayName: string;
@@ -26,7 +33,9 @@ interface UseClassroomSignalingOptions {
   onUnmuted?: () => void;
   onKicked?: () => void;
   onWhiteboardToggle?: (open: boolean) => void;
-  onRemoteScreenShare?: (active: boolean) => void;
+  onRemoteScreenShare?: (active: boolean, sharerAgoraUid?: string) => void;
+  onUserAnnounce?: (user: AnnouncedUser) => void;
+  onSpotlightToggle?: (active: boolean) => void;
 }
 
 export function useClassroomSignaling({
@@ -41,6 +50,8 @@ export function useClassroomSignaling({
   onKicked,
   onWhiteboardToggle,
   onRemoteScreenShare,
+  onUserAnnounce,
+  onSpotlightToggle,
 }: UseClassroomSignalingOptions) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -103,9 +114,11 @@ export function useClassroomSignaling({
         case 'whiteboard-close':
           onWhiteboardToggle?.(false);
           break;
-        case 'screen-share-start':
-          onRemoteScreenShare?.(true);
+        case 'screen-share-start': {
+          // data = sharer's Agora UID
+          onRemoteScreenShare?.(true, payload.data || undefined);
           break;
+        }
         case 'screen-share-stop':
           onRemoteScreenShare?.(false);
           break;
@@ -125,6 +138,24 @@ export function useClassroomSignaling({
             onKicked?.();
           }
           break;
+        case 'user-announce': {
+          // data format: "agoraUid|displayName|isHost"
+          const parts = payload.data.split('|');
+          if (parts.length >= 2) {
+            onUserAnnounce?.({
+              agoraUid: parts[0],
+              displayName: parts.slice(1, -1).join('|') || parts[1],
+              isHost: parts[parts.length - 1] === 'true',
+            });
+          }
+          break;
+        }
+        case 'spotlight-on':
+          onSpotlightToggle?.(true);
+          break;
+        case 'spotlight-off':
+          onSpotlightToggle?.(false);
+          break;
       }
     };
 
@@ -136,7 +167,7 @@ export function useClassroomSignaling({
       conn?.off('ClassroomMessage', handleMessage);
       conn?.off('ClassroomSignal', handleSignal);
     };
-  }, [enabled, userId, isHost, localAgoraUid, onMuted, onUnmuted, onKicked, onWhiteboardToggle, onRemoteScreenShare]);
+  }, [enabled, userId, isHost, localAgoraUid, onMuted, onUnmuted, onKicked, onWhiteboardToggle, onRemoteScreenShare, onUserAnnounce, onSpotlightToggle]);
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -154,8 +185,8 @@ export function useClassroomSignaling({
   );
 
   const signalScreenShare = useCallback(
-    async (active: boolean) => {
-      await sendClassroomSignal(roomName, active ? 'screen-share-start' : 'screen-share-stop');
+    async (active: boolean, sharerAgoraUid?: string) => {
+      await sendClassroomSignal(roomName, active ? 'screen-share-start' : 'screen-share-stop', sharerAgoraUid || '');
     },
     [roomName]
   );
@@ -195,6 +226,21 @@ export function useClassroomSignaling({
     [roomName]
   );
 
+  /** Broadcast own identity to other participants */
+  const signalUserAnnounce = useCallback(
+    async (agoraUid: string, name: string, host: boolean) => {
+      await sendClassroomSignal(roomName, 'user-announce', `${agoraUid}|${name}|${host}`);
+    },
+    [roomName]
+  );
+
+  const signalSpotlight = useCallback(
+    async (active: boolean) => {
+      await sendClassroomSignal(roomName, active ? 'spotlight-on' : 'spotlight-off');
+    },
+    [roomName]
+  );
+
   const openChat = useCallback(() => {
     setIsChatOpen(true);
     setUnreadCount(0);
@@ -223,6 +269,8 @@ export function useClassroomSignaling({
     signalKickParticipant,
     signalMuteAll,
     signalUnmuteAll,
+    signalUserAnnounce,
+    signalSpotlight,
     openChat,
     closeChat,
     toggleChat,

@@ -153,9 +153,8 @@ export const sessionPlansApi = {
   getByGroupClass: async (classId: string): Promise<SessionPlanDetailDto | null> => {
     try {
       return await apiClient.get<SessionPlanDetailDto>(`/session-plans/group-class/${classId}`);
-    } catch (err: any) {
-      if (err?.response?.status === 404) return null;
-      throw err;
+    } catch {
+      return null;
     }
   },
 

@@ -30,6 +30,11 @@ interface ClassroomLayoutProps {
 
   // Screen share state
   screenShareState: ScreenShareState;
+
+  // Spotlight: mentor's camera shown full-screen, others in filmstrip
+  isSpotlightActive?: boolean;
+  /** Agora UID of the mentor (host) — used to find their tile for spotlight on student side */
+  spotlightIdentity?: string | null;
 }
 
 export function ClassroomLayout({
@@ -42,6 +47,8 @@ export function ClassroomLayout({
   localDisplayName,
   remoteTiles,
   screenShareState,
+  isSpotlightActive,
+  spotlightIdentity,
 }: ClassroomLayoutProps) {
   const isScreenSharing = screenShareState.active;
 
@@ -55,6 +62,19 @@ export function ClassroomLayout({
       remoteTiles={remoteTiles}
       screenShareState={screenShareState}
       isMentor={isMentor}
+    />;
+  }
+
+  // Spotlight mode: mentor camera full-screen, others in filmstrip
+  if (isSpotlightActive) {
+    return <SpotlightLayout
+      localVideoRef={localVideoRef}
+      isVideoEnabled={isVideoEnabled}
+      isMentor={isMentor}
+      localLabel={localLabel}
+      localDisplayName={localDisplayName}
+      remoteTiles={remoteTiles}
+      spotlightIdentity={spotlightIdentity}
     />;
   }
 
@@ -409,6 +429,147 @@ function ScreenShareLayout({
               {tile.isHandRaised && (
                 <div className="absolute top-1 right-1 text-yellow-400 text-xs">✋</div>
               )}
+              {(!tile.cameraVideoEl || !tile.isVideoEnabled) && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 z-[5]">
+                  <Avatar className="w-8 h-8">
+                    <AvatarFallback className="bg-gray-700 text-white text-xs">
+                      {getInitials(tile.displayName)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-gray-500 text-[10px] mt-0.5">{tile.displayName}</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Spotlight Layout - Host camera full-screen, others in filmstrip
+// ═══════════════════════════════════════════════════════════════
+function SpotlightLayout({
+  localVideoRef,
+  isVideoEnabled,
+  isMentor,
+  localLabel,
+  localDisplayName,
+  remoteTiles,
+  spotlightIdentity,
+}: {
+  localVideoRef: RefObject<HTMLDivElement>;
+  isVideoEnabled: boolean;
+  isMentor: boolean;
+  localLabel: string;
+  localDisplayName?: string;
+  remoteTiles: RemoteTile[];
+  spotlightIdentity?: string | null;
+}) {
+  // If mentor: local video is spotlight (full-screen), remotes in filmstrip
+  // If student: find mentor's tile by spotlightIdentity and show it full-screen
+  const mentorTile = !isMentor && spotlightIdentity
+    ? remoteTiles.find(t => t.identity === spotlightIdentity)
+    : null;
+  const filmstripTiles = !isMentor && spotlightIdentity
+    ? remoteTiles.filter(t => t.identity !== spotlightIdentity)
+    : remoteTiles;
+
+  return (
+    <div className="flex flex-col h-full gap-2">
+      {/* Main spotlight area */}
+      <div className="flex-1 relative bg-gray-900 rounded-lg overflow-hidden min-h-0">
+        {isMentor ? (
+          // Mentor's own camera in full
+          <>
+            <div ref={localVideoRef} className="w-full h-full" />
+            <div className="absolute bottom-4 left-4 bg-black/60 text-white text-sm px-3 py-1.5 rounded z-10">
+              {localLabel}
+            </div>
+            {!isVideoEnabled && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 z-[5]">
+                <Avatar className="w-28 h-28 mb-3">
+                  <AvatarFallback className="bg-gray-700 text-white text-4xl">
+                    {localDisplayName ? getInitials(localDisplayName) : 'M'}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-gray-300 text-lg">{localDisplayName || 'Eğitmen'}</span>
+              </div>
+            )}
+          </>
+        ) : mentorTile ? (
+          // Student sees mentor's camera in full
+          <>
+            <RemoteVideoMount videoEl={mentorTile.cameraVideoEl} objectFit="cover" />
+            <div className="absolute bottom-4 left-4 flex items-center gap-1.5 z-10">
+              <div className="bg-black/60 text-white text-sm px-3 py-1.5 rounded">
+                {mentorTile.displayName}
+              </div>
+              {!mentorTile.isAudioEnabled && (
+                <div className="bg-red-600/80 rounded p-1">
+                  <MicOff className="w-3 h-3 text-white" />
+                </div>
+              )}
+            </div>
+            {(!mentorTile.cameraVideoEl || !mentorTile.isVideoEnabled) && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 z-[5]">
+                <Avatar className="w-28 h-28 mb-3">
+                  <AvatarFallback className="bg-gray-700 text-white text-4xl">
+                    {getInitials(mentorTile.displayName)}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-gray-300 text-lg">{mentorTile.displayName}</span>
+              </div>
+            )}
+          </>
+        ) : (
+          // Fallback: show first remote tile or waiting message
+          <div className="w-full h-full flex items-center justify-center text-gray-400">
+            <p>Spotlight aktif</p>
+          </div>
+        )}
+      </div>
+
+      {/* Filmstrip at bottom */}
+      <div className="h-[120px] shrink-0">
+        <div className="flex gap-2 h-full overflow-x-auto pb-1">
+          {/* If mentor: show remote tiles in filmstrip */}
+          {/* If student: show local + other remotes in filmstrip */}
+          {!isMentor && (
+            <div className="relative w-[180px] shrink-0 bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
+              <div ref={localVideoRef} className="w-full h-full" />
+              <div className="absolute bottom-1 left-1 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded">
+                {localLabel}
+              </div>
+              {!isVideoEnabled && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800">
+                  <Avatar className="w-8 h-8">
+                    <AvatarFallback className="bg-gray-700 text-white text-xs">
+                      {localDisplayName ? getInitials(localDisplayName) : 'S'}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+              )}
+            </div>
+          )}
+
+          {(isMentor ? remoteTiles : filmstripTiles).map(tile => (
+            <div
+              key={tile.identity}
+              className="relative w-[180px] shrink-0 bg-gray-800 rounded-lg overflow-hidden border border-gray-700"
+            >
+              <RemoteVideoMount videoEl={tile.cameraVideoEl} objectFit="cover" />
+              <div className="absolute bottom-1 left-1 flex items-center gap-1">
+                <div className="bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded">
+                  {tile.displayName}
+                </div>
+                {!tile.isAudioEnabled && (
+                  <div className="bg-red-600/80 rounded p-0.5">
+                    <MicOff className="w-2.5 h-2.5 text-white" />
+                  </div>
+                )}
+              </div>
               {(!tile.cameraVideoEl || !tile.isVideoEnabled) && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 z-[5]">
                   <Avatar className="w-8 h-8">

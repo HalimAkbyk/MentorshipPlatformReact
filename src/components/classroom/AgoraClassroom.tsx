@@ -3,7 +3,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import {
   Video, VideoOff, Mic, MicOff, Monitor, MonitorOff,
-  MessageSquare, Users, PhoneOff, ClipboardList, LogOut, PenTool, Clock,
+  MessageSquare, Users, PhoneOff, ClipboardList, LogOut, PenTool, Clock, Maximize2,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
@@ -12,7 +12,7 @@ import { ParticipantsPanel } from './ParticipantsPanel';
 import { SessionTimerBanner } from './SessionTimerBanner';
 import { ClassroomPlanPanel } from '../features/session-plans/classroom-plan-panel';
 import { useAgoraClassroom } from '../../lib/hooks/use-agora-classroom';
-import { useClassroomSignaling } from '../../lib/hooks/use-classroom-signaling';
+import { useClassroomSignaling, type AnnouncedUser } from '../../lib/hooks/use-classroom-signaling';
 import { useAuthStore } from '../../lib/stores/auth-store';
 import { videoApi } from '../../lib/api/video';
 
@@ -67,7 +67,16 @@ export function AgoraClassroom({
   const mentorLeftTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const mentorWasConnectedRef = useRef(false);
 
-  // FIX #1: Proper display name labels
+  // Track mentor's Agora UID (for mentor-leave countdown in group sessions)
+  const [mentorAgoraUid, setMentorAgoraUid] = useState<string | null>(null);
+
+  // Spotlight mode: mentor's camera shown full-screen, others in filmstrip
+  const [isSpotlightActive, setIsSpotlightActive] = useState(false);
+
+  // Track screen share sharer's Agora UID
+  const [remoteScreenShareActive, setRemoteScreenShareActive] = useState(false);
+  const [remoteScreenSharerUid, setRemoteScreenSharerUid] = useState<string | null>(null);
+
   const localLabel = `${displayName} (Siz)`;
   const peerLabel = peerDisplayName
     ? `${peerDisplayName} (${isHost ? 'Katılımcı' : 'Eğitmen'})`
@@ -81,10 +90,7 @@ export function AgoraClassroom({
     enabled: true,
   });
 
-  // Track remote screen share state
-  const [remoteScreenShareActive, setRemoteScreenShareActive] = useState(false);
-
-  // FIX #2/#3/#5/#6: Classroom signaling (chat, whiteboard, mute/kick, screen share)
+  // Classroom signaling
   const signaling = useClassroomSignaling({
     roomName,
     displayName,
@@ -111,22 +117,55 @@ export function AgoraClassroom({
         agora.replayLocalVideo();
       }
     }, [isHost, agora.replayLocalVideo]),
-    onRemoteScreenShare: useCallback((active: boolean) => {
+    onRemoteScreenShare: useCallback((active: boolean, sharerUid?: string) => {
       setRemoteScreenShareActive(active);
+      setRemoteScreenSharerUid(active ? (sharerUid || null) : null);
+    }, []),
+    onUserAnnounce: useCallback((user: AnnouncedUser) => {
+      console.log('[Classroom] User announced:', user);
+      // Update remote tile display name
+      agora.updateRemoteTileDisplayName(user.agoraUid, user.displayName);
+      // Track mentor's Agora UID for countdown
+      if (user.isHost) {
+        setMentorAgoraUid(user.agoraUid);
+      }
+    }, [agora.updateRemoteTileDisplayName]),
+    onSpotlightToggle: useCallback((active: boolean) => {
+      setIsSpotlightActive(active);
     }, []),
   });
 
-  // FIX #6: Derive effective screenShareState (local share OR remote share via signaling)
+  // After connecting, broadcast user-announce so others know our display name
+  const announcedRef = useRef(false);
+  useEffect(() => {
+    if (agora.isConnected && agora.localAgoraUid && !announcedRef.current) {
+      announcedRef.current = true;
+      // Small delay to ensure SignalR is connected
+      setTimeout(() => {
+        signaling.signalUserAnnounce(agora.localAgoraUid, displayName, isHost);
+      }, 1000);
+    }
+    if (!agora.isConnected) {
+      announcedRef.current = false;
+    }
+  }, [agora.isConnected, agora.localAgoraUid, displayName, isHost, signaling.signalUserAnnounce]);
+
+  // Derive effective screenShareState
   const effectiveScreenShareState = (() => {
     if (agora.screenShareState.active) return agora.screenShareState;
-    if (remoteScreenShareActive && agora.remoteTiles.length > 0) {
-      const tile = agora.remoteTiles[0];
-      return {
-        active: true,
-        isLocal: false,
-        screenVideoEl: tile.cameraVideoEl,
-        sharerIdentity: tile.identity,
-      };
+    if (remoteScreenShareActive) {
+      // Find the sharer's tile by UID (if known) or use first tile
+      const sharerTile = remoteScreenSharerUid
+        ? agora.remoteTiles.find(t => t.identity === remoteScreenSharerUid)
+        : agora.remoteTiles[0];
+      if (sharerTile) {
+        return {
+          active: true,
+          isLocal: false,
+          screenVideoEl: sharerTile.cameraVideoEl,
+          sharerIdentity: sharerTile.identity,
+        };
+      }
     }
     return agora.screenShareState;
   })();
@@ -209,7 +248,12 @@ export function AgoraClassroom({
   useEffect(() => {
     if (isHost || !agora.isConnected) return;
 
-    const hasMentor = agora.remoteTiles.length > 0;
+    // Check if mentor is among remote tiles
+    // For 1:1: any remote tile = mentor
+    // For group: use mentorAgoraUid if known, otherwise fallback to any tile
+    const hasMentor = mentorAgoraUid
+      ? agora.remoteTiles.some(t => t.identity === mentorAgoraUid)
+      : agora.remoteTiles.length > 0;
 
     if (hasMentor) {
       mentorWasConnectedRef.current = true;
@@ -242,7 +286,7 @@ export function AgoraClassroom({
       // Don't clear timer on re-render — only on unmount
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHost, agora.isConnected, agora.remoteTiles.length]);
+  }, [isHost, agora.isConnected, agora.remoteTiles, mentorAgoraUid]);
 
   // Cleanup countdown on unmount
   useEffect(() => {
@@ -256,7 +300,6 @@ export function AgoraClassroom({
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [signaling.messages]);
 
-  // FIX #5: Chat via SignalR
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
     signaling.sendMessage(newMessage.trim());
@@ -284,12 +327,10 @@ export function AgoraClassroom({
     }
   };
 
-  // FIX #2: Whiteboard toggle with signaling
   const handleWhiteboardToggle = () => {
     const newState = !isWhiteboardOpen;
     setIsWhiteboardOpen(newState);
     agora.replayLocalVideo();
-    // Mentor signals student to open/close whiteboard
     if (isHost) {
       signaling.signalWhiteboard(newState);
     }
@@ -316,7 +357,6 @@ export function AgoraClassroom({
 
   const handleMuteAll = () => {
     signaling.signalMuteAll();
-    // Update all remote tiles locally
     agora.remoteTiles.forEach(t => agora.updateRemoteTileAudio(t.identity, false));
     toast.success('Tüm katılımcıların mikrofonu kapatıldı');
   };
@@ -325,6 +365,13 @@ export function AgoraClassroom({
     signaling.signalUnmuteAll();
     agora.remoteTiles.forEach(t => agora.updateRemoteTileAudio(t.identity, true));
     toast.success('Tüm katılımcıların mikrofonu açıldı');
+  };
+
+  // Spotlight toggle (mentor only)
+  const handleSpotlightToggle = () => {
+    const newState = !isSpotlightActive;
+    setIsSpotlightActive(newState);
+    signaling.signalSpotlight(newState);
   };
 
   // Not yet activated — show activation screen
@@ -381,7 +428,7 @@ export function AgoraClassroom({
       {/* Mentor-left countdown banner (student only) */}
       {mentorLeftCountdown !== null && (
         <div className="bg-red-600 text-white px-4 py-2 text-center text-sm font-medium animate-pulse">
-          ⚠️ Eğitmen odadan ayrıldı. Geri dönmezse oturum {Math.floor(mentorLeftCountdown / 60)}:{String(mentorLeftCountdown % 60).padStart(2, '0')} sonra sonlandırılacak.
+          Eğitmen odadan ayrıldı. Geri dönmezse oturum {Math.floor(mentorLeftCountdown / 60)}:{String(mentorLeftCountdown % 60).padStart(2, '0')} sonra sonlandırılacak.
         </div>
       )}
 
@@ -449,6 +496,8 @@ export function AgoraClassroom({
               localDisplayName={displayName}
               remoteTiles={displayRemoteTiles}
               screenShareState={effectiveScreenShareState}
+              isSpotlightActive={isSpotlightActive}
+              spotlightIdentity={mentorAgoraUid}
             />
           )}
         </div>
@@ -492,7 +541,6 @@ export function AgoraClassroom({
 
         {isPlanOpen && (
           <div className="w-80 border-l border-gray-800 bg-gray-900">
-            {/* FIX #4: Student sees plan read-only */}
             <ClassroomPlanPanel
               bookingId={resourceType === 'Booking' ? resourceId : undefined}
               groupClassId={resourceType === 'GroupClass' ? resourceId : undefined}
@@ -505,7 +553,6 @@ export function AgoraClassroom({
 
         {isParticipantsOpen && (
           <div className="w-72 border-l border-gray-800 bg-gray-900">
-            {/* FIX #3: Wire up mute/kick handlers */}
             <ParticipantsPanel
               remoteTiles={agora.remoteTiles}
               localDisplayName={displayName}
@@ -562,7 +609,7 @@ export function AgoraClassroom({
               signaling.signalScreenShare(false);
             } else {
               await agora.startScreenShare();
-              signaling.signalScreenShare(true);
+              signaling.signalScreenShare(true, agora.localAgoraUid);
             }
           }}
           className="gap-1.5"
@@ -598,7 +645,6 @@ export function AgoraClassroom({
           <span className="hidden sm:inline">Plan</span>
         </Button>
 
-        {/* FIX #2: Whiteboard button only for mentor */}
         {isHost && (
           <Button
             size="sm"
@@ -620,6 +666,20 @@ export function AgoraClassroom({
           <Users className="w-4 h-4" />
           <span className="hidden sm:inline">Katılımcılar</span>
         </Button>
+
+        {/* Spotlight toggle — mentor only, for pinning own camera to center */}
+        {isHost && agora.remoteTiles.length > 0 && (
+          <Button
+            size="sm"
+            variant={isSpotlightActive ? 'default' : 'secondary'}
+            onClick={handleSpotlightToggle}
+            className="gap-1.5"
+            title={isSpotlightActive ? 'Spotlight kapat' : 'Kameranızı merkeze alın'}
+          >
+            <Maximize2 className="w-4 h-4" />
+            <span className="hidden sm:inline">{isSpotlightActive ? 'Spotlight' : 'Merkez'}</span>
+          </Button>
+        )}
 
         <div className="w-px h-8 bg-gray-700 mx-1" />
 
