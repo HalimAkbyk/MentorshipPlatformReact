@@ -132,23 +132,30 @@ export function AgoraClassroom({
     }, [agora.updateRemoteTileDisplayName]),
     onSpotlightToggle: useCallback((active: boolean) => {
       setIsSpotlightActive(active);
-    }, []),
+      // Replay local video after layout change on student side
+      agora.replayLocalVideo();
+    }, [agora.replayLocalVideo]),
   });
 
-  // After connecting, broadcast user-announce so others know our display name
-  const announcedRef = useRef(false);
+  // Broadcast user-announce when connected AND whenever remote tiles change
+  // (new participants may have missed our initial announce)
+  const lastAnnouncedTileCountRef = useRef(-1);
   useEffect(() => {
-    if (agora.isConnected && agora.localAgoraUid && !announcedRef.current) {
-      announcedRef.current = true;
-      // Small delay to ensure SignalR is connected
-      setTimeout(() => {
+    if (!agora.isConnected || !agora.localAgoraUid) {
+      lastAnnouncedTileCountRef.current = -1;
+      return;
+    }
+    const currentCount = agora.remoteTiles.length;
+    // Announce on first connect and whenever a new participant joins
+    if (currentCount !== lastAnnouncedTileCountRef.current) {
+      lastAnnouncedTileCountRef.current = currentCount;
+      const delay = currentCount === 0 ? 1000 : 500;
+      const timer = setTimeout(() => {
         signaling.signalUserAnnounce(agora.localAgoraUid, displayName, isHost);
-      }, 1000);
+      }, delay);
+      return () => clearTimeout(timer);
     }
-    if (!agora.isConnected) {
-      announcedRef.current = false;
-    }
-  }, [agora.isConnected, agora.localAgoraUid, displayName, isHost, signaling.signalUserAnnounce]);
+  }, [agora.isConnected, agora.localAgoraUid, agora.remoteTiles.length, displayName, isHost, signaling.signalUserAnnounce]);
 
   // Derive effective screenShareState
   const effectiveScreenShareState = (() => {
@@ -248,12 +255,20 @@ export function AgoraClassroom({
   useEffect(() => {
     if (isHost || !agora.isConnected) return;
 
-    // Check if mentor is among remote tiles
-    // For 1:1: any remote tile = mentor
-    // For group: use mentorAgoraUid if known, otherwise fallback to any tile
-    const hasMentor = mentorAgoraUid
-      ? agora.remoteTiles.some(t => t.identity === mentorAgoraUid)
-      : agora.remoteTiles.length > 0;
+    const isGroupSession = agora.remoteTiles.length > 1 || mentorAgoraUid !== null;
+
+    // Determine if mentor is present
+    let hasMentor: boolean;
+    if (mentorAgoraUid) {
+      // We know mentor's specific UID — check if they're in remote tiles
+      hasMentor = agora.remoteTiles.some(t => t.identity === mentorAgoraUid);
+    } else if (isGroupSession) {
+      // Group session but mentor UID unknown yet — can't determine, skip
+      return;
+    } else {
+      // 1:1 session — any remote tile is the mentor
+      hasMentor = agora.remoteTiles.length > 0;
+    }
 
     if (hasMentor) {
       mentorWasConnectedRef.current = true;
@@ -372,7 +387,14 @@ export function AgoraClassroom({
     const newState = !isSpotlightActive;
     setIsSpotlightActive(newState);
     signaling.signalSpotlight(newState);
+    // Replay local video after layout change
+    agora.replayLocalVideo();
   };
+
+  // Replay local video when spotlight state changes (layout switch remounts refs)
+  useEffect(() => {
+    agora.replayLocalVideo();
+  }, [isSpotlightActive, agora.replayLocalVideo]);
 
   // Not yet activated — show activation screen
   if (!isRoomActivated && !agora.isConnected) {
