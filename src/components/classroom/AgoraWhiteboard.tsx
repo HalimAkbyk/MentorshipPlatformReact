@@ -50,10 +50,6 @@ export function AgoraWhiteboard({ roomName, userId, isWriter }: AgoraWhiteboardP
           },
         });
 
-        // Disable drawing for non-writers (students) after WindowManager loads
-        if (!isWriter && app.room) {
-          app.room.disableDeviceInputs = true;
-        }
 
         if (mountedRef.current) {
           appRef.current = app;
