@@ -593,7 +593,7 @@ export function AgoraClassroom({
       </div>
 
       {/* Bottom toolbar */}
-      <div className="h-16 bg-gray-900 border-t border-gray-800 flex items-center justify-center gap-2 px-4">
+      <div className="min-h-[4rem] bg-gray-900 border-t border-gray-800 flex items-center justify-center gap-2 px-4 flex-wrap py-2 overflow-x-auto">
         {/* Elapsed timer */}
         {agora.isConnected && (
           <div className="flex items-center gap-1.5 text-gray-400 text-sm font-mono mr-2">
@@ -640,7 +640,7 @@ export function AgoraClassroom({
           <span className="hidden sm:inline">Ekran</span>
         </Button>
 
-        <div className="w-px h-8 bg-gray-700 mx-1" />
+        <div className="w-px h-8 bg-gray-700 mx-1 hidden sm:block" />
 
         <Button
           size="sm"
@@ -703,7 +703,7 @@ export function AgoraClassroom({
           </Button>
         )}
 
-        <div className="w-px h-8 bg-gray-700 mx-1" />
+        <div className="w-px h-8 bg-gray-700 mx-1 hidden sm:block" />
 
         {isHost ? (
           <>
