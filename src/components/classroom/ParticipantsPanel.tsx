@@ -33,7 +33,7 @@ export function ParticipantsPanel({
 }: ParticipantsPanelProps) {
   const isGroupSession = remoteTiles.length > 1;
   return (
-    <div className="w-80 bg-gray-800 border-l border-gray-700 flex flex-col">
+    <div className="w-full bg-gray-800 border-l border-gray-700 flex flex-col overflow-hidden">
       <div className="p-4 border-b border-gray-700 flex justify-between items-center">
         <h3 className="text-white font-semibold">
           Katılımcılar ({1 + remoteTiles.length})

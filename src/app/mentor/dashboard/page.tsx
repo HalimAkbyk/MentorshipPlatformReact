@@ -682,7 +682,7 @@ export default function MentorDashboardPage() {
                           <div className="flex items-center gap-2 mt-2">
                             <Users className="w-3 h-3 text-gray-400" />
                             <span className="text-xs text-gray-500">
-                              {cls.enrollmentCount ?? 0}/{cls.capacity} katilimci
+                              {cls.enrolledCount ?? 0}/{cls.capacity} katilimci
                             </span>
                           </div>
                         </CardContent>
